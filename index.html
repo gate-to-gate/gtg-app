@@ -52,7 +52,7 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .cm-adv>summary::-webkit-details-marker{display:none}
 .cm-adv>summary::before{content:"▸ ";color:var(--muted)}
 .cm-adv[open]>summary::before{content:"▾ "}
-.clip-modal{max-width:1080px}
+.modal.clip-modal{max-width:1080px;width:96vw}
 .clip-body{display:block!important;padding:14px 20px 20px}
 .clip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .clip-chips .cv-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:20px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
@@ -64,6 +64,8 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .clip-viz svg{width:100%;display:block;height:auto;cursor:pointer}
 .clip-vlab{font-size:12px;color:var(--muted);margin-bottom:6px}
 .clip-hint{color:#aab2bd;font-weight:600;font-size:11px}
+.hm .g-start{display:block;font-size:8px;font-weight:800;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;line-height:1}
+.hm tr.hm-start td{background:#fafbfd!important}
 .clip-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11.5px;color:var(--muted)}
 .clip-legend .clip-leg{display:inline-flex;align-items:center;gap:5px}
 .clip-legend .clip-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
@@ -1907,7 +1909,7 @@ function kpiHTML(){
     <div class="kpi"><div class="k-lab">Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
     <div class="kpi"><div class="k-lab">Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
     <div class="kpi"><div class="k-lab">SUI Athleten</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
-    <div class="kpi"><div class="k-lab">Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+bigLoss.gate:'–'}</div></div>
+    <div class="kpi"><div class="k-lab">Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
   </div>`;
 }
 
@@ -2054,7 +2056,7 @@ function drawHero(){
       return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?' · Bestzeit':''}${s.anom[g-1]?' ⚠':''}</span><b>${fmt(s[key][g-1])}</b></div>`;}).join('');
     const fg=c.figs.filter(f=>f.gate===g).map(f=>f.label).join(' · ');
     const pit=pitchByGate[g];
-    tt.innerHTML=`<div class="tt-h">Tor ${g}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% Gefälle`:''}</div>${rows}`;
+    tt.innerHTML=`<div class="tt-h">Tor ${g+1}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% Gefälle`:''}</div>${rows}`;
     showTT(svgN,px,mt+10);
   });
   hov.addEventListener('mouseleave',()=>{ tt.style.opacity=0; hg.setAttribute('opacity','0'); [...hgm.children].forEach(dot=>dot.setAttribute('opacity','0')); });
@@ -2241,7 +2243,7 @@ function drawBar(){
   svg+='</svg>'; $('#barShell').innerHTML=svg;
   $('#barShell').querySelectorAll('.gb').forEach(r=> r.addEventListener('mousemove',ev=>{
     const i=+r.dataset.g-1; const fg=c.figs.find(f=>f.gate===i+1);
-    tt.innerHTML=`<div class="tt-h">${s.name.split(' ')[0]} · Tor ${i+1}${fg?' · '+fg.label:''}</div>
+    tt.innerHTML=`<div class="tt-h">${s.name.split(' ')[0]} · Tor ${i+2}${fg?' · '+fg.label:''}</div>
       <div class="tt-r"><span class="n">Gate-Zeit</span><b>${fmt0(s.gates[i])} s</b></div>
       <div class="tt-r"><span class="n">Δ Bestzeit</span><b>${fmt(s.diff[i])} s</b></div>
       ${s.anom[i]?'<div class="tt-r"><span class="n">⚠ Anomalie</span><b>ausgeschl.</b></div>':''}`;
@@ -2348,8 +2350,12 @@ function drawHeatmap(mode){
   let h=`<div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
   cols.forEach(s=> h+=`<th>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
   h+=`</tr></thead><tbody>`;
+  // Start = Tor 1 (Referenz, alle 0.00)
+  h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Start</span></div></td>`;
+  cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:#fff">${fmt(0)}</td>`);
+  h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
-    h+=`<tr><td class="gate-c"><div class="gate-in">${fg?`<span class="fig-row" style="background:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</span>`:''}<span class="g-num">${i+1}</span></div></td>`;
+    h+=`<tr><td class="gate-c"><div class="gate-in">${fg?`<span class="fig-row" style="background:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
     cols.forEach(s=>{ const d=s.diff[i], anom=s.anom[i]; const da=`data-ath="${encodeURIComponent(s.name)}" data-g="${i+1}"`;
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
         h+=`<td class="hm-cell" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
@@ -4250,7 +4256,7 @@ function cvTicks(){
   const bar=$('#cvBar'), ticks=$('#cvTicks'), vid=$('#cvVideo'); if(!bar||!ticks||!vid||!VID) return;
   const dur = vid.duration || (VID.tags.length? VID.tags[VID.tags.length-1].t + 1 : 0);
   if(!dur){ ticks.innerHTML=''; return; }
-  let html = VID.tags.map((t,i)=>{ const p=Math.max(0,Math.min(100, t.t/dur*100)); return `<div class="cv-tk${t.fig?' fig':''}" style="left:${p.toFixed(2)}%" title="Tor ${i}${t.fig?' · '+t.fig:''}" data-t="${t.t}"></div>`; }).join('');
+  let html = VID.tags.map((t,i)=>{ const p=Math.max(0,Math.min(100, t.t/dur*100)); return `<div class="cv-tk${t.fig?' fig':''}" style="left:${p.toFixed(2)}%" title="Tor ${i+1}${t.fig?' · '+t.fig:''}" data-t="${t.t}"></div>`; }).join('');
   html += `<div class="cv-play" id="cvPlay" style="left:0%"></div>`;
   ticks.innerHTML=html;
   ticks.querySelectorAll('.cv-tk').forEach(tk=> tk.onclick=e=>{ e.stopPropagation(); cvSeek(+tk.dataset.t); });
@@ -4297,7 +4303,7 @@ function clipLoad(v, g){
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
   attachDefBar(vid, $('#clipDefbar'), v.name);
-  const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g} · ${v.name}`;
+  const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g+1} · ${v.name}`;
   if(CLIPSRC==='table') clipTableViz(v.name, g); else clipChartViz(v.name, g);
 }
 function clipChartViz(name, g){
@@ -4320,7 +4326,7 @@ function clipChartViz(name, g){
   let dot=''; if(gv!=null){ const col=s.isTop?'#C28E00':(s.color||'#e0413a'); dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${col}" stroke="#fff" stroke-width="2.4"/>`; }
   const val=gv==null?'—':((gv>0?'+':'')+(+gv).toFixed(2)+' s'); const vc=gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
   const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
-  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g}: <b style="color:${vc}">${val}</b> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
+  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
   <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Rückstandskurve"><line x1="${ml}" y1="${zeroY.toFixed(1)}" x2="${W-mr}" y2="${zeroY.toFixed(1)}" stroke="#c3cad4" stroke-dasharray="3 3"/>${lines}${dot}</svg>
   <div class="clip-legend">${leg}</div>`;
   const svg=el.querySelector('svg'); if(svg) svg.onclick=e=>{ const r=svg.getBoundingClientRect(); const relx=(e.clientX-r.left)/Math.max(1,r.width); const vbx=relx*W; let i=Math.round((vbx-ml)/iw*(n-1)); i=Math.max(0,Math.min(n-1,i)); clipGoto(CLIPNAME, i+1); };
@@ -4334,7 +4340,7 @@ function clipGoto(name, g){
 function clipTableViz(name, g){
   const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
   if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
-  el.innerHTML=`<div class="clip-vlab">Detail-Matrix · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
+  el.innerHTML=`<div class="clip-vlab">Detail-Matrix · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g+1}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
   const enc=encodeURIComponent(name);
   let hit=null;
   el.querySelectorAll('td.hm-cell').forEach(td=>{ if(td.dataset.ath===enc && String(td.dataset.g)===String(g)){ td.classList.add('clip-hi'); hit=td; }
@@ -4354,19 +4360,20 @@ function updateDefBar(db, name, t){
   const vObj=(CVVIDS||[]).find(v=>v.name===name); const tags=(vObj&&vObj.tags)||[];
   if(!s||!tags.length){ db.classList.remove('show'); return; } db.classList.add('show');
   let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; }
-  const smooth=(typeof smoothCum==='function') && S.heroSmooth;
-  const key=S.excludeAnom?'cumClean':'cumRaw'; const raw=s[key]||[]; const arr=smooth?smoothCum(raw):raw;
-  const val = g>=1? arr[g-1] : 0;
-  let mx=0.4; for(let i=0;i<arr.length;i++){ if(arr[i]!=null) mx=Math.max(mx, Math.abs(arr[i])); }
+  const key=S.excludeAnom?'cumClean':'cumRaw'; const raw=s[key]||[];
+  const sm=((typeof smoothCum==='function') && S.heroSmooth)? smoothCum(raw) : raw;   // Balken grafisch glätten
+  const valNum = g>=1? raw[g-1] : 0;   // angezeigte Zahl = Tabellenwert (roh)
+  const valBar = g>=1? sm[g-1]  : 0;   // Balkenlänge = geglättet
+  let mx=0.4; for(let i=0;i<sm.length;i++){ if(sm[i]!=null) mx=Math.max(mx, Math.abs(sm[i])); }
   const fill=db.querySelector('.db-fill'), vlab=db.querySelector('.db-val'), glab=db.querySelector('.db-gate');
-  if(glab) glab.textContent = g>=1? ('Tor '+g) : 'Start';
-  if(val==null){ fill.style.width='0'; vlab.textContent='—'; vlab.style.color='#8b95a3'; return; }
-  const frac=Math.max(0,Math.min(1, Math.abs(val)/mx))*50;
-  if(val>0.001){ fill.style.left='50%'; fill.style.width=frac+'%'; fill.style.background='#e0413a'; }
-  else if(val<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1a9d6b'; }
+  if(glab) glab.textContent = 'Tor '+(g+1);   // Start = Tor 1
+  if(valNum==null || valBar==null){ fill.style.width='0'; vlab.textContent='—'; vlab.style.color='#8b95a3'; return; }
+  const frac=Math.max(0,Math.min(1, Math.abs(valBar)/mx))*50;
+  if(valBar>0.001){ fill.style.left='50%'; fill.style.width=frac+'%'; fill.style.background='#e0413a'; }
+  else if(valBar<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1a9d6b'; }
   else { fill.style.left='50%'; fill.style.width='0'; }
-  vlab.textContent=(val>0.001?'+':(val<-0.001?'−':'±'))+Math.abs(val).toFixed(2)+' s';
-  vlab.style.color = val>0.001?'#c0392b':val<-0.001?'#1a8f5a':'#8b95a3';
+  vlab.textContent=(valNum>0.001?'+':(valNum<-0.001?'−':'±'))+Math.abs(valNum).toFixed(2)+' s';
+  vlab.style.color = valNum>0.001?'#c0392b':valNum<-0.001?'#1a8f5a':'#8b95a3';
 }
 function attachDefBar(vidEl, slot, name){
   const db=ensureDefBar(slot); if(!db||!vidEl) return; vidEl._defName=name;
