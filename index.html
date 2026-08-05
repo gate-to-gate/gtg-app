@@ -52,7 +52,7 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .cm-adv>summary::-webkit-details-marker{display:none}
 .cm-adv>summary::before{content:"▸ ";color:var(--muted)}
 .cm-adv[open]>summary::before{content:"▾ "}
-.modal.clip-modal{max-width:1080px;width:96vw}
+.modal.clip-modal{max-width:1240px;width:97vw}
 .clip-body{display:block!important;padding:14px 20px 20px}
 .clip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .clip-chips .cv-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:20px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
@@ -77,18 +77,19 @@ td.clip-hi{transition:outline-color .15s}
 .clip-left{min-width:0}
 /* Tabellen-Modus: Video links, Tabelle rechts */
 .clip-tablemode .clip-main{flex-direction:row;align-items:stretch;gap:14px}
-.clip-tablemode .clip-left{flex:1 1 56%;min-width:0}
-.clip-tablemode .clip-viz{flex:1 1 44%;min-width:0;margin-top:0;display:flex;flex-direction:column}
+.clip-tablemode .clip-left{flex:1 1 64%;min-width:0}
+.clip-tablemode .clip-viz{flex:1 1 36%;min-width:0;margin-top:0;display:flex;flex-direction:column}
 .clip-tblwrap{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
-.clip-tablemode .clip-tblwrap{max-height:58vh;flex:1}
+.clip-tablemode .clip-tblwrap{max-height:60vh;flex:1}
 .clip-tblwrap td.hm-cell{cursor:pointer!important}
 /* schmale Spalten im Pop-up */
 .clip-tblwrap table.hm{font-size:10.5px}
-.clip-tblwrap table.hm th,.clip-tblwrap table.hm td{padding:2px 4px;white-space:nowrap}
-.clip-tblwrap table.hm .nat{font-size:8px;font-weight:600}
+.clip-tblwrap table.hm th,.clip-tblwrap table.hm td{padding:2px 4px;white-space:nowrap;text-align:center}
+.clip-tblwrap table.hm thead th{font-size:11px}
+.clip-tblwrap table.hm .nat{font-size:7.5px;font-weight:600}
 .clip-tblwrap table.hm .g-num{font-size:10px}
 .clip-tblwrap table.hm .g-start{font-size:7px}
-td.clip-hi{outline:3px solid var(--red);outline-offset:-3px;font-weight:900!important}
+td.clip-hi{outline:3px solid #1f6feb;outline-offset:-3px;font-weight:900!important;background:#eaf2ff!important}
 /* Rückstands-/Vorsprungs-Balken UNTER dem Video (zwischen Video und Text) */
 .defbar{display:none;align-items:center;gap:10px;margin:10px 0 4px;padding:0 2px}
 .defbar.show{display:flex}
@@ -97,6 +98,14 @@ td.clip-hi{outline:3px solid var(--red);outline-offset:-3px;font-weight:900!impo
 .defbar .db-mid{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#c3cad4;transform:translateX(-1px);z-index:1}
 .defbar .db-fill{position:absolute;top:0;bottom:0;width:0;border-radius:7px;transition:left .28s cubic-bezier(.4,0,.2,1),width .28s cubic-bezier(.4,0,.2,1),background .2s}
 .defbar .db-val{font-size:13.5px;font-weight:800;min-width:66px;text-align:right;white-space:nowrap;transition:color .2s}
+.cv-sbs-btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;align-self:flex-start}
+.cv-sbs-btn.on{background:var(--red);color:#fff;border-color:var(--red)}
+.cv-double{display:flex;gap:16px;align-items:flex-start;margin-top:8px}
+.cv-double .cv-col{flex:1 1 50%;min-width:0}
+.cv-double .cv-sel{width:100%;margin-bottom:8px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:9px;padding:8px 11px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer}
+.cv-double .cv-sel:focus{outline:none;border-color:var(--red)}
+.cv-double video{width:100%;border-radius:11px;background:#0d1116;display:block;max-height:46vh}
+@media(max-width:720px){.cv-double{flex-direction:column}}
 .cloud-body .mf span{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cloud-body .mf input{font-size:13px;padding:10px 12px}
 .cloud-body .save-btn{width:100%}
@@ -952,14 +961,30 @@ table.hmp .g b{font-size:6.5px}
       <div id="main"></div>
       <div id="coachVid" class="card no-print" style="display:none">
         <div class="c-head"><div><h2>Videos <span id="cvEvt" style="color:var(--red)"></span></h2>
-          <div class="c-sub">Athlet wählen und abspielen. <b>Klick auf ein Tor</b> in der Grafik «Zeitrückstand auf die Bestzeit» springt im Video an diese Stelle.</div></div></div>
-        <div id="cvAth" class="cv-ath"></div>
-        <div class="cv-stage">
-          <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
-          <div id="cvDefbar" class="defbar"></div>
-          <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
+          <div class="c-sub">Athlet wählen und abspielen. <b>Klick auf ein Tor</b> in der Grafik «Zeitrückstand auf die Bestzeit» springt im Video an diese Stelle.</div></div>
+          <button id="cvSbsBtn" class="btn-mini cv-sbs-btn" title="Zwei Videos nebeneinander vergleichen"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="8" height="14" rx="1.5"/><rect x="13" y="5" width="8" height="14" rx="1.5"/></svg>Side-by-Side</button>
         </div>
-        <div id="cvHint" class="cv-hint"></div>
+        <div id="cvSingle">
+          <div id="cvAth" class="cv-ath"></div>
+          <div class="cv-stage">
+            <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
+            <div id="cvDefbar" class="defbar"></div>
+            <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
+          </div>
+          <div id="cvHint" class="cv-hint"></div>
+        </div>
+        <div id="cvDouble" class="cv-double" style="display:none">
+          <div class="cv-col">
+            <select class="cv-sel" data-col="a"></select>
+            <div class="cv-videowrap"><video class="cv-dv" data-col="a" controls playsinline preload="metadata"></video></div>
+            <div class="defbar cv-ddef" data-col="a"></div>
+          </div>
+          <div class="cv-col">
+            <select class="cv-sel" data-col="b"></select>
+            <div class="cv-videowrap"><video class="cv-dv" data-col="b" controls playsinline preload="metadata"></video></div>
+            <div class="defbar cv-ddef" data-col="b"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div id="anaVerlauf" style="display:none">
@@ -4257,7 +4282,34 @@ function cvRenderPanel(){
     const defBtn=[...host.querySelectorAll('.cv-chip')].find(b=>decodeURIComponent(b.dataset.id)===def.id);
     if(defBtn) defBtn.classList.add('on');
     cvLoad(def);
+    if($('#cvSbsBtn')) $('#cvSbsBtn').onclick=()=>cvSetSbs(!CVSBS);
+    if(CVSBS) cvSetSbs(true);   // im SBS-Modus die neuen Videos übernehmen
   });
+}
+/* ---- Coach: Side-by-Side (zwei Videos nebeneinander, je mit Rückstands-Balken) ---- */
+let CVSBS=false;
+function cvColOptions(sel, chosen){ sel.innerHTML=(CVVIDS||[]).map(v=>`<option value="${encodeURIComponent(v.id)}"${v.name===chosen?' selected':''}>${v.name}</option>`).join(''); }
+function cvLoadCol(col, name){
+  const vids=CVVIDS||[]; const v=vids.find(x=>x.name===name)||vids[0]; if(!v) return;
+  const vid=document.querySelector(`.cv-dv[data-col="${col}"]`); if(!vid) return;
+  const url=v.url||(v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
+  if(vid.src!==url){ vid.src=url; vid.load(); }
+  const slot=document.querySelector(`.cv-ddef[data-col="${col}"]`);
+  attachDefBar(vid, slot, v.name);
+}
+function cvSetSbs(on){
+  CVSBS=on; const single=$('#cvSingle'), dbl=$('#cvDouble'), btn=$('#cvSbsBtn');
+  if(single) single.style.display=on?'none':'';
+  if(dbl) dbl.style.display=on?'':'none';
+  if(btn) btn.classList.toggle('on', on);
+  if(!on){ ['a','b'].forEach(c=>{ const v=document.querySelector(`.cv-dv[data-col="${c}"]`); if(v){ try{v.pause();}catch(e){} } }); return; }
+  const sv=$('#cvVideo'); if(sv){ try{sv.pause();}catch(e){} }   // Einzel-Video pausieren
+  const vids=CVVIDS||[]; if(!vids.length) return;
+  const a=(VID&&VID.name)||vids[0].name; const b=(vids.find(v=>v.name!==a)||vids[0]).name;
+  const selA=document.querySelector('.cv-sel[data-col="a"]'), selB=document.querySelector('.cv-sel[data-col="b"]');
+  if(selA){ cvColOptions(selA,a); selA.onchange=()=>{ const vv=vids.find(x=>x.id===decodeURIComponent(selA.value)); if(vv) cvLoadCol('a',vv.name); }; }
+  if(selB){ cvColOptions(selB,b); selB.onchange=()=>{ const vv=vids.find(x=>x.id===decodeURIComponent(selB.value)); if(vv) cvLoadCol('b',vv.name); }; }
+  cvLoadCol('a',a); cvLoadCol('b',b);
 }
 function cvLoad(v){
   const vid=$('#cvVideo'); if(!vid||!v) return;
@@ -4385,6 +4437,8 @@ function clipTableViz(name, g){
   const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
   if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
   el.innerHTML=`<div class="clip-vlab">Detail-Matrix · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g+1}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
+  // Kopf kompakt: 2-Buchstaben-Kürzel (OD, ME, BR), ohne Flagge/Stern
+  el.querySelectorAll('.clip-tblwrap table.hm thead th:not(.gate-c)').forEach(th=>{ const natEl=th.querySelector('.nat'); const nat=natEl?natEl.textContent:''; let nm=''; th.childNodes.forEach(nd=>{ if(nd.nodeType===3) nm+=nd.textContent; }); nm=nm.replace(/[^A-Za-zÀ-ÿ]/g,''); const code=nm.slice(0,2).toUpperCase(); th.innerHTML=`${code}${nat?`<div class="nat">${nat}</div>`:''}`; });
   const enc=encodeURIComponent(name);
   let hit=null;
   el.querySelectorAll('td.hm-cell').forEach(td=>{ if(td.dataset.ath===enc && String(td.dataset.g)===String(g)){ td.classList.add('clip-hi'); hit=td; }
