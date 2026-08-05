@@ -386,10 +386,12 @@ body.coach #anaMain #filters{display:none!important}   /* Filterzeile im Coach-L
 body.coach .coach-badge{display:inline-flex!important}
 body.coach .coach-run{display:inline-flex!important}
 /* markanter Lauf-Wechsler im Header (nur Coach-Ansicht) */
-.coach-run{display:none;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:5px 8px 5px 12px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
-.coach-run .cr-lab{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8b95a3}
-.coach-run select{border:none;background:none;font:inherit;font-size:14px;font-weight:800;color:var(--ink);cursor:pointer;padding:2px 4px}
+.coach-run{position:relative;display:none;align-items:center;gap:7px;background:#fff;border:2px solid var(--red);border-radius:11px;padding:5px 10px 5px 12px;box-shadow:0 3px 14px rgba(0,0,0,.28)}
+.coach-run .cr-lab{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.coach-run select{appearance:none;-webkit-appearance:none;border:none;background:none;font:inherit;font-size:15px;font-weight:900;color:var(--ink);cursor:pointer;padding:2px 2px 2px 4px}
 .coach-run select:focus{outline:none}
+.coach-run .cr-car{width:14px;height:14px;color:var(--red);margin-left:-4px;pointer-events:none}
+.coach-run .cr-count{font-size:11px;font-weight:800;color:#fff;background:var(--red);border-radius:20px;padding:2px 9px;margin-left:2px;white-space:nowrap}
 body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättungs-Schalter im Coach-Link ausblenden (bleiben im Hintergrund aktiv) */
 .coach-badge{display:none;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--red);letter-spacing:.03em}
 .tg-mode-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -844,7 +846,7 @@ table.hmp .g b{font-size:6.5px}
       <button class="tab" data-view="datenbank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>Datenbank</button>
     </nav>
     <div class="head-spacer"></div>
-    <div class="coach-run" id="coachRunWrap"><span class="cr-lab">Lauf</span><select id="coachRun"></select></div>
+    <div class="coach-run" id="coachRunWrap"><span class="cr-lab">Lauf</span><select id="coachRun"></select><svg class="cr-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg><span class="cr-count" id="coachRunCount"></span></div>
     <div class="evt-chip" id="evtChip">—</div>
     <button id="cloudBtn" class="hdr-ico" title="Cloud — Online-Sync & Backup">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg>
@@ -4226,7 +4228,8 @@ function enterCoach(bundle){
   if(runSel){ runSel.innerHTML=runOpts; runSel.value=first.run; runSel.onchange=loadEvent; }
   // markanter Lauf-Wechsler im Header
   const cr=$('#coachRun'); if(cr){ cr.innerHTML=runOpts; cr.value=first.run; cr.onchange=()=>{ if(runSel){ runSel.value=cr.value; } loadEvent(); }; }
-  if($('#coachRunWrap')) $('#coachRunWrap').style.display = runs.length>1 ? '' : 'none';   // nur zeigen, wenn es mehrere Läufe gibt
+  if($('#coachRunCount')) $('#coachRunCount').textContent = runs.length===1 ? '1 Lauf' : runs.length+' Läufe';
+  if($('#coachRunWrap')) $('#coachRunWrap').style.display = runs.length>=1 ? '' : 'none';   // Anzahl Läufe direkt sichtbar
   try{ document.title=`Coach · ${ev0.venue} ${dmy(ev0.date)} · ${ev0.gender==='M'?'Männer':'Frauen'}`; }catch(e){}
   switchView('analyse'); loadEvent();
 }
