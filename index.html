@@ -44,9 +44,25 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .hdr-sep{align-self:stretch;width:1px;background:rgba(255,255,255,.22);margin:6px 5px}
 .cloud-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#8b98a6;border:1.5px solid #2a3340}
 .cloud-dot.online{background:#22c55e}
-.cloud-body{display:block!important;padding:18px 22px 20px}
-.cloud-intro{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
-.cloud-body .mf{margin-bottom:11px}
+.cloud-body{display:block!important;padding:15px 20px 18px}
+.cloud-intro{font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:12px}
+.cloud-body .mf{margin-bottom:9px}
+.cm-adv{margin:2px 0 11px}
+.cm-adv>summary{font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;list-style:none;padding:3px 0}
+.cm-adv>summary::-webkit-details-marker{display:none}
+.cm-adv>summary::before{content:"▸ ";color:var(--muted)}
+.cm-adv[open]>summary::before{content:"▾ "}
+.clip-modal{max-width:640px}
+.clip-body{display:block!important;padding:14px 16px 16px}
+.clip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.clip-chips .cv-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:20px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.clip-chips .cv-chip .dot{width:9px;height:9px;border-radius:50%}
+.clip-chips .cv-chip.on{border-color:var(--red);background:#fff;color:var(--ink);box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.clip-videowrap{background:#000;border-radius:12px;overflow:hidden}
+#clipVideo{width:100%;max-height:54vh;display:block;background:#000}
+.clip-viz{margin-top:10px}
+.clip-viz svg{width:100%;display:block;height:auto}
+.clip-vlab{font-size:12px;color:var(--muted);margin-bottom:6px}
 .cloud-body .mf span{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cloud-body .mf input{font-size:13px;padding:10px 12px}
 .cloud-body .save-btn{width:100%}
@@ -236,7 +252,10 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 /* modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(20,24,31,.5);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .12s ease}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
-.modal{background:var(--card);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:520px;overflow:hidden;animation:pop .14s ease}
+.modal{background:var(--card);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:pop .14s ease}
+.modal-head{flex:0 0 auto}
+.modal-foot{flex:0 0 auto}
+.modal-body{flex:1 1 auto;min-height:0;overflow-y:auto}
 @keyframes pop{from{transform:translateY(8px) scale(.98);opacity:.6}to{transform:none;opacity:1}}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
 .modal-head h2{font-size:16px}
@@ -1457,40 +1476,47 @@ table.hmp .g b{font-size:6.5px}
   <div class="modal">
     <div class="modal-head"><h2>Coach-Link erstellen</h2><button class="modal-x" id="coachClose">✕</button></div>
     <div class="modal-body cloud-body">
-      <div class="cloud-intro"><b id="cmEvt">—</b><br>Lädt die getaggten Videos dieses Events + die Analyse-Daten in dein öffentliches GitHub-Pages-Repo und erzeugt einen Link nur für die Analyse-Ansicht.</div>
-      <div class="cloud-sec">Ziel (öffentliches Pages-Repo)</div>
-      <label class="mf"><span>Repository (Owner/Name)</span><input type="text" id="cmRepo" placeholder="swiss-ski/gtg-app"></label>
-      <div class="cloud-row2">
-        <label class="mf"><span>Branch</span><input type="text" id="cmBranch" value="main"></label>
-        <label class="mf"><span>Pages-URL (Basis)</span><input type="text" id="cmBase" placeholder="https://user.github.io/gtg-app/"></label>
-      </div>
-      <label class="mf"><span>Access Token (Contents: Read/Write)</span><input type="password" id="cmToken" placeholder="github_pat_… / ghp_…"></label>
-      <div class="cloud-sec" style="margin-top:14px">Video-Speicher</div>
-      <label class="cm-r2on"><input type="checkbox" id="cmR2On"> Videos zu Cloudflare&nbsp;R2 hochladen <span class="cm-r2hint">(empfohlen – schont das Repo, unbegrenzt)</span></label>
-      <div id="cmR2Box" style="display:none">
-        <label class="mf"><span>R2 S3-Endpoint</span><input type="text" id="cmR2Endpoint" placeholder="https://&lt;account-id&gt;.r2.cloudflarestorage.com"></label>
+      <div class="cloud-intro"><b id="cmEvt">—</b></div>
+      <label class="mf"><span>GitHub Access Token</span><input type="password" id="cmToken" placeholder="github_pat_… / ghp_…"></label>
+      <details class="cm-adv"><summary>GitHub-Ziel (Repo &amp; Pages) – meist automatisch</summary>
+        <label class="mf" style="margin-top:8px"><span>Repository (Owner/Name)</span><input type="text" id="cmRepo" placeholder="gate-to-gate/gtg-app"></label>
         <div class="cloud-row2">
-          <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
-          <label class="mf"><span>Öffentliche Basis-URL</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
+          <label class="mf"><span>Branch</span><input type="text" id="cmBranch" value="main"></label>
+          <label class="mf"><span>Pages-URL (Basis)</span><input type="text" id="cmBase" placeholder="https://…github.io/gtg-app/"></label>
         </div>
-        <label class="mf"><span>Upload-Worker-URL <span class="cm-r2hint">(empfohlen – umgeht CORS, Schlüssel bleibt im Worker)</span></span><input type="text" id="cmR2Worker" placeholder="https://gtg-upload.&lt;name&gt;.workers.dev"></label>
-        <label class="mf"><span>Upload-Passwort <span class="cm-r2hint">(optional, muss mit dem Worker übereinstimmen)</span></span><input type="password" id="cmR2Wkey" placeholder="frei wählbar"></label>
-        <details class="cm-r2adv"><summary>Ohne Worker: direkte S3-Schlüssel (nur falls CORS am Bucket funktioniert)</summary>
-          <div class="cloud-row2" style="margin-top:8px">
-            <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="R2 Access Key ID"></label>
-            <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
+      </details>
+      <label class="cm-r2on"><input type="checkbox" id="cmR2On"> Videos zu Cloudflare&nbsp;R2 hochladen</label>
+      <div id="cmR2Box" style="display:none">
+        <label class="mf"><span>Öffentliche Basis-URL (r2.dev)</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
+        <label class="mf"><span>Upload-Worker-URL</span><input type="text" id="cmR2Worker" placeholder="https://gtg-upload.&lt;name&gt;.workers.dev"></label>
+        <label class="mf"><span>Upload-Passwort <span class="cm-r2hint">(optional)</span></span><input type="password" id="cmR2Wkey" placeholder="wie im Worker"></label>
+        <details class="cm-adv"><summary>Ohne Worker: direkte S3-Schlüssel</summary>
+          <label class="mf" style="margin-top:8px"><span>R2 S3-Endpoint</span><input type="text" id="cmR2Endpoint" placeholder="https://&lt;account-id&gt;.r2.cloudflarestorage.com"></label>
+          <div class="cloud-row2">
+            <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
+            <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="Access Key ID"></label>
           </div>
+          <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
         </details>
-        <div class="cloud-help">Empfohlen: <b>Upload-Worker</b> (siehe Anleitung) – umgeht das CORS-Problem und hält den Schlüssel serverseitig. Die <b>öffentliche Basis-URL</b> (r2.dev) wird zum Abspielen gebraucht. Alles bleibt lokal im Browser.</div>
       </div>
       <button class="save-btn" id="cmGo">Videos hochladen &amp; Link erstellen</button>
-      <div id="cmProg" class="save-msg" style="margin-top:12px"></div>
-      <div id="cmResult" style="display:none;margin-top:12px">
+      <div id="cmProg" class="save-msg" style="margin-top:10px"></div>
+      <div id="cmResult" style="display:none;margin-top:10px">
         <div class="cloud-sec">Teilbarer Link</div>
         <div class="cm-linkrow"><input type="text" id="cmLink" readonly><button class="btn-mini solid" id="cmCopy">Kopieren</button></div>
-        <div class="cloud-help">Diesen Link kannst du den Coaches schicken. Sie sehen nur die Analyse dieses Events und die Videos; Klick auf ein Tor springt im Video an die Stelle.</div>
       </div>
-      <div class="cloud-help">Token in GitHub unter <b>Settings → Developer settings → Fine-grained tokens</b> mit <b>Contents: Read and write</b> auf das Pages-Repo. Repo muss <b>public</b> sein und GitHub Pages aktiviert. Bleibt lokal im Browser.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Coach: Klick auf Tor/Zelle -> Video im Pop-up + Mini-Grafik mit Highlight -->
+<div id="clipModal" class="modal-backdrop" style="display:none">
+  <div class="modal clip-modal">
+    <div class="modal-head"><h2 id="clipTitle">Tor</h2><button class="modal-x" id="clipClose">✕</button></div>
+    <div class="modal-body clip-body">
+      <div id="clipAth" class="clip-chips"></div>
+      <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
+      <div id="clipViz" class="clip-viz"></div>
     </div>
   </div>
 </div>
@@ -2019,6 +2045,7 @@ function drawHero(){
     // nächstgelegene Athleten-Linie an der Klick-Höhe bestimmen (auf der dargestellten, evtl. geglätteten Linie)
     let best=null,bd=1e9; series.forEach(s=>{ const v=pv(s)[g-1]; if(v==null) return; const dy=Math.abs(y(v)-pt.y); if(dy<bd){bd=dy;best=s;} });
     if(typeof coachSelectAndSeek==='function' && best){ coachSelectAndSeek(best.name, g); }
+    else if(COACH.on && typeof openClip==='function'){ openClip(null, g); }
     else if(typeof coachSeekGate==='function'){ coachSeekGate(g, true); } });
   if(typeof VID!=='undefined' && VID && VID.id){ hov.style.cursor='pointer'; }
 }
@@ -4222,10 +4249,65 @@ function cvSeek(t, scroll){ const vid=$('#cvVideo'); if(!vid||!isFinite(t)) retu
 function coachSeekGate(g, scroll){ CVGATE=g; if(!VID||!VID.tags||!VID.tags.length) return; const idx=Math.max(0,Math.min(VID.tags.length-1, g)); const t=VID.tags[idx]&&VID.tags[idx].t; if(t!=null) cvSeek(t, scroll); }
 // Klick auf die Linie eines Athleten -> dessen Video laden und zum Tor springen
 function coachSelectAndSeek(name, g){
+  if(COACH.on){ openClip(name, g); return; }   // im Coach-Link: Video im Pop-up statt scrollen
   const v = CVVIDS.find(x=>x.name===name);
   if(v && (!VID || VID.name!==name)){ cvLoad(v);
     const host=$('#cvAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id)); }
   coachSeekGate(g, true);
+}
+
+/* ---- Coach-Klick-Pop-up: Video + Mini-Grafik mit Highlight ---- */
+let CLIPNAME=null, CLIPGATE=null;
+function openClip(name, g){
+  const vids=CVVIDS||[]; if(!vids.length){ if(typeof coachSeekGate==='function') coachSeekGate(g,true); return; }
+  if(!name || !vids.some(v=>v.name===name)) name=(VID&&VID.name)||vids[0].name;
+  CLIPGATE=g;
+  const host=$('#clipAth');
+  if(host){
+    host.innerHTML = vids.map(v=>`<button class="cv-chip${v.name===name?' on':''}" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
+    host.querySelectorAll('.cv-chip').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.id); const v=vids.find(x=>x.id===id); if(!v) return; host.querySelectorAll('.cv-chip').forEach(x=>x.classList.toggle('on',x===b)); clipLoad(v, CLIPGATE); });
+  }
+  const m=$('#clipModal'); if(m) m.style.display='flex';
+  const v=vids.find(x=>x.name===name)||vids[0]; clipLoad(v, g);
+}
+function clipLoad(v, g){
+  if(!v) return; CLIPNAME=v.name; CLIPGATE=g;
+  const vid=$('#clipVideo'); if(!vid) return;
+  const url = v.url || (v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
+  if(vid.src!==url){ vid.src=url; vid.load(); }
+  const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
+  if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
+  const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g} · ${v.name}`;
+  drawClipViz(v.name, g);
+}
+function drawClipViz(name, g){
+  const el=$('#clipViz'); if(!el) return; const c=S.comp; const s=c&&c.skiers.find(x=>x.name===name);
+  if(!s){ el.innerHTML=''; return; }
+  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const arr=s[key]||[]; const n=c.n;
+  const pts=[]; for(let i=0;i<n;i++){ if(arr[i]!=null) pts.push([i,arr[i]]); }
+  if(!pts.length){ el.innerHTML=''; return; }
+  const W=600,H=150,ml=12,mr=12,mt=14,mb=18,iw=W-ml-mr,ih=H-mt-mb;
+  let vmax=Math.max(0,...pts.map(p=>p[1])), vmin=Math.min(0,...pts.map(p=>p[1])); if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
+  const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
+  const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
+  const col=s.color||'#e0413a';
+  const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  const gi=Math.max(0,Math.min(n-1,g-1)); const gv=arr[gi];
+  const zeroY=Y(0);
+  let dot=''; if(gv!=null){ dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="${col}" stroke-dasharray="3 3" opacity=".5"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="6.5" fill="${col}" stroke="#fff" stroke-width="2.2"/>`; }
+  const val = gv==null?'—':((gv>0?'+':'')+gv.toFixed(2)+' s');
+  const vc = gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
+  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · Tor ${g}: <b style="color:${vc}">${val}</b></div>
+  <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Rückstandskurve">
+    <line x1="${ml}" y1="${zeroY.toFixed(1)}" x2="${W-mr}" y2="${zeroY.toFixed(1)}" stroke="#c3cad4" stroke-dasharray="3 3"/>
+    <path d="${path}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linejoin="round"/>${dot}
+  </svg>`;
+}
+function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } }
+function initClip(){
+  if($('#clipClose')) $('#clipClose').onclick=closeClip;
+  if($('#clipModal')) $('#clipModal').addEventListener('click',e=>{ if(e.target.id==='clipModal') closeClip(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
 }
 
 function initCoach(){
@@ -4423,6 +4505,7 @@ initCloud();
 initDatenbank();
 initCoachLink();
 initConfirm();
+initClip();
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
