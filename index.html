@@ -1473,11 +1473,15 @@ table.hmp .g b{font-size:6.5px}
           <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
           <label class="mf"><span>Öffentliche Basis-URL</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
         </div>
-        <div class="cloud-row2">
-          <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="R2 Access Key ID"></label>
-          <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
-        </div>
-        <div class="cloud-help">R2 → „Manage R2 API Tokens" → <b>Object Read &amp; Write</b>, nur auf diesen Bucket. Bucket braucht <b>öffentlichen Zugriff</b> (r2.dev oder eigene Domain) und <b>CORS</b> mit PUT für deine Pages-Adresse. Schlüssel bleibt lokal im Browser.</div>
+        <label class="mf"><span>Upload-Worker-URL <span class="cm-r2hint">(empfohlen – umgeht CORS, Schlüssel bleibt im Worker)</span></span><input type="text" id="cmR2Worker" placeholder="https://gtg-upload.&lt;name&gt;.workers.dev"></label>
+        <label class="mf"><span>Upload-Passwort <span class="cm-r2hint">(optional, muss mit dem Worker übereinstimmen)</span></span><input type="password" id="cmR2Wkey" placeholder="frei wählbar"></label>
+        <details class="cm-r2adv"><summary>Ohne Worker: direkte S3-Schlüssel (nur falls CORS am Bucket funktioniert)</summary>
+          <div class="cloud-row2" style="margin-top:8px">
+            <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="R2 Access Key ID"></label>
+            <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
+          </div>
+        </details>
+        <div class="cloud-help">Empfohlen: <b>Upload-Worker</b> (siehe Anleitung) – umgeht das CORS-Problem und hält den Schlüssel serverseitig. Die <b>öffentliche Basis-URL</b> (r2.dev) wird zum Abspielen gebraucht. Alles bleibt lokal im Browser.</div>
       </div>
       <button class="save-btn" id="cmGo">Videos hochladen &amp; Link erstellen</button>
       <div id="cmProg" class="save-msg" style="margin-top:12px"></div>
@@ -4293,7 +4297,14 @@ async function s3PutObject(r2, key, blob, contentType){
 }
 function readR2cfg(){ const on=$('#cmR2On')&&$('#cmR2On').checked;
   return { on, endpoint:($('#cmR2Endpoint')?.value||'').trim().replace(/\/+$/,''), bucket:($('#cmR2Bucket')?.value||'').trim(),
-    base:($('#cmR2Base')?.value||'').trim(), key:($('#cmR2Key')?.value||'').trim(), secret:($('#cmR2Secret')?.value||'').trim(), region:'auto' }; }
+    base:($('#cmR2Base')?.value||'').trim(), key:($('#cmR2Key')?.value||'').trim(), secret:($('#cmR2Secret')?.value||'').trim(),
+    worker:($('#cmR2Worker')?.value||'').trim().replace(/\/+$/,''), wkey:($('#cmR2Wkey')?.value||'').trim(), region:'auto' }; }
+async function workerPut(r2, key, blob, contentType){
+  const res=await fetch(`${r2.worker}/${key.split('/').map(encodeURIComponent).join('/')}`,{method:'PUT',
+    headers:{'Content-Type':contentType||'application/octet-stream', ...(r2.wkey?{'x-gtg-key':r2.wkey}:{})}, body:blob });
+  if(!res.ok) throw new Error('Worker '+res.status+' · '+(await res.text()).slice(0,160));
+  return true;
+}
 function openCoachLink(key){
   COACHLINK.key=key; const [date,venue,gender]=key.split('|');
   const cfg=LS.get('gtg_coachcfg',{}); if($('#cmRepo'))$('#cmRepo').value=cfg.repo||''; if($('#cmBranch'))$('#cmBranch').value=cfg.branch||'main'; if($('#cmBase'))$('#cmBase').value=cfg.base||'';
@@ -4304,6 +4315,8 @@ function openCoachLink(key){
   if($('#cmR2Base')) $('#cmR2Base').value=r2.base||'';
   if($('#cmR2Key')) $('#cmR2Key').value=r2.key||'';
   if($('#cmR2Secret')) $('#cmR2Secret').value=r2.secret||'';
+  if($('#cmR2Worker')) $('#cmR2Worker').value=r2.worker||'';
+  if($('#cmR2Wkey')) $('#cmR2Wkey').value=r2.wkey||'';
   if($('#cmR2Box')) $('#cmR2Box').style.display = ($('#cmR2On')&&$('#cmR2On').checked)?'':'none';
   // Auto-Standard aus der aktuellen Pages-Adresse ableiten (wo die App gehostet ist)
   try{ const host=location.hostname, seg=location.pathname.split('/').filter(Boolean);
@@ -4330,10 +4343,15 @@ async function coachCreate(){
   // Optional: Videos zu Cloudflare R2 / S3 statt ins Repo
   const r2=readR2cfg();
   if(r2.on){
-    if(!r2.endpoint||!r2.bucket||!r2.base||!r2.key||!r2.secret){ cmProg('R2-Felder ausfüllen (Endpoint, Bucket, Basis-URL, Key, Secret) – oder R2 abschalten.',false); return; }
+    if(!r2.base){ cmProg('Öffentliche Basis-URL (r2.dev) angeben.',false); return; }
     if(!/^https?:\/\//.test(r2.base)){ cmProg('R2-Basis-URL muss mit https:// beginnen.',false); return; }
     if(!r2.base.endsWith('/')) r2.base+='/';
-    LS.set('gtg_r2cfg',{on:true,endpoint:r2.endpoint,bucket:r2.bucket,base:r2.base,key:r2.key,secret:r2.secret});
+    if(r2.worker){
+      if(!/^https?:\/\//.test(r2.worker)){ cmProg('Worker-URL muss mit https:// beginnen.',false); return; }
+    } else {
+      if(!r2.endpoint||!r2.bucket||!r2.key||!r2.secret){ cmProg('Entweder Worker-URL angeben – oder Endpoint/Bucket/Key/Secret für den direkten S3-Upload.',false); return; }
+    }
+    LS.set('gtg_r2cfg',{on:true,endpoint:r2.endpoint,bucket:r2.bucket,base:r2.base,key:r2.key,secret:r2.secret,worker:r2.worker,wkey:r2.wkey});
   } else { const ex=LS.get('gtg_r2cfg',{}); LS.set('gtg_r2cfg',{...ex,on:false}); }
   const key=COACHLINK.key; const [date,venue,gender]=key.split('|');
   const safe=s=>String(s).replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -4355,7 +4373,8 @@ async function coachCreate(){
       let vurl;
       if(r2.on){
         cmProg(`Lade Video ${done+1}/${totalVids} zu R2: ${v.name} …`);
-        await s3PutObject(r2, `coach/videos/${fname}`, v.video, v.video.type||'video/mp4');
+        if(r2.worker) await workerPut(r2, `coach/videos/${fname}`, v.video, v.video.type||'video/mp4');
+        else await s3PutObject(r2, `coach/videos/${fname}`, v.video, v.video.type||'video/mp4');
         vurl = r2.base+`coach/videos/${fname}`;
       } else {
         cmProg(`Lade Video ${done+1}/${totalVids}: ${v.name} …`);
