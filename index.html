@@ -59,6 +59,10 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .arch-meta{font-size:11px;color:var(--muted);margin-top:2px}
 .arch-btns{display:flex;gap:7px;flex:none}
 .cloud-sec{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin:2px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.cm-r2on{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;margin:2px 0 10px}
+.cm-r2on input{width:16px;height:16px;accent-color:var(--red);cursor:pointer}
+.cm-r2hint{font-weight:600;color:var(--muted);font-size:11.5px}
+#cmR2Box{display:flex;flex-direction:column;gap:11px;margin-bottom:6px}
 .cloud-btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .cloud-btnrow .save-btn{flex:1;width:auto}
 .cloud-auto{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);margin:2px 0 10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
@@ -1461,7 +1465,21 @@ table.hmp .g b{font-size:6.5px}
         <label class="mf"><span>Pages-URL (Basis)</span><input type="text" id="cmBase" placeholder="https://user.github.io/gtg-app/"></label>
       </div>
       <label class="mf"><span>Access Token (Contents: Read/Write)</span><input type="password" id="cmToken" placeholder="github_pat_… / ghp_…"></label>
-      <button class="save-btn" id="cmGo">Videos hochladen & Link erstellen</button>
+      <div class="cloud-sec" style="margin-top:14px">Video-Speicher</div>
+      <label class="cm-r2on"><input type="checkbox" id="cmR2On"> Videos zu Cloudflare&nbsp;R2 hochladen <span class="cm-r2hint">(empfohlen – schont das Repo, unbegrenzt)</span></label>
+      <div id="cmR2Box" style="display:none">
+        <label class="mf"><span>R2 S3-Endpoint</span><input type="text" id="cmR2Endpoint" placeholder="https://&lt;account-id&gt;.r2.cloudflarestorage.com"></label>
+        <div class="cloud-row2">
+          <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
+          <label class="mf"><span>Öffentliche Basis-URL</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
+        </div>
+        <div class="cloud-row2">
+          <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="R2 Access Key ID"></label>
+          <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
+        </div>
+        <div class="cloud-help">R2 → „Manage R2 API Tokens" → <b>Object Read &amp; Write</b>, nur auf diesen Bucket. Bucket braucht <b>öffentlichen Zugriff</b> (r2.dev oder eigene Domain) und <b>CORS</b> mit PUT für deine Pages-Adresse. Schlüssel bleibt lokal im Browser.</div>
+      </div>
+      <button class="save-btn" id="cmGo">Videos hochladen &amp; Link erstellen</button>
       <div id="cmProg" class="save-msg" style="margin-top:12px"></div>
       <div id="cmResult" style="display:none;margin-top:12px">
         <div class="cloud-sec">Teilbarer Link</div>
@@ -4247,9 +4265,46 @@ async function ghPutFileRaw(cfg, path, contentB64, msg){
   if(!res.ok) throw new Error('GitHub '+res.status+' · '+(await res.text()).slice(0,160));
   return res.json();
 }
+/* ---- S3-kompatibler Upload (Cloudflare R2 / Backblaze / Google Cloud) via AWS SigV4 ---- */
+function _s3hex(buf){ const b=new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i++) s+=b[i].toString(16).padStart(2,'0'); return s; }
+async function _s3sha256hex(str){ const d=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)); return _s3hex(d); }
+async function _s3hmac(keyBytes, str){ const k=await crypto.subtle.importKey('raw', keyBytes, {name:'HMAC',hash:'SHA-256'}, false, ['sign']); return crypto.subtle.sign('HMAC', k, new TextEncoder().encode(str)); }
+async function s3PutObject(r2, key, blob, contentType){
+  const endpoint=r2.endpoint.replace(/\/+$/,'');
+  const host=endpoint.replace(/^https?:\/\//,'');
+  const region=r2.region||'auto', service='s3';
+  const amzdate=new Date().toISOString().replace(/[:-]/g,'').replace(/\.\d{3}/,'');
+  const datestamp=amzdate.slice(0,8);
+  const canonicalUri='/'+r2.bucket+'/'+key.split('/').map(encodeURIComponent).join('/');
+  const payloadHash='UNSIGNED-PAYLOAD';
+  const canonicalHeaders=`host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzdate}\n`;
+  const signedHeaders='host;x-amz-content-sha256;x-amz-date';
+  const canonicalRequest=`PUT\n${canonicalUri}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+  const scope=`${datestamp}/${region}/${service}/aws4_request`;
+  const sts=`AWS4-HMAC-SHA256\n${amzdate}\n${scope}\n${await _s3sha256hex(canonicalRequest)}`;
+  const enc=new TextEncoder();
+  let k=await _s3hmac(enc.encode('AWS4'+r2.secret), datestamp);
+  k=await _s3hmac(k, region); k=await _s3hmac(k, service); k=await _s3hmac(k, 'aws4_request');
+  const sig=_s3hex(await _s3hmac(k, sts));
+  const auth=`AWS4-HMAC-SHA256 Credential=${r2.key}/${scope}, SignedHeaders=${signedHeaders}, Signature=${sig}`;
+  const res=await fetch(endpoint+canonicalUri,{method:'PUT',headers:{'Authorization':auth,'x-amz-date':amzdate,'x-amz-content-sha256':payloadHash,'Content-Type':contentType||'application/octet-stream'},body:blob});
+  if(!res.ok) throw new Error('R2/S3 '+res.status+' · '+(await res.text()).slice(0,160));
+  return true;
+}
+function readR2cfg(){ const on=$('#cmR2On')&&$('#cmR2On').checked;
+  return { on, endpoint:($('#cmR2Endpoint')?.value||'').trim().replace(/\/+$/,''), bucket:($('#cmR2Bucket')?.value||'').trim(),
+    base:($('#cmR2Base')?.value||'').trim(), key:($('#cmR2Key')?.value||'').trim(), secret:($('#cmR2Secret')?.value||'').trim(), region:'auto' }; }
 function openCoachLink(key){
   COACHLINK.key=key; const [date,venue,gender]=key.split('|');
   const cfg=LS.get('gtg_coachcfg',{}); if($('#cmRepo'))$('#cmRepo').value=cfg.repo||''; if($('#cmBranch'))$('#cmBranch').value=cfg.branch||'main'; if($('#cmBase'))$('#cmBase').value=cfg.base||'';
+  const r2=LS.get('gtg_r2cfg',{});
+  if($('#cmR2On')) $('#cmR2On').checked = r2.on!==false && !!r2.endpoint;   // Standard: an, sobald einmal konfiguriert
+  if($('#cmR2Endpoint')) $('#cmR2Endpoint').value=r2.endpoint||'';
+  if($('#cmR2Bucket')) $('#cmR2Bucket').value=r2.bucket||'';
+  if($('#cmR2Base')) $('#cmR2Base').value=r2.base||'';
+  if($('#cmR2Key')) $('#cmR2Key').value=r2.key||'';
+  if($('#cmR2Secret')) $('#cmR2Secret').value=r2.secret||'';
+  if($('#cmR2Box')) $('#cmR2Box').style.display = ($('#cmR2On')&&$('#cmR2On').checked)?'':'none';
   // Auto-Standard aus der aktuellen Pages-Adresse ableiten (wo die App gehostet ist)
   try{ const host=location.hostname, seg=location.pathname.split('/').filter(Boolean);
     if(/\.github\.io$/i.test(host) && seg.length){ const owner=host.replace(/\.github\.io$/i,''), repo=seg[0];
@@ -4272,6 +4327,14 @@ async function coachCreate(){
   if(!/^https?:\/\//.test(cfg.base)){ cmProg('Pages-URL muss mit https:// beginnen.',false); return; }
   if(!cfg.base.endsWith('/')) cfg.base+='/';
   LS.set('gtg_coachcfg',{repo:cfg.repo,branch:cfg.branch,base:cfg.base});
+  // Optional: Videos zu Cloudflare R2 / S3 statt ins Repo
+  const r2=readR2cfg();
+  if(r2.on){
+    if(!r2.endpoint||!r2.bucket||!r2.base||!r2.key||!r2.secret){ cmProg('R2-Felder ausfüllen (Endpoint, Bucket, Basis-URL, Key, Secret) – oder R2 abschalten.',false); return; }
+    if(!/^https?:\/\//.test(r2.base)){ cmProg('R2-Basis-URL muss mit https:// beginnen.',false); return; }
+    if(!r2.base.endsWith('/')) r2.base+='/';
+    LS.set('gtg_r2cfg',{on:true,endpoint:r2.endpoint,bucket:r2.bucket,base:r2.base,key:r2.key,secret:r2.secret});
+  } else { const ex=LS.get('gtg_r2cfg',{}); LS.set('gtg_r2cfg',{...ex,on:false}); }
   const key=COACHLINK.key; const [date,venue,gender]=key.split('|');
   const safe=s=>String(s).replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   // Link enthält Ort + Datum (lesbar), keinen Personennamen; erneutes Erstellen überschreibt denselben
@@ -4289,10 +4352,18 @@ async function coachCreate(){
     for(const v of vids){
       const ext=(v.vname&&v.vname.includes('.'))? (v.vname.split('.').pop().replace(/[^a-z0-9]/gi,'').slice(0,4)||'mp4') : 'mp4';
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
-      cmProg(`Lade Video ${done+1}/${totalVids}: ${v.name} …`);
-      const b64=await blobToB64(v.video);
-      await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
-      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: cfg.base+`coach/videos/${fname}` });
+      let vurl;
+      if(r2.on){
+        cmProg(`Lade Video ${done+1}/${totalVids} zu R2: ${v.name} …`);
+        await s3PutObject(r2, `coach/videos/${fname}`, v.video, v.video.type||'video/mp4');
+        vurl = r2.base+`coach/videos/${fname}`;
+      } else {
+        cmProg(`Lade Video ${done+1}/${totalVids}: ${v.name} …`);
+        const b64=await blobToB64(v.video);
+        await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
+        vurl = cfg.base+`coach/videos/${fname}`;
+      }
+      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl });
       done++;
     }
     runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout });
@@ -4309,6 +4380,7 @@ function initCoachLink(){
   if($('#coachModal'))$('#coachModal').addEventListener('click',e=>{ if(e.target.id==='coachModal')$('#coachModal').style.display='none'; });
   if($('#cmGo'))$('#cmGo').onclick=()=>{ $('#cmGo').disabled=true; coachCreate().catch(e=>cmProg('Fehler: '+(e.message||e),false)).finally(()=>{ $('#cmGo').disabled=false; }); };
   if($('#cmCopy'))$('#cmCopy').onclick=()=>{ const i=$('#cmLink'); if(!i)return; i.select(); try{document.execCommand('copy');}catch(e){} try{ navigator.clipboard&&navigator.clipboard.writeText(i.value); }catch(e){} cmProg('Link kopiert.',true); };
+  if($('#cmR2On'))$('#cmR2On').onchange=e=>{ if($('#cmR2Box')) $('#cmR2Box').style.display = e.target.checked?'':'none'; };
 }
 
 /* ---------- boot ---------- */
