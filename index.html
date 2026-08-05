@@ -105,7 +105,51 @@ td.clip-hi{outline:3px solid #1f6feb;outline-offset:-3px;font-weight:900!importa
 .cv-double .cv-sel{width:100%;margin-bottom:8px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:9px;padding:8px 11px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer}
 .cv-double .cv-sel:focus{outline:none;border-color:var(--red)}
 .cv-double video{width:100%;border-radius:11px;background:#0d1116;display:block;max-height:46vh}
-@media(max-width:720px){.cv-double{flex-direction:column}}
+/* Tempo + Frame-Schritt */
+.cv-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:8px}
+.cv-ctrl .vc-speed,.cv-ctrl .vc-frame{display:inline-flex;align-items:center;gap:5px}
+.cv-ctrl .vc-lab{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.cv-ctrl button{border:1.3px solid var(--line);background:#fbfcfe;border-radius:8px;padding:4px 9px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.cv-ctrl .vc-speed button.on{background:var(--red);color:#fff;border-color:var(--red)}
+.cv-ctrl .vc-frame span{font-size:11px;color:var(--muted);font-weight:700}
+.cv-ctrl .vc-frame button{min-width:32px;font-size:13px}
+/* SBS Sync-Leiste */
+.cv-sbs-sync{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0;padding:8px 10px;background:var(--bg);border-radius:10px}
+.cv-sbs-sync .cvs-gate{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink2)}
+.cv-sbs-sync input{width:56px;border:1.3px solid var(--line);border-radius:8px;padding:5px 7px;font:inherit;font-size:13px;font-weight:700;text-align:center}
+/* Ladeanzeige + Fehler (Video puffert / lädt nicht) */
+.cv-videowrap,.clip-videowrap{position:relative}
+.cv-videowrap .cv-spin,.cv-videowrap .cv-err,.clip-videowrap .cv-spin,.clip-videowrap .cv-err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:4;border-radius:inherit}
+.cv-videowrap.is-loading .cv-spin,.clip-videowrap.is-loading .cv-spin{display:flex;background:rgba(13,17,22,.35)}
+.cv-videowrap.is-error .cv-err,.clip-videowrap.is-error .cv-err{display:flex;flex-direction:column;gap:10px;background:rgba(13,17,22,.88);color:#fff;text-align:center;padding:16px;font-size:13px;font-weight:600}
+.cv-spin{pointer-events:none}
+.cv-spin::after{content:"";width:34px;height:34px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:cvspin .8s linear infinite}
+@keyframes cvspin{to{transform:rotate(360deg)}}
+/* ---- Coach-Link: Mobil-Optimierung ---- */
+@media(max-width:720px){
+  body.coach .wrap{padding-left:10px;padding-right:10px}
+  body.coach header{flex-wrap:wrap;gap:8px;padding:8px 10px;height:auto}
+  body.coach .coach-run{padding:5px 9px}
+  body.coach .coach-run select{font-size:16px}
+  #coachVid .c-head{flex-direction:column;align-items:flex-start;gap:8px}
+  .cv-sbs-btn{align-self:stretch;justify-content:center}
+  .cv-double{flex-direction:column;gap:12px}
+  .cv-ctrl{gap:8px;justify-content:center}
+  .cv-ctrl button{padding:7px 12px}
+  .cv-sbs-sync{justify-content:center}
+  .cv-sbs-sync input{width:60px}
+  /* Klick-Pop-up als Vollbild */
+  .modal-backdrop{padding:0}
+  .modal.clip-modal{max-width:100vw;width:100vw;max-height:100vh;border-radius:0}
+  .clip-body{padding:10px 12px 16px}
+  .clip-tablemode .clip-main{flex-direction:column}
+  .clip-tablemode .clip-left,.clip-tablemode .clip-viz{flex:1 1 auto}
+  .clip-tablemode .clip-tblwrap{max-height:40vh}
+  #clipVideo{max-height:44vh}
+  .clip-chips .cv-chip,.clip-legend{font-size:12px}
+  .clip-tblwrap table.hm th,.clip-tblwrap table.hm td{padding:4px 5px}
+  .defbar .db-val{font-size:14px}
+}
 .cloud-body .mf span{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cloud-body .mf input{font-size:13px;padding:10px 12px}
 .cloud-body .save-btn{width:100%}
@@ -969,20 +1013,28 @@ table.hmp .g b{font-size:6.5px}
           <div class="cv-stage">
             <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
             <div id="cvDefbar" class="defbar"></div>
+            <div id="cvCtrl" class="cv-ctrl"></div>
             <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
           </div>
           <div id="cvHint" class="cv-hint"></div>
+        </div>
+        <div id="cvSyncBar" class="cv-sbs-sync" style="display:none">
+          <button id="cvSyncPlay" class="btn-mini solid">▶ Beide</button>
+          <span class="cvs-gate">Sync Tor <input id="cvSyncGate" type="number" min="1" value="2"> <button id="cvSyncBtn" class="btn-mini">🔗 Synchronisieren</button></span>
+          <button id="cvSyncOff" class="btn-mini" title="Kopplung lösen">Lösen</button>
         </div>
         <div id="cvDouble" class="cv-double" style="display:none">
           <div class="cv-col">
             <select class="cv-sel" data-col="a"></select>
             <div class="cv-videowrap"><video class="cv-dv" data-col="a" controls playsinline preload="metadata"></video></div>
             <div class="defbar cv-ddef" data-col="a"></div>
+            <div class="cv-ctrl" data-col="a"></div>
           </div>
           <div class="cv-col">
             <select class="cv-sel" data-col="b"></select>
             <div class="cv-videowrap"><video class="cv-dv" data-col="b" controls playsinline preload="metadata"></video></div>
             <div class="defbar cv-ddef" data-col="b"></div>
+            <div class="cv-ctrl" data-col="b"></div>
           </div>
         </div>
       </div>
@@ -4282,6 +4334,7 @@ function cvRenderPanel(){
     const defBtn=[...host.querySelectorAll('.cv-chip')].find(b=>decodeURIComponent(b.dataset.id)===def.id);
     if(defBtn) defBtn.classList.add('on');
     cvLoad(def);
+    buildVidCtrl($('#cvCtrl'), $('#cvVideo'));
     if($('#cvSbsBtn')) $('#cvSbsBtn').onclick=()=>cvSetSbs(!CVSBS);
     if(CVSBS) cvSetSbs(true);   // im SBS-Modus die neuen Videos übernehmen
   });
@@ -4293,6 +4346,7 @@ function cvLoadCol(col, name){
   const vids=CVVIDS||[]; const v=vids.find(x=>x.name===name)||vids[0]; if(!v) return;
   const vid=document.querySelector(`.cv-dv[data-col="${col}"]`); if(!vid) return;
   const url=v.url||(v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
+  cvBindMedia(vid, vid.closest('.cv-videowrap'));
   if(vid.src!==url){ vid.src=url; vid.load(); }
   const slot=document.querySelector(`.cv-ddef[data-col="${col}"]`);
   attachDefBar(vid, slot, v.name);
@@ -4302,7 +4356,8 @@ function cvSetSbs(on){
   if(single) single.style.display=on?'none':'';
   if(dbl) dbl.style.display=on?'':'none';
   if(btn) btn.classList.toggle('on', on);
-  if(!on){ ['a','b'].forEach(c=>{ const v=document.querySelector(`.cv-dv[data-col="${c}"]`); if(v){ try{v.pause();}catch(e){} } }); return; }
+  if($('#cvSyncBar')) $('#cvSyncBar').style.display=on?'':'none';
+  if(!on){ cvSyncOff(); ['a','b'].forEach(c=>{ const v=document.querySelector(`.cv-dv[data-col="${c}"]`); if(v){ try{v.pause();}catch(e){} } }); return; }
   const sv=$('#cvVideo'); if(sv){ try{sv.pause();}catch(e){} }   // Einzel-Video pausieren
   const vids=CVVIDS||[]; if(!vids.length) return;
   const a=(VID&&VID.name)||vids[0].name; const b=(vids.find(v=>v.name!==a)||vids[0]).name;
@@ -4310,6 +4365,49 @@ function cvSetSbs(on){
   if(selA){ cvColOptions(selA,a); selA.onchange=()=>{ const vv=vids.find(x=>x.id===decodeURIComponent(selA.value)); if(vv) cvLoadCol('a',vv.name); }; }
   if(selB){ cvColOptions(selB,b); selB.onchange=()=>{ const vv=vids.find(x=>x.id===decodeURIComponent(selB.value)); if(vv) cvLoadCol('b',vv.name); }; }
   cvLoadCol('a',a); cvLoadCol('b',b);
+  buildVidCtrl(document.querySelector('.cv-ctrl[data-col="a"]'), document.querySelector('.cv-dv[data-col="a"]'));
+  buildVidCtrl(document.querySelector('.cv-ctrl[data-col="b"]'), document.querySelector('.cv-dv[data-col="b"]'));
+  const sp=$('#cvSyncPlay'); if(sp){ sp.textContent='▶ Beide'; sp.onclick=cvSyncPlayToggle; }
+  const sb=$('#cvSyncBtn'); if(sb) sb.onclick=()=>{ const disp=parseInt($('#cvSyncGate').value,10)||2; cvSyncAtGate(Math.max(0,disp-1)); };
+  const so=$('#cvSyncOff'); if(so) so.onclick=()=>{ cvSyncOff(); gtgToast('Kopplung gelöst.'); };
+  CVSYNC.playing=false; CVSYNC.on=false;
+}
+/* Zeitlupe + Frame-Schritt */
+function buildVidCtrl(host, vid){ if(!host||!vid) return;
+  try{ vid.playbackRate=1; }catch(e){}   // Anzeige „1×" mit tatsächlichem Tempo synchron halten
+  host.innerHTML=`<div class="vc-speed"><span class="vc-lab">Tempo</span><button data-r="0.25">0.25×</button><button data-r="0.5">0.5×</button><button data-r="1" class="on">1×</button></div><div class="vc-frame"><button data-f="-1" title="Frame zurück">◀</button><span>Frame</span><button data-f="1" title="Frame vor">▶</button></div>`;
+  const spd=host.querySelectorAll('.vc-speed button'); spd.forEach(b=> b.onclick=()=>{ try{vid.playbackRate=parseFloat(b.dataset.r);}catch(e){} spd.forEach(x=>x.classList.toggle('on',x===b)); });
+  const FPS=25; host.querySelectorAll('.vc-frame button').forEach(b=> b.onclick=()=>{ try{vid.pause();}catch(e){} const d=parseInt(b.dataset.f,10)/FPS; if(isFinite(vid.currentTime)) vid.currentTime=Math.max(0,vid.currentTime+d); });
+}
+/* SBS-Synchronisation */
+let CVSYNC={on:false,delta:0,playing:false};
+function cvColTags(col){ const v=document.querySelector(`.cv-dv[data-col="${col}"]`); const nm=v&&v._defName; const o=(CVVIDS||[]).find(x=>x.name===nm); return (o&&o.tags)||[]; }
+function cvSyncAtGate(gInt){ const av=document.querySelector('.cv-dv[data-col="a"]'), bv=document.querySelector('.cv-dv[data-col="b"]'); if(!av||!bv) return;
+  const ta=cvColTags('a'), tb=cvColTags('b'); const ia=Math.max(0,Math.min(ta.length-1,gInt)), ib=Math.max(0,Math.min(tb.length-1,gInt));
+  const A=ta[ia]&&ta[ia].t, B=tb[ib]&&tb[ib].t; if(A==null||B==null){ gtgToast('Dieses Tor ist nicht in beiden Videos getaggt.'); return; }
+  CVSYNC.on=true; CVSYNC.delta=A-B;
+  try{av.pause();bv.pause();}catch(e){}
+  av.currentTime=Math.max(0,A); bv.currentTime=Math.max(0,B);
+  av.ontimeupdate=()=>{ if(!CVSYNC.on) return; const target=av.currentTime-CVSYNC.delta; if(isFinite(target)&&Math.abs(bv.currentTime-target)>0.09) try{bv.currentTime=Math.max(0,target);}catch(e){} };
+  gtgToast('An Tor '+(gInt+1)+' synchronisiert.','ok');
+}
+function cvSyncPlayToggle(){ const av=document.querySelector('.cv-dv[data-col="a"]'), bv=document.querySelector('.cv-dv[data-col="b"]'); if(!av||!bv) return; const btn=$('#cvSyncPlay');
+  CVSYNC.playing=!CVSYNC.playing;
+  if(CVSYNC.playing){ av.play(); bv.play(); if(btn) btn.textContent='⏸ Beide'; }
+  else { av.pause(); bv.pause(); if(btn) btn.textContent='▶ Beide'; } }
+function cvSyncOff(){ CVSYNC.on=false; CVSYNC.playing=false; const av=document.querySelector('.cv-dv[data-col="a"]'); if(av) av.ontimeupdate=null; const btn=$('#cvSyncPlay'); if(btn) btn.textContent='▶ Beide'; }
+/* Ladeanzeige + Fehler-Handling für ein Video (wrap = .cv-videowrap) */
+function cvBindMedia(vid, wrap){ if(!vid||!wrap||vid._mediaBound) return; vid._mediaBound=true;
+  const show=cls=>{ wrap.classList.remove('is-loading','is-error'); if(cls) wrap.classList.add(cls); };
+  if(!wrap.querySelector('.cv-spin')) wrap.insertAdjacentHTML('beforeend','<div class="cv-spin"></div>');
+  if(!wrap.querySelector('.cv-err')){ wrap.insertAdjacentHTML('beforeend','<div class="cv-err"><div>Video konnte nicht geladen werden.</div><button class="btn-mini solid cv-retry">Neu laden</button></div>');
+    wrap.querySelector('.cv-retry').onclick=()=>{ show('is-loading'); try{ vid.load(); vid.play&&vid.play().catch(()=>{}); }catch(e){} }; }
+  vid.addEventListener('loadstart',()=>show('is-loading'));
+  vid.addEventListener('waiting',()=>show('is-loading'));
+  vid.addEventListener('canplay',()=>show());
+  vid.addEventListener('playing',()=>show());
+  vid.addEventListener('loadeddata',()=>show());
+  vid.addEventListener('error',()=>show('is-error'));
 }
 function cvLoad(v){
   const vid=$('#cvVideo'); if(!vid||!v) return;
@@ -4318,6 +4416,7 @@ function cvLoad(v){
   if(v.blob){ url=URL.createObjectURL(v.blob); VID={id:v.id,name:v.name,tags:v.tags||[],url,revoke:true}; }
   else if(v.url){ url=v.url; VID={id:v.id,name:v.name,tags:v.tags||[],url,revoke:false}; }
   else return;
+  cvBindMedia(vid, vid.closest('.cv-videowrap'));
   vid.src=url; vid.load();
   attachDefBar(vid, $('#cvDefbar'), v.name);
   if($('#cvHint')) $('#cvHint').textContent = `${v.name} — klicke ein Tor in der Grafik oben oder einen Strich in der Leiste, um im Video zu springen.`;
@@ -4377,6 +4476,7 @@ function clipLoad(v, g){
   const _body=document.querySelector('.clip-body'); if(_body) _body.classList.toggle('clip-tablemode', CLIPSRC==='table');
   const vid=$('#clipVideo'); if(!vid) return;
   const url = v.url || (v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
+  cvBindMedia(vid, vid.closest('.clip-videowrap'));
   if(vid.src!==url){ vid.src=url; vid.load(); }
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
