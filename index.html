@@ -62,6 +62,9 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 #clipVideo{width:100%;max-height:50vh;display:block;background:#000}
 .clip-viz{margin-top:12px}
 .clip-viz svg{width:100%;display:block;height:auto;cursor:pointer}
+#clipDot{transition:cx .25s cubic-bezier(.4,0,.2,1),cy .25s cubic-bezier(.4,0,.2,1)}
+#clipDotLine{transition:x1 .25s cubic-bezier(.4,0,.2,1),x2 .25s cubic-bezier(.4,0,.2,1)}
+td.clip-hi{transition:outline-color .15s}
 .clip-vlab{font-size:12px;color:var(--muted);margin-bottom:6px}
 .clip-hint{color:#aab2bd;font-weight:600;font-size:11px}
 .hm .g-start{display:block;font-size:8px;font-weight:800;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;line-height:1}
@@ -1892,7 +1895,8 @@ function render(){
   if(sah){ sah.value=S.heroFocus||''; sah.onchange=e=>{ S.heroFocus=e.target.value; drawHero(); }; }
   $('#hmMode').querySelectorAll('button').forEach(b=> b.onclick=()=>{ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); drawHeatmap(b.dataset.m); });
 
-  buildLegend(); drawHero(); drawBar(); drawSector(); drawRhythm(); drawHeatmap('diff'); figStrip();
+  buildLegend(); drawHero(); drawBar(); drawSector(); drawRhythm(); drawHeatmap(COACH.on?'cum':'diff'); figStrip();
+  if(COACH.on && $('#hmMode')){ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.m==='cum')); }
   drawCourseViz();
   cvRenderPanel();
 }
@@ -2000,7 +2004,7 @@ function drawHero(){
   // x axis ticks
   const step=n>40?10:(n>15?5:2);
   for(let g=1;g<=n;g+= (g===1?step-1:step)){ const gg=g===1?1:g; svg+=`<line x1="${x(gg)}" x2="${x(gg)}" y1="${mt}" y2="${mt+ih}" stroke="#f3f5f8"/>`;
-    svg+=`<text x="${x(gg)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="#9aa3af">${gg}</text>`; }
+    svg+=`<text x="${x(gg)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="#9aa3af">${gg+1}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7785">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
@@ -2364,8 +2368,8 @@ function drawHeatmap(mode){
     h+=`</tr>`; }
   h+=`</tbody></table></div>`; $('#hmWrap').innerHTML=h;
   // Klick auf eine Zelle -> Video dieses Athleten an dieses Tor (springt zum Videobereich)
-  $('#hmWrap').querySelectorAll('td.hm-cell').forEach(td=> td.onclick=()=>{ const ath=decodeURIComponent(td.dataset.ath||''); const g=parseInt(td.dataset.g,10)||1;
-    if(typeof coachSelectAndSeek==='function' && ath) coachSelectAndSeek(ath, g, 'table'); });
+  $('#hmWrap').querySelectorAll('td.hm-cell').forEach(td=> td.onclick=()=>{ const ath=decodeURIComponent(td.dataset.ath||''); const g=parseInt(td.dataset.g,10);
+    if(typeof coachSelectAndSeek==='function' && ath && !isNaN(g)) coachSelectAndSeek(ath, g, 'table'); });
   heatmapPrint();
 }
 
@@ -4282,7 +4286,11 @@ function coachSelectAndSeek(name, g, source){
 }
 
 /* ---- Coach-Klick-Pop-up: Video + Grafik/Tabelle mit Highlight ---- */
-let CLIPNAME=null, CLIPGATE=null, CLIPSRC='chart';
+let CLIPNAME=null, CLIPGATE=null, CLIPSRC='chart', CLIP_MOVEDOT=null, CLIP_MOVECELL=null;
+function clipCurrentGate(){ const v=(CVVIDS||[]).find(x=>x.name===CLIPNAME); const tags=(v&&v.tags)||[]; const vid=$('#clipVideo'); const t=vid?vid.currentTime||0:0; let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; } return g; }
+let CLIP_LASTG=null;
+function clipPlayheadSync(force){ const g=clipCurrentGate(); if(!force && g===CLIP_LASTG) return; CLIP_LASTG=g;
+  if(CLIPSRC==='table'){ if(CLIP_MOVECELL) CLIP_MOVECELL(g); } else { if(CLIP_MOVEDOT) CLIP_MOVEDOT(g); } }
 function openClip(name, g, source){
   const vids=CVVIDS||[]; if(!vids.length){ if(typeof coachSeekGate==='function') coachSeekGate(g,true); return; }
   if(!name || !vids.some(v=>v.name===name)) name=(VID&&VID.name)||vids[0].name;
@@ -4296,7 +4304,7 @@ function openClip(name, g, source){
   const v=vids.find(x=>x.name===name)||vids[0]; clipLoad(v, g);
 }
 function clipLoad(v, g){
-  if(!v) return; CLIPNAME=v.name; CLIPGATE=g;
+  if(!v) return; CLIPNAME=v.name; CLIPGATE=g; CLIP_LASTG=null;
   const vid=$('#clipVideo'); if(!vid) return;
   const url = v.url || (v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
   if(vid.src!==url){ vid.src=url; vid.load(); }
@@ -4308,28 +4316,47 @@ function clipLoad(v, g){
 }
 function clipChartViz(name, g){
   const el=$('#clipViz'); if(!el) return; const c=S.comp; if(!c){ el.innerHTML=''; return; }
-  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const series=c.skiers||[]; const n=c.n;
+  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const numKey=S.excludeAnom?'cumClean':'cumRaw'; const series=c.skiers||[]; const n=c.n;
   const smooth = (typeof smoothCum==='function') && S.heroSmooth;
   const _pvC={}; const PV=s=> smooth ? (_pvC[s.name]||(_pvC[s.name]=smoothCum(s[key]||[]))) : (s[key]||[]);
   let vmax=0,vmin=0; series.forEach(s=>{ const a=PV(s); for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
   if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
-  const W=820,H=300,ml=14,mr=14,mt=14,mb=22,iw=W-ml-mr,ih=H-mt-mb;
+  const pad=(vmax-vmin)*0.08||0.05; vmax+=pad; vmin-=pad;
+  const W=880,H=300,ml=36,mr=12,mt=10,mb=22,iw=W-ml-mr,ih=H-mt-mb;
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
-  const zeroY=Y(0);
+  // dezente Y-Achse (Sekunden) + Gitter
+  const range=vmax-vmin; const st=[0.1,0.2,0.25,0.5,1,2].find(x=>range/x<=5)||2; let grid='';
+  for(let k=Math.ceil(vmin/st);k<=Math.floor(vmax/st);k++){ const vv=Math.round(k*st*100)/100; const y=Y(vv).toFixed(1); const zero=Math.abs(vv)<1e-6;
+    grid+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="${zero?'#c3cad4':'#eef1f5'}" stroke-width="1"${zero?' stroke-dasharray="3 3"':''}/>`;
+    grid+=`<text x="${ml-5}" y="${(+y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="#9aa3af">${vv>0?'+':''}${vv.toFixed(st<1?2:1)}</text>`; }
+  // dezente X-Achse (Tornummern = i+2)
+  let xax=''; const xstep=Math.max(1,Math.ceil(n/6));
+  for(let i=0;i<n;i+=xstep){ xax+=`<text x="${X(i).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="middle" font-size="10" fill="#9aa3af">${i+2}</text>`; }
+  xax+=`<text x="${(W-mr).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="end" font-size="9" fill="#c3cad4">Tor</text>`;
   let lines='';
   series.forEach(s=>{ const a=PV(s); const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
     const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
     const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
-    lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.45}" stroke-linejoin="round"/>`; });
-  const s=series.find(x=>x.name===name); const gi=Math.max(0,Math.min(n-1,g-1)); const gv=s&&PV(s)[gi];
-  let dot=''; if(gv!=null){ const col=s.isTop?'#C28E00':(s.color||'#e0413a'); dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${col}" stroke="#fff" stroke-width="2.4"/>`; }
-  const val=gv==null?'—':((gv>0?'+':'')+(+gv).toFixed(2)+' s'); const vc=gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
+    lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.4}" stroke-linejoin="round"/>`; });
+  const s=series.find(x=>x.name===name); const gi0=Math.max(0,Math.min(n-1,g-1)); const gv=s&&PV(s)[gi0];
+  const dcol=s&&s.isTop?'#C28E00':((s&&s.color)||'#e0413a');
+  const dot = gv==null?'' : `<line id="clipDotLine" x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot" cx="${X(gi0).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${dcol}" stroke="#fff" stroke-width="2.4"/>`;
+  const rawArr=s&&(s[numKey]||[]); const rv=rawArr?rawArr[gi0]:null;
+  const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'#555':(rv>0.001?'#c0392b':rv<-0.001?'#1a8f5a':'#555');
+  const short=name.split(' ').slice(-1)[0];
   const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
-  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
-  <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Rückstandskurve"><line x1="${ml}" y1="${zeroY.toFixed(1)}" x2="${W-mr}" y2="${zeroY.toFixed(1)}" stroke="#c3cad4" stroke-dasharray="3 3"/>${lines}${dot}</svg>
+  el.innerHTML=`<div class="clip-vlab"><span id="clipVlabDyn">Kumulierter Rückstand · <b>${short}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b></span> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rückstandskurve">${grid}${xax}${lines}${dot}</svg>
   <div class="clip-legend">${leg}</div>`;
   const svg=el.querySelector('svg'); if(svg) svg.onclick=e=>{ const r=svg.getBoundingClientRect(); const relx=(e.clientX-r.left)/Math.max(1,r.width); const vbx=relx*W; let i=Math.round((vbx-ml)/iw*(n-1)); i=Math.max(0,Math.min(n-1,i)); clipGoto(CLIPNAME, i+1); };
+  CLIP_MOVECELL=null;
+  CLIP_MOVEDOT=function(gInt){ const gi=Math.max(0,Math.min(n-1,gInt-1)); const s2=series.find(x=>x.name===CLIPNAME); if(!s2) return; const yv=PV(s2)[gi];
+    const dEl=el.querySelector('#clipDot'), lEl=el.querySelector('#clipDotLine');
+    if(yv!=null && dEl){ dEl.setAttribute('cx',X(gi).toFixed(1)); dEl.setAttribute('cy',Y(yv).toFixed(1)); }
+    if(lEl){ lEl.setAttribute('x1',X(gi).toFixed(1)); lEl.setAttribute('x2',X(gi).toFixed(1)); }
+    const ra=s2[numKey]||[]; const rv2=ra[gi]; const dyn=el.querySelector('#clipVlabDyn');
+    if(dyn){ const vv=rv2==null?'—':((rv2>0?'+':'')+(+rv2).toFixed(2)+' s'); const cc=rv2==null?'#555':(rv2>0.001?'#c0392b':rv2<-0.001?'#1a8f5a':'#555'); dyn.innerHTML=`Kumulierter Rückstand · <b>${short}</b> · Tor ${gInt+1}: <b style="color:${cc}">${vv}</b>`; } };
 }
 function clipGoto(name, g){
   const vids=CVVIDS||[]; if(!name || !vids.some(v=>v.name===name)) name=CLIPNAME;
@@ -4344,14 +4371,19 @@ function clipTableViz(name, g){
   const enc=encodeURIComponent(name);
   let hit=null;
   el.querySelectorAll('td.hm-cell').forEach(td=>{ if(td.dataset.ath===enc && String(td.dataset.g)===String(g)){ td.classList.add('clip-hi'); hit=td; }
-    td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10)||1; if(a) clipGoto(a, gg); }; });
+    td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10); if(a && !isNaN(gg)) clipGoto(a, gg); }; });
   if(hit){ try{ hit.scrollIntoView({block:'center',inline:'center'}); }catch(e){} }
+  CLIP_MOVEDOT=null;
+  CLIP_MOVECELL=function(gInt){ const en=encodeURIComponent(CLIPNAME); el.querySelectorAll('td.clip-hi').forEach(td=>td.classList.remove('clip-hi'));
+    const cell=[...el.querySelectorAll('td.hm-cell')].find(td=>td.dataset.ath===en && String(td.dataset.g)===String(gInt));
+    if(cell){ cell.classList.add('clip-hi'); try{ cell.scrollIntoView({block:'nearest',inline:'center'}); }catch(e){} } };
 }
 function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } }
 function initClip(){
   if($('#clipClose')) $('#clipClose').onclick=closeClip;
   if($('#clipModal')) $('#clipModal').addEventListener('click',e=>{ if(e.target.id==='clipModal') closeClip(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
+  const cv=$('#clipVideo'); if(cv){ ['timeupdate','seeked'].forEach(ev=> cv.addEventListener(ev, clipPlayheadSync)); }
 }
 /* ---- Rückstands-/Vorsprungs-Balken über dem Video ---- */
 function ensureDefBar(slot){ if(!slot) return null; if(!slot.querySelector('.db-track')){ slot.innerHTML='<span class="db-gate"></span><div class="db-track"><div class="db-mid"></div><div class="db-fill"></div></div><span class="db-val"></span>'; } return slot; }
