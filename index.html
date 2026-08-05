@@ -125,6 +125,45 @@ td.clip-hi{outline:3px solid #1f6feb;outline-offset:-3px;font-weight:900!importa
 .cv-spin{pointer-events:none}
 .cv-spin::after{content:"";width:34px;height:34px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:cvspin .8s linear infinite}
 @keyframes cvspin{to{transform:rotate(360deg)}}
+/* ---- Footer + Tutorial-Tour ---- */
+.app-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1180px;margin:26px auto 34px;padding:16px 22px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:600}
+.tut-btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7C1F2D,#D7302A);color:#fff;border:none;border-radius:11px;padding:9px 17px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(124,31,45,.28);transition:.15s}
+.tut-btn:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(124,31,45,.42)}
+body.coach #appFooter{display:none}
+.tour{position:fixed;inset:0;z-index:1000}
+.tour-spot{position:absolute;left:50%;top:50%;width:0;height:0;border-radius:13px;box-shadow:0 0 0 9999px rgba(11,15,21,.72);border:2px solid rgba(255,255,255,.92);pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.tour-card{position:absolute;left:50%;top:60%;width:350px;max-width:calc(100vw - 24px);background:var(--card);border-radius:16px;box-shadow:0 22px 55px rgba(0,0,0,.45);padding:16px 18px 14px;pointer-events:auto;transition:top .34s cubic-bezier(.4,0,.2,1),left .34s cubic-bezier(.4,0,.2,1);animation:tcpop .32s ease}
+@keyframes tcpop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.tc-badge{font-size:11px;font-weight:800;color:#fff;background:var(--red);border-radius:20px;padding:3px 11px}
+.tc-x{border:none;background:var(--bg);width:27px;height:27px;border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer}
+.tc-x:hover{background:#e9edf2;color:var(--ink)}
+.tc-title{font-size:16.5px;font-weight:800;color:var(--ink);margin:0 0 6px}
+.tc-text{font-size:13px;line-height:1.55;color:var(--ink2)}
+.tc-text b{color:var(--ink)}
+.tc-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:15px}
+.tc-dots{display:flex;gap:5px;flex-wrap:wrap;max-width:150px}
+.tc-dots i{width:6px;height:6px;border-radius:50%;background:var(--line);transition:.25s}
+.tc-dots i.on{background:var(--red);width:17px;border-radius:3px}
+.tc-btns{display:flex;gap:8px}
+.tc-next{padding:7px 17px;font-size:13px}
+@media(max-width:720px){
+  .app-footer{flex-direction:column;gap:12px;text-align:center;margin:20px auto 26px}
+  .tour-card{width:auto;left:12px!important;right:12px!important}
+}
+/* ---- Ganze App: Mobil-Feinschliff ---- */
+@media(max-width:720px){
+  header{flex-wrap:wrap;height:auto;padding:8px 10px;gap:6px}
+  header nav.tabs{order:5;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #filters{flex-direction:column;align-items:stretch;gap:8px}
+  #filters .f{width:100%;min-width:0!important;flex:1 1 auto!important}
+  #filters select{width:100%}
+  .tbl-wrap,.kins,.db-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #hmWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .lib-filters{flex-direction:column;align-items:stretch}
+  .lib-filters .mini,.lib-filters .lib-search{width:100%}
+  .card{padding:14px 12px}
+}
 /* ---- Coach-Link: Mobil-Optimierung ---- */
 @media(max-width:720px){
   body.coach .wrap{padding-left:10px;padding-right:10px}
@@ -297,6 +336,15 @@ select.mini{appearance:none;border:1.4px solid var(--line);background:#fbfcfe;bo
 
 /* heatmap table */
 .tbl-wrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:12px}
+/* Detail-Matrix: alle Tore auf einen Blick, sehr kompakt, kein internes Scrollen */
+#hmWrap .tbl-wrap{max-height:none;overflow:visible}
+#hmWrap table.hm{font-size:10px}
+#hmWrap table.hm th,#hmWrap table.hm td{padding:1px 6px;line-height:1.25}
+#hmWrap table.hm thead th{padding:5px 6px;font-size:9.5px}
+#hmWrap table.hm thead th .nat{font-size:8.5px}
+#hmWrap table.hm .g-num{font-size:9.5px}
+#hmWrap table.hm .g-start{font-size:7px}
+#hmWrap table.hm .fig-row{font-size:8px;padding:0 3px}
 table.hm{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
 table.hm th,table.hm td{padding:4px 7px;text-align:center;white-space:nowrap}
 table.hm thead th{position:sticky;top:0;background:#fff;z-index:5;border-bottom:2px solid var(--line);padding:8px 7px;font-size:11px}
@@ -1584,6 +1632,24 @@ table.hmp .g b{font-size:6.5px}
   </div>
 </div>
 
+<footer id="appFooter" class="app-footer no-print">
+  <div class="af-brand">Swiss-Ski · Gate-to-Gate Analyse</div>
+  <button id="tutBtn" class="tut-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Tutorial</button>
+</footer>
+
+<div id="tour" class="tour" style="display:none">
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-card" id="tourCard">
+    <div class="tc-top"><span class="tc-badge" id="tcStep">1 / 1</span><button class="tc-x" id="tcX" title="Tour schliessen">✕</button></div>
+    <h3 class="tc-title" id="tcTitle"></h3>
+    <div class="tc-text" id="tcText"></div>
+    <div class="tc-nav">
+      <div class="tc-dots" id="tcDots"></div>
+      <div class="tc-btns"><button class="btn-mini" id="tcPrev">Zurück</button><button class="save-btn tc-next" id="tcNext">Weiter</button></div>
+    </div>
+  </div>
+</div>
+
 <div id="coachModal" class="modal-backdrop" style="display:none">
   <div class="modal">
     <div class="modal-head"><h2>Coach-Link erstellen</h2><button class="modal-x" id="coachClose">✕</button></div>
@@ -2379,13 +2445,13 @@ function drawSector(){
     const cx=ml+gw*si+gw/2;
     const totW=bw*sui.length; let bx=cx-totW/2;
     data.forEach(d=>{ const v=d.vals[si]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
-      svg+=`<rect class="sb" data-s="${d.s.name}" data-v="${v}" data-sec="${a}-${b}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
+      svg+=`<rect class="sb" data-s="${d.s.name}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
       // Athletenname vertikal, immer NACH OBEN (auch bei Abwärtsbalken) -> keine Kollision mit den S-/Tor-Labels unten
       const bxc=bx+(bw-2)/2, ty=(v>=0?y(v):y(0))-5, nm=d.s.name.split(' ')[0];
       svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="start" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${d.s.color}">${nm}</text>`; }
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="#6b7785">S${si+1}</text>`;
-    svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="#9aa3af">Tor ${a}–${b}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="#9aa3af">Tor ${a+1}–${b+1}</text>`;
   });
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
@@ -4779,9 +4845,59 @@ initVerlauf();
 initSbs();
 initCloud();
 initDatenbank();
+/* ===================== Tutorial-Tour ===================== */
+const TOUR=[
+  {title:'Willkommen bei Gate-to-Gate', text:'Dieses Tool analysiert Ski-Rennläufe <b>Tor für Tor</b>: Wo genau gewinnt oder verliert ein Athlet Zeit gegenüber der Bestzeit? Gedacht für <b>Trainer:innen & Analyst:innen von Swiss-Ski</b>. Ablauf: <b>Video taggen → auswerten → mit Coaches teilen</b>. Klick dich in ~1 Minute durch.'},
+  {view:'tagging', sel:'.tab[data-view="tagging"]', title:'1 · Tagging', text:'Hier startest du: ein Renn-Video laden und jedes Tor <b>frame-genau</b> markieren. Aus den Zeiten zwischen den Toren entstehen die Tor-zu-Tor-Zeiten.'},
+  {view:'tagging', sel:'#dropZone', title:'Video laden', text:'Video hierher ziehen oder auswählen. <b>Ort, Datum, Disziplin, Athlet</b> werden – wenn möglich – aus dem Dateinamen erkannt. Dann Tor für Tor markieren und speichern. Videos bleiben <b>lokal</b> auf deinem Gerät.'},
+  {view:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Grafiken, Detail-Tabelle und Höhenprofil.'},
+  {view:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>. Oben = wenig Rückstand, unten = mehr. <b>Klick auf ein Tor</b> springt im Video an genau diese Stelle.'},
+  {view:'analyse', sel:'#hmWrap', title:'Detail-Matrix', text:'Die Tabelle: <b>Δ pro Tor</b> und <b>Σ kumuliert</b>, farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.'},
+  {view:'kurs', sel:'.tab[data-view="kurs"]', title:'3 · Kurssetzung', text:'Kurssetzungs-PDFs importieren (Tor-Abstände, Offsets, Figuren). Diese fliessen ins <b>Höhenprofil</b> und in die Analyse ein.'},
+  {view:'datenbank', sel:'.tab[data-view="datenbank"]', title:'4 · Datenbank', text:'Zentrale Verwaltung aller <b>Events, Taggings & Videos</b>: filtern, öffnen, löschen. Und hier erstellst du den <b>Coach-Link</b>.'},
+  {view:'analyse', sel:'#cloudBtn', title:'☁ Cloud & Team-Sync', text:'Deine Daten (Läufe, Kurse) synchronisierst du sicher über GitHub – das ganze Team arbeitet am selben Stand. <b>Videos bleiben lokal</b>, nur Coach-Links laden einzelne Videos hoch.'},
+  {title:'Coach-Link – und los!', text:'Zum Schluss teilst du eine fertige Analyse als <b>Coach-Link</b>: Trainer sehen nur die Analyse dieses Events inkl. Videos – klickbar bis ins einzelne Tor, auch auf dem Handy. <b>Das war\'s – viel Erfolg!</b> Diese Tour kannst du jederzeit über den Button „Tutorial" unten neu starten.'}
+];
+let TOURi=0;
+function tourStart(){ TOURi=0; const t=$('#tour'); if(t) t.style.display='block'; tourShow(); }
+function tourEnd(){ const t=$('#tour'); if(t) t.style.display='none'; }
+function tourGo(d){ const ni=TOURi+d; if(ni<0) return; if(ni>=TOUR.length){ tourEnd(); return; } TOURi=ni; tourShow(); }
+function tourShow(){ const step=TOUR[TOURi];
+  if(step.view && typeof switchView==='function'){ try{ switchView(step.view); }catch(e){} }
+  if($('#tcStep')) $('#tcStep').textContent=(TOURi+1)+' / '+TOUR.length;
+  if($('#tcTitle')) $('#tcTitle').textContent=step.title;
+  if($('#tcText')) $('#tcText').innerHTML=step.text;
+  if($('#tcPrev')) $('#tcPrev').style.visibility=TOURi===0?'hidden':'';
+  if($('#tcNext')) $('#tcNext').textContent=TOURi===TOUR.length-1?'Fertig':'Weiter';
+  if($('#tcDots')) $('#tcDots').innerHTML=TOUR.map((_,i)=>`<i class="${i===TOURi?'on':''}"></i>`).join('');
+  setTimeout(()=>tourPosition(step), step.view?110:20); }
+function tourPosition(step){ const spot=$('#tourSpot'), card=$('#tourCard'); if(!spot||!card) return;
+  const el=step.sel?document.querySelector(step.sel):null;
+  if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
+  setTimeout(()=>{ const r=el?el.getBoundingClientRect():null;
+    if(r && r.width>2 && r.height>2 && r.bottom>0 && r.top<window.innerHeight){
+      const pad=8; spot.style.left=(r.left-pad)+'px'; spot.style.top=(r.top-pad)+'px'; spot.style.width=(r.width+pad*2)+'px'; spot.style.height=(r.height+pad*2)+'px';
+      const cardW=card.offsetWidth||350, cardH=card.offsetHeight||200;
+      let top=r.bottom+14, left=Math.min(Math.max(12, r.left+r.width/2-cardW/2), window.innerWidth-cardW-12);
+      if(top+cardH>window.innerHeight-12) top=r.top-cardH-14;
+      if(top<12) top=Math.max(12,(window.innerHeight-cardH)/2);
+      card.style.left=Math.max(12,left)+'px'; card.style.top=top+'px';
+    } else { spot.style.left='50%'; spot.style.top='50%'; spot.style.width='0'; spot.style.height='0';
+      const cardW=card.offsetWidth||350, cardH=card.offsetHeight||200;
+      card.style.left=Math.max(12,(window.innerWidth-cardW)/2)+'px'; card.style.top=Math.max(12,(window.innerHeight-cardH)/2)+'px'; }
+  }, el?280:10); }
+function initTour(){
+  if($('#tutBtn')) $('#tutBtn').onclick=tourStart;
+  if($('#tcX')) $('#tcX').onclick=tourEnd;
+  if($('#tcPrev')) $('#tcPrev').onclick=()=>tourGo(-1);
+  if($('#tcNext')) $('#tcNext').onclick=()=>tourGo(1);
+  document.addEventListener('keydown',e=>{ const t=$('#tour'); if(!t||t.style.display==='none') return; if(e.key==='Escape') tourEnd(); else if(e.key==='ArrowRight'){e.preventDefault();tourGo(1);} else if(e.key==='ArrowLeft'){e.preventDefault();tourGo(-1);} });
+  window.addEventListener('resize',()=>{ const t=$('#tour'); if(t&&t.style.display!=='none') tourPosition(TOUR[TOURi]); });
+}
 initCoachLink();
 initConfirm();
 initClip();
+initTour();
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
