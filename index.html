@@ -73,12 +73,11 @@ td.clip-hi{transition:outline-color .15s}
 .clip-legend .clip-leg{display:inline-flex;align-items:center;gap:5px}
 .clip-legend .clip-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .clip-legend .clip-leg.on{color:var(--ink);font-weight:800}
-.clip-main{display:flex;flex-direction:column;gap:12px}
-.clip-left{min-width:0}
-/* Tabellen-Modus: Video links, Tabelle rechts */
-.clip-tablemode .clip-main{flex-direction:row;align-items:stretch;gap:14px}
-.clip-tablemode .clip-left{flex:1 1 64%;min-width:0}
-.clip-tablemode .clip-viz{flex:1 1 36%;min-width:0;margin-top:0;display:flex;flex-direction:column}
+/* Video links, Grafik/Tabelle rechts – für beide Modi */
+.clip-main{display:flex;flex-direction:row;gap:16px;align-items:flex-start}
+.clip-left{flex:1 1 63%;min-width:0}
+.clip-viz{flex:1 1 37%;min-width:0;margin-top:0}
+.clip-tablemode .clip-viz{display:flex;flex-direction:column}
 .clip-tblwrap{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .clip-tablemode .clip-tblwrap{max-height:60vh;flex:1}
 .clip-tblwrap td.hm-cell{cursor:pointer!important}
@@ -181,8 +180,8 @@ body.coach #appFooter{display:none}
   .modal-backdrop{padding:0}
   .modal.clip-modal{max-width:100vw;width:100vw;max-height:100vh;border-radius:0}
   .clip-body{padding:10px 12px 16px}
-  .clip-tablemode .clip-main{flex-direction:column}
-  .clip-tablemode .clip-left,.clip-tablemode .clip-viz{flex:1 1 auto}
+  .clip-main{flex-direction:column}
+  .clip-left,.clip-viz{flex:1 1 auto}
   .clip-tablemode .clip-tblwrap{max-height:40vh}
   #clipVideo{max-height:44vh}
   .clip-chips .cv-chip,.clip-legend{font-size:12px}
@@ -2229,7 +2228,7 @@ function drawHero(){
     // nächstgelegene Athleten-Linie an der Klick-Höhe bestimmen (auf der dargestellten, evtl. geglätteten Linie)
     let best=null,bd=1e9; series.forEach(s=>{ const v=pv(s)[g-1]; if(v==null) return; const dy=Math.abs(y(v)-pt.y); if(dy<bd){bd=dy;best=s;} });
     if(typeof coachSelectAndSeek==='function' && best){ coachSelectAndSeek(best.name, g, 'chart'); }
-    else if(COACH.on && typeof openClip==='function'){ openClip(null, g, 'chart'); }
+    else if((CVVIDS&&CVVIDS.length) && typeof openClip==='function'){ openClip(null, g, 'chart'); }
     else if(typeof coachSeekGate==='function'){ coachSeekGate(g, true); } });
   if(typeof VID!=='undefined' && VID && VID.id){ hov.style.cursor='pointer'; }
 }
@@ -4512,7 +4511,7 @@ function cvSeek(t, scroll){ const vid=$('#cvVideo'); if(!vid||!isFinite(t)) retu
 function coachSeekGate(g, scroll){ CVGATE=g; if(!VID||!VID.tags||!VID.tags.length) return; const idx=Math.max(0,Math.min(VID.tags.length-1, g)); const t=VID.tags[idx]&&VID.tags[idx].t; if(t!=null) cvSeek(t, scroll); }
 // Klick auf die Linie eines Athleten -> dessen Video laden und zum Tor springen
 function coachSelectAndSeek(name, g, source){
-  if(COACH.on){ openClip(name, g, source); return; }   // im Coach-Link: Video im Pop-up statt scrollen
+  if((CVVIDS&&CVVIDS.length) && typeof openClip==='function'){ openClip(name, g, source); return; }   // Coach-Link UND Analyse: Video im Pop-up
   const v = CVVIDS.find(x=>x.name===name);
   if(v && (!VID || VID.name!==name)){ cvLoad(v);
     const host=$('#cvAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id)); }
@@ -4557,7 +4556,7 @@ function clipChartViz(name, g){
   let vmax=0,vmin=0; series.forEach(s=>{ const a=PV(s); for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
   if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
   const pad=(vmax-vmin)*0.08||0.05; vmax+=pad; vmin-=pad;
-  const W=880,H=300,ml=36,mr=12,mt=10,mb=22,iw=W-ml-mr,ih=H-mt-mb;
+  const W=680,H=460,ml=36,mr=12,mt=10,mb=24,iw=W-ml-mr,ih=H-mt-mb;
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
   // dezente Y-Achse (Sekunden) + Gitter
