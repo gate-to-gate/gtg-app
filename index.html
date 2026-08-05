@@ -1784,7 +1784,7 @@ const ATH_COLOR = (function(){
 })();
 const athColor = (name,isTop)=> isTop ? GOLD : (ATH_COLOR[name]||'#7a8694');
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
-const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#e08a00'},
+const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
   H:{n:'Hairpin / Wende',c:'#7a3fb5'},F:{n:'Flush (3er)',c:'#0f9b8e'},K:{n:'Kuppe (Schlüsselstelle)',c:'#d6457f'}};
 const bounds = d => d==='SL' ? [0.6,1.3] : d==='GS' ? [0.9,1.8] : d==='SG' ? [1.0,3.5] : d==='DH' ? [1.2,5.5] : [0.6,1.8];
 const fmt = (v,dp=2)=> v==null?'–':(v>=0?'+':'')+v.toFixed(dp);
