@@ -73,8 +73,21 @@ td.clip-hi{transition:outline-color .15s}
 .clip-legend .clip-leg{display:inline-flex;align-items:center;gap:5px}
 .clip-legend .clip-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .clip-legend .clip-leg.on{color:var(--ink);font-weight:800}
+.clip-main{display:flex;flex-direction:column;gap:12px}
+.clip-left{min-width:0}
+/* Tabellen-Modus: Video links, Tabelle rechts */
+.clip-tablemode .clip-main{flex-direction:row;align-items:stretch;gap:14px}
+.clip-tablemode .clip-left{flex:1 1 56%;min-width:0}
+.clip-tablemode .clip-viz{flex:1 1 44%;min-width:0;margin-top:0;display:flex;flex-direction:column}
 .clip-tblwrap{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.clip-tablemode .clip-tblwrap{max-height:58vh;flex:1}
 .clip-tblwrap td.hm-cell{cursor:pointer!important}
+/* schmale Spalten im Pop-up */
+.clip-tblwrap table.hm{font-size:10.5px}
+.clip-tblwrap table.hm th,.clip-tblwrap table.hm td{padding:2px 4px;white-space:nowrap}
+.clip-tblwrap table.hm .nat{font-size:8px;font-weight:600}
+.clip-tblwrap table.hm .g-num{font-size:10px}
+.clip-tblwrap table.hm .g-start{font-size:7px}
 td.clip-hi{outline:3px solid var(--red);outline-offset:-3px;font-weight:900!important}
 /* Rückstands-/Vorsprungs-Balken UNTER dem Video (zwischen Video und Text) */
 .defbar{display:none;align-items:center;gap:10px;margin:10px 0 4px;padding:0 2px}
@@ -1537,9 +1550,13 @@ table.hmp .g b{font-size:6.5px}
     <div class="modal-head"><h2 id="clipTitle">Tor</h2><button class="modal-x" id="clipClose">✕</button></div>
     <div class="modal-body clip-body">
       <div id="clipAth" class="clip-chips"></div>
-      <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
-      <div id="clipDefbar" class="defbar"></div>
-      <div id="clipViz" class="clip-viz"></div>
+      <div class="clip-main">
+        <div class="clip-left">
+          <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
+          <div id="clipDefbar" class="defbar"></div>
+        </div>
+        <div id="clipViz" class="clip-viz"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -4305,6 +4322,7 @@ function openClip(name, g, source){
 }
 function clipLoad(v, g){
   if(!v) return; CLIPNAME=v.name; CLIPGATE=g; CLIP_LASTG=null;
+  const _body=document.querySelector('.clip-body'); if(_body) _body.classList.toggle('clip-tablemode', CLIPSRC==='table');
   const vid=$('#clipVideo'); if(!vid) return;
   const url = v.url || (v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
   if(vid.src!==url){ vid.src=url; vid.load(); }
@@ -4316,9 +4334,8 @@ function clipLoad(v, g){
 }
 function clipChartViz(name, g){
   const el=$('#clipViz'); if(!el) return; const c=S.comp; if(!c){ el.innerHTML=''; return; }
-  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const numKey=S.excludeAnom?'cumClean':'cumRaw'; const series=c.skiers||[]; const n=c.n;
-  const smooth = (typeof smoothCum==='function') && S.heroSmooth;
-  const _pvC={}; const PV=s=> smooth ? (_pvC[s.name]||(_pvC[s.name]=smoothCum(s[key]||[]))) : (s[key]||[]);
+  const numKey=S.excludeAnom?'cumClean':'cumRaw'; const series=c.skiers||[]; const n=c.n;
+  const PV=s=> (s[numKey]||[]);   // exakte Werte: Punkt liegt genau auf der angezeigten Zahl = Tabelle
   let vmax=0,vmin=0; series.forEach(s=>{ const a=PV(s); for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
   if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
   const pad=(vmax-vmin)*0.08||0.05; vmax+=pad; vmin-=pad;
