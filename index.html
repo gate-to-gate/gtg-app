@@ -52,17 +52,33 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .cm-adv>summary::-webkit-details-marker{display:none}
 .cm-adv>summary::before{content:"▸ ";color:var(--muted)}
 .cm-adv[open]>summary::before{content:"▾ "}
-.clip-modal{max-width:640px}
-.clip-body{display:block!important;padding:14px 16px 16px}
+.clip-modal{max-width:900px}
+.clip-body{display:block!important;padding:14px 18px 18px}
 .clip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .clip-chips .cv-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:20px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
 .clip-chips .cv-chip .dot{width:9px;height:9px;border-radius:50%}
 .clip-chips .cv-chip.on{border-color:var(--red);background:#fff;color:var(--ink);box-shadow:0 1px 6px rgba(0,0,0,.1)}
-.clip-videowrap{background:#000;border-radius:12px;overflow:hidden}
-#clipVideo{width:100%;max-height:54vh;display:block;background:#000}
-.clip-viz{margin-top:10px}
-.clip-viz svg{width:100%;display:block;height:auto}
+.clip-videowrap{position:relative;background:#000;border-radius:12px;overflow:hidden}
+#clipVideo{width:100%;max-height:50vh;display:block;background:#000}
+.clip-viz{margin-top:12px}
+.clip-viz svg{width:100%;display:block;height:auto;cursor:pointer}
 .clip-vlab{font-size:12px;color:var(--muted);margin-bottom:6px}
+.clip-hint{color:#aab2bd;font-weight:600;font-size:11px}
+.clip-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.clip-legend .clip-leg{display:inline-flex;align-items:center;gap:5px}
+.clip-legend .clip-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.clip-legend .clip-leg.on{color:var(--ink);font-weight:800}
+.clip-tblwrap{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.clip-tblwrap td.hm-cell{cursor:pointer!important}
+td.clip-hi{outline:3px solid var(--red);outline-offset:-3px;font-weight:900!important}
+/* Rückstands-/Vorsprungs-Balken über dem Video */
+.defbar{position:absolute;left:10px;right:10px;bottom:44px;height:22px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:8px}
+.defbar .db-track{position:relative;flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.28);overflow:hidden}
+.defbar .db-mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.7)}
+.defbar .db-fill{position:absolute;top:0;bottom:0;border-radius:5px}
+.defbar .db-val{font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;min-width:60px;text-align:right}
+.defbar .db-gate{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap}
+#coachVid .cv-videowrap{position:relative}
 .cloud-body .mf span{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cloud-body .mf input{font-size:13px;padding:10px 12px}
 .cloud-body .save-btn{width:100%}
@@ -921,7 +937,7 @@ table.hmp .g b{font-size:6.5px}
           <div class="c-sub">Athlet wählen und abspielen. <b>Klick auf ein Tor</b> in der Grafik «Zeitrückstand auf die Bestzeit» springt im Video an diese Stelle.</div></div></div>
         <div id="cvAth" class="cv-ath"></div>
         <div class="cv-stage">
-          <video id="cvVideo" controls playsinline preload="metadata"></video>
+          <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
           <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
         </div>
         <div id="cvHint" class="cv-hint"></div>
@@ -2044,8 +2060,8 @@ function drawHero(){
   hov.addEventListener('click',ev=>{ const pt=localPt(svgN,ev); let g=Math.round(1+(pt.x-ml)/iw*(n-1)); g=Math.max(1,Math.min(n,g));
     // nächstgelegene Athleten-Linie an der Klick-Höhe bestimmen (auf der dargestellten, evtl. geglätteten Linie)
     let best=null,bd=1e9; series.forEach(s=>{ const v=pv(s)[g-1]; if(v==null) return; const dy=Math.abs(y(v)-pt.y); if(dy<bd){bd=dy;best=s;} });
-    if(typeof coachSelectAndSeek==='function' && best){ coachSelectAndSeek(best.name, g); }
-    else if(COACH.on && typeof openClip==='function'){ openClip(null, g); }
+    if(typeof coachSelectAndSeek==='function' && best){ coachSelectAndSeek(best.name, g, 'chart'); }
+    else if(COACH.on && typeof openClip==='function'){ openClip(null, g, 'chart'); }
     else if(typeof coachSeekGate==='function'){ coachSeekGate(g, true); } });
   if(typeof VID!=='undefined' && VID && VID.id){ hov.style.cursor='pointer'; }
 }
@@ -2341,7 +2357,7 @@ function drawHeatmap(mode){
   h+=`</tbody></table></div>`; $('#hmWrap').innerHTML=h;
   // Klick auf eine Zelle -> Video dieses Athleten an dieses Tor (springt zum Videobereich)
   $('#hmWrap').querySelectorAll('td.hm-cell').forEach(td=> td.onclick=()=>{ const ath=decodeURIComponent(td.dataset.ath||''); const g=parseInt(td.dataset.g,10)||1;
-    if(typeof coachSelectAndSeek==='function' && ath) coachSelectAndSeek(ath, g); });
+    if(typeof coachSelectAndSeek==='function' && ath) coachSelectAndSeek(ath, g, 'table'); });
   heatmapPrint();
 }
 
@@ -4222,6 +4238,7 @@ function cvLoad(v){
   else if(v.url){ url=v.url; VID={id:v.id,name:v.name,tags:v.tags||[],url,revoke:false}; }
   else return;
   vid.src=url; vid.load();
+  attachDefBar(vid, vid.closest('.cv-videowrap'), v.name);
   if($('#cvHint')) $('#cvHint').textContent = `${v.name} — klicke ein Tor in der Grafik oben oder einen Strich in der Leiste, um im Video zu springen.`;
   vid.onloadedmetadata=()=>cvTicks();
   cvTicks();
@@ -4248,20 +4265,20 @@ function cvSeek(t, scroll){ const vid=$('#cvVideo'); if(!vid||!isFinite(t)) retu
 // von der Hero-Grafik aufgerufen (Klick auf Tor g)
 function coachSeekGate(g, scroll){ CVGATE=g; if(!VID||!VID.tags||!VID.tags.length) return; const idx=Math.max(0,Math.min(VID.tags.length-1, g)); const t=VID.tags[idx]&&VID.tags[idx].t; if(t!=null) cvSeek(t, scroll); }
 // Klick auf die Linie eines Athleten -> dessen Video laden und zum Tor springen
-function coachSelectAndSeek(name, g){
-  if(COACH.on){ openClip(name, g); return; }   // im Coach-Link: Video im Pop-up statt scrollen
+function coachSelectAndSeek(name, g, source){
+  if(COACH.on){ openClip(name, g, source); return; }   // im Coach-Link: Video im Pop-up statt scrollen
   const v = CVVIDS.find(x=>x.name===name);
   if(v && (!VID || VID.name!==name)){ cvLoad(v);
     const host=$('#cvAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id)); }
   coachSeekGate(g, true);
 }
 
-/* ---- Coach-Klick-Pop-up: Video + Mini-Grafik mit Highlight ---- */
-let CLIPNAME=null, CLIPGATE=null;
-function openClip(name, g){
+/* ---- Coach-Klick-Pop-up: Video + Grafik/Tabelle mit Highlight ---- */
+let CLIPNAME=null, CLIPGATE=null, CLIPSRC='chart';
+function openClip(name, g, source){
   const vids=CVVIDS||[]; if(!vids.length){ if(typeof coachSeekGate==='function') coachSeekGate(g,true); return; }
   if(!name || !vids.some(v=>v.name===name)) name=(VID&&VID.name)||vids[0].name;
-  CLIPGATE=g;
+  CLIPGATE=g; CLIPSRC=source||'chart';
   const host=$('#clipAth');
   if(host){
     host.innerHTML = vids.map(v=>`<button class="cv-chip${v.name===name?' on':''}" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
@@ -4277,37 +4294,83 @@ function clipLoad(v, g){
   if(vid.src!==url){ vid.src=url; vid.load(); }
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
+  attachDefBar(vid, vid.closest('.clip-videowrap'), v.name);
   const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g} · ${v.name}`;
-  drawClipViz(v.name, g);
+  if(CLIPSRC==='table') clipTableViz(v.name, g); else clipChartViz(v.name, g);
 }
-function drawClipViz(name, g){
-  const el=$('#clipViz'); if(!el) return; const c=S.comp; const s=c&&c.skiers.find(x=>x.name===name);
-  if(!s){ el.innerHTML=''; return; }
-  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const arr=s[key]||[]; const n=c.n;
-  const pts=[]; for(let i=0;i<n;i++){ if(arr[i]!=null) pts.push([i,arr[i]]); }
-  if(!pts.length){ el.innerHTML=''; return; }
-  const W=600,H=150,ml=12,mr=12,mt=14,mb=18,iw=W-ml-mr,ih=H-mt-mb;
-  let vmax=Math.max(0,...pts.map(p=>p[1])), vmin=Math.min(0,...pts.map(p=>p[1])); if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
+function clipChartViz(name, g){
+  const el=$('#clipViz'); if(!el) return; const c=S.comp; if(!c){ el.innerHTML=''; return; }
+  const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const series=c.skiers||[]; const n=c.n;
+  let vmax=0,vmin=0; series.forEach(s=>{ const a=s[key]||[]; for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
+  if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
+  const W=820,H=300,ml=14,mr=14,mt=14,mb=22,iw=W-ml-mr,ih=H-mt-mb;
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
-  const col=s.color||'#e0413a';
-  const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
-  const gi=Math.max(0,Math.min(n-1,g-1)); const gv=arr[gi];
   const zeroY=Y(0);
-  let dot=''; if(gv!=null){ dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="${col}" stroke-dasharray="3 3" opacity=".5"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="6.5" fill="${col}" stroke="#fff" stroke-width="2.2"/>`; }
-  const val = gv==null?'—':((gv>0?'+':'')+gv.toFixed(2)+' s');
-  const vc = gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
-  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · Tor ${g}: <b style="color:${vc}">${val}</b></div>
-  <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Rückstandskurve">
-    <line x1="${ml}" y1="${zeroY.toFixed(1)}" x2="${W-mr}" y2="${zeroY.toFixed(1)}" stroke="#c3cad4" stroke-dasharray="3 3"/>
-    <path d="${path}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linejoin="round"/>${dot}
-  </svg>`;
+  let lines='';
+  series.forEach(s=>{ const a=s[key]||[]; const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
+    const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
+    const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+    lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.45}" stroke-linejoin="round"/>`; });
+  const s=series.find(x=>x.name===name); const gi=Math.max(0,Math.min(n-1,g-1)); const gv=s&&(s[key]||[])[gi];
+  let dot=''; if(gv!=null){ const col=s.isTop?'#C28E00':(s.color||'#e0413a'); dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${col}" stroke="#fff" stroke-width="2.4"/>`; }
+  const val=gv==null?'—':((gv>0?'+':'')+(+gv).toFixed(2)+' s'); const vc=gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
+  const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
+  el.innerHTML=`<div class="clip-vlab">Kumulierter Rückstand · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g}: <b style="color:${vc}">${val}</b> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
+  <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Rückstandskurve"><line x1="${ml}" y1="${zeroY.toFixed(1)}" x2="${W-mr}" y2="${zeroY.toFixed(1)}" stroke="#c3cad4" stroke-dasharray="3 3"/>${lines}${dot}</svg>
+  <div class="clip-legend">${leg}</div>`;
+  const svg=el.querySelector('svg'); if(svg) svg.onclick=e=>{ const r=svg.getBoundingClientRect(); const relx=(e.clientX-r.left)/Math.max(1,r.width); const vbx=relx*W; let i=Math.round((vbx-ml)/iw*(n-1)); i=Math.max(0,Math.min(n-1,i)); clipGoto(CLIPNAME, i+1); };
+}
+function clipGoto(name, g){
+  const vids=CVVIDS||[]; if(!name || !vids.some(v=>v.name===name)) name=CLIPNAME;
+  const v=vids.find(x=>x.name===name); if(!v) return;
+  const host=$('#clipAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id));
+  clipLoad(v, g);
+}
+function clipTableViz(name, g){
+  const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
+  if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
+  el.innerHTML=`<div class="clip-vlab">Detail-Matrix · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
+  const enc=encodeURIComponent(name);
+  let hit=null;
+  el.querySelectorAll('td.hm-cell').forEach(td=>{ if(td.dataset.ath===enc && String(td.dataset.g)===String(g)){ td.classList.add('clip-hi'); hit=td; }
+    td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10)||1; if(a) clipGoto(a, gg); }; });
+  if(hit){ try{ hit.scrollIntoView({block:'center',inline:'center'}); }catch(e){} }
 }
 function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } }
 function initClip(){
   if($('#clipClose')) $('#clipClose').onclick=closeClip;
   if($('#clipModal')) $('#clipModal').addEventListener('click',e=>{ if(e.target.id==='clipModal') closeClip(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
+}
+/* ---- Rückstands-/Vorsprungs-Balken über dem Video ---- */
+function ensureDefBar(wrap){ if(!wrap) return null; let db=wrap.querySelector('.defbar');
+  if(!db){ wrap.insertAdjacentHTML('beforeend','<div class="defbar"><span class="db-gate"></span><div class="db-track"><div class="db-mid"></div><div class="db-fill"></div></div><span class="db-val"></span></div>'); db=wrap.querySelector('.defbar'); }
+  return db; }
+function updateDefBar(db, name, t){
+  if(!db) return; const c=S.comp; const s=c&&c.skiers.find(x=>x.name===name);
+  const vObj=(CVVIDS||[]).find(v=>v.name===name); const tags=(vObj&&vObj.tags)||[];
+  if(!s||!tags.length){ db.style.display='none'; return; } db.style.display='';
+  let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; }
+  const key=S.excludeAnom?'cumClean':'cumRaw'; const arr=s[key]||[];
+  const val = g>=1? arr[g-1] : 0;
+  let mx=0.4; for(let i=0;i<arr.length;i++){ if(arr[i]!=null) mx=Math.max(mx, Math.abs(arr[i])); }
+  const fill=db.querySelector('.db-fill'), vlab=db.querySelector('.db-val'), glab=db.querySelector('.db-gate');
+  if(glab) glab.textContent = g>=1? ('Tor '+g) : 'Start';
+  if(val==null){ fill.style.width='0'; vlab.textContent='—'; return; }
+  const frac=Math.max(0,Math.min(1, Math.abs(val)/mx))*50;
+  if(val>0.001){ fill.style.left='50%'; fill.style.width=frac+'%'; fill.style.background='#e0413a'; }
+  else if(val<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1a9d6b'; }
+  else { fill.style.left='50%'; fill.style.width='0'; }
+  vlab.textContent=(val>0.001?'+':(val<-0.001?'−':'±'))+Math.abs(val).toFixed(2)+' s';
+  vlab.style.color = val>0.001?'#ff7b73':val<-0.001?'#5fe6ac':'#fff';
+}
+function attachDefBar(vidEl, wrap, name){
+  const db=ensureDefBar(wrap); if(!db||!vidEl) return; vidEl._defName=name;
+  const upd=()=>updateDefBar(db, vidEl._defName, vidEl.currentTime||0);
+  if(!vidEl._defBound){ vidEl._defBound=true;
+    ['timeupdate','seeked','loadedmetadata','play'].forEach(ev=> vidEl.addEventListener(ev, upd)); }
+  upd();
 }
 
 function initCoach(){
