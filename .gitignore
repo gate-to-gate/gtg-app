@@ -1,0 +1,15 @@
+# Nur index.html (und der coach/-Ordner) sollen ins Repo gepusht werden.
+# Die Bau-Quellen von Claude bleiben lokal und tauchen in GitHub Desktop nicht als Änderung auf.
+build.mjs
+GtG_template.html
+app.js
+data.json
+package.json
+package-lock.json
+node_modules/
+kurs_import/
+Kurssetzungen_2025-26.json
+gtg_data.json
+Swiss-Ski_GateToGate_Analyse.html
+*.md
+.DS_Store
