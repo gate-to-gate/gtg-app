@@ -52,8 +52,8 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .cm-adv>summary::-webkit-details-marker{display:none}
 .cm-adv>summary::before{content:"▸ ";color:var(--muted)}
 .cm-adv[open]>summary::before{content:"▾ "}
-.clip-modal{max-width:900px}
-.clip-body{display:block!important;padding:14px 18px 18px}
+.clip-modal{max-width:1080px}
+.clip-body{display:block!important;padding:14px 20px 20px}
 .clip-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .clip-chips .cv-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:20px;padding:5px 11px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
 .clip-chips .cv-chip .dot{width:9px;height:9px;border-radius:50%}
@@ -71,14 +71,14 @@ header{background:linear-gradient(120deg,#3d1520 0%,#2a0f16 100%);color:#fff;pad
 .clip-tblwrap{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .clip-tblwrap td.hm-cell{cursor:pointer!important}
 td.clip-hi{outline:3px solid var(--red);outline-offset:-3px;font-weight:900!important}
-/* Rückstands-/Vorsprungs-Balken über dem Video */
-.defbar{position:absolute;left:10px;right:10px;bottom:44px;height:22px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:8px}
-.defbar .db-track{position:relative;flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.28);overflow:hidden}
-.defbar .db-mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.7)}
-.defbar .db-fill{position:absolute;top:0;bottom:0;border-radius:5px}
-.defbar .db-val{font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;min-width:60px;text-align:right}
-.defbar .db-gate{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap}
-#coachVid .cv-videowrap{position:relative}
+/* Rückstands-/Vorsprungs-Balken UNTER dem Video (zwischen Video und Text) */
+.defbar{display:none;align-items:center;gap:10px;margin:10px 0 4px;padding:0 2px}
+.defbar.show{display:flex}
+.defbar .db-gate{font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--muted);min-width:48px;white-space:nowrap}
+.defbar .db-track{position:relative;flex:1;height:13px;border-radius:7px;background:#eef1f5;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.defbar .db-mid{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#c3cad4;transform:translateX(-1px);z-index:1}
+.defbar .db-fill{position:absolute;top:0;bottom:0;width:0;border-radius:7px;transition:left .28s cubic-bezier(.4,0,.2,1),width .28s cubic-bezier(.4,0,.2,1),background .2s}
+.defbar .db-val{font-size:13.5px;font-weight:800;min-width:66px;text-align:right;white-space:nowrap;transition:color .2s}
 .cloud-body .mf span{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cloud-body .mf input{font-size:13px;padding:10px 12px}
 .cloud-body .save-btn{width:100%}
@@ -938,6 +938,7 @@ table.hmp .g b{font-size:6.5px}
         <div id="cvAth" class="cv-ath"></div>
         <div class="cv-stage">
           <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
+          <div id="cvDefbar" class="defbar"></div>
           <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
         </div>
         <div id="cvHint" class="cv-hint"></div>
@@ -1532,6 +1533,7 @@ table.hmp .g b{font-size:6.5px}
     <div class="modal-body clip-body">
       <div id="clipAth" class="clip-chips"></div>
       <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
+      <div id="clipDefbar" class="defbar"></div>
       <div id="clipViz" class="clip-viz"></div>
     </div>
   </div>
@@ -4238,7 +4240,7 @@ function cvLoad(v){
   else if(v.url){ url=v.url; VID={id:v.id,name:v.name,tags:v.tags||[],url,revoke:false}; }
   else return;
   vid.src=url; vid.load();
-  attachDefBar(vid, vid.closest('.cv-videowrap'), v.name);
+  attachDefBar(vid, $('#cvDefbar'), v.name);
   if($('#cvHint')) $('#cvHint').textContent = `${v.name} — klicke ein Tor in der Grafik oben oder einen Strich in der Leiste, um im Video zu springen.`;
   vid.onloadedmetadata=()=>cvTicks();
   cvTicks();
@@ -4294,25 +4296,27 @@ function clipLoad(v, g){
   if(vid.src!==url){ vid.src=url; vid.load(); }
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
-  attachDefBar(vid, vid.closest('.clip-videowrap'), v.name);
+  attachDefBar(vid, $('#clipDefbar'), v.name);
   const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g} · ${v.name}`;
   if(CLIPSRC==='table') clipTableViz(v.name, g); else clipChartViz(v.name, g);
 }
 function clipChartViz(name, g){
   const el=$('#clipViz'); if(!el) return; const c=S.comp; if(!c){ el.innerHTML=''; return; }
   const key=S.excludeAnom?'cumCleanDisp':'cumRawDisp'; const series=c.skiers||[]; const n=c.n;
-  let vmax=0,vmin=0; series.forEach(s=>{ const a=s[key]||[]; for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
+  const smooth = (typeof smoothCum==='function') && S.heroSmooth;
+  const _pvC={}; const PV=s=> smooth ? (_pvC[s.name]||(_pvC[s.name]=smoothCum(s[key]||[]))) : (s[key]||[]);
+  let vmax=0,vmin=0; series.forEach(s=>{ const a=PV(s); for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
   if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
   const W=820,H=300,ml=14,mr=14,mt=14,mb=22,iw=W-ml-mr,ih=H-mt-mb;
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
   const zeroY=Y(0);
   let lines='';
-  series.forEach(s=>{ const a=s[key]||[]; const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
+  series.forEach(s=>{ const a=PV(s); const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
     const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
     const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
     lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.45}" stroke-linejoin="round"/>`; });
-  const s=series.find(x=>x.name===name); const gi=Math.max(0,Math.min(n-1,g-1)); const gv=s&&(s[key]||[])[gi];
+  const s=series.find(x=>x.name===name); const gi=Math.max(0,Math.min(n-1,g-1)); const gv=s&&PV(s)[gi];
   let dot=''; if(gv!=null){ const col=s.isTop?'#C28E00':(s.color||'#e0413a'); dot=`<line x1="${X(gi).toFixed(1)}" y1="${mt}" x2="${X(gi).toFixed(1)}" y2="${mt+ih}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle cx="${X(gi).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${col}" stroke="#fff" stroke-width="2.4"/>`; }
   const val=gv==null?'—':((gv>0?'+':'')+(+gv).toFixed(2)+' s'); const vc=gv==null?'#555':(gv>0.001?'#c0392b':gv<-0.001?'#1a8f5a':'#555');
   const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
@@ -4344,29 +4348,28 @@ function initClip(){
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
 }
 /* ---- Rückstands-/Vorsprungs-Balken über dem Video ---- */
-function ensureDefBar(wrap){ if(!wrap) return null; let db=wrap.querySelector('.defbar');
-  if(!db){ wrap.insertAdjacentHTML('beforeend','<div class="defbar"><span class="db-gate"></span><div class="db-track"><div class="db-mid"></div><div class="db-fill"></div></div><span class="db-val"></span></div>'); db=wrap.querySelector('.defbar'); }
-  return db; }
+function ensureDefBar(slot){ if(!slot) return null; if(!slot.querySelector('.db-track')){ slot.innerHTML='<span class="db-gate"></span><div class="db-track"><div class="db-mid"></div><div class="db-fill"></div></div><span class="db-val"></span>'; } return slot; }
 function updateDefBar(db, name, t){
   if(!db) return; const c=S.comp; const s=c&&c.skiers.find(x=>x.name===name);
   const vObj=(CVVIDS||[]).find(v=>v.name===name); const tags=(vObj&&vObj.tags)||[];
-  if(!s||!tags.length){ db.style.display='none'; return; } db.style.display='';
+  if(!s||!tags.length){ db.classList.remove('show'); return; } db.classList.add('show');
   let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; }
-  const key=S.excludeAnom?'cumClean':'cumRaw'; const arr=s[key]||[];
+  const smooth=(typeof smoothCum==='function') && S.heroSmooth;
+  const key=S.excludeAnom?'cumClean':'cumRaw'; const raw=s[key]||[]; const arr=smooth?smoothCum(raw):raw;
   const val = g>=1? arr[g-1] : 0;
   let mx=0.4; for(let i=0;i<arr.length;i++){ if(arr[i]!=null) mx=Math.max(mx, Math.abs(arr[i])); }
   const fill=db.querySelector('.db-fill'), vlab=db.querySelector('.db-val'), glab=db.querySelector('.db-gate');
   if(glab) glab.textContent = g>=1? ('Tor '+g) : 'Start';
-  if(val==null){ fill.style.width='0'; vlab.textContent='—'; return; }
+  if(val==null){ fill.style.width='0'; vlab.textContent='—'; vlab.style.color='#8b95a3'; return; }
   const frac=Math.max(0,Math.min(1, Math.abs(val)/mx))*50;
   if(val>0.001){ fill.style.left='50%'; fill.style.width=frac+'%'; fill.style.background='#e0413a'; }
   else if(val<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1a9d6b'; }
   else { fill.style.left='50%'; fill.style.width='0'; }
   vlab.textContent=(val>0.001?'+':(val<-0.001?'−':'±'))+Math.abs(val).toFixed(2)+' s';
-  vlab.style.color = val>0.001?'#ff7b73':val<-0.001?'#5fe6ac':'#fff';
+  vlab.style.color = val>0.001?'#c0392b':val<-0.001?'#1a8f5a':'#8b95a3';
 }
-function attachDefBar(vidEl, wrap, name){
-  const db=ensureDefBar(wrap); if(!db||!vidEl) return; vidEl._defName=name;
+function attachDefBar(vidEl, slot, name){
+  const db=ensureDefBar(slot); if(!db||!vidEl) return; vidEl._defName=name;
   const upd=()=>updateDefBar(db, vidEl._defName, vidEl.currentTime||0);
   if(!vidEl._defBound){ vidEl._defBound=true;
     ['timeupdate','seeked','loadedmetadata','play'].forEach(ev=> vidEl.addEventListener(ev, upd)); }
