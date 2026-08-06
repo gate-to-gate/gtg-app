@@ -19,6 +19,7 @@
     "appId": "ch.swiss-ski.gatetogate",
     "productName": "Gate-to-Gate",
     "publish": null,
+    "afterPack": "afterPack.js",
     "files": [ "main.js", "preload.js", "renderer/**" ],
     "directories": { "output": "dist" },
     "mac": { "target": [ "dmg" ], "category": "public.app-category.sports", "icon": "build/icon.png", "identity": null, "artifactName": "Gate-to-Gate-mac.${ext}" },
