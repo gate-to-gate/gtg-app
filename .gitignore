@@ -14,3 +14,10 @@ Swiss-Ski_GateToGate_Analyse.html
 favicon.svg
 *.md
 .DS_Store
+
+# Desktop-App: nur der Quellcode (main.js, preload.js, sync.js, package.json) wird
+# versioniert – Build-Artefakte und die kopierte index.html bleiben lokal.
+desktop/node_modules/
+desktop/dist/
+desktop/renderer/
+desktop/package-lock.json

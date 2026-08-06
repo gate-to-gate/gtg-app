@@ -1,0 +1,59 @@
+name: Desktop Build
+
+# Baut die Desktop-Installer (.dmg für Mac, .exe für Windows) in der Cloud.
+# Auslösen: Tag "desktop-v*" pushen  ODER  manuell über den "Run workflow"-Knopf.
+on:
+  push:
+    tags: [ 'desktop-v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # nötig, um die Installer an ein Release zu hängen
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Abhängigkeiten installieren
+        working-directory: desktop
+        run: npm install
+
+      - name: Mac-App bauen
+        if: runner.os == 'macOS'
+        working-directory: desktop
+        run: npm run mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false   # keine Signatur nötig (interner Gebrauch)
+
+      - name: Windows-App bauen
+        if: runner.os == 'Windows'
+        working-directory: desktop
+        run: npm run win
+
+      - name: Installer als Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtg-desktop-${{ matrix.os }}
+          path: |
+            desktop/dist/*.dmg
+            desktop/dist/*.exe
+          if-no-files-found: ignore
+
+      - name: Installer ans Release hängen (Download-Links)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            desktop/dist/*.dmg
+            desktop/dist/*.exe
+          fail_on_unmatched_files: false
