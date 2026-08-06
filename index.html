@@ -2413,7 +2413,7 @@ function drawBar(){
     if(anom) svg+=`<text x="${x(i+1)}" y="${y(0)-4}" text-anchor="middle" font-size="9" fill="var(--red)">⚠</text>`;
   });
   const step=n>40?10:5;
-  for(let g=step;g<=n;g+=step){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="13" fill="#9aa3af">${g}</text>`; }
+  for(let g=step;g<=n;g+=step){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="13" fill="#9aa3af">${g+1}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-3}" text-anchor="middle" font-size="13" font-weight="600" fill="#6b7785">Tor-Nr.</text>`;
   svg+=`<text x="${W-mr}" y="${mt+9}" text-anchor="end" font-size="12.5" fill="var(--bad)">▲ langsamer</text>`;
   svg+=`<text x="${W-mr}" y="${mt+ih-2}" text-anchor="end" font-size="12.5" fill="var(--good)">▼ schneller</text>`;
@@ -2528,7 +2528,7 @@ function drawHeatmap(mode){
   cols.forEach(s=> h+=`<th>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
   h+=`</tr></thead><tbody>`;
   // Start = Tor 1 (Referenz, alle 0.00)
-  h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Start</span></div></td>`;
+  h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Ref</span></div></td>`;
   cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:#fff">${fmt(0)}</td>`);
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
@@ -3276,10 +3276,15 @@ function saveRun(){
   S.mode=mode; S.disc=disc; S.gen=gen; S.evtKey=date+'|'+venue; S.run=run;
   buildFilters(); fillVenueSelect(); const vs2=$('#mVenueSel'); if(vs2){ vs2.value=venue; $('#mVenueNew').style.display='none'; }
   const runTxt = runLong(mode,disc,run);
-  const vidTxt = TG.file ? ' · Video in Bibliothek gespeichert' : '';
-  msg.className='save-msg ok'; msg.textContent=`✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Gates)${fisTxt}${vidTxt}.`;
+  const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Gates)${fisTxt}`;
+  msg.className='save-msg ok'; msg.textContent = baseMsg + (TG.file?' · Video wird gesichert…':'.');
   clearTagDraft();   // erfolgreich gespeichert -> Entwurf verwerfen
-  saveVideoToLib(rec).then(()=>renderLibrary());
+  saveVideoToLib(rec).then(st=>{ if(typeof renderLibrary==='function') renderLibrary();
+    if(!TG.file){ msg.className='save-msg ok'; msg.textContent=baseMsg+'.'; return; }
+    if(st && st.saved){ msg.className='save-msg ok'; msg.textContent=baseMsg+' · Video in Bibliothek gespeichert.'; }
+    else if(st && st.quota){ msg.className='save-msg warn'; msg.textContent='⚠ Speicher voll: die Zeiten sind gespeichert, aber das Video passte nicht mehr. Bitte aufräumen (Datenbank → Videos, «Grösste zuerst» löschen) oder «Speicher maximieren», dann das Video erneut laden und speichern.'; if(typeof gtgToast==='function') gtgToast('Speicher voll – Video nicht gespeichert.','warn'); if(typeof updateStorageMeter==='function') updateStorageMeter(); }
+    else { msg.className='save-msg warn'; msg.textContent=baseMsg+' · Hinweis: Das Video konnte nicht gespeichert werden.'; }
+  }).catch(()=>{ if(typeof renderLibrary==='function') renderLibrary(); });
   ghAutoSync();
   computeOverlaySteps(); updateOverlay();
 }
@@ -3388,13 +3393,14 @@ function vdbGet(id,store='videos'){ return vdbOpen().then(db=>new Promise((res,r
 function vdbDel(id,store='videos'){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); })); }
 function runId(r){ return `${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}|${r.name}`; }
 
+function isQuotaErr(err){ if(!err) return false; const n=(err.name||'')+' '+(err.message||''); return /quota|exceeded|storage/i.test(n) || err.name==='QuotaExceededError' || err.code===22; }
 function saveVideoToLib(rec){
-  if(!TG.file){ return Promise.resolve(false); }   // kein Video geladen -> nichts zu speichern
+  if(!TG.file){ return Promise.resolve({saved:false}); }   // kein Video geladen -> nichts zu speichern
   const v={ id:runId(rec), mode:rec.mode||'comp', date:rec.date,venue:rec.venue,disc:rec.disc,gen:rec.gen,run:rec.run,
     name:rec.name,nation:rec.nation,fis:fisOf(rec.name), officialBest:rec.officialBest, officialGap:rec.officialGap,
     fps:curFps(), tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), figures:rec.figures,
     video:TG.file, vname:TG.file.name||'video', vsize:TG.file.size||0, savedAt:Date.now() };
-  return vdbPut(v).then(()=>true).catch(()=>false);
+  return vdbPut(v).then(()=>({saved:true})).catch(err=>({saved:false, quota:isQuotaErr(err), err}));
 }
 function fmtSize(b){ return b>1e6? (b/1e6).toFixed(0)+' MB' : Math.max(1,Math.round(b/1e3))+' KB'; }
 function libGapVal(r){ return r.officialBest?0 : (typeof r.officialGap==='number'?r.officialGap:9e9); }
@@ -4973,6 +4979,14 @@ initCoachLink();
 initConfirm();
 initClip();
 initTour();
+// Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
+(function autoPersistStorage(){
+  try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
+    navigator.storage.persisted().then(p=>{ if(p) return; if(LS.get('gtg_persist_tried')) return; LS.set('gtg_persist_tried',true);
+      navigator.storage.persist().then(()=>{ if(typeof updateStorageMeter==='function') updateStorageMeter(); }).catch(()=>{});
+    }).catch(()=>{});
+  }catch(e){}
+})();
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
