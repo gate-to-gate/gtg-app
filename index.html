@@ -236,16 +236,16 @@ body.coach #appFooter{display:none}
 .f{display:flex;flex-direction:column;gap:3px;min-width:110px;flex:1}
 .f.fsub{flex:0 0 auto;min-width:0;margin-left:auto}
 .f label{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.f select{appearance:none;height:34px;box-sizing:border-box;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:0 26px 0 10px;font-size:12.5px;
+.f select,#kScope{appearance:none;height:34px;box-sizing:border-box;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:0 26px 0 10px;font-size:12.5px;
   font-weight:600;color:var(--ink);cursor:pointer;transition:.15s;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7785' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center}
-.f select:hover{border-color:#c3cad4}
-.f select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(218,41,28,.12)}
+.f select:hover,#kScope:hover{border-color:#c3cad4}
+.f select:focus,#kScope:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(218,41,28,.12)}
 .seg-toggle{display:inline-flex;align-self:flex-start;width:max-content;background:#d5dce6;border:1.4px solid #c2cbd7;border-radius:10px;padding:3px;gap:2px}
 .seg-toggle .seg-btn{border:none;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#59636f;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.12s;white-space:nowrap}
 .f .seg-toggle{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
-.f .seg-toggle .seg-btn{display:flex;align-items:center;padding:0 12px;font-size:12px}
+.f .seg-toggle .seg-btn,#kFiltDisc .seg-btn,#kFiltGen .seg-btn{display:flex;align-items:center;height:34px;padding:0 14px;font-size:12.5px}
 .seg-toggle .seg-btn:hover{color:var(--ink)}
 .seg-toggle .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.22)}
 /* Ansicht-Umschalter dunkler/prägnanter als die übrigen */
@@ -1301,9 +1301,9 @@ table.hmp .g b{font-size:6.5px}
       <div class="c-head"><div><h2>Kombinierte Analyse · Kurssetzung × Tagging</h2>
         <div class="c-sub">Wo sind die Schweizer schnell/langsam — nach Steilheit, Lauf-Charakter (drehend/direkt) und Tor-Kombinationen. Ø Rückstand pro Tor (negativ = schneller).</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <div id="kFiltDisc" class="seg-toggle seg-sm"></div>
-          <div id="kFiltGen" class="seg-toggle seg-sm"></div>
-          <select id="kScope" class="mini"></select>
+          <div id="kFiltDisc" class="seg-toggle"></div>
+          <div id="kFiltGen" class="seg-toggle"></div>
+          <select id="kScope"></select>
         </div>
       </div>
       <div id="kursAnalysis"></div>
