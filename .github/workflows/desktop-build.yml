@@ -27,18 +27,23 @@ jobs:
       - name: Abhängigkeiten installieren
         working-directory: desktop
         run: npm install
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1   # Electron-Binary lädt electron-builder selbst -> npm install schneller & stabil (kein 403 beim Nachladen)
 
       - name: Mac-App bauen
         if: runner.os == 'macOS'
         working-directory: desktop
         run: npm run mac
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false   # keine Signatur nötig (interner Gebrauch)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # authentifiziert die Electron-Downloads (kein Rate-Limit)
+          CSC_IDENTITY_AUTO_DISCOVERY: false           # keine Signatur nötig (interner Gebrauch)
 
       - name: Windows-App bauen
         if: runner.os == 'Windows'
         working-directory: desktop
         run: npm run win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Installer als Artefakt hochladen
         uses: actions/upload-artifact@v4
