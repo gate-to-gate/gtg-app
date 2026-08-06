@@ -6,6 +6,7 @@
   "author": "Swiss-Ski",
   "license": "UNLICENSED",
   "private": true,
+  "repository": "https://github.com/gate-to-gate/gtg-app",
   "main": "main.js",
   "scripts": {
     "sync": "node sync.js",
@@ -17,6 +18,7 @@
   "build": {
     "appId": "ch.swiss-ski.gatetogate",
     "productName": "Gate-to-Gate",
+    "publish": null,
     "files": [ "main.js", "preload.js", "renderer/**" ],
     "directories": { "output": "dist" },
     "mac": { "target": [ "dmg" ], "category": "public.app-category.sports", "icon": "build/icon.png", "identity": null, "artifactName": "Gate-to-Gate-mac.${ext}" },
