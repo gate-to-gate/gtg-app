@@ -4,8 +4,8 @@ build.mjs
 GtG_template.html
 app.js
 data.json
-package.json
-package-lock.json
+/package.json
+/package-lock.json
 node_modules/
 kurs_import/
 Kurssetzungen_2025-26.json

@@ -1,0 +1,30 @@
+{
+  "name": "gtg-desktop",
+  "productName": "Gate-to-Gate",
+  "version": "1.0.0",
+  "description": "Gate-to-Gate Analyse – Desktop-App (Videos auf der Festplatte)",
+  "author": "Swiss-Ski",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "sync": "node sync.js",
+    "start": "npm run sync && electron .",
+    "mac": "npm run sync && electron-builder --mac dmg --publish never",
+    "win": "npm run sync && electron-builder --win nsis --publish never",
+    "dist": "npm run sync && electron-builder -mw --publish never"
+  },
+  "build": {
+    "appId": "ch.swiss-ski.gatetogate",
+    "productName": "Gate-to-Gate",
+    "files": [ "main.js", "preload.js", "renderer/**" ],
+    "directories": { "output": "dist" },
+    "mac": { "target": [ "dmg" ], "category": "public.app-category.sports", "icon": "build/icon.png", "identity": null, "artifactName": "Gate-to-Gate-mac.${ext}" },
+    "win": { "target": [ "nsis" ], "icon": "build/icon.ico", "artifactName": "Gate-to-Gate-win.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "perMachine": false }
+  },
+  "devDependencies": {
+    "electron": "^31.7.6",
+    "electron-builder": "^24.13.3"
+  }
+}
