@@ -381,7 +381,10 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .note b{color:var(--ink2)}
 .foot{margin-top:24px;text-align:center;font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
 .foot-logo{height:14px;width:auto;flex:none;opacity:.85}
-.empty{padding:44px 30px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:40px 24px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.55}
+.empty svg{width:36px;height:36px;stroke:#c3cad4;stroke-width:1.5;fill:none}
+.empty .et{max-width:440px}
+.empty .et b{color:var(--ink2);font-weight:700}
 .empty b{color:var(--ink2)}
 .empty .lnk,.empty a{color:var(--red);font-weight:700;cursor:pointer;text-decoration:none;border-bottom:1.5px solid rgba(218,41,28,.4)}
 .figpill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
@@ -639,7 +642,9 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .db-table tr.db-arch .db-venue{text-decoration:line-through;text-decoration-color:#c3cad4}
 .db-venue{font-weight:700;color:var(--ink)}
 .db-act{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}
-.db-empty{text-align:center;color:var(--muted);padding:26px!important}
+.db-empty{text-align:center;color:var(--muted);padding:30px 20px!important}
+.db-empty .dbe{display:inline-flex;align-items:center;gap:9px}
+.db-empty svg{width:22px;height:22px;stroke:#c3cad4;stroke-width:1.5;fill:none}
 .db-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
 .db-badge.wk{background:#eaf2fb;color:#1f6fb2}
 .db-badge.tr{background:#f0ecf9;color:#7a3fb5}
@@ -1786,6 +1791,16 @@ const athColor = (name,isTop)=> isTop ? GOLD : (ATH_COLOR[name]||'#7a8694');
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
 const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
   H:{n:'Hairpin / Wende',c:'#7a3fb5'},F:{n:'Flush (3er)',c:'#0f9b8e'},K:{n:'Kuppe (Schlüsselstelle)',c:'#d6457f'}};
+const EMPTY_ICONS={
+  chart:'<path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 4-6"/>',
+  video:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4V8z"/>',
+  db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>',
+  gate:'<path d="M6 21V7l6-4 6 4v14"/><path d="M6 11l6-4 6 4"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.83 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.1"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/>'};
+function emptyBox(text, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<div class="empty"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg><div class="et">${text}</div></div>`; }
+function dbEmpty(text, cols, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<tr><td colspan="${cols}" class="db-empty"><span class="dbe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg>${text}</span></td></tr>`; }
 const bounds = d => d==='SL' ? [0.6,1.3] : d==='GS' ? [0.9,1.8] : d==='SG' ? [1.0,3.5] : d==='DH' ? [1.2,5.5] : [0.6,1.8];
 const fmt = (v,dp=2)=> v==null?'–':(v>=0?'+':'')+v.toFixed(dp);
 const fmt0 = (v,dp=2)=> v==null?'–':v.toFixed(dp);
@@ -1827,7 +1842,7 @@ function buildFilters(){
   if(!D.length){ // z.B. Training noch leer
     ['#selDisc','#selGen'].forEach(id=>{ const el=$(id); if(el) el.innerHTML=''; });
     ['#selEvt','#selRun'].forEach(id=>{ const el=$(id); if(el) el.innerHTML=''; });
-    $('#main').innerHTML = `<div class="card empty" style="padding:40px">${isTrain()?'Noch keine Trainings getaggt. Wechsle auf die Tagging-Seite (Modus «Training»), tagge einen Lauf und speichere ihn.':'Keine Daten.'}</div>`;
+    $('#main').innerHTML = `<div class="card">${emptyBox(isTrain()?'Noch keine Trainings getaggt. Wechsle auf <b>Tagging</b> (Modus «Training»), tagge einen Lauf und speichere ihn.':'Noch keine Daten. Tagge zuerst einen Lauf.', 'tag')}</div>`;
     return;
   }
   const discs = DISCS.filter(d=> D.some(e=>e.discipline===d));
@@ -1871,7 +1886,7 @@ function loadEvent(){
   const [date,venue]=S.evtKey.split('|');
   S.ev = DS().find(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&String(e.run)===String(S.run));
   S.hidden = new Set();
-  if(!S.ev){ $('#main').innerHTML='<div class="card empty">Keine Daten für diese Auswahl.</div>'; return; }
+  if(!S.ev){ $('#main').innerHTML='<div class="card">'+emptyBox('Keine Daten für diese Auswahl. Wähle einen anderen Event/Lauf.', 'chart')+'</div>'; return; }
   S.comp = compute(S.ev);
   S.perGate = bestSui()?.name || S.comp.sui.find(s=>s.complete>=0.85)?.name || S.comp.sui[0]?.name || S.comp.skiers.find(s=>!s.isTop)?.name;
   S.wfAth = S.perGate; S.heroFocus='';   // Hervorheben startet ohne Auswahl
@@ -3500,8 +3515,8 @@ function renderLibrary(){
     else if(sort==='gap') list.sort((a,b)=> libGapVal(a)-libGapVal(b));
     else list.sort((a,b)=>b.savedAt-a.savedAt);
     $('#libCount').textContent = all.length? `${list.length} / ${all.length}` : '';
-    if(!all.length){ grid.innerHTML=`<div class="empty" style="grid-column:1/-1;padding:26px">Noch keine Videos gespeichert. Tagge ein Video und drücke „Speichern".</div>`; return; }
-    if(!list.length){ grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:26px">Keine Videos für diesen Filter.</div>'; return; }
+    if(!all.length){ grid.innerHTML=`<div style="grid-column:1/-1">${emptyBox('Noch keine Videos gespeichert. Tagge ein Video und drücke <b>„Save"</b>.', 'video')}</div>`; return; }
+    if(!list.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Keine Videos für diesen Filter.', 'search')+'</div>'; return; }
     // pro Lauf die höchste getaggte Tor-Zahl (Referenz), um DNF-Videos (klar weniger Tore) zu markieren
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.tags?.length||0); if(n>(evtMax[k]||0)) evtMax[k]=n; });
     grid.innerHTML=list.map(r=>{
@@ -3632,8 +3647,8 @@ function renderCourseList(){
   const all=Object.values(COURSES).sort((a,b)=>b.savedAt-a.savedAt);
   const list=all.filter(c=> (!fd||c.disc===fd) && (!fg||c.gen===fg) && (!fe||c.venue===fe));
   $('#kursCount').textContent=all.length?`${list.length} / ${all.length}`:'';
-  if(!all.length){ grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:20px">Noch keine Kurse gespeichert.</div>'; return; }
-  if(!list.length){ grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:20px">Keine Kurse für diesen Filter.</div>'; return; }
+  if(!all.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Noch keine Kurse gespeichert. Importiere ein Kurssetzungs-PDF («＋ Neu»).', 'gate')+'</div>'; return; }
+  if(!list.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Keine Kurse für diesen Filter.', 'search')+'</div>'; return; }
   grid.innerHTML=list.map(r=>{ const hasTag=DATA.some(e=>e.date===r.date&&e.discipline===r.disc&&e.gender===r.gen&&e.run===r.run&&e.hasTop);
     return `<div class="lib-item"><div class="li-name">${r.venue}${hasTag?' <span class="li-badge gold">+ Tagging</span>':''}</div>
     <div class="li-meta"><div>${dmy(r.date)}</div><div>${r.disc} ${r.gen} · Lauf ${r.run}</div><div>${r.gates.length} Tore</div></div>
@@ -4242,7 +4257,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     return true;
   });
   if($('#dbCount')) $('#dbCount').textContent=`${list.length} / ${all.length}`;
-  if(!list.length){ body.innerHTML='<tr><td colspan="11" class="db-empty">Keine Events für diesen Filter.</td></tr>'; return; }
+  if(!list.length){ body.innerHTML=dbEmpty('Keine Events für diesen Filter.', 11, 'search'); return; }
   body.innerHTML=list.map(r=>{ const e=r.e, runLbl=runShort(r.mode, e.discipline, e.run);
     const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
     const src=r.tagged?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
@@ -4285,7 +4300,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     const sigOf=r=>{ const tot=(r.gates||[]).reduce((s,x)=>s+(+x||0),0); return `${r.name}|${r.date}|${r.disc}|${r.gen}|${(r.gates||[]).length}|${Math.round(tot*20)}`; };
     const sigCnt={}; all.forEach(r=>{ const s=sigOf(r); sigCnt[s]=(sigCnt[s]||0)+1; });
     const isDup=r=>(sigCnt[sigOf(r)]||0)>1;
-    if(!list.length){ body.innerHTML='<tr><td colspan="11" class="db-empty">Noch keine Taggings gespeichert.</td></tr>'; if($('#dbtBulk'))$('#dbtBulk').style.display='none'; return; }
+    if(!list.length){ body.innerHTML=dbEmpty(all.length?'Keine Taggings für diesen Filter.':'Noch keine Taggings gespeichert. Tagge einen Lauf und speichere ihn.', 11, all.length?'search':'tag'); if($('#dbtBulk'))$('#dbtBulk').style.display='none'; return; }
     body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id);
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
@@ -4358,7 +4373,7 @@ function renderDbVideos(){ const body=$('#dbvBody'); if(!body) return;
     if(sort==='size') vids.sort((a,b)=>(b.vsize||0)-(a.vsize||0)); else vids.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.venue||'').localeCompare(b.venue));
     dbvStorageBanner(list||[]);
     if($('#dbvCount')) $('#dbvCount').textContent=`${vids.length} Video${vids.length===1?'':'s'}`;
-    if(!vids.length){ body.innerHTML='<tr><td colspan="10" class="db-empty">Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).</td></tr>'; if($('#dbvBulk'))$('#dbvBulk').style.display='none'; return; }
+    if(!vids.length){ body.innerHTML=dbEmpty('Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).', 10, 'video'); if($('#dbvBulk'))$('#dbvBulk').style.display='none'; return; }
     body.innerHTML=vids.map(v=>{ const enc=encodeURIComponent(v.id); return `<tr class="dbv-row"><td class="db-chk"><input type="checkbox" class="dbv-check" data-id="${enc}"></td><td>${dmy(v.date)}</td><td class="db-venue">${v.venue}</td><td>${v.disc}</td><td>${v.gen}</td><td>${runShort(v.mode||'comp',v.disc,v.run)}</td><td>${v.name}</td><td class="num">${(v.tags||[]).length}</td><td>${fmtBytes(v.vsize||0)}</td><td class="db-act"><button class="btn-mini solid" data-vedit="${enc}">✎ Öffnen</button><button class="btn-mini del" data-vdel="${enc}">Löschen</button></td></tr>`; }).join('');
     body.querySelectorAll('button[data-vedit]').forEach(b=> b.onclick=()=> loadFromLib(decodeURIComponent(b.dataset.vedit)));
     body.querySelectorAll('button[data-vdel]').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.vdel), nm=id.split('|')[5];
@@ -4737,7 +4752,7 @@ function initCoach(){
   fetch(`coach/${encodeURIComponent(key)}.json`,{cache:'no-store'})
     .then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(b=>enterCoach(b))
-    .catch(()=>{ if($('#main')) $('#main').innerHTML='<div class="card empty" style="padding:30px">Coach-Link konnte nicht geladen werden — bitte den Link prüfen.</div>'; });
+    .catch(()=>{ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Coach-Link konnte nicht geladen werden — bitte den Link prüfen.', 'info')+'</div>'; });
   return true;
 }
 function enterCoach(bundle){
