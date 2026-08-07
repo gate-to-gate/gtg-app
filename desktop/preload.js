@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('gtgDesktop', {
   getVideo: (id) => ipcRenderer.invoke('gtg:getVideo', { id }),
   deleteVideo: (id) => ipcRenderer.invoke('gtg:deleteVideo', { id }),
   usage: () => ipcRenderer.invoke('gtg:usage'),
+  checkUpdate: () => ipcRenderer.invoke('gtg:checkUpdate'),
   platform: process.platform,
   version: '1.0.0'
 });

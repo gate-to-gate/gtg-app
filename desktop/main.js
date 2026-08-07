@@ -54,6 +54,21 @@ ipcMain.handle('gtg:usage', async () => {
   }
 });
 
+// Update-Prüfung: vergleicht die installierte Version mit version.json auf GitHub Pages.
+// Läuft im Hauptprozess (Node) -> kein CORS-Problem.
+const UPDATE_URL = 'https://gate-to-gate.github.io/gtg-app/version.json';
+ipcMain.handle('gtg:checkUpdate', async () => {
+  const current = app.getVersion();
+  try {
+    const res = await fetch(UPDATE_URL + '?t=' + Date.now());
+    if (!res.ok) return { current };
+    const info = await res.json();
+    return { current, latest: info.desktopVersion, url: info.downloadUrl, notes: info.notes };
+  } catch (_err) {
+    return { current };
+  }
+});
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1320, height: 880, minWidth: 900, minHeight: 600,
