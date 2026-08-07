@@ -2597,7 +2597,7 @@ function heatmapPrint(){
       t+=`<tr><td class="g">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+1}</td>`;
       cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`;
         const d=s.diff[i], cu=cumCol(s)[i];
-        const cc = cu==null?'':(cu>0.001?'#c0392b':cu<-0.001?'#1a8f5a':'#555');
+        const cc = cu==null?'':(cu<-0.001?'#1a8f5a':'#555');
         t+=`<td style="background:${colorOf(d)}">${d==null?'':fmt(d)}</td>`;
         t+=`<td class="cum" style="color:${cc}">${cumTxt(cu)}</td>`; });
       t+=`</tr>`; }
