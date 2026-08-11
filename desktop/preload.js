@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('gtgDesktop', {
   usage: () => ipcRenderer.invoke('gtg:usage'),
   checkUpdate: () => ipcRenderer.invoke('gtg:checkUpdate'),
   downloadUpdate: () => ipcRenderer.invoke('gtg:downloadUpdate'),
+  appVersion: () => ipcRenderer.invoke('gtg:appVersion'),
   platform: process.platform,
   version: '1.0.0'
 });

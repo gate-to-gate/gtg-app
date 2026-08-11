@@ -69,6 +69,9 @@ ipcMain.handle('gtg:checkUpdate', async () => {
   }
 });
 
+// Aktuelle App-Version (für die Anzeige in der Fusszeile).
+ipcMain.handle('gtg:appVersion', () => app.getVersion());
+
 // Update direkt herunterladen: passenden Installer in den Download-Ordner laden und dort anzeigen.
 ipcMain.handle('gtg:downloadUpdate', async () => {
   try {
