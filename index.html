@@ -666,7 +666,7 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-gate .dbt-gedit:focus{outline:none;border-color:var(--red)}
 .dbt-gate.dbt-anom{background:#fdecea;border-color:#e79a92}
 .dbt-gate.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
-.dbt-viewbar{display:flex;justify-content:flex-start;margin:0 0 12px}
+.dbt-viewseg{margin-left:auto;align-self:center}
 .dbtg-lab{font-size:12px;font-weight:700;color:var(--ink2);margin-right:2px}
 .dbtg-wrap{overflow-x:auto;max-height:70vh}
 .dbtg-table{min-width:max-content;border-collapse:separate;border-spacing:0}
@@ -1440,7 +1440,6 @@ table.hmp .g b{font-size:6.5px}
       </div>
 
       <div id="dbSecTaggings" style="display:none">
-        <div class="dbt-viewbar"><div class="seg-toggle seg-sm" id="dbtView"></div></div>
         <div class="db-filters">
           <input type="text" id="dbtSearch" class="lib-search" placeholder="Suche Ort oder Athlet …">
           <select id="dbtMode" class="mini"><option value="">Wettkampf + Training</option><option value="comp">Wettkampf</option><option value="train">Training</option></select>
@@ -1449,6 +1448,7 @@ table.hmp .g b{font-size:6.5px}
           <select id="dbtSrc" class="mini"><option value="">Alle Quellen</option><option value="tag">Nur getaggt</option><option value="db">Nur Databank</option></select>
           <select id="dbtVid" class="mini"><option value="">Mit + ohne Video</option><option value="1">Nur mit Video</option><option value="0">Nur ohne Video</option></select>
           <select id="dbtDnf" class="mini"><option value="">Alle Läufe</option><option value="dnf">Nur DNF (wenig Tore)</option><option value="full">Nur vollständige</option></select>
+          <div class="seg-toggle seg-sm dbt-viewseg" id="dbtView"></div>
           <span id="dbtCount" class="lib-count"></span>
         </div>
         <div class="db-bulk" id="dbtBulk" style="display:none"><span class="db-selinfo" id="dbtSel">0 ausgewählt</span><button class="btn-mini" id="dbtExport">⭳ Zeiten exportieren (CSV)</button><button class="btn-mini del" id="dbtDel">Ausgewählte löschen</button></div>
