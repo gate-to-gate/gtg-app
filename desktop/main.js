@@ -25,6 +25,19 @@ ipcMain.handle('gtg:saveVideo', async (_e, { id, buf }) => {
   }
 });
 
+// Video über den Dateipfad speichern (kopieren) – robust auch bei grossen Dateien, ohne die Bytes durch die IPC zu schicken.
+ipcMain.handle('gtg:saveVideoPath', async (_e, { id, src }) => {
+  try {
+    await ensureDir();
+    await fsp.copyFile(src, pathFor(id));
+    const st = await fsp.stat(pathFor(id));
+    return { ok: true, size: st.size, file: safeId(id) + '.vid' };
+  } catch (err) {
+    const full = !!(err && err.code === 'ENOSPC');
+    return { ok: false, error: String((err && err.message) || err), full };
+  }
+});
+
 ipcMain.handle('gtg:getVideo', async (_e, { id }) => {
   try {
     const b = await fsp.readFile(pathFor(id));
@@ -106,7 +119,8 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   // externe Links (GitHub, Cloudflare-Anleitung usw.) im Standardbrowser öffnen
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/i.test(url)) shell.openExternal(url);
+    if (/^https?:/i.test(url)) { shell.openExternal(url); return { action: 'deny' }; }
+    if (/^blob:|^data:/i.test(url)) return { action: 'allow' };   // PDF-Vorschau (Kurssetzung) im neuen Fenster
     return { action: 'deny' };
   });
 }

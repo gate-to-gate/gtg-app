@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('gtgDesktop', {
   saveVideo: (id, buf, ext) => ipcRenderer.invoke('gtg:saveVideo', { id, buf, ext }),
+  saveVideoPath: (id, src, ext) => ipcRenderer.invoke('gtg:saveVideoPath', { id, src, ext }),
   getVideo: (id) => ipcRenderer.invoke('gtg:getVideo', { id }),
   deleteVideo: (id) => ipcRenderer.invoke('gtg:deleteVideo', { id }),
   usage: () => ipcRenderer.invoke('gtg:usage'),

@@ -658,6 +658,8 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-inner{padding:10px 14px}
 .dbt-gates{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .dbt-gate{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:11.5px;font-variant-numeric:tabular-nums}
+.dbt-gate .dbt-gedit{width:58px;border:1px solid var(--line);border-radius:5px;padding:1px 4px;font:inherit;font-size:11px;font-variant-numeric:tabular-nums}
+.dbt-gate .dbt-gedit:focus{outline:none;border-color:var(--red)}
 .dbt-gate b{color:var(--ink)}
 .dbt-gate .fig{font-weight:800;color:#5b6cff}
 .dbt-actions{display:flex;gap:8px;margin-top:10px}
@@ -697,6 +699,8 @@ table.tag-list tbody tr.row-new td{background:#fff7df}
 table.tag-list tbody tr.row-new td:first-child{box-shadow:inset 3px 0 0 #E6A700}
 table.tag-list .gnum{font-weight:800}
 table.tag-list select.figsel{border:1px solid var(--line);border-radius:6px;padding:2px 4px;font:inherit;font-size:10.5px;font-weight:600}
+table.tag-list .figsel-wrap{display:flex;gap:5px;align-items:center}
+table.tag-list .figsel-wrap select.figb{opacity:.85}
 .tg-data-card{display:flex;flex-direction:column}
 .tg-data-card .tag-list-wrap{flex:1;min-height:120px;max-height:none;overflow:auto}
 .row-del{color:var(--muted);cursor:pointer;border:none;background:none;font-size:15px;line-height:1}
@@ -1448,6 +1452,17 @@ table.hmp .g b{font-size:6.5px}
           <tr><th class="db-chk"><input type="checkbox" id="dbvAll" title="Alle auswählen"></th><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th>Athlet</th><th class="num">Tags</th><th>Grösse</th><th></th></tr>
         </thead><tbody id="dbvBody"></tbody></table></div>
       </div>
+      <div id="dbSecKurs" style="display:none">
+        <div class="db-filters">
+          <input type="text" id="dbkSearch" class="lib-search" placeholder="Suche Ort …">
+          <select id="dbkDisc" class="mini"><option value="">Alle Disziplinen</option><option value="GS">Riesenslalom</option><option value="SL">Slalom</option><option value="SG">Super-G</option><option value="DH">Abfahrt</option></select>
+          <select id="dbkGen" class="mini"><option value="">M + W</option><option value="M">Männer</option><option value="W">Frauen</option></select>
+          <span id="dbkCount" class="lib-count"></span>
+        </div>
+        <div class="db-wrap"><table class="db-table"><thead>
+          <tr><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th class="num">Tore</th><th>PDF</th><th></th></tr>
+        </thead><tbody id="dbkBody"></tbody></table></div>
+      </div>
     </div>
   </div>
 
@@ -1737,6 +1752,26 @@ table.hmp .g b{font-size:6.5px}
 </div>
 
 <!-- Coach: Klick auf Tor/Zelle -> Video im Pop-up + Mini-Grafik mit Highlight -->
+<div id="evEditModal" class="modal-backdrop" style="display:none">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><h2>Event bearbeiten</h2><button class="modal-x" id="evEditX">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Passt Datum, Ort, Disziplin, Geschlecht und Lauf dieses Events an. Getaggte Läufe, Kurssetzung und Videos werden mit umgestellt.</p>
+      <label class="mf"><span>Datum</span><input type="date" id="evDate"></label>
+      <label class="mf"><span>Ort</span><input type="text" id="evVenue" placeholder="z. B. Adelboden"></label>
+      <div class="cloud-row2">
+        <label class="mf"><span>Disziplin</span><select id="evDisc"><option value="GS">Riesenslalom (GS)</option><option value="SL">Slalom (SL)</option><option value="SG">Super-G (SG)</option><option value="DH">Abfahrt (DH)</option></select></label>
+        <label class="mf"><span>Geschlecht</span><select id="evGen"><option value="M">Männer</option><option value="W">Frauen</option></select></label>
+      </div>
+      <label class="mf"><span>Lauf</span><input type="number" id="evRun" min="1" step="1"></label>
+      <div class="save-msg" id="evEditMsg" style="margin-top:4px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn-mini" id="evEditCancel">Abbrechen</button>
+        <button class="btn-mini solid" id="evEditSave">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="clipModal" class="modal-backdrop" style="display:none">
   <div class="modal clip-modal">
     <div class="modal-head"><h2 id="clipTitle">Tor</h2><button class="modal-x" id="clipClose">✕</button></div>
@@ -3248,20 +3283,23 @@ function renderTags(){
   TG.tags.forEach((tag,i)=>{
     const prev=i>0?TG.tags[i-1].t:null;
     const d = prev!=null ? Math.round((tag.t-prev)*1000)/1000 : null;
-    const label = i===0 ? 'Start' : 'Tor '+i;
-    const opts = FIGOPTS.map(o=>`<option value="${o}"${o===tag.fig?' selected':''}>${o||'–'}</option>`).join('');
+    const label = 'Tor '+(i+1);   // wir taggen den Start nicht: erster Tag = Tor 1 (Referenz)
+    const fp=String(tag.fig||'').split('+'); const f1=fp[0]||'', f2=fp[1]||'';
+    const optsFor=sel=>FIGOPTS.map(o=>`<option value="${o}"${o===sel?' selected':''}>${o||'–'}</option>`).join('');
     const tr=document.createElement('tr');
     if(tag.unsure) tr.classList.add('unsure');
     if(TG.lastTagT!=null && Math.abs(tag.t-TG.lastTagT)<1e-6) tr.classList.add('row-new');
     tr.innerHTML=`<td class="gnum">${label}</td><td>${frameOf(tag.t)}</td><td>${tag.t.toFixed(3)}s</td>
       <td>${d==null?'—':d.toFixed(3)}</td>
-      <td>${i===0?'':`<select class="figsel" data-i="${i}">${opts}</select>`}</td>
+      <td>${i===0?'':`<div class="figsel-wrap"><select class="figsel figa" data-i="${i}">${optsFor(f1)}</select><select class="figsel figb" data-i="${i}" title="Optionale 2. Figur">${optsFor(f2)}</select></div>`}</td>
       <td style="white-space:nowrap"><button class="row-flag${tag.unsure?' on':''}" data-i="${i}" title="Als unsicher markieren (später prüfen)">⚑</button><button class="row-del" data-i="${i}" title="löschen">✕</button></td>`;
     tb.appendChild(tr);
   });
   tb.querySelectorAll('.row-del').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); delTag(+b.dataset.i); });
   tb.querySelectorAll('.row-flag').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); tgFlag(+b.dataset.i); });
-  tb.querySelectorAll('.figsel').forEach(s=>{ s.onchange=()=>{ TG.tags[+s.dataset.i].fig=s.value; tgPush(); }; s.onclick=e=>e.stopPropagation(); });
+  tb.querySelectorAll('.figsel-wrap').forEach(wrap=>{ const a=wrap.querySelector('.figa'), b=wrap.querySelector('.figb'); const i=+a.dataset.i;
+    const upd=()=>{ let av=a.value, bv=b.value; if(bv&&bv===av) bv=''; TG.tags[i].fig=[av,bv].filter(Boolean).join('+'); tgPush(); };
+    a.onchange=upd; b.onchange=upd; a.onclick=e=>e.stopPropagation(); b.onclick=e=>e.stopPropagation(); });
   // Klick auf Zeile -> Video an diese Stelle springen
   tb.querySelectorAll('tr').forEach((tr,i)=> tr.onclick=(e)=>{ if(e.target.closest('select,button')) return;
     const v=$('#vid'); if(!v.src) return; if(!v.paused){ v.pause(); }
@@ -3347,7 +3385,7 @@ function saveRun(){
     if(!TG.file){ msg.className='save-msg ok'; msg.textContent=baseMsg+'.'; return; }
     if(st && st.saved){ msg.className='save-msg ok'; msg.textContent=baseMsg+' · Video in Bibliothek gespeichert.'; }
     else if(st && st.quota){ msg.className='save-msg warn'; msg.textContent='⚠ Speicher voll: die Zeiten sind gespeichert, aber das Video passte nicht mehr. Bitte aufräumen (Datenbank → Videos, «Grösste zuerst» löschen) oder «Speicher maximieren», dann das Video erneut laden und speichern.'; if(typeof gtgToast==='function') gtgToast('Speicher voll – Video nicht gespeichert.','warn'); if(typeof updateStorageMeter==='function') updateStorageMeter(); }
-    else { msg.className='save-msg warn'; msg.textContent=baseMsg+' · Hinweis: Das Video konnte nicht gespeichert werden.'; }
+    else { msg.className='save-msg warn'; const em=(st&&st.err&&(st.err.message||String(st.err)))||''; msg.textContent=baseMsg+' · Hinweis: Das Video konnte nicht gespeichert werden.'+(em?(' — '+em):''); if(typeof gtgToast==='function'&&em) gtgToast('Video-Fehler: '+em,'warn'); }
   }).catch(()=>{ if(typeof renderLibrary==='function') renderLibrary(); });
   ghAutoSync();
   computeOverlaySteps(); updateOverlay();
@@ -3451,10 +3489,11 @@ function download(fn,txt,mime){ const b=new Blob([txt],{type:mime}); const u=URL
 const VDB={db:null};
 function GD(){ return (typeof window!=='undefined' && window.gtgDesktop && typeof window.gtgDesktop.saveVideo==='function') ? window.gtgDesktop : null; }
 function vdbOpen(){ return new Promise((res,rej)=>{ if(VDB.db) return res(VDB.db);
-  let r; try{ r=indexedDB.open('gtg_video_lib',2); }catch(e){ return rej(e); }
+  let r; try{ r=indexedDB.open('gtg_video_lib',3); }catch(e){ return rej(e); }
   r.onupgradeneeded=e=>{ const db=e.target.result;
     if(!db.objectStoreNames.contains('videos')) db.createObjectStore('videos',{keyPath:'id'});
-    if(!db.objectStoreNames.contains('courses')) db.createObjectStore('courses',{keyPath:'id'}); };
+    if(!db.objectStoreNames.contains('courses')) db.createObjectStore('courses',{keyPath:'id'});
+    if(!db.objectStoreNames.contains('kurspdf')) db.createObjectStore('kurspdf',{keyPath:'id'}); };
   r.onsuccess=e=>{ VDB.db=e.target.result; res(VDB.db); }; r.onerror=()=>rej(r.error); }); }
 function _idbPut(rec,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(rec); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); })); }
 function _idbGet(id,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const rq=db.transaction(store,'readonly').objectStore(store).get(id); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); })); }
@@ -3462,14 +3501,14 @@ function vdbPut(rec,store='videos'){
   const dk=GD();
   if(dk && store==='videos' && rec && rec.video){
     // Video-Bytes auf die Festplatte, Metadaten (ohne Blob) in IndexedDB
-    return rec.video.arrayBuffer().then(buf=>{
-      const ext=(rec.vname&&rec.vname.indexOf('.')>=0)? rec.vname.split('.').pop().toLowerCase() : 'mp4';
-      return dk.saveVideo(rec.id, buf, ext).then(r=>{
-        if(!r||!r.ok){ const e=new Error((r&&r.error)||'Festplatte: Schreiben fehlgeschlagen'); e._disk=true; e._full=!!(r&&r.full); throw e; }
-        const meta=Object.assign({}, rec, { video:null, vfile:r.file||rec.id, vtype:(rec.video&&rec.video.type)||'video/mp4', vsize:rec.vsize||r.size||buf.byteLength, onDisk:true });
-        return _idbPut(meta,store);
-      });
-    });
+    const blob=rec.video;
+    const ext=(rec.vname&&rec.vname.indexOf('.')>=0)? rec.vname.split('.').pop().toLowerCase() : 'mp4';
+    const put=(r)=>{ if(!r||!r.ok){ const e=new Error((r&&r.error)||'Festplatte: Schreiben fehlgeschlagen'); e._disk=true; e._full=!!(r&&r.full); throw e; }
+      const meta=Object.assign({}, rec, { video:null, vfile:r.file||rec.id, vtype:(blob&&blob.type)||'video/mp4', vsize:rec.vsize||r.size||(blob&&blob.size)||0, onDisk:true });
+      return _idbPut(meta,store); };
+    const srcPath = blob && blob.path;   // Electron: echter Dateipfad -> direkt kopieren (robust auch bei grossen Videos)
+    if(srcPath && typeof dk.saveVideoPath==='function'){ return dk.saveVideoPath(rec.id, srcPath, ext).then(put); }
+    return blob.arrayBuffer().then(buf=> dk.saveVideo(rec.id, buf, ext).then(put));
   }
   return _idbPut(rec,store);
 }
@@ -3727,6 +3766,8 @@ function saveCourse(){
   const id=`${date}|${venue}|${disc}|${gen}|${run}`;
   const rec={id,date,venue,disc,gen,run,gates,savedAt:Date.now()};
   COURSES[id]=rec; vdbPut(rec,'courses'); ghAutoSync();
+  const pdfFile=KQUEUE[KIDX];   // Original-PDF mitspeichern (lokal, für die Datenbank-Seite „Kurssetzung")
+  if(pdfFile){ try{ vdbPut({id, pdf:pdfFile, name:pdfFile.name||'Kurssetzung.pdf', savedAt:Date.now()}, 'kurspdf'); }catch(e){} }
   renderCourseList(); fillKScope(); renderKursAnalysis();
   msg.className='save-msg ok'; msg.textContent=`✓ Gespeichert · ${venue} ${disc} ${gen} L${run} (${gates.length} Tore).`;
   // Mehrfach-Upload: zum nächsten PDF springen, sonst schliessen
@@ -4334,9 +4375,38 @@ function renderDatenbank(){
   if($('#dbSecEvents')) $('#dbSecEvents').style.display = DBSUB==='events'?'':'none';
   if($('#dbSecTaggings')) $('#dbSecTaggings').style.display = DBSUB==='taggings'?'':'none';
   if($('#dbSecVideos')) $('#dbSecVideos').style.display = DBSUB==='videos'?'':'none';
+  if($('#dbSecKurs')) $('#dbSecKurs').style.display = DBSUB==='kurssetzung'?'':'none';
   if(DBSUB==='taggings') renderDbTaggings();
   else if(DBSUB==='videos') renderDbVideos();
+  else if(DBSUB==='kurssetzung') renderDbKurs();
   else renderDbEvents();
+}
+function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
+  const q=($('#dbkSearch')&&$('#dbkSearch').value||'').trim().toLowerCase();
+  const fd=$('#dbkDisc')&&$('#dbkDisc').value||'', fg=$('#dbkGen')&&$('#dbkGen').value||'';
+  const total=Object.keys(COURSES).length;
+  let list=Object.values(COURSES).filter(c=> (!q||(c.venue||'').toLowerCase().includes(q)) && (!fd||c.disc===fd) && (!fg||c.gen===fg));
+  list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.venue||'').localeCompare(b.venue||'') || (a.run-b.run));
+  if($('#dbkCount')) $('#dbkCount').textContent = total? `${list.length} / ${total}` : '';
+  if(!total){ body.innerHTML=`<tr><td colspan="8">${dbEmpty('Noch keine Kurssetzungen. Importiere PDFs über die Seite „Kurssetzung".', 8, 'file')}</td></tr>`; return; }
+  if(!list.length){ body.innerHTML=`<tr><td colspan="8">${dbEmpty('Keine Kurssetzung für diesen Filter.', 8, 'search')}</td></tr>`; return; }
+  body.innerHTML=list.map(c=>`<tr>
+    <td>${dmy(c.date)}</td><td><b>${c.venue||''}</b></td><td>${c.disc||''}</td><td>${c.gen||''}</td><td>L${c.run}</td>
+    <td class="num">${(c.gates&&c.gates.length)||0}</td>
+    <td><button class="btn-mini kpdf" data-id="${c.id}">↗ PDF öffnen</button></td>
+    <td><button class="btn-mini del kdbdel" data-id="${c.id}" title="Kurssetzung löschen">✕</button></td></tr>`).join('');
+  body.querySelectorAll('.kpdf').forEach(b=> b.onclick=()=>openKursPdf(b.dataset.id));
+  body.querySelectorAll('.kdbdel').forEach(b=> b.onclick=()=>{ const id=b.dataset.id;
+    gtgConfirm({title:'Kurssetzung löschen', danger:true, okLabel:'Löschen', msg:'Diese Kurssetzung (Daten + PDF) wirklich löschen?'}).then(ok=>{ if(!ok) return;
+      delete COURSES[id]; vdbDel(id,'courses'); vdbDel(id,'kurspdf'); ghAutoSync();
+      renderDbKurs(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope(); if(typeof renderKursAnalysis==='function') renderKursAnalysis(); }); });
+}
+function openKursPdf(id){
+  vdbGet(id,'kurspdf').then(rec=>{
+    if(rec && rec.pdf){ const url=URL.createObjectURL(rec.pdf); window.open(url,'_blank'); setTimeout(()=>URL.revokeObjectURL(url),60000); return; }
+    const url='kurs/'+encodeURIComponent(id)+'.pdf';   // Fallback: vorab eingebaute Saison-PDFs
+    fetch(url,{method:'HEAD'}).then(r=>{ if(r.ok) window.open(url,'_blank'); else gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.'); }).catch(()=>gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.'));
+  }).catch(()=>gtgToast('PDF konnte nicht geladen werden.'));
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
 function dbEvents(){ const tk=dbTaggedKeys(); const out=[];
@@ -4365,7 +4435,8 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
       <td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${e.gender}</td><td>${runLbl}</td>
       <td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td>
       <td>${clBtn}</td>
-      <td class="db-act">${swBtn}<button class="btn-mini ${r.archived?'solid':'del'}" data-k="${r.key}">${r.archived?'↩ Aktivieren':'Archivieren'}</button></td></tr>`; }).join('');
+      <td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':'del'}" data-k="${r.key}">${r.archived?'↩ Aktivieren':'Archivieren'}</button></td></tr>`; }).join('');
+  body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
   body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
   body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
   body.querySelectorAll('button[data-sw]').forEach(b=> b.onclick=()=>{ const k=b.dataset.sw; const cur=dbEvents().find(x=>x.key===k); const to=cur&&cur.mode==='train'?'Wettkampf':'Training';
@@ -4373,14 +4444,62 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     gtgConfirm({title:'Modus wechseln', okLabel:`Nach ${to}`, msg:`Dieses Event nach «${to}» verschieben?${tagged?' Alle getaggten Athleten dieses Laufs wechseln den Modus.':''}`})
       .then(okc=>{ if(okc){ if(tagged) switchEventMode(k); else overrideEventMode(k); renderDatenbank(); } }); });
 }
+/* ---- Event-Parameter nachträglich bearbeiten ---- */
+let EVEDIT_KEY=null;
+function openEvEdit(key){ EVEDIT_KEY=key; const p=key.split('|');
+  if($('#evDate')) $('#evDate').value=p[0]||''; if($('#evVenue')) $('#evVenue').value=p[1]||'';
+  if($('#evDisc')) $('#evDisc').value=p[2]||'GS'; if($('#evGen')) $('#evGen').value=p[3]||'M'; if($('#evRun')) $('#evRun').value=p[4]||'1';
+  if($('#evEditMsg')) $('#evEditMsg').textContent=''; const m=$('#evEditModal'); if(m) m.style.display='flex'; }
+function closeEvEdit(){ const m=$('#evEditModal'); if(m) m.style.display='none'; EVEDIT_KEY=null; }
+function editEvent(oldKey, nf){
+  const newKey=`${nf.date}|${nf.venue}|${nf.discipline}|${nf.gender}|${nf.run}`;
+  if(newKey===oldKey){ closeEvEdit(); return; }
+  // 1) In-Memory-Event(s) in DATA/TRAIN
+  [DATA,TRAIN].forEach(arr=>{ const e=arr.find(x=>evKey(x)===oldKey); if(e){ e._origKey=e._origKey||oldKey; e.date=nf.date; e.venue=nf.venue; e.discipline=nf.discipline; e.gender=nf.gender; e.run=+nf.run; try{recomputeEvent(e);}catch(_){} } });
+  // 2) Getaggte Läufe (persistiert)
+  const matchRun=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`===oldKey; let ch=false;
+  const upd=r=>{ if(matchRun(r)){ r.date=nf.date; r.venue=nf.venue; r.disc=nf.discipline; r.gen=nf.gender; r.run=+nf.run; ch=true; } };
+  SAVED.forEach(upd); SAVED_TRAIN.forEach(upd);
+  if(ch){ LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN); }
+  // 3) Kurssetzung (Daten + PDF) umschlüsseln
+  if(COURSES[oldKey]){ const c=COURSES[oldKey]; delete COURSES[oldKey]; c.id=newKey; c.date=nf.date; c.venue=nf.venue; c.disc=nf.discipline; c.gen=nf.gender; c.run=+nf.run; COURSES[newKey]=c;
+    try{ vdbDel(oldKey,'courses'); vdbPut(c,'courses'); }catch(_){}
+    try{ vdbGet(oldKey,'kurspdf').then(p=>{ if(p&&p.pdf){ vdbPut({id:newKey,pdf:p.pdf,name:p.name,savedAt:p.savedAt||Date.now()},'kurspdf'); vdbDel(oldKey,'kurspdf'); } }); }catch(_){}
+  }
+  // 4) Archiv-Status
+  if(ARCHIVED.has(oldKey)){ ARCHIVED.delete(oldKey); ARCHIVED.add(newKey); LS.set('gtg_archived',[...ARCHIVED]); }
+  // 5) Videos (Blob + Metadaten) umschlüsseln – funktioniert auch auf der Festplatte (Desktop)
+  try{ vdbAll('videos').then(list=>{ (list||[]).filter(v=>`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`===oldKey).forEach(v=>{
+    vdbGet(v.id).then(full=>{ if(!full) return; const nn=`${nf.date}|${nf.venue}|${nf.discipline}|${nf.gender}|${nf.run}|${full.name}`;
+      const nv=Object.assign({},full,{id:nn,date:nf.date,venue:nf.venue,disc:nf.discipline,gen:nf.gender,run:+nf.run});
+      vdbPut(nv).then(()=>{ if(nn!==v.id) vdbDel(v.id); }); }); }); }); }catch(_){}
+  // 6) Persistenter Override (für eingebaute Databank-Events nach Neuladen)
+  let origKey=oldKey; for(const arr of [DATA,TRAIN]){ const e=arr.find(x=>evKey(x)===newKey); if(e&&e._origKey){ origKey=e._origKey; break; } }
+  const ov=LS.get('gtg_event_override',{}); ov[origKey]={date:nf.date,venue:nf.venue,discipline:nf.discipline,gender:nf.gender,run:+nf.run}; LS.set('gtg_event_override',ov);
+  ghAutoSync(); buildFilters(); renderDatenbank();
+}
+function applyEventOverrides(){ const ov=LS.get('gtg_event_override',{}); if(!ov||!Object.keys(ov).length) return;
+  [DATA,TRAIN].forEach(arr=> arr.forEach(e=>{ if(e._origKey) return; const o=ov[evKey(e)]; if(o){ e._origKey=evKey(e); e.date=o.date; e.venue=o.venue; e.discipline=o.discipline; e.gender=o.gender; e.run=+o.run; try{recomputeEvent(e);}catch(_){} } })); }
+
 /* ---- Taggings (Rohdaten je Lauf) ---- */
 function dbAllTaggings(){ const list=[...SAVED.map(r=>({...r,mode:r.mode||'comp'})), ...SAVED_TRAIN.map(r=>({...r,mode:'train'}))];
   return list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.venue||'').localeCompare(b.venue) || ((+a.run)-(+b.run)) || (a.name||'').localeCompare(b.name)); }
 function cssEsc(s){ return String(s).replace(/["\\]/g,'\\$&'); }
-function dbtGatesHtml(r){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
+function dbtGatesHtml(r, enc){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
   if(!gates.length) return '<div class="empty">Keine Tore.</div>';
-  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi]; return `<span class="dbt-gate"><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}${g!=null?(g.toFixed(3)+'s'):'–'}</span>`; }).join('');
-  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten:</div><div class="dbt-gates">${cells}</div>`; }
+  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi];
+    return `<span class="dbt-gate"><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}<input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
+  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>:</div><div class="dbt-gates">${cells}</div>`; }
+function editTagGate(id, i, val){
+  let rec=SAVED.find(r=>runId(r)===id), isT=false;
+  if(!rec){ rec=SAVED_TRAIN.find(r=>runId(r)===id); isT=true; }
+  if(!rec||!rec.gates||i<0||i>=rec.gates.length) return;
+  rec.gates[i]=val;
+  LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
+  try{ applyRun(rec); }catch(e){}
+  ghAutoSync(); buildFilters();
+  gtgToast('Gate '+(i+1)+' aktualisiert.','ok');
+}
 function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
   const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'';
   vdbAll().then(vlist=>{ const VIDS=new Set((vlist||[]).map(v=>v.id));
@@ -4402,7 +4521,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
       const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
-      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner">${dbtGatesHtml(r)}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${enc}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button><button class="btn-mini del" data-deltag="${enc}">Tagging löschen</button></div></div></td></tr>`;
+      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner">${dbtGatesHtml(r, enc)}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${enc}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button><button class="btn-mini del" data-deltag="${enc}">Tagging löschen</button></div></div></td></tr>`;
       return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${r.gen}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
     }).join('');
     const toggle=id=>{ const det=body.querySelector(`.dbt-detail[data-for="${cssEsc(id)}"]`), row=body.querySelector(`.dbt-row[data-id="${cssEsc(id)}"]`); if(!det) return; const open=det.style.display==='none'; det.style.display=open?'':'none'; if(row) row.classList.toggle('dbt-open',open); };
@@ -4411,6 +4530,9 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     body.querySelectorAll('button[data-deltag]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); const id=decodeURIComponent(b.dataset.deltag), nm=id.split('|')[5];
       gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).`})
         .then(okc=>{ if(okc) deleteTagging(id); }); });
+    body.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
+      inp.onchange=()=>{ const id=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value);
+        editTagGate(id, i, isFinite(v)?Math.round(v*1000)/1000:null); }; });
     body.querySelectorAll('.dbt-check').forEach(c=> c.onclick=e=>{ e.stopPropagation(); dbtUpdateBulk(); });
     if($('#dbtAll')){ $('#dbtAll').checked=false; $('#dbtAll').onclick=()=>{ body.querySelectorAll('.dbt-check').forEach(c=>c.checked=$('#dbtAll').checked); dbtUpdateBulk(); }; }
     if($('#dbtDel')) $('#dbtDel').onclick=dbtDeleteSelected;
@@ -4513,7 +4635,16 @@ function dbvStorageBanner(all){ const el=$('#dbvStore'); if(!el) return;
   });
 }
 function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
-  if($('#dbSub')) segFill('#dbSub',['events','taggings','videos'], s=> s==='events'?'Events':s==='taggings'?'Taggings':'Videos', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
+  if($('#dbSub')) segFill('#dbSub',['events','taggings','videos','kurssetzung'], s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':'Kurssetzung', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
+  ['#dbkDisc','#dbkGen'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
+  if($('#dbkSearch')) $('#dbkSearch').oninput=renderDatenbank;
+  if($('#evEditSave')) $('#evEditSave').onclick=()=>{ if(!EVEDIT_KEY) return;
+    const date=$('#evDate').value, venue=($('#evVenue').value||'').trim(), disc=$('#evDisc').value, gen=$('#evGen').value, run=parseInt($('#evRun').value,10);
+    if(!date||!venue||!(run>=1)){ if($('#evEditMsg')){ $('#evEditMsg').className='save-msg warn'; $('#evEditMsg').textContent='Datum, Ort und Lauf angeben.'; } return; }
+    editEvent(EVEDIT_KEY,{date,venue,discipline:disc,gender:gen,run}); gtgToast('Event aktualisiert.','ok'); };
+  if($('#evEditCancel')) $('#evEditCancel').onclick=closeEvEdit;
+  if($('#evEditX')) $('#evEditX').onclick=closeEvEdit;
+  if($('#evEditModal')) $('#evEditModal').addEventListener('click',e=>{ if(e.target.id==='evEditModal') closeEvEdit(); });
   ['#dbDisc','#dbGen','#dbMode','#dbSrc','#dbStatus'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbSearch')) $('#dbSearch').oninput=renderDatenbank;
   ['#dbtMode','#dbtDisc','#dbtGen','#dbtVid','#dbtDnf'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
@@ -5174,6 +5305,7 @@ function showUpdateBanner(cur, latest, url){
     }
   }).catch(()=>{});
 })();
+applyEventOverrides();  // nachträglich bearbeitete Event-Parameter (Datum/Ort/Lauf …) anwenden
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
