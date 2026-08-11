@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('gtgDesktop', {
   usage: () => ipcRenderer.invoke('gtg:usage'),
   checkUpdate: () => ipcRenderer.invoke('gtg:checkUpdate'),
   downloadUpdate: () => ipcRenderer.invoke('gtg:downloadUpdate'),
+  onUpdateProgress: (cb) => ipcRenderer.on('gtg:updateProgress', (_e, pct) => { try { cb(pct); } catch (e) {} }),
   appVersion: () => ipcRenderer.invoke('gtg:appVersion'),
   fetchText: (url) => ipcRenderer.invoke('gtg:fetchText', { url }),
   platform: process.platform,

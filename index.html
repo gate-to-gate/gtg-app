@@ -670,6 +670,9 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-viewseg{margin-left:auto;align-self:center}
 .dbtg-lab{font-size:12px;font-weight:700;color:var(--ink2);margin-right:2px}
 .dbtg-anomchk{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.dbtg-hint2{font-size:11.5px;color:var(--muted);margin:0 0 8px}
+.bk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+.bk-row:last-child{border-bottom:none}
 .dbtg-hint{font-size:12px;color:var(--muted);margin:2px 0 10px;line-height:1.4}
 .dbtg-swatch{display:inline-block;width:11px;height:11px;background:#fdecea;border:1px solid #d9584c;border-radius:2px;vertical-align:-1px;margin-right:4px}
 .dbtg-wrap{overflow-x:auto;max-height:70vh}
@@ -1461,7 +1464,8 @@ table.hmp .g b{font-size:6.5px}
           <tr><th class="db-chk"><input type="checkbox" id="dbtAll" title="Alle auswählen"></th><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th>Athlet</th><th>Art</th><th class="num">Tore</th><th>Video</th><th></th></tr>
         </thead><tbody id="dbtBody"></tbody></table></div>
         <div id="dbtGridBox" style="display:none">
-          <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><span id="dbtGridInfo" class="lib-count"></span></div>
+          <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><button class="btn-mini" id="dbtGridCsv" style="margin-left:auto">⭳ CSV (Event)</button><span id="dbtGridInfo" class="lib-count"></span></div>
+        <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>Pfeiltasten</b> bewegen zwischen den Zellen, <b>Tab</b> nach rechts — wie in Excel.</div>
           <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0,25 s</b> Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.</div>
           <div class="db-wrap dbtg-wrap" id="dbtGridWrap"></div>
         </div>
@@ -1728,6 +1732,7 @@ table.hmp .g b{font-size:6.5px}
         </div>
       </div>
       <div id="cloudMsg" class="save-msg" style="margin-top:12px"></div>
+      <div id="ghBackups" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"></div>
     </div>
   </div>
 </div>
@@ -3520,11 +3525,12 @@ function download(fn,txt,mime){ const b=new Blob([txt],{type:mime}); const u=URL
 const VDB={db:null};
 function GD(){ return (typeof window!=='undefined' && window.gtgDesktop && typeof window.gtgDesktop.saveVideo==='function') ? window.gtgDesktop : null; }
 function vdbOpen(){ return new Promise((res,rej)=>{ if(VDB.db) return res(VDB.db);
-  let r; try{ r=indexedDB.open('gtg_video_lib',3); }catch(e){ return rej(e); }
+  let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ return rej(e); }
   r.onupgradeneeded=e=>{ const db=e.target.result;
     if(!db.objectStoreNames.contains('videos')) db.createObjectStore('videos',{keyPath:'id'});
     if(!db.objectStoreNames.contains('courses')) db.createObjectStore('courses',{keyPath:'id'});
-    if(!db.objectStoreNames.contains('kurspdf')) db.createObjectStore('kurspdf',{keyPath:'id'}); };
+    if(!db.objectStoreNames.contains('kurspdf')) db.createObjectStore('kurspdf',{keyPath:'id'});
+    if(!db.objectStoreNames.contains('backups')) db.createObjectStore('backups',{keyPath:'id'}); };
   r.onsuccess=e=>{ VDB.db=e.target.result; res(VDB.db); }; r.onerror=()=>rej(r.error); }); }
 function _idbPut(rec,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(rec); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); })); }
 function _idbGet(id,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const rq=db.transaction(store,'readonly').objectStore(store).get(id); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); })); }
@@ -4314,7 +4320,7 @@ let GH={repo:'',branch:'main',path:'gtg_data.json',token:'',auto:true,connected:
 function cloudMsg(t,ok){ const m=$('#cloudMsg'); if(m){ m.className='save-msg'+(ok===false?' warn':ok?' ok':''); m.textContent=t; } }
 function ghSetDot(){ const d=$('#cloudDot'); if(d) d.classList.toggle('online', GH.connected); }
 function ghSaveCfg(){ LS.set('gtg_github',{repo:GH.repo,branch:GH.branch,path:GH.path,token:GH.token,auto:GH.auto}); }
-function cloudOpen(){ const m=$('#cloudModal'); if(m) m.style.display='flex'; ghRenderState(); }
+function cloudOpen(){ const m=$('#cloudModal'); if(m) m.style.display='flex'; ghRenderState(); renderAutoBackups(); }
 function cloudCloseM(){ const m=$('#cloudModal'); if(m) m.style.display='none'; }
 function ghRenderState(){
   if($('#ghConnBox')) $('#ghConnBox').style.display = GH.connected?'none':'';
@@ -4386,7 +4392,26 @@ async function ghPush(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zu
   }catch(e){ if(!silent) cloudMsg('Fehler beim Sichern: '+e.message,false); }
   finally{ GH.syncing=false; }
 }
-function ghAutoSync(){ if(!(GH.connected&&GH.auto)) return; clearTimeout(GH.timer); GH.timer=setTimeout(()=>ghPush(true),1500); }  // gebündelt
+function ghAutoSync(){ scheduleAutoBackup(); if(!(GH.connected&&GH.auto)) return; clearTimeout(GH.timer); GH.timer=setTimeout(()=>ghPush(true),1500); }  // gebündelt
+/* ---- Automatische lokale Sicherungen (rollierend, letzte 10) ---- */
+let _bkTimer=null;
+function scheduleAutoBackup(){ clearTimeout(_bkTimer); _bkTimer=setTimeout(autoBackupSnapshot, 2500); }
+function autoBackupSnapshot(){ try{
+  const snap={ id:Date.now(), at:Date.now(), athletes:(ATHLETES||[]).slice(), runs:(SAVED||[]).slice(), trainRuns:(SAVED_TRAIN||[]).slice(), courses:Object.values(COURSES).filter(c=>!c._hosted) };
+  if(!snap.runs.length && !snap.trainRuns.length && !snap.courses.length) return;   // nichts zu sichern
+  vdbPut(snap,'backups').then(()=>{ vdbAll('backups').then(list=>{ list.sort((a,b)=>b.id-a.id); list.slice(10).forEach(x=>vdbDel(x.id,'backups')); }); }).catch(()=>{});
+}catch(e){} }
+function renderAutoBackups(){ const el=$('#ghBackups'); if(!el) return;
+  vdbAll('backups').then(list=>{ list.sort((a,b)=>b.id-a.id);
+    if(!list.length){ el.innerHTML='<div class="cloud-sec">Automatische lokale Sicherungen</div><div class="c-sub">Noch keine Sicherung — wird nach dem nächsten Speichern automatisch angelegt.</div>'; return; }
+    el.innerHTML='<div class="cloud-sec">Automatische lokale Sicherungen</div><div class="c-sub" style="margin-bottom:6px">Auf diesem Gerät gespeichert. Stellt versehentlich gelöschte Läufe/Kurse wieder her.</div>'+
+      list.map(b=>{ const t=new Date(b.at).toLocaleString('de-CH',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+        return `<div class="bk-row"><span>${t} · ${(b.runs||[]).length} Läufe · ${(b.trainRuns||[]).length} Tr. · ${(b.courses||[]).length} Kurse</span><button class="btn-mini" data-bk="${b.id}">Wiederherstellen</button></div>`; }).join('');
+    el.querySelectorAll('button[data-bk]').forEach(btn=> btn.onclick=()=>restoreAutoBackup(+btn.dataset.bk)); });
+}
+function restoreAutoBackup(id){ vdbGet(id,'backups').then(b=>{ if(!b) return;
+  gtgConfirm({title:'Sicherung wiederherstellen', okLabel:'Wiederherstellen', msg:`Stand vom ${new Date(b.at).toLocaleString('de-CH')} laden? Fehlende Läufe, Trainings und Kurse werden wieder hinzugefügt (nichts wird gelöscht).`})
+    .then(ok=>{ if(!ok) return; ghMergeIn(b); renderAutoBackups(); gtgToast('Sicherung wiederhergestellt.','ok'); }); }).catch(()=>{}); }
 function initCloud(){
   const cfg=LS.get('gtg_github',{}); GH.repo=cfg.repo||''; GH.branch=cfg.branch||'main'; GH.path=cfg.path||'gtg_data.json'; GH.token=cfg.token||''; if(typeof cfg.auto==='boolean') GH.auto=cfg.auto;
   GH.connected = !!(GH.repo && GH.token);
@@ -4405,6 +4430,7 @@ function initCloud(){
 /* ===================== DATENBANK (Events / Taggings / Videos) ===================== */
 let DBSUB='events';
 let DBTVIEW='grid';
+let DBT_GRID_CUR=null;
 function renderDatenbank(){
   if($('#dbSecEvents')) $('#dbSecEvents').style.display = DBSUB==='events'?'':'none';
   if($('#dbSecTaggings')) $('#dbSecTaggings').style.display = DBSUB==='taggings'?'':'none';
@@ -4645,12 +4671,28 @@ function renderDbtGrid(list){
   let h=`<table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet</th><th class="dbtg-src">Quelle</th>`;
   for(let i=0;i<maxG;i++) h+=`<th class="num">${i+1}</th>`;
   h+=`</tr></thead><tbody>`;
-  runs.forEach(r=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
+  runs.forEach((r,ri)=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
     h+=`<tr><td class="dbtg-ath">${r.name}${r.officialBest?' <span class="db-badge gold">Best</span>':''}</td><td class="dbtg-src">${srcB}</td>`;
-    for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></td>`; }
+    for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"></td>`; }
     h+=`</tr>`; });
   h+=`</tbody></table>`; wrap.innerHTML=h;
-  wrap.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); }; });
+  DBT_GRID_CUR={ key:cur, runs, maxG };
+  wrap.querySelectorAll('.dbt-gedit').forEach(inp=>{
+    inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); };
+    inp.onkeydown=e=>{ const c=+inp.dataset.i, tr=+inp.dataset.r; let go=null;
+      if(e.key==='ArrowUp') go=tr-1; else if(e.key==='ArrowDown') go=tr+1; else if(e.key==='Enter') go=e.shiftKey?tr-1:tr+1; else return;
+      e.preventDefault(); const t=wrap.querySelector(`.dbt-gedit[data-r="${go}"][data-i="${c}"]`); if(t){ t.focus(); if(t.select) t.select(); } };
+  });
+}
+function exportDbtGridCsv(){ const c=DBT_GRID_CUR; if(!c||!c.runs||!c.runs.length){ gtgToast('Kein Event ausgewählt.'); return; }
+  const maxG=c.maxG||Math.max(0,...c.runs.map(r=>(r.gates||[]).length));
+  const esc=s=>{ s=String(s==null?'':s); return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+  const head=['Date','Venue','Disciplin','Gender','Run','Skier','Nation','Is fastest','ID',...Array.from({length:maxG},(_,i)=>'Gate '+(i+1))];
+  const rows=c.runs.map(r=>{ const g=(r.gates||[]).map(x=>x==null?'':x); while(g.length<maxG) g.push('');
+    return [r.date,r.venue,r.disc,r.gen,r.run,r.name,r.nation||'',r.officialBest?'yes':'no',runId(r),...g].map(esc).join(','); });
+  const p=(c.key||'').split('|');
+  download(`GtG_Raster_${(p[1]||'Event')}_${p[0]||''}.csv`, [head.map(esc).join(','),...rows].join('\n'), 'text/csv');
+  gtgToast(`${c.runs.length} Läufe als CSV exportiert.`,'ok');
 }
 function dbtSelIds(){ return [...document.querySelectorAll('.dbt-check:checked')].map(c=>decodeURIComponent(c.dataset.id)); }
 function dbtUpdateBulk(){ const ids=dbtSelIds(); if($('#dbtBulk')) $('#dbtBulk').style.display=ids.length?'':'none'; if($('#dbtSel')) $('#dbtSel').textContent=ids.length+' ausgewählt';
@@ -4763,6 +4805,7 @@ function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
   if($('#dbtView')) segFill('#dbtView',['grid','list'], s=> s==='grid'?'Raster':'Liste', DBTVIEW, v=>{ DBTVIEW=v; renderDatenbank(); });
   if($('#dbtGridEvt')) $('#dbtGridEvt').onchange=renderDatenbank;
   if($('#dbtGridAnom')) $('#dbtGridAnom').onchange=renderDatenbank;
+  if($('#dbtGridCsv')) $('#dbtGridCsv').onclick=exportDbtGridCsv;
   if($('#dbtSearch')) $('#dbtSearch').oninput=renderDatenbank;
   ['#dbvMode','#dbvDisc','#dbvGen','#dbvDnf','#dbvSort'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbvSearch')) $('#dbvSearch').oninput=renderDatenbank;
@@ -5406,8 +5449,9 @@ function showUpdateBanner(cur, latest, url){
   dl.onclick=()=>{ const dk=GD();
     if(dk && typeof dk.downloadUpdate==='function'){
       dl.disabled=true; dl.textContent='Lädt…';
+      if(typeof dk.onUpdateProgress==='function' && !dl._progBound){ dl._progBound=true; dk.onUpdateProgress(pct=>{ if(dl.disabled) dl.textContent = pct>=100?'Installer öffnet…':('Lädt… '+pct+' %'); }); }
       Promise.resolve(dk.downloadUpdate()).then(r=>{
-        if(r && r.ok){ dl.textContent='Im Ordner geöffnet ✓'; }
+        if(r && r.ok){ dl.textContent='Installer geöffnet ✓'; }
         else { dl.disabled=false; dl.textContent='Erneut versuchen'; }
       }).catch(()=>{ dl.disabled=false; dl.textContent='Erneut versuchen'; });
     } else { window.open(url||'https://github.com/gate-to-gate/gtg-app/releases/latest','_blank','noopener'); }

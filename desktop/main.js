@@ -92,7 +92,7 @@ ipcMain.handle('gtg:fetchText', async (_e, { url }) => {
 ipcMain.handle('gtg:appVersion', () => app.getVersion());
 
 // Update direkt herunterladen: passenden Installer in den Download-Ordner laden und dort anzeigen.
-ipcMain.handle('gtg:downloadUpdate', async () => {
+ipcMain.handle('gtg:downloadUpdate', async (event) => {
   try {
     const plat = process.platform;
     const file = plat === 'darwin' ? 'Gate-to-Gate-mac.dmg' : plat === 'win32' ? 'Gate-to-Gate-win.exe' : null;
@@ -100,10 +100,20 @@ ipcMain.handle('gtg:downloadUpdate', async () => {
     const url = 'https://github.com/gate-to-gate/gtg-app/releases/latest/download/' + file;
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const buf = Buffer.from(await res.arrayBuffer());
+    const total = parseInt(res.headers.get('content-length') || '0', 10);
+    const send = (pct) => { try { event.sender.send('gtg:updateProgress', pct); } catch (_) {} };
+    let buf;
+    if (res.body && typeof res.body.getReader === 'function' && total) {
+      const reader = res.body.getReader(); const chunks = []; let got = 0, last = -1;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); got += value.length;
+        const pct = Math.floor(got / total * 100); if (pct !== last) { last = pct; send(pct); } }
+      buf = Buffer.concat(chunks.map(c => Buffer.from(c)));
+    } else { buf = Buffer.from(await res.arrayBuffer()); send(100); }
     const dest = path.join(app.getPath('downloads'), file);
     await fsp.writeFile(dest, buf);
+    send(100);
     shell.showItemInFolder(dest);
+    shell.openPath(dest);   // .dmg mounten / .exe-Installer starten
     return { ok: true, path: dest };
   } catch (err) {
     try { shell.openExternal('https://github.com/gate-to-gate/gtg-app/releases/latest'); } catch (_) {}
