@@ -69,6 +69,26 @@ ipcMain.handle('gtg:checkUpdate', async () => {
   }
 });
 
+// Update direkt herunterladen: passenden Installer in den Download-Ordner laden und dort anzeigen.
+ipcMain.handle('gtg:downloadUpdate', async () => {
+  try {
+    const plat = process.platform;
+    const file = plat === 'darwin' ? 'Gate-to-Gate-mac.dmg' : plat === 'win32' ? 'Gate-to-Gate-win.exe' : null;
+    if (!file) { shell.openExternal('https://github.com/gate-to-gate/gtg-app/releases/latest'); return { ok: false }; }
+    const url = 'https://github.com/gate-to-gate/gtg-app/releases/latest/download/' + file;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const buf = Buffer.from(await res.arrayBuffer());
+    const dest = path.join(app.getPath('downloads'), file);
+    await fsp.writeFile(dest, buf);
+    shell.showItemInFolder(dest);
+    return { ok: true, path: dest };
+  } catch (err) {
+    try { shell.openExternal('https://github.com/gate-to-gate/gtg-app/releases/latest'); } catch (_) {}
+    return { ok: false, error: String((err && err.message) || err) };
+  }
+});
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1320, height: 880, minWidth: 900, minHeight: 600,
