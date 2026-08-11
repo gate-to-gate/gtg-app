@@ -666,7 +666,7 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-gate .dbt-gedit:focus{outline:none;border-color:var(--red)}
 .dbt-gate.dbt-anom{background:#fdecea;border-color:#e79a92}
 .dbt-gate.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
-.dbt-viewbar{display:flex;justify-content:flex-end;margin:2px 0 10px}
+.dbt-viewbar{display:flex;justify-content:flex-start;margin:0 0 12px}
 .dbtg-lab{font-size:12px;font-weight:700;color:var(--ink2);margin-right:2px}
 .dbtg-wrap{overflow-x:auto;max-height:70vh}
 .dbtg-table{min-width:max-content;border-collapse:separate;border-spacing:0}
@@ -1420,7 +1420,7 @@ table.hmp .g b{font-size:6.5px}
   <div id="viewDatenbank" style="display:none">
     <div class="card">
       <div class="c-head"><div><h2>Datenbank</h2>
-        <div class="c-sub"><b>Events</b> (Analyse-Übersicht), <b>Taggings</b> (Rohdaten je Lauf, bearbeit- & löschbar) und <b>Videos</b>. Videos sind mit der Video-Bibliothek verknüpft — keine Kopie.</div></div>
+        <div class="c-sub"><b>Events</b>, <b>Taggings</b> (editierbar), <b>Videos</b>, <b>Kurssetzung</b>.</div></div>
         <div class="seg-toggle seg-sm" id="dbSub"></div>
       </div>
 
@@ -1440,6 +1440,7 @@ table.hmp .g b{font-size:6.5px}
       </div>
 
       <div id="dbSecTaggings" style="display:none">
+        <div class="dbt-viewbar"><div class="seg-toggle seg-sm" id="dbtView"></div></div>
         <div class="db-filters">
           <input type="text" id="dbtSearch" class="lib-search" placeholder="Suche Ort oder Athlet …">
           <select id="dbtMode" class="mini"><option value="">Wettkampf + Training</option><option value="comp">Wettkampf</option><option value="train">Training</option></select>
@@ -1450,7 +1451,6 @@ table.hmp .g b{font-size:6.5px}
           <select id="dbtDnf" class="mini"><option value="">Alle Läufe</option><option value="dnf">Nur DNF (wenig Tore)</option><option value="full">Nur vollständige</option></select>
           <span id="dbtCount" class="lib-count"></span>
         </div>
-        <div class="dbt-viewbar"><div class="seg-toggle seg-sm" id="dbtView"></div></div>
         <div class="db-bulk" id="dbtBulk" style="display:none"><span class="db-selinfo" id="dbtSel">0 ausgewählt</span><button class="btn-mini" id="dbtExport">⭳ Zeiten exportieren (CSV)</button><button class="btn-mini del" id="dbtDel">Ausgewählte löschen</button></div>
         <div class="db-wrap" id="dbtListBox"><table class="db-table"><thead>
           <tr><th class="db-chk"><input type="checkbox" id="dbtAll" title="Alle auswählen"></th><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th>Athlet</th><th>Art</th><th class="num">Tore</th><th>Video</th><th></th></tr>
@@ -4398,7 +4398,7 @@ function initCloud(){
 
 /* ===================== DATENBANK (Events / Taggings / Videos) ===================== */
 let DBSUB='events';
-let DBTVIEW='list';
+let DBTVIEW='grid';
 function renderDatenbank(){
   if($('#dbSecEvents')) $('#dbSecEvents').style.display = DBSUB==='events'?'':'none';
   if($('#dbSecTaggings')) $('#dbSecTaggings').style.display = DBSUB==='taggings'?'':'none';
@@ -4748,7 +4748,7 @@ function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
   ['#dbDisc','#dbGen','#dbMode','#dbSrc','#dbStatus'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbSearch')) $('#dbSearch').oninput=renderDatenbank;
   ['#dbtMode','#dbtDisc','#dbtGen','#dbtVid','#dbtDnf','#dbtSrc'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
-  if($('#dbtView')) segFill('#dbtView',['list','grid'], s=> s==='list'?'Liste':'Raster (wie Excel)', DBTVIEW, v=>{ DBTVIEW=v; renderDatenbank(); });
+  if($('#dbtView')) segFill('#dbtView',['grid','list'], s=> s==='grid'?'Raster':'Liste', DBTVIEW, v=>{ DBTVIEW=v; renderDatenbank(); });
   if($('#dbtGridEvt')) $('#dbtGridEvt').onchange=renderDatenbank;
   if($('#dbtSearch')) $('#dbtSearch').oninput=renderDatenbank;
   ['#dbvMode','#dbvDisc','#dbvGen','#dbvDnf','#dbvSort'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
