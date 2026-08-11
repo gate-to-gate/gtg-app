@@ -280,7 +280,8 @@ body.coach #appFooter{display:none}
 .seg-toggle .seg-btn{border:none;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#59636f;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.12s;white-space:nowrap}
 .f .seg-toggle{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
 .f .seg-toggle .seg-btn{display:flex;align-items:center;padding:0 14px;font-size:12.5px}
-#kFiltDisc .seg-btn,#kFiltGen .seg-btn{display:flex;align-items:center;height:34px;padding:0 14px;font-size:12.5px}
+#kFiltDisc,#kFiltGen{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
+#kFiltDisc .seg-btn,#kFiltGen .seg-btn{display:flex;align-items:center;padding:0 14px;font-size:12.5px}
 .seg-toggle .seg-btn:hover{color:var(--ink)}
 .seg-toggle .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.22)}
 /* Ansicht-Umschalter dunkler/prägnanter als die übrigen */
@@ -668,12 +669,15 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-gate.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
 .dbt-viewseg{margin-left:auto;align-self:center}
 .dbtg-lab{font-size:12px;font-weight:700;color:var(--ink2);margin-right:2px}
+.dbtg-hint{font-size:12px;color:var(--muted);margin:2px 0 10px;line-height:1.4}
+.dbtg-swatch{display:inline-block;width:11px;height:11px;background:#fdecea;border:1px solid #d9584c;border-radius:2px;vertical-align:-1px;margin-right:4px}
 .dbtg-wrap{overflow-x:auto;max-height:70vh}
 .dbtg-table{min-width:max-content;border-collapse:separate;border-spacing:0}
 .dbtg-table th,.dbtg-table td{padding:3px 5px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line)}
 .dbtg-table thead th{position:sticky;top:0;background:var(--card);z-index:1;font-size:11px;color:var(--muted)}
-.dbtg-table .dbtg-ath{position:sticky;left:0;background:var(--card);text-align:left;font-weight:700;z-index:2;box-shadow:1px 0 0 var(--line);min-width:150px}
-.dbtg-table thead .dbtg-ath{z-index:3}
+.dbtg-table .dbtg-ath{position:sticky;left:0;background:var(--card);text-align:left;font-weight:700;z-index:2;width:165px;min-width:165px;max-width:165px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbtg-table .dbtg-src{position:sticky;left:165px;background:var(--card);text-align:left;z-index:2;box-shadow:1px 0 0 var(--line);white-space:nowrap}
+.dbtg-table thead .dbtg-ath,.dbtg-table thead .dbtg-src{z-index:3}
 .dbtg-cell .dbt-gedit{width:54px;border:1px solid var(--line);border-radius:5px;padding:1px 3px;font:inherit;font-size:11px;font-variant-numeric:tabular-nums;text-align:center}
 .dbtg-cell .dbt-gedit:focus{outline:none;border-color:var(--red)}
 .dbtg-cell.dbt-anom{background:#fdecea}
@@ -1457,6 +1461,7 @@ table.hmp .g b{font-size:6.5px}
         </thead><tbody id="dbtBody"></tbody></table></div>
         <div id="dbtGridBox" style="display:none">
           <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><span id="dbtGridInfo" class="lib-count"></span></div>
+          <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0,25 s</b> Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.</div>
           <div class="db-wrap dbtg-wrap" id="dbtGridWrap"></div>
         </div>
       </div>
@@ -4597,7 +4602,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
     const _stats={}; all.forEach(r=>{ const k=medK(r), st=_stats[k]||(_stats[k]={}); (r.gates||[]).forEach((g,i)=>{ if(g==null) return; (st[i]=st[i]||[]).push(+g); }); });
     const _evMed={}; Object.keys(_stats).forEach(k=>{ const per=_stats[k], out={}; Object.keys(per).forEach(i=>{ const vals=per[i]; if(vals.length<3) return; const md=_median(vals); const mad=_median(vals.map(v=>Math.abs(v-md)))||0; out[i]={md,mad}; }); _evMed[k]=out; });
-    const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; const thr=Math.max(0.4, 5*s.mad); return Math.abs(+g - s.md) > thr; }); };
+    const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g - s.md) >= 0.25; }); };   // ≥ 0,25 s Abweichung zum Median
     const wireDetail=inner=>{ if(!inner || inner.dataset.built==='1') return; const encId=inner.dataset.id, id=decodeURIComponent(encId), r=byId[id]; inner.dataset.built='1'; if(!r) return;
       const hasV=VIDS.has(id); const delBtn=r._databank?'':`<button class="btn-mini del" data-deltag="${encId}">Tagging löschen</button>`;
       inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`;
@@ -4629,12 +4634,12 @@ function renderDbtGrid(list){
   const maxG=Math.max(0,...runs.map(r=>(r.gates||[]).length));
   const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
   const per={}; for(let i=0;i<maxG;i++){ const vals=runs.map(r=>(r.gates||[])[i]).filter(v=>v!=null).map(v=>+v); if(vals.length>=3){ const md=_median(vals); per[i]={md, mad:_median(vals.map(v=>Math.abs(v-md)))||0}; } }
-  const bad=(g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g-s.md) > Math.max(0.4, 5*s.mad); };
-  let h=`<table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet</th>`;
+  const bad=(g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g-s.md) >= 0.25; };   // ≥ 0,25 s Abweichung zum Median
+  let h=`<table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet</th><th class="dbtg-src">Quelle</th>`;
   for(let i=0;i<maxG;i++) h+=`<th class="num">${i+1}</th>`;
   h+=`</tr></thead><tbody>`;
-  runs.forEach(r=>{ const id=encodeURIComponent(runId(r));
-    h+=`<tr><td class="dbtg-ath">${r.name}${r.officialBest?' <span class="db-badge gold">Best</span>':''}${r._databank?'':' <span class="db-badge tg">getaggt</span>'}</td>`;
+  runs.forEach(r=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
+    h+=`<tr><td class="dbtg-ath">${r.name}${r.officialBest?' <span class="db-badge gold">Best</span>':''}</td><td class="dbtg-src">${srcB}</td>`;
     for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></td>`; }
     h+=`</tr>`; });
   h+=`</tbody></table>`; wrap.innerHTML=h;
