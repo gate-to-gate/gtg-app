@@ -4062,9 +4062,11 @@ function processNextCourse(){
 function advanceQueue(){ if(KIDX < KQUEUE.length-1){ KIDX++; processNextCourse(); }
   else { closeKursModal(); } }
 function initKurs(){
-  vdbAll('courses').then(list=>{ (list||[]).forEach(c=>COURSES[c.id]=c); renderCourseList(); fillKScope();
+  vdbAll('courses').then(list=>{ (list||[]).forEach(c=>COURSES[c.id]=c); return seedHostedCourses(); }).then(()=>{
+    renderCourseList(); fillKScope();
     if(S.comp){ try{ drawHero(); }catch(e){} }   // Höhenprofil nach dem (asynchronen) Laden der Kurse nachzeichnen
-    if(typeof renderKursAnalysis==='function' && S.view==='kurs'){ try{ renderKursAnalysis(); }catch(e){} } });
+    if(typeof renderKursAnalysis==='function' && S.view==='kurs'){ try{ renderKursAnalysis(); }catch(e){} }
+    if(typeof renderDatenbank==='function' && S.view==='datenbank'){ try{ renderDatenbank(); }catch(e){} } });
   const today=new Date().toISOString().slice(0,10); if($('#kDate')) $('#kDate').value=today;
   fillKVenue();
   $('#kVenueSel').onchange=e=>{ const nw=$('#kVenueNew'); if(e.target.value==='__new__'){ nw.style.display=''; nw.value=''; nw.focus(); } else nw.style.display='none'; };
@@ -4401,11 +4403,24 @@ function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
       delete COURSES[id]; vdbDel(id,'courses'); vdbDel(id,'kurspdf'); ghAutoSync();
       renderDbKurs(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope(); if(typeof renderKursAnalysis==='function') renderKursAnalysis(); }); });
 }
+const KURS_BASE='https://gate-to-gate.github.io/gtg-app/kurs/';
+function seedHostedCourses(){
+  const url=KURS_BASE+'manifest.json'; const dk=GD();
+  const getTxt=(dk&&dk.fetchText)? Promise.resolve(dk.fetchText(url)).catch(()=>null)
+    : fetch(url,{cache:'no-store'}).then(r=>r.ok?r.text():null).catch(()=>null);
+  return getTxt.then(txt=>{ if(!txt) return; let list; try{ list=JSON.parse(txt); }catch(e){ return; }
+    (list||[]).forEach(c=>{ const pdfUrl=c.pdf?(KURS_BASE+c.pdf):null;
+      if(!COURSES[c.id]){ COURSES[c.id]={id:c.id,date:c.date,venue:c.venue,disc:c.disc,gen:c.gen,run:c.run,gates:c.gates||[],savedAt:0,_hosted:true,_pdf:pdfUrl}; }
+      else if(!COURSES[c.id]._pdf && pdfUrl){ COURSES[c.id]._pdf=pdfUrl; }
+    });
+  }).catch(()=>{});
+}
 function openKursPdf(id){
+  const c=COURSES[id];
   vdbGet(id,'kurspdf').then(rec=>{
     if(rec && rec.pdf){ const url=URL.createObjectURL(rec.pdf); window.open(url,'_blank'); setTimeout(()=>URL.revokeObjectURL(url),60000); return; }
-    const url='kurs/'+encodeURIComponent(id)+'.pdf';   // Fallback: vorab eingebaute Saison-PDFs
-    fetch(url,{method:'HEAD'}).then(r=>{ if(r.ok) window.open(url,'_blank'); else gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.'); }).catch(()=>gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.'));
+    if(c && c._pdf){ window.open(c._pdf,'_blank'); return; }   // vorab eingebaute Saison-PDF (gehostet)
+    gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.');
   }).catch(()=>gtgToast('PDF konnte nicht geladen werden.'));
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }

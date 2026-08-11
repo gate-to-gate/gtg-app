@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('gtgDesktop', {
   checkUpdate: () => ipcRenderer.invoke('gtg:checkUpdate'),
   downloadUpdate: () => ipcRenderer.invoke('gtg:downloadUpdate'),
   appVersion: () => ipcRenderer.invoke('gtg:appVersion'),
+  fetchText: (url) => ipcRenderer.invoke('gtg:fetchText', { url }),
   platform: process.platform,
   version: '1.0.0'
 });

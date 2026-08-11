@@ -21,3 +21,7 @@ desktop/node_modules/
 desktop/dist/
 desktop/renderer/
 desktop/package-lock.json
+
+# Roh-Ordner mit den Kurssetzungs-PDFs (liegt lokal); ins Repo geht nur der aufbereitete kurs/-Ordner
+Kurssetzungsdokumente*/
+GtG_tagging_backup.json

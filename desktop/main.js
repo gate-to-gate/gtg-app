@@ -82,6 +82,12 @@ ipcMain.handle('gtg:checkUpdate', async () => {
   }
 });
 
+// Text von einer URL holen (im Node-Prozess -> kein CORS). Für das Kurs-Manifest.
+ipcMain.handle('gtg:fetchText', async (_e, { url }) => {
+  try { const res = await fetch(url); if (!res.ok) return null; return await res.text(); }
+  catch (_err) { return null; }
+});
+
 // Aktuelle App-Version (für die Anzeige in der Fusszeile).
 ipcMain.handle('gtg:appVersion', () => app.getVersion());
 
