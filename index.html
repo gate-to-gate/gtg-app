@@ -660,6 +660,8 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .dbt-gate{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:11.5px;font-variant-numeric:tabular-nums}
 .dbt-gate .dbt-gedit{width:58px;border:1px solid var(--line);border-radius:5px;padding:1px 4px;font:inherit;font-size:11px;font-variant-numeric:tabular-nums}
 .dbt-gate .dbt-gedit:focus{outline:none;border-color:var(--red)}
+.dbt-gate.dbt-anom{background:#fdecea;border-color:#e79a92}
+.dbt-gate.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
 .dbt-gate b{color:var(--ink)}
 .dbt-gate .fig{font-weight:800;color:#5b6cff}
 .dbt-actions{display:flex;gap:8px;margin-top:10px}
@@ -1426,6 +1428,7 @@ table.hmp .g b{font-size:6.5px}
           <select id="dbtMode" class="mini"><option value="">Wettkampf + Training</option><option value="comp">Wettkampf</option><option value="train">Training</option></select>
           <select id="dbtDisc" class="mini"><option value="">Alle Disziplinen</option><option value="GS">Riesenslalom</option><option value="SL">Slalom</option><option value="SG">Super-G</option><option value="DH">Abfahrt</option></select>
           <select id="dbtGen" class="mini"><option value="">M + W</option><option value="M">Männer</option><option value="W">Frauen</option></select>
+          <select id="dbtSrc" class="mini"><option value="">Alle Quellen</option><option value="tag">Nur getaggt</option><option value="db">Nur Databank</option></select>
           <select id="dbtVid" class="mini"><option value="">Mit + ohne Video</option><option value="1">Nur mit Video</option><option value="0">Nur ohne Video</option></select>
           <select id="dbtDnf" class="mini"><option value="">Alle Läufe</option><option value="dnf">Nur DNF (wenig Tore)</option><option value="full">Nur vollständige</option></select>
           <span id="dbtCount" class="lib-count"></span>
@@ -4497,32 +4500,54 @@ function applyEventOverrides(){ const ov=LS.get('gtg_event_override',{}); if(!ov
   [DATA,TRAIN].forEach(arr=> arr.forEach(e=>{ if(e._origKey) return; const o=ov[evKey(e)]; if(o){ e._origKey=evKey(e); e.date=o.date; e.venue=o.venue; e.discipline=o.discipline; e.gender=o.gender; e.run=+o.run; try{recomputeEvent(e);}catch(_){} } })); }
 
 /* ---- Taggings (Rohdaten je Lauf) ---- */
-function dbAllTaggings(){ const list=[...SAVED.map(r=>({...r,mode:r.mode||'comp'})), ...SAVED_TRAIN.map(r=>({...r,mode:'train'}))];
+function dbAllTaggings(){
+  const tagged=[...SAVED.map(r=>({...r,mode:r.mode||'comp'})), ...SAVED_TRAIN.map(r=>({...r,mode:'train'}))];
+  const taggedIds=new Set(tagged.map(r=>runId(r)));
+  const dbRuns=[];
+  const push=(arr,mode)=> (arr||[]).forEach(e=> (e.skiers||[]).forEach(s=>{
+    const rec={date:e.date,venue:e.venue,disc:e.discipline,gen:e.gender,run:e.run,name:s.name,nation:s.nation,
+      gates:s.gates||[], figures:(e.figures||[]).map(f=>({gate:f.gate,label:f.label})), mode, officialBest:!!s.fastest, _databank:true};
+    if(!taggedIds.has(runId(rec))) dbRuns.push(rec);
+  }));
+  push(DATA,'comp'); push(TRAIN,'train');
+  const list=[...tagged, ...dbRuns];
   return list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.venue||'').localeCompare(b.venue) || ((+a.run)-(+b.run)) || (a.name||'').localeCompare(b.name)); }
 function cssEsc(s){ return String(s).replace(/["\\]/g,'\\$&'); }
-function dbtGatesHtml(r, enc){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
+function dbtGatesHtml(r, enc, anom){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
   if(!gates.length) return '<div class="empty">Keine Tore.</div>';
-  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi];
-    return `<span class="dbt-gate"><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}<input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
-  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>:</div><div class="dbt-gates">${cells}</div>`; }
+  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi]; const bad=anom&&anom[i];
+    return `<span class="dbt-gate${bad?' dbt-anom':''}"${bad?' title="Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt"':''}><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}<input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
+  const nBad=anom?anom.filter(Boolean).length:0;
+  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
 function editTagGate(id, i, val){
   let rec=SAVED.find(r=>runId(r)===id), isT=false;
   if(!rec){ rec=SAVED_TRAIN.find(r=>runId(r)===id); isT=true; }
-  if(!rec||!rec.gates||i<0||i>=rec.gates.length) return;
-  rec.gates[i]=val;
-  LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
-  try{ applyRun(rec); }catch(e){}
-  ghAutoSync(); buildFilters();
-  gtgToast('Gate '+(i+1)+' aktualisiert.','ok');
+  if(rec){ if(!rec.gates||i<0||i>=rec.gates.length) return;
+    rec.gates[i]=val; LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
+    try{ applyRun(rec); }catch(e){} ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; }
+  // Databank-Lauf: passenden Event-Skier direkt bearbeiten und dauerhaft merken
+  const p=id.split('|'); const date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4],name=p.slice(5).join('|');
+  for(const arr of [DATA,TRAIN]){ const e=arr.find(x=>x.date===date&&x.venue===venue&&x.discipline===disc&&x.gender===gen&&String(x.run)===String(run));
+    if(e){ const s=(e.skiers||[]).find(x=>x.name===name); if(s&&s.gates&&i>=0&&i<s.gates.length){
+      s.gates[i]=val; try{ recomputeEvent(e); }catch(_){}
+      const ov=LS.get('gtg_gate_override',{}); ov[id]=s.gates.slice(); LS.set('gtg_gate_override',ov);
+      ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; } } }
+}
+function applyGateOverrides(){ const ov=LS.get('gtg_gate_override',{}); if(!ov||!Object.keys(ov).length) return;
+  const touched=new Set();
+  [DATA,TRAIN].forEach(arr=> (arr||[]).forEach(e=> (e.skiers||[]).forEach(s=>{ const id=`${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}|${s.name}`;
+    if(ov[id]){ s.gates=ov[id].slice(); touched.add(e); } })));
+  touched.forEach(e=>{ try{ recomputeEvent(e); }catch(_){} });
 }
 function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
-  const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'';
+  const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'', fsrc=$('#dbtSrc')?.value||'';
   vdbAll().then(vlist=>{ const VIDS=new Set((vlist||[]).map(v=>v.id));
     const all=dbAllTaggings();
     // pro Lauf höchste Tor-Zahl -> DNF-Erkennung
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.gates||[]).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
     const isDnfRec=r=>{ const mx=evtMax[`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`]||0, nt=(r.gates||[]).length; return mx>=8 && nt>0 && nt<mx-3; };
     const list=all.filter(r=>{ if(fm&&r.mode!==fm) return false; if(fd&&r.disc!==fd) return false; if(fg&&r.gen!==fg) return false;
+      if(fsrc==='tag'&&r._databank) return false; if(fsrc==='db'&&!r._databank) return false;
       if(fv==='1'&&!VIDS.has(runId(r))) return false; if(fv==='0'&&VIDS.has(runId(r))) return false;
       if(fdnf==='dnf'&&!isDnfRec(r)) return false; if(fdnf==='full'&&isDnfRec(r)) return false;
       if(q){ if(!((r.venue+' '+r.name).toLowerCase().includes(q))) return false; } return true; });
@@ -4535,19 +4560,29 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id);
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
+      const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
       const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
-      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner">${dbtGatesHtml(r, enc)}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${enc}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button><button class="btn-mini del" data-deltag="${enc}">Tagging löschen</button></div></div></td></tr>`;
-      return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${r.gen}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
+      return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${r.gen}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
     }).join('');
-    const toggle=id=>{ const det=body.querySelector(`.dbt-detail[data-for="${cssEsc(id)}"]`), row=body.querySelector(`.dbt-row[data-id="${cssEsc(id)}"]`); if(!det) return; const open=det.style.display==='none'; det.style.display=open?'':'none'; if(row) row.classList.toggle('dbt-open',open); };
+    const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
+    // pro Event+Tor Median/MAD über alle Athleten -> Ausreisser (Sync-/Schnittfehler) markieren
+    const medK=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`;
+    const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+    const _stats={}; all.forEach(r=>{ const k=medK(r), st=_stats[k]||(_stats[k]={}); (r.gates||[]).forEach((g,i)=>{ if(g==null) return; (st[i]=st[i]||[]).push(+g); }); });
+    const _evMed={}; Object.keys(_stats).forEach(k=>{ const per=_stats[k], out={}; Object.keys(per).forEach(i=>{ const vals=per[i]; if(vals.length<3) return; const md=_median(vals); const mad=_median(vals.map(v=>Math.abs(v-md)))||0; out[i]={md,mad}; }); _evMed[k]=out; });
+    const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; const thr=Math.max(0.4, 5*s.mad); return Math.abs(+g - s.md) > thr; }); };
+    const wireDetail=inner=>{ if(!inner || inner.dataset.built==='1') return; const encId=inner.dataset.id, id=decodeURIComponent(encId), r=byId[id]; inner.dataset.built='1'; if(!r) return;
+      const hasV=VIDS.has(id); const delBtn=r._databank?'':`<button class="btn-mini del" data-deltag="${encId}">Tagging löschen</button>`;
+      inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`;
+      inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
+        inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); }; });
+      const eb=inner.querySelector('button[data-edit]'); if(eb) eb.onclick=e=>{ e.stopPropagation(); editTagging(decodeURIComponent(eb.dataset.edit)); };
+      const db=inner.querySelector('button[data-deltag]'); if(db) db.onclick=e=>{ e.stopPropagation(); const gid=decodeURIComponent(db.dataset.deltag), nm=gid.split('|').slice(5).join('|');
+        gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).`}).then(okc=>{ if(okc) deleteTagging(gid); }); };
+    };
+    const toggle=id=>{ const det=body.querySelector(`.dbt-detail[data-for="${cssEsc(id)}"]`), row=body.querySelector(`.dbt-row[data-id="${cssEsc(id)}"]`); if(!det) return; const open=det.style.display==='none'; if(open) wireDetail(det.querySelector('.dbt-inner')); det.style.display=open?'':'none'; if(row) row.classList.toggle('dbt-open',open); };
     body.querySelectorAll('.dbt-row').forEach(tr=> tr.onclick=e=>{ if(e.target.closest('.db-chk')) return; if(e.target.closest('button')&&!e.target.closest('button[data-open]')) return; toggle(tr.dataset.id); });
-    body.querySelectorAll('button[data-edit]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); editTagging(decodeURIComponent(b.dataset.edit)); });
-    body.querySelectorAll('button[data-deltag]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); const id=decodeURIComponent(b.dataset.deltag), nm=id.split('|')[5];
-      gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).`})
-        .then(okc=>{ if(okc) deleteTagging(id); }); });
-    body.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
-      inp.onchange=()=>{ const id=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value);
-        editTagGate(id, i, isFinite(v)?Math.round(v*1000)/1000:null); }; });
     body.querySelectorAll('.dbt-check').forEach(c=> c.onclick=e=>{ e.stopPropagation(); dbtUpdateBulk(); });
     if($('#dbtAll')){ $('#dbtAll').checked=false; $('#dbtAll').onclick=()=>{ body.querySelectorAll('.dbt-check').forEach(c=>c.checked=$('#dbtAll').checked); dbtUpdateBulk(); }; }
     if($('#dbtDel')) $('#dbtDel').onclick=dbtDeleteSelected;
@@ -4662,7 +4697,7 @@ function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
   if($('#evEditModal')) $('#evEditModal').addEventListener('click',e=>{ if(e.target.id==='evEditModal') closeEvEdit(); });
   ['#dbDisc','#dbGen','#dbMode','#dbSrc','#dbStatus'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbSearch')) $('#dbSearch').oninput=renderDatenbank;
-  ['#dbtMode','#dbtDisc','#dbtGen','#dbtVid','#dbtDnf'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
+  ['#dbtMode','#dbtDisc','#dbtGen','#dbtVid','#dbtDnf','#dbtSrc'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbtSearch')) $('#dbtSearch').oninput=renderDatenbank;
   ['#dbvMode','#dbvDisc','#dbvGen','#dbvDnf','#dbvSort'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbvSearch')) $('#dbvSearch').oninput=renderDatenbank;
@@ -5321,6 +5356,7 @@ function showUpdateBanner(cur, latest, url){
   }).catch(()=>{});
 })();
 applyEventOverrides();  // nachträglich bearbeitete Event-Parameter (Datum/Ort/Lauf …) anwenden
+applyGateOverrides();   // nachträglich bearbeitete Gate-Zeiten von Databank-Läufen anwenden
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
