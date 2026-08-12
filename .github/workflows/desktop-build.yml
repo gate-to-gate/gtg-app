@@ -64,4 +64,6 @@ jobs:
           files: |
             desktop/dist/*.dmg
             desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/latest.yml
           fail_on_unmatched_files: false

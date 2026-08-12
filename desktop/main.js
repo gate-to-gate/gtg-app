@@ -5,6 +5,32 @@ const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
 
+// Auto-Update nur auf Windows (differenzieller Download über electron-updater;
+// braucht keine Code-Signatur/Kosten). macOS bleibt beim manuellen DMG-Banner,
+// weil der Mac-Updater eine kostenpflichtige Apple-Developer-Signatur verlangt.
+let autoUpdater = null;
+if (process.platform === 'win32') {
+  try { autoUpdater = require('electron-updater').autoUpdater; } catch (_e) { autoUpdater = null; }
+}
+function setupWinUpdater(win) {
+  if (!autoUpdater) return;
+  try {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    const send = (ch, v) => { try { win.webContents.send(ch, v); } catch (_) {} };
+    autoUpdater.on('update-available', (info) => send('gtg:updateAvailable', info && info.version));
+    autoUpdater.on('download-progress', (p) => send('gtg:updateProgress', Math.floor((p && p.percent) || 0)));
+    autoUpdater.on('update-downloaded', (info) => send('gtg:updateReady', info && info.version));
+    autoUpdater.on('error', () => {});
+    autoUpdater.checkForUpdates().catch(() => {});
+    setInterval(() => { autoUpdater.checkForUpdates().catch(() => {}); }, 6 * 60 * 60 * 1000);
+  } catch (_e) {}
+}
+ipcMain.handle('gtg:quitAndInstall', () => {
+  try { if (autoUpdater) autoUpdater.quitAndInstall(); } catch (_e) {}
+  return { ok: true };
+});
+
 // Videos landen hier: ~/Library/Application Support/Gate-to-Gate/videos (Mac)
 //                     %APPDATA%/Gate-to-Gate/videos (Windows)
 function videoDir(){ return path.join(app.getPath('userData'), 'videos'); }
@@ -133,6 +159,7 @@ function createWindow() {
     }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  if (process.platform === 'win32') win.webContents.once('did-finish-load', () => setupWinUpdater(win));
   // externe Links (GitHub, Cloudflare-Anleitung usw.) im Standardbrowser öffnen
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/i.test(url)) { shell.openExternal(url); return { action: 'deny' }; }

@@ -13,6 +13,18 @@
   --shadow:0 1px 3px rgba(20,24,31,.06),0 6px 22px rgba(20,24,31,.06);
   --top:#9aa3af;
 }
+/* Dark-Mode: dunkle Chrome, Datenflächen/Charts bleiben hell & lesbar */
+body.dark{
+  --ink:#e7ebf1; --ink2:#c4ccd6; --muted:#98a2b0; --line:#2b323c;
+  --bg:#0f1319; --card:#171d26; --good-l:#123024; --bad-l:#33191a;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.45); --top:#7a8494;
+}
+body.dark header{background:#171d26;border-bottom:1px solid #232a34}
+body.dark .hdr-ico,body.dark .pdf-btn,body.dark select,body.dark input,body.dark .seg-toggle{background:#1f2632;color:var(--ink);border-color:#2b323c}
+body.dark .hdr-ico:hover{background:#283040}
+body.dark .brand-sub,body.dark .brand .sub{color:#8b95a3}
+body.dark .chart-shell,body.dark .pf-radar svg{background:#f4f6f9;border-radius:10px}
+body.dark #darkBtn{background:var(--red);border-color:var(--red);color:#fff}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
@@ -45,6 +57,16 @@ header{background:#fff;color:var(--ink);padding:8px 0 0;margin-bottom:16px;posit
 .hdr-sep{align-self:stretch;width:1px;background:var(--line);margin:6px 5px}
 .cloud-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#8b98a6;border:1.5px solid #fff}
 .cloud-dot.online{background:#22c55e}
+.cloud-dot.warn{background:#f59e0b}
+.cloud-badge{position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#f59e0b;color:#fff;font-size:9.5px;font-weight:800;line-height:15px;text-align:center;border:1.5px solid #fff}
+body.dark .cloud-badge{border-color:#171d26}
+.gh-status{font-size:12px;font-weight:600;border-radius:8px;padding:7px 10px;margin:8px 0;display:flex;align-items:center;gap:7px}
+.gh-status:before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:currentColor;opacity:.85}
+.gh-status.ok{background:var(--good-l);color:var(--good)}
+.gh-status.dirty{background:#fdf3e2;color:#b5730a}
+.gh-status.sync{background:#eef4ff;color:#2b6cb0}
+.gh-status.off{background:var(--bg);color:var(--muted)}
+body.dark .gh-status.dirty{background:#2a2113}
 .upd-banner{display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap;background:#fff4e5;border-bottom:1px solid #f0d9b0;color:#7a4b00;font-size:12.5px;font-weight:600;padding:9px 16px}
 .upd-banner .ub-dl{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;text-decoration:none;padding:5px 13px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer}
 .upd-banner .ub-dl:disabled{opacity:.75;cursor:default}
@@ -363,6 +385,43 @@ body.coach #appFooter{display:none}
 /* SVG chart shell */
 .chart-shell{position:relative;width:100%}
 svg.chart{width:100%;display:block;overflow:visible}
+/* Athleten-Profil */
+.pf-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:720px){.pf-kpis{grid-template-columns:repeat(2,1fr)}}
+.pf-kpi{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.pf-kl{font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
+.pf-kv{font-size:24px;font-weight:800;color:var(--ink);margin-top:3px;line-height:1.1}
+.pf-ks{font-size:11.5px;color:var(--muted);margin-top:3px}
+.pf-sec{font-size:13px;color:var(--ink2);margin:2px 0 10px}
+.pf-sec b{color:var(--ink)}
+.pf-bars{display:flex;flex-direction:column;gap:9px}
+.pf-bar{display:grid;grid-template-columns:96px 1fr 74px;align-items:center;gap:10px}
+.pf-bl{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.pf-bl .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pf-track{position:relative;height:20px;background:var(--bg);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.pf-mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#c3cad4}
+.pf-fill{position:absolute;top:2px;bottom:2px;border-radius:4px}
+.pf-fill.neg{background:var(--good)}
+.pf-fill.pos{background:var(--bad)}
+.pf-bv{font-size:12.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.pf-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin:6px 0 0;padding:0 84px 0 106px}
+.pf-races{display:flex;gap:10px;flex-wrap:wrap}
+.pf-race{flex:1 1 240px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:10px 13px;background:var(--card)}
+.pf-race.best{border-left-color:var(--good)}
+.pf-race.worst{border-left-color:var(--bad)}
+.pf-race .pf-rt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.pf-race .pf-rn{font-size:13px;font-weight:600;color:var(--ink)}
+.pf-race b{font-size:15px;font-variant-numeric:tabular-nums}
+.pf-radarwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pf-radar{flex:1 1 340px;min-width:280px}
+.pf-vtab{flex:1 1 240px;min-width:220px;display:flex;flex-direction:column;gap:2px}
+.pf-vrow{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:7px 10px;border-radius:8px;font-size:13px}
+.pf-vrow:nth-child(even){background:var(--bg)}
+.pf-vrow span:nth-child(1){display:flex;align-items:center;gap:7px;font-weight:600}
+.pf-vrow span:nth-child(2),.pf-vrow span:nth-child(3){text-align:right;font-weight:800;font-variant-numeric:tabular-nums;min-width:64px}
+.pf-vrow .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pf-vhead{font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);background:none!important}
+.pf-vhead span{font-weight:700!important}
 .tt{position:absolute;pointer-events:none;background:#14181f;color:#fff;border-radius:9px;padding:9px 11px;font-size:12px;
   box-shadow:0 8px 26px rgba(0,0,0,.28);opacity:0;transition:opacity .1s;z-index:30;min-width:120px;transform:translate(-50%,-112%)}
 .tt .tt-h{font-weight:700;font-size:11px;color:#aeb8c6;margin-bottom:5px;letter-spacing:.03em}
@@ -1092,9 +1151,13 @@ table.hmp .g b{font-size:6.5px}
     <button id="cloudBtn" class="hdr-ico" title="Cloud — Online-Sync & Backup">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg>
       <span class="cloud-dot" id="cloudDot"></span>
+      <span class="cloud-badge" id="cloudBadge" style="display:none"></span>
     </button>
     <button id="sbsBtn" class="hdr-ico" title="Side by Side — zwei Läufe synchron vergleichen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/><path d="M6.5 9.5l2.5 2.5-2.5 2.5" fill="none"/><path d="M17.5 9.5L15 12l2.5 2.5" fill="none"/></svg>
+    </button>
+    <button id="darkBtn" class="hdr-ico" title="Dunkelmodus umschalten (Videoanalyse am Abend)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
     <span class="hdr-sep" aria-hidden="true"></span>
     <button id="pdfBtn" class="pdf-btn" onclick="window.print()" title="Als PDF speichern / drucken">
@@ -1183,6 +1246,22 @@ table.hmp .g b{font-size:6.5px}
         <div id="vlChips" class="kf-bar" style="margin-bottom:10px"></div>
         <div class="chart-shell" id="vlShell"></div>
         <div id="vlInsight" class="kins" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div id="anaProfil" style="display:none">
+      <div class="filters">
+        <div class="f" style="flex:0 0 auto;min-width:0"><label>Disziplin</label><div id="pfDisc" class="seg-toggle"></div></div>
+        <div class="f" style="flex:0 0 auto;min-width:0"><label>Geschlecht</label><div id="pfGen" class="seg-toggle"></div></div>
+        <div class="f" style="flex:1 1 auto;min-width:150px"><label>Athlet</label><select id="pfAth"></select></div>
+        <div class="f" style="flex:1 1 auto;min-width:150px"><label>Vergleich</label><select id="pfAthB"></select></div>
+        <div class="f" style="flex:0 0 140px;min-width:110px"><label>Saison</label><select id="pfSeason"></select></div>
+        <div class="f fsub"><label>Ansicht</label><div id="anaSub3" class="seg-toggle"></div></div>
+      </div>
+      <div class="card">
+        <div class="c-head"><div><h2>Athleten-Profil <span id="pfName" style="color:var(--red)"></span></h2>
+          <div class="c-sub">Stärken &amp; Schwächen auf einen Blick: Kennzahlen, Terrain-Profil (Steil/Flach/Drehend/Direkt) und beste/schwächste Rennen der Auswahl. Basis: Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten.</div></div></div>
+        <div id="pfContent"></div>
       </div>
     </div>
   </div>
@@ -1465,7 +1544,7 @@ table.hmp .g b{font-size:6.5px}
         </thead><tbody id="dbtBody"></tbody></table></div>
         <div id="dbtGridBox" style="display:none">
           <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><button class="btn-mini" id="dbtGridCsv" style="margin-left:auto">⭳ CSV (Event)</button><span id="dbtGridInfo" class="lib-count"></span></div>
-        <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>Pfeiltasten</b> bewegen zwischen den Zellen, <b>Tab</b> nach rechts — wie in Excel.</div>
+        <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>Pfeiltasten</b> bewegen zwischen den Zellen, <b>Tab</b> nach rechts — wie in Excel. <b>Cmd/Ctrl+Z</b> macht rückgängig (Shift+Z wiederholt).</div>
           <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0,25 s</b> Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.</div>
           <div class="db-wrap dbtg-wrap" id="dbtGridWrap"></div>
         </div>
@@ -1700,7 +1779,7 @@ table.hmp .g b{font-size:6.5px}
     </div>
   </div>
 
-  <footer id="appFooter" class="app-footer no-print"><button id="wfBtn" class="foot-wf" title="Workflow ansehen — vom Start bis zum Coach"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Workflow</button><div class="af-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.89671641 -0.89671641 136.68413282 31.68397982" class="foot-logo" role="img" aria-label="Swiss-Ski"> <defs   id="defs11989" /> <path   d="M 45.167373,4.5035962 44.854261,4.3440205 44.541148,4.2644718 44.306373,4.0253475 44.071676,3.7863028 43.915237,3.4673906 43.758563,3.1484785 l 0,-0.3984609 0.07834,-0.4782488 0.07834,-0.5579568 0.234775,-0.4782487 0.313034,-0.39870004 0.391215,-0.31867306 0.469551,-0.23912436 0.469551,-0.15957566 0.547809,-0.0795487 0.313112,0 0.391215,0.0795487 0.313112,0.15957566 0.234775,0.23912436 0.234776,0.23912436 0.15636,0.31891214 0.07841,0.3186731 0,0.3189122 0,0.5579568 -0.156751,0.5580366 -0.234698,0.4782487 -0.312877,0.3984609 -0.391449,0.3188325 -0.391214,0.2391243 -0.54781,0.1593366 -0.469551,0.079788 -0.391214,0 z"   id="path9406"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 38.515322,29.531786 4.304139,-20.5645355 3.443374,0 -4.304139,20.5645355 -3.443374,0 z"   id="path9426"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 28.106824,29.531786 -0.782428,-13.390884 -0.156674,-2.311616 0,-1.753578 -0.782585,1.833366 -1.095541,2.311615 -6.495534,13.311097 -2.347676,0 -0.313112,-20.5645355 2.347911,0 -0.07834,12.8328475 -0.07834,4.463655 0.860922,-1.992703 1.173878,-2.391164 6.260601,-12.9126355 2.504272,0 0.704327,12.9126355 0.07834,2.470952 0.07834,1.833366 0.704326,-1.833366 1.017361,-2.55074 5.477938,-12.8328475 2.347912,0 -8.999885,20.5645355 -2.426013,0 z"   id="path9438"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 5.4119377,29.850699 -0.7826633,0 L 3.8469242,29.770911 3.1423629,29.611575 2.4381147,29.37245 1.7337882,28.974069 1.1077985,28.575369 0.5599107,28.017333 0.0903597,27.379747 0.0121012,27.22049 l 1.0956973,-1.036285 0.1564387,0.239125 0.3131123,0.558036 0.3912142,0.478169 0.469551,0.318673 0.5478095,0.318912 0.5478878,0.239125 0.6259897,0.07979 0.5478095,0.07979 0.7043265,0.07955 0.8609218,-0.07955 0.8607652,-0.239363 0.8609218,-0.318673 0.7043265,-0.558037 0.5476529,-0.557957 0.3131123,-0.39846 0.1565953,-0.3987 0.1564387,-0.398461 0.1565168,-0.398382 0.07826,-0.478248 0,-0.558037 -0.07826,-0.797081 L 9.8726722,22.677048 9.5596382,22.039224 9.168424,21.481506 8.6205362,20.923469 7.9945465,20.365433 6.6640737,19.329227 5.3336009,18.292942 4.785948,17.655357 4.2380602,17.0974 3.7685875,16.380027 3.3771384,15.662654 3.2206997,14.865572 3.064261,13.909075 3.142363,13.351118 3.2207,12.793321 3.3771387,12.235284 3.6119142,11.677248 3.8469245,11.199079 4.159802,10.800618 4.5511728,10.401918 4.942387,10.003457 5.3336012,9.6845446 5.803387,9.3657122 6.2728598,9.1265878 6.7424108,8.9672513 7.8379515,8.6483391 l 1.0956973,-0.079788 0.7042482,0 0.704326,0.079788 0.62599,0.1595756 0.704483,0.2391244 0.62599,0.3186731 0.547887,0.3987 0.469551,0.5577178 0.469473,0.558036 0.07834,0.159576 -1.095697,0.956418 -0.07834,-0.239045 -0.312878,-0.478249 -0.39137,-0.3987 -0.469551,-0.318912 -0.469551,-0.318673 -0.469551,-0.159575 -0.54781,-0.159337 -0.5478873,-0.079788 -0.5476529,0 -0.8609218,0.079788 -0.7826633,0.159337 -0.7824284,0.318912 -0.6261463,0.478248 -0.5478878,0.558037 -0.3912142,0.717293 -0.2347755,0.717373 -0.078337,0.478249 0,0.478169 0,0.637825 0.1566736,0.637585 0.2347755,0.557957 0.3912142,0.478248 0.391449,0.478249 0.547653,0.478249 1.1737992,1.036205 1.4869115,1.116073 0.7044831,0.637506 0.6259894,0.717373 0.547888,0.717373 0.391214,0.797081 0.156674,0.478249 0.15636,0.478249 0.07834,0.478169 0,0.558036 -0.07834,0.637825 -0.07826,0.637505 -0.156439,0.558037 -0.234776,0.558036 -0.313112,0.557798 -0.313112,0.478169 -0.391214,0.3987 -0.3912144,0.398461 -0.4697076,0.318912 -0.469551,0.318912 -0.5476529,0.318593 -0.5478878,0.159576 -0.5478095,0.239124 -0.5478878,0.07955 -0.6259897,0.07979 -0.5478095,0 z"   id="path9450"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 52.366999,29.850699 -1.64335,0 -1.565249,-0.239124 -0.782428,-0.239125 -0.782663,-0.239044 -0.704248,-0.239125 -0.704327,-0.398461 1.799789,-3.905857 0.939102,0.558037 1.01736,0.398381 1.095698,0.318912 0.625989,0.07979 0.547888,0 0.547888,0 0.547653,-0.07979 0.469473,-0.159337 0.469786,-0.239044 0.391214,-0.239125 0.313034,-0.3987 0.156438,-0.478248 0.07834,-0.558037 0,-0.398381 -0.156595,-0.318912 -0.156517,-0.398461 -0.313034,-0.318912 -0.312877,-0.398461 -0.469786,-0.3987 -1.251901,-0.796842 -1.252215,-0.956737 -0.626146,-0.557718 -0.547653,-0.558036 -0.469707,-0.637824 -0.391293,-0.796843 -0.234776,-0.876948 -0.07826,-0.956418 0,-0.717373 0.156674,-0.717373 0.15636,-0.717294 0.234775,-0.637824 0.234776,-0.558036 0.391449,-0.637506 0.391214,-0.478249 0.469473,-0.478248 0.469551,-0.3987 0.626225,-0.3984614 0.625989,-0.3188324 0.704249,-0.3186731 0.704326,-0.2391244 0.782585,-0.1595756 0.861,-0.079788 0.860765,0 1.565249,0.079788 1.408574,0.2391243 0.704327,0.1595757 0.625989,0.2391244 0.704484,0.2391243 0.625989,0.3185934 -1.721687,3.7462818 -0.860765,-0.478169 -0.939259,-0.398461 -1.09554,-0.239124 -1.095698,-0.07979 -0.704326,0.07979 -0.62599,0.07955 -0.469472,0.239364 -0.39145,0.239124 -0.234775,0.318673 -0.234776,0.318833 -0.07834,0.318912 -0.0781,0.398461 0.0781,0.478248 0.23501,0.3987 0.234776,0.398382 0.312877,0.398461 0.860922,0.637824 0.782663,0.558036 1.408575,0.956418 0.704326,0.558037 0.54781,0.637585 0.547731,0.717293 0.391371,0.797161 0.156438,0.398461 0.156674,0.478169 0.0781,0.558037 0,0.558036 0,0.797081 -0.156439,0.797161 -0.234775,0.717373 -0.313112,0.637506 -0.313035,0.637824 -0.469551,0.557798 -0.46955,0.557957 -0.469552,0.478248 -0.625989,0.3987 -0.626147,0.398461 -0.625989,0.318912 -0.704327,0.239045 -0.626146,0.159337 -0.782663,0.159336 -0.704249,0.07979 -0.704326,0 z"   id="path9470"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 68.175372,29.850699 -1.643585,0 -1.64335,-0.239124 -0.860766,-0.159337 -0.782585,-0.159576 -0.782663,-0.239044 -0.704326,-0.318673 1.878125,-5.021692 0.861,0.478249 1.017361,0.398461 1.017204,0.318912 1.01736,0.07979 0.547888,-0.07979 0.469551,0 0.469551,-0.159336 0.313034,-0.159576 0.313112,-0.159336 0.234776,-0.318913 0.156439,-0.318912 0,-0.398381 0,-0.239124 -0.07834,-0.318913 -0.234776,-0.239124 -0.234775,-0.239124 -0.704248,-0.558037 -1.095541,-0.717293 -1.174034,-0.87671 -0.62599,-0.558036 -0.469551,-0.557957 -0.469472,-0.637585 -0.39145,-0.717374 -0.234775,-0.797081 -0.0781,-0.956497 0.0781,-0.876869 0.07834,-0.797161 0.234775,-0.796842 0.234776,-0.717373 0.391136,-0.637825 0.391449,-0.637505 0.469551,-0.558037 0.547887,-0.478248 0.547575,-0.478249 0.704561,-0.3987002 0.704327,-0.3185933 0.704248,-0.2391244 0.782663,-0.2391244 0.860766,-0.1595756 0.860921,-0.079788 0.860766,0 1.721687,0.079788 1.565248,0.1595756 1.565013,0.3984609 1.486912,0.478169 -1.878126,4.8621154 -0.860765,-0.478248 -0.939259,-0.398461 -1.095462,-0.318833 -1.095776,-0.07955 -0.547809,0.07955 -0.469551,0.07979 -0.391214,0.159257 -0.313113,0.159575 -0.156438,0.239125 -0.234697,0.239124 -0.07834,0.239125 0,0.239124 0.07834,0.398461 0.07826,0.318912 0.234775,0.239045 0.312878,0.318912 0.782663,0.557797 0.860922,0.558037 1.330316,0.876869 0.626146,0.558036 0.547653,0.637586 0.469708,0.637505 0.391292,0.797161 0.234776,0.876949 0.07826,0.478169 0.0781,0.478249 -0.0781,0.956497 -0.156595,0.87663 -0.234775,0.797161 -0.312956,0.797081 -0.391371,0.637824 -0.547888,0.637586 -0.469472,0.557956 -0.62599,0.478249 -0.626225,0.398461 -0.704248,0.3987 -0.782663,0.239124 -0.704327,0.239045 -0.782585,0.239124 -0.860765,0.07955 -0.782585,0.07979 -0.860765,0 z"   id="path9490"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 112.70442,29.531786 -2.66079,-7.332988 -1.1738,1.673791 0,5.659197 -8.37374,0 0,-28.6949232 8.37374,0 0,14.9055782 3.99103,-7.1738906 9.93898,0 -6.02606,8.5288486 6.1825,12.434387 -10.25186,0 z"   id="path9510"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 87.505182,29.850699 -1.721687,0 -1.721687,-0.159337 -1.721687,-0.239124 -1.64335,-0.39862 1.017125,-5.659197 1.017361,0.398381 1.174112,0.239125 1.095463,0.239124 1.173877,0.07979 0.469473,-0.07979 0.391449,0 0.312877,-0.159337 0.313113,-0.159336 0.234775,-0.159576 0.156674,-0.159336 0.0781,-0.239045 0.07834,-0.318912 -0.07834,-0.318673 -0.0781,-0.239125 -0.156674,-0.239363 -0.234775,-0.159337 -0.547888,-0.318912 -0.547575,-0.159336 -1.486989,-0.478169 -0.782585,-0.318913 -0.782664,-0.39846 -0.782663,-0.558037 -0.625912,-0.637506 -0.547887,-0.717373 -0.391214,-0.876948 -0.156674,-0.478169 -0.156439,-0.478249 -0.07834,-0.558037 0,-0.558036 0,-0.796842 0.156752,-0.717612 0.156361,-0.717294 0.313112,-0.717373 0.312877,-0.637585 0.469786,-0.637745 0.469551,-0.557797 0.547575,-0.558037 0.704561,-0.4781688 0.704327,-0.3987 0.78235,-0.3186731 0.861,-0.3189122 0.939024,-0.2391244 0.939102,-0.1595756 1.095697,-0.1593365 1.095541,0 1.565248,0.079788 1.64335,0.1593365 1.64335,0.2391244 1.721687,0.3189122 -0.939023,5.2607355 -1.095541,-0.318912 -1.173799,-0.239124 -1.095776,-0.159257 -1.252136,-0.07979 -0.704326,0.07979 -0.313034,0.159257 -0.234776,0.07979 -0.156439,0.159337 -0.156438,0.239124 0,0.159337 -0.07834,0.239124 0.07834,0.239364 0.0781,0.239124 0.234775,0.318673 0.469473,0.239045 0.469551,0.239124 1.330551,0.3987 1.017361,0.398461 1.017438,0.3987 0.860687,0.557718 0.782663,0.558036 0.391136,0.3987 0.313113,0.318673 0.234775,0.478249 0.234776,0.39862 0.156673,0.478249 0.156439,0.558037 0.07834,0.557797 0,0.637745 0,0.956497 -0.156674,0.87663 -0.234775,0.876949 -0.313113,0.717293 -0.469551,0.717373 -0.469472,0.637825 -0.547653,0.637505 -0.626225,0.478249 -0.704248,0.478249 -0.782663,0.3987 -0.860687,0.398461 -0.861,0.239044 -0.939102,0.239125 -1.017361,0.159336 -1.017439,0.07979 -1.095462,0 z"   id="path9522"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 129.1387,7.2136723 -0.93902,-0.2391244 -0.78267,-0.2391243 -0.70425,-0.4782487 -0.54788,-0.4781691 -0.39145,-0.6378243 -0.23478,-0.7173731 -0.0781,-0.7172934 0,-0.7173731 0.23478,-0.6378243 0.39121,-0.6375056 0.46955,-0.5580365 0.70425,-0.47824875 0.78266,-0.31891219 1.01736,-0.23912436 1.09578,-0.0795487 1.09546,0.0795487 0.9391,0.15957566 0.78259,0.31867306 0.70432,0.47848788 0.46956,0.4782487 0.39144,0.6375055 0.23478,0.7173731 0.078,0.7971609 -0.078,0.7970812 -0.23478,0.7173731 -0.39144,0.5580365 -0.54789,0.5577178 -0.70433,0.3987 -0.78235,0.3189122 -0.93934,0.1593365 -1.01712,0.079788 -1.01744,-0.079788 z"   id="path9542"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-20.9687503 z"   id="path12260"   style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-7 -1.09375,0 0,2.6875 -2.34375,0 0,-2.6875 -2.65625,0 0,-2.3125 2.65625,0 0,-2.71875 2.34375,0 0,2.71875 1.09375,0 0,-11.6562503 -9.0625,0 z"   id="path9564"   style="fill:#e3001b;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /></svg></div><button id="tutBtn" class="tut-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Tutorial</button><div class="af-dl" id="afDownload"><span class="afdl-lab" title="Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.">Desktop-App v1.3.0 – Videos auf der Festplatte statt im Browser:</span><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-mac.dmg" title="Mac: nach dem Download öffnen, App in „Programme" ziehen. Beim 1. Start Rechtsklick → „Öffnen" (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Mac</a><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-win.exe" title="Windows: Datei ausführen. Bei „Windows hat den PC geschützt" → Mehr Infos → Trotzdem ausführen (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Windows</a></div><div class="af-ver-row no-print" id="afVerWrap" style="display:none"><span id="afVer"></span></div></footer>
+  <footer id="appFooter" class="app-footer no-print"><button id="wfBtn" class="foot-wf" title="Workflow ansehen — vom Start bis zum Coach"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Workflow</button><div class="af-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.89671641 -0.89671641 136.68413282 31.68397982" class="foot-logo" role="img" aria-label="Swiss-Ski"> <defs   id="defs11989" /> <path   d="M 45.167373,4.5035962 44.854261,4.3440205 44.541148,4.2644718 44.306373,4.0253475 44.071676,3.7863028 43.915237,3.4673906 43.758563,3.1484785 l 0,-0.3984609 0.07834,-0.4782488 0.07834,-0.5579568 0.234775,-0.4782487 0.313034,-0.39870004 0.391215,-0.31867306 0.469551,-0.23912436 0.469551,-0.15957566 0.547809,-0.0795487 0.313112,0 0.391215,0.0795487 0.313112,0.15957566 0.234775,0.23912436 0.234776,0.23912436 0.15636,0.31891214 0.07841,0.3186731 0,0.3189122 0,0.5579568 -0.156751,0.5580366 -0.234698,0.4782487 -0.312877,0.3984609 -0.391449,0.3188325 -0.391214,0.2391243 -0.54781,0.1593366 -0.469551,0.079788 -0.391214,0 z"   id="path9406"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 38.515322,29.531786 4.304139,-20.5645355 3.443374,0 -4.304139,20.5645355 -3.443374,0 z"   id="path9426"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 28.106824,29.531786 -0.782428,-13.390884 -0.156674,-2.311616 0,-1.753578 -0.782585,1.833366 -1.095541,2.311615 -6.495534,13.311097 -2.347676,0 -0.313112,-20.5645355 2.347911,0 -0.07834,12.8328475 -0.07834,4.463655 0.860922,-1.992703 1.173878,-2.391164 6.260601,-12.9126355 2.504272,0 0.704327,12.9126355 0.07834,2.470952 0.07834,1.833366 0.704326,-1.833366 1.017361,-2.55074 5.477938,-12.8328475 2.347912,0 -8.999885,20.5645355 -2.426013,0 z"   id="path9438"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 5.4119377,29.850699 -0.7826633,0 L 3.8469242,29.770911 3.1423629,29.611575 2.4381147,29.37245 1.7337882,28.974069 1.1077985,28.575369 0.5599107,28.017333 0.0903597,27.379747 0.0121012,27.22049 l 1.0956973,-1.036285 0.1564387,0.239125 0.3131123,0.558036 0.3912142,0.478169 0.469551,0.318673 0.5478095,0.318912 0.5478878,0.239125 0.6259897,0.07979 0.5478095,0.07979 0.7043265,0.07955 0.8609218,-0.07955 0.8607652,-0.239363 0.8609218,-0.318673 0.7043265,-0.558037 0.5476529,-0.557957 0.3131123,-0.39846 0.1565953,-0.3987 0.1564387,-0.398461 0.1565168,-0.398382 0.07826,-0.478248 0,-0.558037 -0.07826,-0.797081 L 9.8726722,22.677048 9.5596382,22.039224 9.168424,21.481506 8.6205362,20.923469 7.9945465,20.365433 6.6640737,19.329227 5.3336009,18.292942 4.785948,17.655357 4.2380602,17.0974 3.7685875,16.380027 3.3771384,15.662654 3.2206997,14.865572 3.064261,13.909075 3.142363,13.351118 3.2207,12.793321 3.3771387,12.235284 3.6119142,11.677248 3.8469245,11.199079 4.159802,10.800618 4.5511728,10.401918 4.942387,10.003457 5.3336012,9.6845446 5.803387,9.3657122 6.2728598,9.1265878 6.7424108,8.9672513 7.8379515,8.6483391 l 1.0956973,-0.079788 0.7042482,0 0.704326,0.079788 0.62599,0.1595756 0.704483,0.2391244 0.62599,0.3186731 0.547887,0.3987 0.469551,0.5577178 0.469473,0.558036 0.07834,0.159576 -1.095697,0.956418 -0.07834,-0.239045 -0.312878,-0.478249 -0.39137,-0.3987 -0.469551,-0.318912 -0.469551,-0.318673 -0.469551,-0.159575 -0.54781,-0.159337 -0.5478873,-0.079788 -0.5476529,0 -0.8609218,0.079788 -0.7826633,0.159337 -0.7824284,0.318912 -0.6261463,0.478248 -0.5478878,0.558037 -0.3912142,0.717293 -0.2347755,0.717373 -0.078337,0.478249 0,0.478169 0,0.637825 0.1566736,0.637585 0.2347755,0.557957 0.3912142,0.478248 0.391449,0.478249 0.547653,0.478249 1.1737992,1.036205 1.4869115,1.116073 0.7044831,0.637506 0.6259894,0.717373 0.547888,0.717373 0.391214,0.797081 0.156674,0.478249 0.15636,0.478249 0.07834,0.478169 0,0.558036 -0.07834,0.637825 -0.07826,0.637505 -0.156439,0.558037 -0.234776,0.558036 -0.313112,0.557798 -0.313112,0.478169 -0.391214,0.3987 -0.3912144,0.398461 -0.4697076,0.318912 -0.469551,0.318912 -0.5476529,0.318593 -0.5478878,0.159576 -0.5478095,0.239124 -0.5478878,0.07955 -0.6259897,0.07979 -0.5478095,0 z"   id="path9450"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 52.366999,29.850699 -1.64335,0 -1.565249,-0.239124 -0.782428,-0.239125 -0.782663,-0.239044 -0.704248,-0.239125 -0.704327,-0.398461 1.799789,-3.905857 0.939102,0.558037 1.01736,0.398381 1.095698,0.318912 0.625989,0.07979 0.547888,0 0.547888,0 0.547653,-0.07979 0.469473,-0.159337 0.469786,-0.239044 0.391214,-0.239125 0.313034,-0.3987 0.156438,-0.478248 0.07834,-0.558037 0,-0.398381 -0.156595,-0.318912 -0.156517,-0.398461 -0.313034,-0.318912 -0.312877,-0.398461 -0.469786,-0.3987 -1.251901,-0.796842 -1.252215,-0.956737 -0.626146,-0.557718 -0.547653,-0.558036 -0.469707,-0.637824 -0.391293,-0.796843 -0.234776,-0.876948 -0.07826,-0.956418 0,-0.717373 0.156674,-0.717373 0.15636,-0.717294 0.234775,-0.637824 0.234776,-0.558036 0.391449,-0.637506 0.391214,-0.478249 0.469473,-0.478248 0.469551,-0.3987 0.626225,-0.3984614 0.625989,-0.3188324 0.704249,-0.3186731 0.704326,-0.2391244 0.782585,-0.1595756 0.861,-0.079788 0.860765,0 1.565249,0.079788 1.408574,0.2391243 0.704327,0.1595757 0.625989,0.2391244 0.704484,0.2391243 0.625989,0.3185934 -1.721687,3.7462818 -0.860765,-0.478169 -0.939259,-0.398461 -1.09554,-0.239124 -1.095698,-0.07979 -0.704326,0.07979 -0.62599,0.07955 -0.469472,0.239364 -0.39145,0.239124 -0.234775,0.318673 -0.234776,0.318833 -0.07834,0.318912 -0.0781,0.398461 0.0781,0.478248 0.23501,0.3987 0.234776,0.398382 0.312877,0.398461 0.860922,0.637824 0.782663,0.558036 1.408575,0.956418 0.704326,0.558037 0.54781,0.637585 0.547731,0.717293 0.391371,0.797161 0.156438,0.398461 0.156674,0.478169 0.0781,0.558037 0,0.558036 0,0.797081 -0.156439,0.797161 -0.234775,0.717373 -0.313112,0.637506 -0.313035,0.637824 -0.469551,0.557798 -0.46955,0.557957 -0.469552,0.478248 -0.625989,0.3987 -0.626147,0.398461 -0.625989,0.318912 -0.704327,0.239045 -0.626146,0.159337 -0.782663,0.159336 -0.704249,0.07979 -0.704326,0 z"   id="path9470"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 68.175372,29.850699 -1.643585,0 -1.64335,-0.239124 -0.860766,-0.159337 -0.782585,-0.159576 -0.782663,-0.239044 -0.704326,-0.318673 1.878125,-5.021692 0.861,0.478249 1.017361,0.398461 1.017204,0.318912 1.01736,0.07979 0.547888,-0.07979 0.469551,0 0.469551,-0.159336 0.313034,-0.159576 0.313112,-0.159336 0.234776,-0.318913 0.156439,-0.318912 0,-0.398381 0,-0.239124 -0.07834,-0.318913 -0.234776,-0.239124 -0.234775,-0.239124 -0.704248,-0.558037 -1.095541,-0.717293 -1.174034,-0.87671 -0.62599,-0.558036 -0.469551,-0.557957 -0.469472,-0.637585 -0.39145,-0.717374 -0.234775,-0.797081 -0.0781,-0.956497 0.0781,-0.876869 0.07834,-0.797161 0.234775,-0.796842 0.234776,-0.717373 0.391136,-0.637825 0.391449,-0.637505 0.469551,-0.558037 0.547887,-0.478248 0.547575,-0.478249 0.704561,-0.3987002 0.704327,-0.3185933 0.704248,-0.2391244 0.782663,-0.2391244 0.860766,-0.1595756 0.860921,-0.079788 0.860766,0 1.721687,0.079788 1.565248,0.1595756 1.565013,0.3984609 1.486912,0.478169 -1.878126,4.8621154 -0.860765,-0.478248 -0.939259,-0.398461 -1.095462,-0.318833 -1.095776,-0.07955 -0.547809,0.07955 -0.469551,0.07979 -0.391214,0.159257 -0.313113,0.159575 -0.156438,0.239125 -0.234697,0.239124 -0.07834,0.239125 0,0.239124 0.07834,0.398461 0.07826,0.318912 0.234775,0.239045 0.312878,0.318912 0.782663,0.557797 0.860922,0.558037 1.330316,0.876869 0.626146,0.558036 0.547653,0.637586 0.469708,0.637505 0.391292,0.797161 0.234776,0.876949 0.07826,0.478169 0.0781,0.478249 -0.0781,0.956497 -0.156595,0.87663 -0.234775,0.797161 -0.312956,0.797081 -0.391371,0.637824 -0.547888,0.637586 -0.469472,0.557956 -0.62599,0.478249 -0.626225,0.398461 -0.704248,0.3987 -0.782663,0.239124 -0.704327,0.239045 -0.782585,0.239124 -0.860765,0.07955 -0.782585,0.07979 -0.860765,0 z"   id="path9490"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 112.70442,29.531786 -2.66079,-7.332988 -1.1738,1.673791 0,5.659197 -8.37374,0 0,-28.6949232 8.37374,0 0,14.9055782 3.99103,-7.1738906 9.93898,0 -6.02606,8.5288486 6.1825,12.434387 -10.25186,0 z"   id="path9510"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 87.505182,29.850699 -1.721687,0 -1.721687,-0.159337 -1.721687,-0.239124 -1.64335,-0.39862 1.017125,-5.659197 1.017361,0.398381 1.174112,0.239125 1.095463,0.239124 1.173877,0.07979 0.469473,-0.07979 0.391449,0 0.312877,-0.159337 0.313113,-0.159336 0.234775,-0.159576 0.156674,-0.159336 0.0781,-0.239045 0.07834,-0.318912 -0.07834,-0.318673 -0.0781,-0.239125 -0.156674,-0.239363 -0.234775,-0.159337 -0.547888,-0.318912 -0.547575,-0.159336 -1.486989,-0.478169 -0.782585,-0.318913 -0.782664,-0.39846 -0.782663,-0.558037 -0.625912,-0.637506 -0.547887,-0.717373 -0.391214,-0.876948 -0.156674,-0.478169 -0.156439,-0.478249 -0.07834,-0.558037 0,-0.558036 0,-0.796842 0.156752,-0.717612 0.156361,-0.717294 0.313112,-0.717373 0.312877,-0.637585 0.469786,-0.637745 0.469551,-0.557797 0.547575,-0.558037 0.704561,-0.4781688 0.704327,-0.3987 0.78235,-0.3186731 0.861,-0.3189122 0.939024,-0.2391244 0.939102,-0.1595756 1.095697,-0.1593365 1.095541,0 1.565248,0.079788 1.64335,0.1593365 1.64335,0.2391244 1.721687,0.3189122 -0.939023,5.2607355 -1.095541,-0.318912 -1.173799,-0.239124 -1.095776,-0.159257 -1.252136,-0.07979 -0.704326,0.07979 -0.313034,0.159257 -0.234776,0.07979 -0.156439,0.159337 -0.156438,0.239124 0,0.159337 -0.07834,0.239124 0.07834,0.239364 0.0781,0.239124 0.234775,0.318673 0.469473,0.239045 0.469551,0.239124 1.330551,0.3987 1.017361,0.398461 1.017438,0.3987 0.860687,0.557718 0.782663,0.558036 0.391136,0.3987 0.313113,0.318673 0.234775,0.478249 0.234776,0.39862 0.156673,0.478249 0.156439,0.558037 0.07834,0.557797 0,0.637745 0,0.956497 -0.156674,0.87663 -0.234775,0.876949 -0.313113,0.717293 -0.469551,0.717373 -0.469472,0.637825 -0.547653,0.637505 -0.626225,0.478249 -0.704248,0.478249 -0.782663,0.3987 -0.860687,0.398461 -0.861,0.239044 -0.939102,0.239125 -1.017361,0.159336 -1.017439,0.07979 -1.095462,0 z"   id="path9522"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 129.1387,7.2136723 -0.93902,-0.2391244 -0.78267,-0.2391243 -0.70425,-0.4782487 -0.54788,-0.4781691 -0.39145,-0.6378243 -0.23478,-0.7173731 -0.0781,-0.7172934 0,-0.7173731 0.23478,-0.6378243 0.39121,-0.6375056 0.46955,-0.5580365 0.70425,-0.47824875 0.78266,-0.31891219 1.01736,-0.23912436 1.09578,-0.0795487 1.09546,0.0795487 0.9391,0.15957566 0.78259,0.31867306 0.70432,0.47848788 0.46956,0.4782487 0.39144,0.6375055 0.23478,0.7173731 0.078,0.7971609 -0.078,0.7970812 -0.23478,0.7173731 -0.39144,0.5580365 -0.54789,0.5577178 -0.70433,0.3987 -0.78235,0.3189122 -0.93934,0.1593365 -1.01712,0.079788 -1.01744,-0.079788 z"   id="path9542"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-20.9687503 z"   id="path12260"   style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-7 -1.09375,0 0,2.6875 -2.34375,0 0,-2.6875 -2.65625,0 0,-2.3125 2.65625,0 0,-2.71875 2.34375,0 0,2.71875 1.09375,0 0,-11.6562503 -9.0625,0 z"   id="path9564"   style="fill:#e3001b;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /></svg></div><button id="tutBtn" class="tut-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Tutorial</button><div class="af-dl" id="afDownload"><span class="afdl-lab" title="Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.">Desktop-App v1.4.0 – Videos auf der Festplatte statt im Browser:</span><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-mac.dmg" title="Mac: nach dem Download öffnen, App in „Programme" ziehen. Beim 1. Start Rechtsklick → „Öffnen" (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Mac</a><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-win.exe" title="Windows: Datei ausführen. Bei „Windows hat den PC geschützt" → Mehr Infos → Trotzdem ausführen (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Windows</a></div><div class="af-ver-row no-print" id="afVerWrap" style="display:none"><span id="afVer"></span></div></footer>
 </div>
 
 <!-- ===================== CLOUD-MODAL ===================== -->
@@ -1724,6 +1803,7 @@ table.hmp .g b{font-size:6.5px}
       <!-- Verbunden -->
       <div id="ghUserBox" style="display:none">
         <div class="cloud-sec">Verbunden mit <b id="ghRepoName">—</b></div>
+        <div id="ghStatus" class="gh-status off">—</div>
         <label class="cloud-auto"><input type="checkbox" id="ghAuto" checked> Nach dem Speichern automatisch in GitHub sichern</label>
         <div class="cloud-btnrow">
           <button class="save-btn" id="ghPush">▲ In GitHub sichern</button>
@@ -2784,12 +2864,18 @@ function getVenue(){ const nw=$('#mVenueNew'); if(nw && nw.style.display!=='none
 
 /* ---- view switching ---- */
 function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth}); }catch(e){} }
-function setAnaSub(sub){ S.anaSub = (sub==='verlauf')?'verlauf':'analyse'; savePrefs();
-  ['#anaSub','#anaSub2'].forEach(id=>{ const seg=$(id); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===S.anaSub)); });
-  const isV=S.anaSub==='verlauf';
-  if($('#anaMain')) $('#anaMain').style.display=isV?'none':'';
-  if($('#anaVerlauf')) $('#anaVerlauf').style.display=isV?'':'none';
-  if(isV) renderVerlauf();
+function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
+  const b=$('#darkBtn'); if(b) b.classList.toggle('on', !!on); }
+function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e){} setDark(on);
+  const b=$('#darkBtn'); if(b) b.onclick=()=>setDark(!document.body.classList.contains('dark')); }
+function setAnaSub(sub){ S.anaSub = (sub==='verlauf')?'verlauf':(sub==='profil')?'profil':'analyse'; savePrefs();
+  ['#anaSub','#anaSub2','#anaSub3'].forEach(id=>{ const seg=$(id); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===S.anaSub)); });
+  const sv=S.anaSub;
+  if($('#anaMain')) $('#anaMain').style.display=sv==='analyse'?'':'none';
+  if($('#anaVerlauf')) $('#anaVerlauf').style.display=sv==='verlauf'?'':'none';
+  if($('#anaProfil')) $('#anaProfil').style.display=sv==='profil'?'':'none';
+  if(sv==='verlauf' && typeof renderVerlauf==='function') renderVerlauf();
+  if(sv==='profil' && typeof renderProfil==='function') renderProfil();
 }
 function switchView(v){ S.view=v; savePrefs();
   document.querySelectorAll('#tabs .tab').forEach(b=> b.classList.toggle('on', b.dataset.view===v));
@@ -2891,13 +2977,14 @@ function vlAthletes(){ const cnt={};
   DATA.filter(e=>e.discipline===VL.disc&&e.gender===VL.gen&&e.hasTop&&e.mode!=='train')
     .forEach(e=> e.skiers.forEach(s=>{ cnt[s.name]=(cnt[s.name]||0)+1; }));
   return Object.keys(cnt).filter(n=>cnt[n]>=2).sort(); }
-function vlData(){
-  let races=DATA.filter(e=>e.discipline===VL.disc&&e.gender===VL.gen&&e.hasTop&&e.mode!=='train'&&e.skiers.some(s=>s.name===VL.ath)
+function vlData(name){
+  name=name||VL.ath;
+  let races=DATA.filter(e=>e.discipline===VL.disc&&e.gender===VL.gen&&e.hasTop&&e.mode!=='train'&&e.skiers.some(s=>s.name===name)
       && (!VL.season || seasonOf(e.date)===VL.season))
     .sort((a,b)=> (a.date||'').localeCompare(b.date||'') || (a.venue||'').localeCompare(b.venue) || a.run-b.run);
   if(VL.last>0 && races.length>VL.last) races=races.slice(-VL.last);   // nur die letzten N Rennen
   return races.map(ev=>{
-    const c=compute(ev); const s=c.skiers.find(x=>x.name===VL.ath); if(!s) return null;
+    const c=compute(ev); const s=c.skiers.find(x=>x.name===name); if(!s) return null;
     const cd=s.cleanDiff||[]; const out={date:ev.date,venue:ev.venue,run:ev.run,isTop:!!s.isTop,vals:{}};
     const ov=cd.filter(v=>v!=null); out.vals.overall = ov.length? ov.reduce((a,b)=>a+b,0)/ov.length : null;
     const course=findCourseByRace(`${ev.date}|${ev.discipline}|${ev.gender}|${ev.run}`);
@@ -2988,13 +3075,127 @@ function renderVerlauf(){
   drawVlChart(data); vlInsight(data);
 }
 function initVerlauf(){
-  segFill('#anaSub',['analyse','verlauf'], v=> v==='analyse'?'Analyse':'Saison-Verlauf', S.anaSub, setAnaSub);
-  segFill('#anaSub2',['analyse','verlauf'], v=> v==='analyse'?'Analyse':'Saison-Verlauf', S.anaSub, setAnaSub);
+  const anaLbl=v=> v==='analyse'?'Analyse':v==='verlauf'?'Saison-Verlauf':'Athleten-Profil';
+  segFill('#anaSub',['analyse','verlauf','profil'], anaLbl, S.anaSub, setAnaSub);
+  segFill('#anaSub2',['analyse','verlauf','profil'], anaLbl, S.anaSub, setAnaSub);
   segFill('#vlDisc',['GS','SL'], d=>d==='GS'?'GS':'SL', VL.disc, v=>{ VL.disc=v; VL.ath=''; renderVerlauf(); });
   segFill('#vlGen',['M','W'], g=>g==='M'?'Männer':'Frauen', VL.gen, v=>{ VL.gen=v; VL.ath=''; renderVerlauf(); });
   if($('#vlAth')) $('#vlAth').onchange=e=>{ VL.ath=e.target.value; renderVerlauf(); };
   if($('#vlSeason')) $('#vlSeason').onchange=e=>{ VL.season=e.target.value; renderVerlauf(); };
   if($('#vlLast')) $('#vlLast').onchange=e=>{ VL.last=parseInt(e.target.value,10)||0; renderVerlauf(); };
+}
+
+/* ---- Athleten-Profil (Analyse-Unterseite) ---- */
+let PF={athB:''};
+function pfFmt(v){ return v==null?'–':((v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(3)+' s'); }
+function pfAgg(name){
+  if(!name) return null;
+  const data=vlData(name); if(!data.length) return null;
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const agg={_n:data.length, _data:data};
+  VL_CATS.forEach(cat=>{ const vals=data.map(d=>d.vals[cat.key]).filter(v=>v!=null); agg[cat.key]= vals.length? avg(vals):null; });
+  return agg;
+}
+// Radar/Spider: aussen = schneller (kleiner Rückstand). Zwei Athleten überlagerbar.
+function profilRadar(cats, aA, aB){
+  const vals=[]; cats.forEach(c=>{ if(aA&&aA[c.key]!=null) vals.push(aA[c.key]); if(aB&&aB[c.key]!=null) vals.push(aB[c.key]); });
+  const okA=cats.filter(c=>aA&&aA[c.key]!=null).length, okB=aB?cats.filter(c=>aB[c.key]!=null).length:0;
+  if(vals.length<3 || okA<3 && okB<3) return '';
+  let vBest=Math.min(-0.02,...vals), vWorst=Math.max(0.10,...vals);
+  if(vWorst-vBest<0.02) vWorst=vBest+0.02;
+  const W=400,H=340,cx=W/2,cy=H/2+4,R=112,n=cats.length;
+  const ang=i=> -Math.PI/2 + i*2*Math.PI/n;
+  const rOf=v=>{ const t=(vWorst-v)/(vWorst-vBest); return R*Math.max(0.06,Math.min(1,t)); };
+  const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
+  let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart" style="max-width:440px;margin:0 auto;display:block">`;
+  for(let k=1;k<=4;k++){ const rr=R*k/4; let p=''; for(let i=0;i<n;i++){ const [x,y]=pt(i,rr); p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; }
+    svg+=`<path d="${p}Z" fill="none" stroke="#e6e9ee" stroke-width="1"/>`; }
+  cats.forEach((c,i)=>{ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e6e9ee"/>`;
+    const [lx,ly]=pt(i,R+22); svg+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${c.color}">${c.label}</text>`; });
+  const poly=(agg,color,fill)=>{ const av=cats.map((c,i)=> agg&&agg[c.key]!=null? {i,r:rOf(agg[c.key])}:null).filter(Boolean);
+    if(av.length<3) return ''; let p=''; av.forEach(q=>{ const [x,y]=pt(q.i,q.r); p+=(p?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; });
+    let s=`<path d="${p}Z" fill="${fill}" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    av.forEach(q=>{ const [x,y]=pt(q.i,q.r); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="${color}"/>`; }); return s; };
+  if(aB) svg+=poly(aB,'#1f6fb2','rgba(31,111,178,.15)');
+  svg+=poly(aA,'var(--red)','rgba(218,41,28,.16)');
+  svg+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10" fill="#6b7785">weiter aussen = schneller als der Laufbeste</text>`;
+  svg+='</svg>'; return svg;
+}
+function profilTerrainBars(terr, agg){
+  if(!terr.length) return '<div class="empty" style="padding:20px">Keine Terrain-Werte — dafür müssen zu den Rennen Kurssetzungen hinterlegt sein (Tab «Kurssetzung»).</div>';
+  const maxAbs=Math.max(0.05, ...terr.map(c=>Math.abs(agg[c.key])));
+  return '<div class="pf-bars">'+terr.map(c=>{ const v=agg[c.key]; const pct=Math.min(50, Math.abs(v)/maxAbs*50); const neg=v<0;
+    return `<div class="pf-bar"><span class="pf-bl" style="color:${c.color}"><span class="dot" style="background:${c.color}"></span>${c.label}</span>`
+      +`<div class="pf-track"><div class="pf-mid"></div><div class="pf-fill ${neg?'neg':'pos'}" style="width:${pct}%;${neg?'right':'left'}:50%"></div></div>`
+      +`<span class="pf-bv" style="color:${neg?'var(--good)':(v>0?'var(--bad)':'var(--muted)')}">${(v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(3)}</span></div>`;
+  }).join('')+'</div>'
+   +'<div class="pf-scale"><span>← schneller als Laufbester</span><span>langsamer →</span></div>';
+}
+function renderProfil(){
+  const list=vlAthletes(); const sel=$('#pfAth');
+  if(sel){ const cur=VL.ath||sel.value;
+    sel.innerHTML = list.length? list.map(n=>`<option value="${n}">${n} (${natOf(n)||'?'})</option>`).join('') : '<option value="">— keine Daten —</option>';
+    if(list.includes(cur)) sel.value=cur; VL.ath=sel.value; }
+  const selB=$('#pfAthB');
+  if(selB){ if(PF.athB && !list.includes(PF.athB)) PF.athB='';
+    selB.innerHTML='<option value="">— kein Vergleich —</option>'+list.filter(n=>n!==VL.ath).map(n=>`<option value="${n}">${n} (${natOf(n)||'?'})</option>`).join('');
+    selB.value=PF.athB; }
+  const seas=vlSeasons(); const ssel=$('#pfSeason');
+  if(ssel){ if(VL.season && VL.season!=='' && !seas.includes(VL.season)) VL.season='';
+    if(!VL.season && seas.length) VL.season=seas[0];
+    ssel.innerHTML='<option value="">Alle Saisons</option>'+seas.map(s=>`<option value="${s}">Saison ${s}</option>`).join('');
+    ssel.value=VL.season; }
+  if($('#pfName')) $('#pfName').textContent = VL.ath? ('· '+VL.ath+(PF.athB?(' vs. '+PF.athB):'')+(VL.season?' · Saison '+VL.season:'')) : '';
+  const host=$('#pfContent'); if(!host) return;
+  if(!VL.ath){ host.innerHTML='<div class="empty" style="padding:34px">Wähle oben einen Athleten für das Profil.</div>'; return; }
+  const aggA=pfAgg(VL.ath);
+  if(!aggA){ host.innerHTML='<div class="empty" style="padding:34px">Keine Rennen für diesen Athleten in dieser Auswahl.</div>'; return; }
+  const aggB = PF.athB? pfAgg(PF.athB):null;
+  const data=aggA._data;
+  const terr=VL_CATS.filter(c=>c.need && aggA[c.key]!=null);
+  let bestT=null,worstT=null; terr.forEach(c=>{ if(bestT==null||aggA[c.key]<aggA[bestT.key]) bestT=c; if(worstT==null||aggA[c.key]>aggA[worstT.key]) worstT=c; });
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const withOv=data.filter(d=>d.vals.overall!=null);
+  let bestR=null,worstR=null; withOv.forEach(d=>{ if(!bestR||d.vals.overall<bestR.vals.overall) bestR=d; if(!worstR||d.vals.overall>worstR.vals.overall) worstR=d; });
+  const topN=data.filter(d=>d.isTop).length;
+  let trendTxt='—';
+  if(withOv.length>=2){ const ov=withOv.map(d=>d.vals.overall); const hh=Math.floor(ov.length/2);
+    const d=avg(ov.slice(ov.length-hh))-avg(ov.slice(0,hh));
+    trendTxt = d<-0.01? '<span style="color:var(--good)">↗ besser</span>' : d>0.01? '<span style="color:var(--bad)">↘ langsamer</span>' : 'stabil'; }
+  // Kennzahlen (Athlet A)
+  let h='<div class="pf-kpis">';
+  h+=`<div class="pf-kpi"><div class="pf-kl">Rennen</div><div class="pf-kv">${data.length}</div><div class="pf-ks">${topN}× Laufbestzeit-Nähe</div></div>`;
+  h+=`<div class="pf-kpi"><div class="pf-kl">Ø Rückstand / Tor</div><div class="pf-kv" style="color:${aggA.overall>0.001?'var(--bad)':(aggA.overall<-0.001?'var(--good)':'var(--ink)')}">${pfFmt(aggA.overall)}</div><div class="pf-ks">Trend: ${trendTxt}</div></div>`;
+  h+=`<div class="pf-kpi"><div class="pf-kl">Stärkstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${bestT?bestT.color:'var(--muted)'}">${bestT?bestT.label:'–'}</div><div class="pf-ks">${bestT?pfFmt(aggA[bestT.key]):'—'}</div></div>`;
+  h+=`<div class="pf-kpi"><div class="pf-kl">Schwächstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${worstT?worstT.color:'var(--muted)'}">${worstT?worstT.label:'–'}</div><div class="pf-ks">${worstT?pfFmt(aggA[worstT.key]):'—'}</div></div>`;
+  h+='</div>';
+  // Terrain-Fingerabdruck (Radar) + Werte-Tabelle
+  const cats4=VL_CATS.filter(c=>c.need);
+  const radar=profilRadar(cats4, aggA, aggB);
+  h+=`<div class="pf-sec"><b>Terrain-Fingerabdruck</b> · Ø Rückstand pro Tor auf den Laufbesten`+(aggB?' — <span style="color:var(--red)">■</span> '+VL.ath+' vs. <span style="color:#1f6fb2">■</span> '+PF.athB:'')+`</div>`;
+  if(radar){
+    h+=`<div class="pf-radarwrap"><div class="pf-radar">${radar}</div><div class="pf-vtab">`;
+    h+=`<div class="pf-vrow pf-vhead"><span>Terrain</span><span style="color:var(--red)">${aggB?VL.ath.split(' ').slice(-1)[0]:'Ø s/Tor'}</span>${aggB?`<span style="color:#1f6fb2">${PF.athB.split(' ').slice(-1)[0]}</span>`:''}</div>`;
+    cats4.forEach(c=>{ const va=aggA[c.key], vb=aggB?aggB[c.key]:null;
+      h+=`<div class="pf-vrow"><span><span class="dot" style="background:${c.color}"></span>${c.label}</span>`
+        +`<span style="color:${va==null?'var(--muted)':(va>0?'var(--bad)':'var(--good)')}">${va==null?'–':pfFmt(va)}</span>`
+        +(aggB?`<span style="color:${vb==null?'var(--muted)':(vb>0?'var(--bad)':'var(--good)')}">${vb==null?'–':pfFmt(vb)}</span>`:'')+`</div>`; });
+    h+=`</div></div>`;
+  } else { h+=profilTerrainBars(terr, aggA); }
+  // Rennen (Athlet A)
+  if(bestR||worstR){ h+='<div class="pf-sec" style="margin-top:16px"><b>Rennen der Auswahl</b> · '+VL.ath+'</div><div class="pf-races">';
+    if(bestR) h+=`<div class="pf-race best"><span class="pf-rt">Bestes Rennen</span><span class="pf-rn">${bestR.venue} · ${dmy(bestR.date)} · L${bestR.run}</span><b>${pfFmt(bestR.vals.overall)}</b></div>`;
+    if(worstR) h+=`<div class="pf-race worst"><span class="pf-rt">Schwächstes Rennen</span><span class="pf-rn">${worstR.venue} · ${dmy(worstR.date)} · L${worstR.run}</span><b>${pfFmt(worstR.vals.overall)}</b></div>`;
+    h+='</div>'; }
+  host.innerHTML=h;
+}
+function initProfil(){
+  segFill('#anaSub3',['analyse','verlauf','profil'], v=> v==='analyse'?'Analyse':v==='verlauf'?'Saison-Verlauf':'Athleten-Profil', S.anaSub, setAnaSub);
+  segFill('#pfDisc',['GS','SL'], d=>d==='GS'?'GS':'SL', VL.disc, v=>{ VL.disc=v; VL.ath=''; PF.athB=''; renderProfil(); });
+  segFill('#pfGen',['M','W'], g=>g==='M'?'Männer':'Frauen', VL.gen, v=>{ VL.gen=v; VL.ath=''; PF.athB=''; renderProfil(); });
+  if($('#pfAth')) $('#pfAth').onchange=e=>{ VL.ath=e.target.value; if(PF.athB===VL.ath) PF.athB=''; renderProfil(); };
+  if($('#pfAthB')) $('#pfAthB').onchange=e=>{ PF.athB=e.target.value; renderProfil(); };
+  if($('#pfSeason')) $('#pfSeason').onchange=e=>{ VL.season=e.target.value; renderProfil(); };
 }
 
 /* ===================== SIDE BY SIDE ===================== */
@@ -4316,7 +4517,24 @@ const NAT_AUTH={}; DATA.forEach(e=>e.skiers.forEach(s=>{ if(!(s.name in NAT_AUTH
 
 /* ===================== GITHUB (Daten-Sync & Backup) ===================== */
 /* Videos bleiben lokal. Nur Athleten/Läufe/Kurse werden in ein GitHub-Repo (JSON) synchronisiert. */
-let GH={repo:'',branch:'main',path:'gtg_data.json',token:'',auto:true,connected:false,syncing:false,timer:null};
+let GH={repo:'',branch:'main',path:'gtg_data.json',token:'',auto:true,connected:false,syncing:false,timer:null,lastSync:0,pending:0};
+function ghAgo(ts){ if(!ts) return 'noch nie'; const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'gerade eben'; const m=Math.floor(s/60); if(m<60) return 'vor '+m+' Min'; const h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std';
+  const d=Math.floor(h/24); return 'vor '+d+' Tag'+(d>1?'en':''); }
+function ghStatusText(){
+  if(!GH.connected) return {cls:'off', t:'Cloud nicht verbunden — lokal gespeichert'};
+  if(GH.syncing) return {cls:'sync', t:'Sichere in GitHub…'};
+  if(GH.pending>0) return {cls:'dirty', t:GH.pending+' Änderung'+(GH.pending>1?'en':'')+' nicht gesichert'+(GH.auto?' (folgt automatisch)':'')+' · zuletzt '+ghAgo(GH.lastSync)};
+  return {cls:'ok', t:'Alles gesichert · zuletzt '+ghAgo(GH.lastSync)};
+}
+function ghStatusRender(){
+  const st=ghStatusText();
+  const badge=$('#cloudBadge'); if(badge){ if(GH.connected && GH.pending>0){ badge.textContent=GH.pending>9?'9+':GH.pending; badge.style.display=''; } else badge.style.display='none'; }
+  const btn=$('#cloudBtn'); if(btn) btn.title='Cloud — '+st.t;
+  const line=$('#ghStatus'); if(line){ line.className='gh-status '+st.cls; line.textContent=st.t; }
+  const dot=$('#cloudDot'); if(dot){ dot.classList.toggle('online', GH.connected && GH.pending===0); dot.classList.toggle('warn', GH.connected && GH.pending>0); }
+}
+function ghBump(){ if(GH.connected){ GH.pending++; try{ LS.set('gtg_gh_pending',GH.pending); }catch(e){} ghStatusRender(); } }
 function cloudMsg(t,ok){ const m=$('#cloudMsg'); if(m){ m.className='save-msg'+(ok===false?' warn':ok?' ok':''); m.textContent=t; } }
 function ghSetDot(){ const d=$('#cloudDot'); if(d) d.classList.toggle('online', GH.connected); }
 function ghSaveCfg(){ LS.set('gtg_github',{repo:GH.repo,branch:GH.branch,path:GH.path,token:GH.token,auto:GH.auto}); }
@@ -4331,7 +4549,7 @@ function ghRenderState(){
   if($('#ghPath')) $('#ghPath').value=GH.path||'gtg_data.json';
   if($('#ghToken')&&GH.token) $('#ghToken').value=GH.token;
   if($('#ghAuto')) $('#ghAuto').checked=GH.auto;
-  ghSetDot();
+  ghSetDot(); ghStatusRender();
 }
 function ghHeaders(){ return {'Authorization':'Bearer '+GH.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}; }
 function ghUrl(){ return `https://api.github.com/repos/${GH.repo}/contents/${GH.path.split('/').map(encodeURIComponent).join('/')}`; }
@@ -4383,16 +4601,17 @@ async function ghPull(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zu
   }catch(e){ if(!silent) cloudMsg('Fehler beim Laden: '+e.message,false); }
 }
 async function ghPush(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zuerst verbinden.',false); return; }
-  if(GH.syncing){ return; } GH.syncing=true;
+  if(GH.syncing){ return; } GH.syncing=true; ghStatusRender();
   try{ if(!silent) cloudMsg('Sichere in GitHub…');
     const {json,sha}=await ghGet();           // erst Stand holen (Team-Merge, verhindert Überschreiben)
     if(json) ghMergeIn(json);
     await ghPut(ghLocalData(), sha, 'GtG Sync '+new Date().toISOString());
+    GH.lastSync=Date.now(); GH.pending=0; try{ LS.set('gtg_gh_last',GH.lastSync); LS.set('gtg_gh_pending',0); }catch(e){}
     if(!silent) cloudMsg(`✓ In GitHub gesichert: ${SAVED.length} Läufe, ${SAVED_TRAIN.length} Trainings, ${Object.keys(COURSES).length} Kurse.`,true);
   }catch(e){ if(!silent) cloudMsg('Fehler beim Sichern: '+e.message,false); }
-  finally{ GH.syncing=false; }
+  finally{ GH.syncing=false; ghStatusRender(); }
 }
-function ghAutoSync(){ scheduleAutoBackup(); if(!(GH.connected&&GH.auto)) return; clearTimeout(GH.timer); GH.timer=setTimeout(()=>ghPush(true),1500); }  // gebündelt
+function ghAutoSync(){ scheduleAutoBackup(); ghBump(); if(!(GH.connected&&GH.auto)) return; clearTimeout(GH.timer); GH.timer=setTimeout(()=>ghPush(true),1500); }  // gebündelt
 /* ---- Automatische lokale Sicherungen (rollierend, letzte 10) ---- */
 let _bkTimer=null;
 function scheduleAutoBackup(){ clearTimeout(_bkTimer); _bkTimer=setTimeout(autoBackupSnapshot, 2500); }
@@ -4415,7 +4634,10 @@ function restoreAutoBackup(id){ vdbGet(id,'backups').then(b=>{ if(!b) return;
 function initCloud(){
   const cfg=LS.get('gtg_github',{}); GH.repo=cfg.repo||''; GH.branch=cfg.branch||'main'; GH.path=cfg.path||'gtg_data.json'; GH.token=cfg.token||''; if(typeof cfg.auto==='boolean') GH.auto=cfg.auto;
   GH.connected = !!(GH.repo && GH.token);
+  GH.lastSync = LS.get('gtg_gh_last',0)||0; GH.pending = LS.get('gtg_gh_pending',0)||0;
+  ghStatusRender();
   if($('#cloudBtn')) $('#cloudBtn').onclick=cloudOpen;
+  initDark();
   if($('#cloudClose')) $('#cloudClose').onclick=cloudCloseM;
   if($('#cloudModal')) $('#cloudModal').addEventListener('click',e=>{ if(e.target.id==='cloudModal') cloudCloseM(); });
   if($('#ghConnect')) $('#ghConnect').onclick=ghConnect;
@@ -4574,20 +4796,32 @@ function dbtGatesHtml(r, enc, anom){ const figs={}; (r.figures||[]).forEach(f=>f
     return `<span class="dbt-gate${bad?' dbt-anom':''}"${bad?' title="Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt"':''}><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}<input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
   const nBad=anom?anom.filter(Boolean).length:0;
   return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
-function editTagGate(id, i, val){
+let GATE_UNDO=[], GATE_REDO=[];
+function gateUndoPush(id,i,oldVal,newVal){ GATE_UNDO.push({id,i,oldVal,newVal}); if(GATE_UNDO.length>200) GATE_UNDO.shift(); GATE_REDO.length=0; }
+function editTagGate(id, i, val, noUndo){
   let rec=SAVED.find(r=>runId(r)===id), isT=false;
   if(!rec){ rec=SAVED_TRAIN.find(r=>runId(r)===id); isT=true; }
   if(rec){ if(!rec.gates||i<0||i>=rec.gates.length) return;
+    const oldVal=rec.gates[i]; if(oldVal===val) return;
     rec.gates[i]=val; LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
-    try{ applyRun(rec); }catch(e){} ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; }
+    try{ applyRun(rec); }catch(e){} if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; }
   // Databank-Lauf: passenden Event-Skier direkt bearbeiten und dauerhaft merken
   const p=id.split('|'); const date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4],name=p.slice(5).join('|');
   for(const arr of [DATA,TRAIN]){ const e=arr.find(x=>x.date===date&&x.venue===venue&&x.discipline===disc&&x.gender===gen&&String(x.run)===String(run));
     if(e){ const s=(e.skiers||[]).find(x=>x.name===name); if(s&&s.gates&&i>=0&&i<s.gates.length){
+      const oldVal=s.gates[i]; if(oldVal===val) return;
       s.gates[i]=val; try{ recomputeEvent(e); }catch(_){}
       const ov=LS.get('gtg_gate_override',{}); ov[id]=s.gates.slice(); LS.set('gtg_gate_override',ov);
-      ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; } } }
+      if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; } } }
 }
+function gateUndo(){ const u=GATE_UNDO.pop(); if(!u){ gtgToast('Nichts zum Rückgängigmachen.'); return; }
+  editTagGate(u.id, u.i, u.oldVal, true); GATE_REDO.push(u);
+  if(typeof renderDatenbank==='function') renderDatenbank();
+  gtgToast('↶ Rückgängig: Tor '+(u.i+1)+' → '+(u.oldVal==null?'—':(+u.oldVal).toFixed(3)),'ok'); }
+function gateRedo(){ const u=GATE_REDO.pop(); if(!u){ gtgToast('Nichts zum Wiederholen.'); return; }
+  editTagGate(u.id, u.i, u.newVal, true); GATE_UNDO.push(u);
+  if(typeof renderDatenbank==='function') renderDatenbank();
+  gtgToast('↷ Wiederholt: Tor '+(u.i+1)+' → '+(u.newVal==null?'—':(+u.newVal).toFixed(3)),'ok'); }
 function applyGateOverrides(){ const ov=LS.get('gtg_gate_override',{}); if(!ov||!Object.keys(ov).length) return;
   const touched=new Set();
   [DATA,TRAIN].forEach(arr=> (arr||[]).forEach(e=> (e.skiers||[]).forEach(s=>{ const id=`${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}|${s.name}`;
@@ -4806,6 +5040,13 @@ function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
   if($('#dbtGridEvt')) $('#dbtGridEvt').onchange=renderDatenbank;
   if($('#dbtGridAnom')) $('#dbtGridAnom').onchange=renderDatenbank;
   if($('#dbtGridCsv')) $('#dbtGridCsv').onclick=exportDbtGridCsv;
+  if(!window._gateUndoBound){ window._gateUndoBound=true;
+    document.addEventListener('keydown', e=>{
+      if(!((e.key==='z'||e.key==='Z') && (e.metaKey||e.ctrlKey))) return;
+      if(!(S.view==='datenbank' && DBSUB==='taggings')) return;
+      const ae=document.activeElement; if(ae && ae.tagName==='INPUT' && ae.type!=='number') return;
+      e.preventDefault(); if(e.shiftKey) gateRedo(); else gateUndo();
+    }); }
   if($('#dbtSearch')) $('#dbtSearch').oninput=renderDatenbank;
   ['#dbvMode','#dbvDisc','#dbvGen','#dbvDnf','#dbvSort'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbvSearch')) $('#dbvSearch').oninput=renderDatenbank;
@@ -5365,6 +5606,7 @@ initTagging();
 initKurs();
 initWorkflow();
 initVerlauf();
+initProfil();
 initSbs();
 initCloud();
 initDatenbank();
@@ -5458,8 +5700,24 @@ function showUpdateBanner(cur, latest, url){
   };
   b.querySelector('.ub-x').onclick=()=>{ LS.set('gtg_update_dismissed', latest); b.remove(); };
 }
+// Update-bereit-Banner (Windows: electron-updater lädt im Hintergrund differenziell = nur geänderte Teile)
+function showUpdateReadyBanner(v){
+  const ex=document.getElementById('updBanner'); if(ex) ex.remove();
+  if(document.getElementById('updReadyBanner')) return;
+  const b=document.createElement('div'); b.id='updReadyBanner'; b.className='upd-banner no-print';
+  b.innerHTML=`<span>Update ${v?('v'+v+' '):''}heruntergeladen — bereit zur Installation.</span>`+
+    `<button class="ub-dl" type="button">Jetzt neu starten &amp; installieren</button>`+
+    `<button class="ub-x" title="Später">Später</button>`;
+  document.body.insertBefore(b, document.body.firstChild);
+  b.querySelector('.ub-dl').onclick=()=>{ const dk=GD(); if(dk&&typeof dk.quitAndInstall==='function') dk.quitAndInstall(); };
+  b.querySelector('.ub-x').onclick=()=>b.remove();
+}
 (function checkDesktopUpdate(){
-  const dk=GD(); if(!dk || typeof dk.checkUpdate!=='function') return;
+  const dk=GD(); if(!dk) return;
+  // Windows: electron-updater übernimmt Prüfen + differenziellen Download automatisch.
+  if(dk.platform==='win32'){ if(typeof dk.onUpdateReady==='function') dk.onUpdateReady(v=>showUpdateReadyBanner(v)); return; }
+  // Mac (Ad-hoc-Signatur): manueller Banner mit DMG-Download.
+  if(typeof dk.checkUpdate!=='function') return;
   Promise.resolve(dk.checkUpdate()).then(r=>{
     if(!r || !r.latest) return;
     if(cmpVer(r.latest, r.current)>0 && LS.get('gtg_update_dismissed')!==r.latest){
