@@ -1162,6 +1162,32 @@ body.dark .chart-shell,body.dark .pf-radar svg{background:#f1f3f6;border-radius:
 body.dark .gh-status.dirty{background:#3a2e16;color:#e0a94a}
 body.dark .gh-status.sync{background:#1e2b3d;color:#7db1e8}
 body.dark .gh-status.off{background:#20272f;color:#9aa6b4}
+/* Tabs (Kopf) */
+body.dark .tab{color:#c2ccd8}
+body.dark .tab:hover{color:#fff}
+body.dark .tab.on{color:#fff}
+/* Filter-Pillen, Suchfelder, Mini-Selects, Buttons */
+body.dark .mini,body.dark select.mini,body.dark .db-filters .mini,
+body.dark .lib-search,body.dark .btn-mini,body.dark .ctl,
+body.dark .cv-sel,body.dark .cv-ctrl button,body.dark .cv-chip,body.dark .cv-ath .cv-chip,
+body.dark .clip-selb,body.dark .clip-alabel,body.dark .clip-sbsbtn,body.dark .clip-sbsbar button,
+body.dark .clip-chips .cv-chip,body.dark .coach-run,body.dark .lib-item,
+body.dark .meta-grid input,body.dark .meta-grid select,body.dark .athlete-row select,
+body.dark .mf input,body.dark .mf select,body.dark .cm-linkrow input,
+body.dark .modal-foot{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+body.dark .lib-search::placeholder,body.dark .mf input::placeholder{color:#8892a0}
+body.dark .btn-mini:hover,body.dark .ctl:hover,body.dark .cv-ctrl button:hover,
+body.dark .clip-sbsbtn:hover,body.dark .clip-sbsbar button:hover,body.dark .cv-chip:hover{background:#38424f;color:#fff;border-color:#4a5563}
+body.dark .clip-chips .cv-chip.on{background:#38424f;color:#fff;border-color:var(--red)}
+/* Tabellen: Hover & sonstige helle Zeilen */
+body.dark .db-table tbody tr:hover{background:#2a3340}
+body.dark .db-table tbody td{border-bottom-color:#333c48}
+body.dark table.hm tbody tr:hover .gate-c{background:#333d4b}
+body.dark .hm tr.hm-start td{background:#20272f!important}
+/* Fortschritts-/Track-Balken dunkler */
+body.dark .cv-bar,body.dark .defbar .db-track,body.dark .lib-storage .ls-bar{background:#333d4b}
+/* Notiz-/Info-Flächen leicht abdunkeln, Text hell */
+body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
 </style>
 </head>
 <body>
@@ -4896,7 +4922,7 @@ function applyGateOverrides(){ const ov=LS.get('gtg_gate_override',{}); if(!ov||
 }
 function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
   const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'', fsrc=$('#dbtSrc')?.value||'';
-  vdbAll().then(vlist=>{ const VIDS=new Set((vlist||[]).map(v=>v.id));
+  vdbAll().then(vlist=>{ try{ const VIDS=new Set((vlist||[]).map(v=>v.id));
     const all=dbAllTaggings();
     // pro Lauf höchste Tor-Zahl -> DNF-Erkennung
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.gates||[]).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
@@ -4946,11 +4972,16 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     if($('#dbtDel')) $('#dbtDel').onclick=dbtDeleteSelected;
     if($('#dbtExport')) $('#dbtExport').onclick=dbtExportSelected;
     dbtUpdateBulk();
+    }catch(err){ console.error('renderDbTaggings',err);
+      if($('#dbtListBox')) $('#dbtListBox').style.display='';
+      if($('#dbtGridBox')) $('#dbtGridBox').style.display='none';
+      if(body) body.innerHTML='<tr><td colspan="11" style="padding:20px;color:#c0392b;font-weight:600">Fehler beim Anzeigen der Taggings: '+((err&&err.message)||err)+'. Bitte melde diese Meldung.</td></tr>'; }
   });
 }
 /* ---- Taggings: Raster-Ansicht pro Event (Athleten × Tore, direkt editierbar) ---- */
 function renderDbtGrid(list){
   const sel=$('#dbtGridEvt'), wrap=$('#dbtGridWrap'); if(!sel||!wrap) return;
+  try{
   const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
   const evMap={}; list.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; (evMap[k]=evMap[k]||[]).push(r); });
   const allKeys=Object.keys(evMap).sort((a,b)=>{ const A=a.split('|'),B=b.split('|'); return (B[0]||'').localeCompare(A[0]||'') || (A[1]||'').localeCompare(B[1]||'') || ((+A[4])-(+B[4])); });
@@ -4983,6 +5014,7 @@ function renderDbtGrid(list){
       if(e.key==='ArrowUp') go=tr-1; else if(e.key==='ArrowDown') go=tr+1; else if(e.key==='Enter') go=e.shiftKey?tr-1:tr+1; else return;
       e.preventDefault(); const t=wrap.querySelector(`.dbt-gedit[data-r="${go}"][data-i="${c}"]`); if(t){ t.focus(); if(t.select) t.select(); } };
   });
+  }catch(err){ console.error('renderDbtGrid',err); wrap.innerHTML='<div style="padding:20px;color:#c0392b;font-weight:600">Fehler im Raster: '+((err&&err.message)||err)+'</div>'; }
 }
 function exportDbtGridCsv(){ const c=DBT_GRID_CUR; if(!c||!c.runs||!c.runs.length){ gtgToast('Kein Event ausgewählt.'); return; }
   const maxG=c.maxG||Math.max(0,...c.runs.map(r=>(r.gates||[]).length));
