@@ -3817,6 +3817,12 @@ function download(fn,txt,mime){ const b=new Blob([txt],{type:mime}); const u=URL
                         -> kein Browser-Quota mehr, GB-weise Clips möglich. */
 const VDB={db:null};
 function GD(){ return (typeof window!=='undefined' && window.gtgDesktop && typeof window.gtgDesktop.saveVideo==='function') ? window.gtgDesktop : null; }
+// Wenn die Video-IndexedDB bei einem Browser nicht antwortet, werfen Hintergrund-Aufrufe
+// „IndexedDB-Timeout"-Ablehnungen. Die App funktioniert trotzdem (Daten liegen im Speicher) –
+// darum diese spezifischen Ablehnungen still schlucken, statt die Konsole vollzuschreiben.
+if(typeof window!=='undefined' && !window._vdbRejGuard){ window._vdbRejGuard=true;
+  window.addEventListener('unhandledrejection', e=>{ try{ const m=String((e&&e.reason&&(e.reason.message||e.reason))||'');
+    if(/IndexedDB|nicht verfügbar|blockiert/i.test(m)){ e.preventDefault(); } }catch(_){} }); }
 function vdbOpen(){ return new Promise((res,rej)=>{ if(VDB.db) return res(VDB.db);
   if(VDB.failed) return rej(new Error('IndexedDB nicht verfügbar'));   // einmal gescheitert -> nicht endlos neu versuchen (Anzeige nie blockieren)
   let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ VDB.failed=true; return rej(e); }
