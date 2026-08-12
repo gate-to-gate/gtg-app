@@ -274,6 +274,15 @@ body.coach #appFooter{display:none}
 #cmR2Box{display:flex;flex-direction:column;gap:11px;margin-bottom:6px}
 .cloud-btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .cloud-btnrow .save-btn{flex:1;width:auto}
+.cloud-quick{background:var(--good-l);border:1px solid #bfe6d3;border-radius:12px;padding:12px 13px;margin-bottom:14px}
+body.dark .cloud-quick{border-color:#2c5a45}
+.cloud-coderow{display:flex;gap:8px;align-items:center}
+.cloud-coderow input{flex:1;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:8px 10px;font:inherit;font-size:12px;font-weight:600;color:var(--ink);min-width:0}
+.cloud-coderow input[readonly]{color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:11px}
+.cloud-coderow .btn-mini{white-space:nowrap}
+.cloud-conninfo{font-size:11.5px;color:var(--muted);margin:-4px 0 10px;font-variant-numeric:tabular-nums}
+.cloud-share{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.cloud-share .cloud-auto{align-items:flex-start;margin-bottom:9px}
 .cloud-auto{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);margin:2px 0 10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
 .pdf-btn{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;border:none;font:inherit;font-size:12px;font-weight:700;
   padding:0 12px;height:31px;border-radius:8px;cursor:pointer;transition:.15s;box-shadow:0 2px 10px rgba(218,41,28,.35)}
@@ -1856,7 +1865,15 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
       <div class="cloud-intro">Analyse-Daten, Läufe, Kurse und Athleten online sichern & im Team synchronisieren — über ein GitHub-Repository. <b>Videos bleiben lokal</b> auf dem Gerät.</div>
       <!-- Verbindung -->
       <div id="ghConnBox">
-        <div class="cloud-sec">Verbindung (einmalig)</div>
+        <div class="cloud-quick">
+          <div class="cloud-sec">Schnell verbinden — Code von einem Kollegen</div>
+          <div class="cloud-coderow">
+            <input type="text" id="ghCodeIn" placeholder="Verbindungscode einfügen (GTG1-…)">
+            <button class="btn-mini solid" id="ghCodeApply">Übernehmen</button>
+          </div>
+          <div class="cloud-help">Enthält der Code den Token, wird direkt verbunden. Sonst nur noch deinen Token unten eintragen.</div>
+        </div>
+        <div class="cloud-sec">…oder manuell verbinden (einmalig)</div>
         <label class="mf"><span>Repository (Owner/Name)</span><input type="text" id="ghRepo" placeholder="swiss-ski/gtg-daten"></label>
         <div class="cloud-row2">
           <label class="mf"><span>Branch</span><input type="text" id="ghBranch" value="main"></label>
@@ -1869,12 +1886,22 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
       <!-- Verbunden -->
       <div id="ghUserBox" style="display:none">
         <div class="cloud-sec">Verbunden mit <b id="ghRepoName">—</b></div>
+        <div id="ghConnInfo" class="cloud-conninfo"></div>
         <div id="ghStatus" class="gh-status off">—</div>
         <label class="cloud-auto"><input type="checkbox" id="ghAuto" checked> Nach dem Speichern automatisch in GitHub sichern</label>
         <div class="cloud-btnrow">
           <button class="save-btn" id="ghPush">▲ In GitHub sichern</button>
           <button class="btn-mini solid" id="ghPull">▼ Aus GitHub laden</button>
           <button class="btn-mini del" id="ghDisconnect">Trennen</button>
+        </div>
+        <div class="cloud-share">
+          <div class="cloud-sec">Kollegen verbinden</div>
+          <label class="cloud-auto"><input type="checkbox" id="ghShareTok" checked> Zugangs-Token in den Code aufnehmen (Ein-Klick-Verbindung — nur an vertrauenswürdige Kollegen weitergeben)</label>
+          <div class="cloud-coderow">
+            <input type="text" id="ghCodeOut" readonly placeholder="Code erscheint hier">
+            <button class="btn-mini solid" id="ghCodeCopy">📋 Kopieren</button>
+          </div>
+          <div class="cloud-help">Kollege öffnet Cloud → Code oben einfügen → fertig. Ohne Token muss er nur noch seinen eigenen Token eintragen.</div>
         </div>
       </div>
       <div id="cloudMsg" class="save-msg" style="margin-top:12px"></div>
@@ -4652,7 +4679,24 @@ function ghRenderState(){
   if($('#ghPath')) $('#ghPath').value=GH.path||'gtg_data.json';
   if($('#ghToken')&&GH.token) $('#ghToken').value=GH.token;
   if($('#ghAuto')) $('#ghAuto').checked=GH.auto;
-  ghSetDot(); ghStatusRender();
+  if($('#ghConnInfo')) $('#ghConnInfo').textContent = GH.connected? ('Repo '+GH.repo+' · Branch '+(GH.branch||'main')+' · Datei '+(GH.path||'gtg_data.json')) : '';
+  ghSetDot(); ghStatusRender(); ghRefreshCode();
+}
+/* ---- Einladungscode: Kollegen mit einem Einfügen verbinden ---- */
+function ghMakeCode(withTok){ try{ const o={r:GH.repo,b:GH.branch||'main',p:GH.path||'gtg_data.json'}; if(withTok&&GH.token) o.t=GH.token; return 'GTG1-'+btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }catch(e){ return ''; } }
+function ghRefreshCode(){ const el=$('#ghCodeOut'); if(!el) return; if(!GH.connected){ el.value=''; return; } const wt=$('#ghShareTok')?$('#ghShareTok').checked:false; el.value=ghMakeCode(wt); }
+function ghCopyCode(){ const wt=$('#ghShareTok')?$('#ghShareTok').checked:false; const code=ghMakeCode(wt); if(!code){ cloudMsg('Kein Code verfügbar.',false); return; }
+  const el=$('#ghCodeOut'); if(el) el.value=code;
+  const done=()=>cloudMsg(wt?'✓ Einladungscode (mit Token) kopiert — an Kollegen senden. Er fügt ihn oben unter «Schnell verbinden» ein und ist sofort verbunden.':'✓ Code kopiert (ohne Token) — der Kollege trägt nur noch seinen eigenen Token ein.',true);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done).catch(()=>{ if(el&&el.select) el.select(); done(); }); }
+  else { if(el&&el.select){ el.select(); try{document.execCommand('copy');}catch(e){} } done(); }
+}
+function ghApplyCode(){ let s=($('#ghCodeIn')?$('#ghCodeIn').value:'').trim(); if(!s){ cloudMsg('Bitte Einladungscode einfügen.',false); return; }
+  try{ if(s.indexOf('GTG1-')===0) s=s.slice(5); const o=JSON.parse(decodeURIComponent(escape(atob(s))));
+    if(o.r&&$('#ghRepo')) $('#ghRepo').value=o.r; if(o.b&&$('#ghBranch')) $('#ghBranch').value=o.b; if(o.p&&$('#ghPath')) $('#ghPath').value=o.p; if(o.t&&$('#ghToken')) $('#ghToken').value=o.t;
+    if(o.t){ cloudMsg('Code erkannt — verbinde…'); ghConnect(); }
+    else cloudMsg('Code übernommen — jetzt nur noch deinen Access Token eintragen und «Verbinden & prüfen».',true);
+  }catch(e){ cloudMsg('Ungültiger Einladungscode.',false); }
 }
 function ghHeaders(){ return {'Authorization':'Bearer '+GH.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}; }
 function ghUrl(){ return `https://api.github.com/repos/${GH.repo}/contents/${GH.path.split('/').map(encodeURIComponent).join('/')}`; }
@@ -4748,6 +4792,10 @@ function initCloud(){
   if($('#ghPull')) $('#ghPull').onclick=()=>ghPull(false);
   if($('#ghDisconnect')) $('#ghDisconnect').onclick=ghDisconnect;
   if($('#ghAuto')) $('#ghAuto').onchange=e=>{ GH.auto=e.target.checked; ghSaveCfg(); };
+  if($('#ghCodeApply')) $('#ghCodeApply').onclick=ghApplyCode;
+  if($('#ghCodeCopy')) $('#ghCodeCopy').onclick=ghCopyCode;
+  if($('#ghShareTok')) $('#ghShareTok').onchange=ghRefreshCode;
+  if($('#ghCodeIn')) $('#ghCodeIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ghApplyCode(); } });
   ghRenderState();
   if(GH.connected) ghPull(true);   // beim Start still synchronisieren
 }
