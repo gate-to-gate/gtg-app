@@ -720,6 +720,11 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .btn-mini.coach{background:#1f6fb2;color:#fff;border-color:#1a5f9a}
 .btn-mini.coach:hover{background:#195e97;border-color:#154e7e}
 .db-dash{color:#c3cad4}
+.gsex{font-weight:700}
+.gsex.w{color:#e5389a}
+.gsex.m{color:#1f4e9c}
+body.dark .gsex.w{color:#ff6fb5}
+body.dark .gsex.m{color:#7aa6ff}
 .db-novid{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#9a6b00;background:#fdf3e2;border:1px solid #f0d9b0;border-radius:6px;padding:2px 7px;white-space:nowrap;cursor:help}
 body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 /* Datenbank */
@@ -815,6 +820,18 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .fis-row input[type=number]:focus{outline:none;border-color:var(--red)}
 .fis-row .unit{color:var(--muted);font-weight:600}
 .fis-row .fis-gap.off{opacity:.4;pointer-events:none}
+.fis-row{gap:10px;padding:8px 12px}
+.fis-row .fis-sep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+.fis-row.nofis .fis-chk:not(.fis-nofis),.fis-row.nofis .fis-gap{opacity:.38;pointer-events:none}
+.fis-nofis{font-weight:700}
+body.dark .fis-row input[type=number]{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+/* Coach-Raster: + Tor Spalte */
+.dbtg-add{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:3px 9px;font:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+.dbtg-add:hover{color:var(--red);border-color:var(--red)}
+.dbtg-table th.dbtg-addcol{background:var(--card)}
+/* Profil-Erklärung */
+.pf-explain{font-size:12px;color:var(--muted);line-height:1.5;margin:2px 0 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+.pf-explain b{color:var(--ink2)}
 .save-row{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
 .save-row .save-btn{padding:7px 14px;font-size:12.5px;flex:none}
 .save-exports{margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
@@ -1210,7 +1227,7 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
 <body>
 <header>
   <div class="head-in">
-    <div class="brand">
+    <div class="brand" id="brandHome" title="Zur Startseite / Landing Page" style="cursor:pointer">
       <svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs><linearGradient id="lgBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7302A"/><stop offset="1" stop-color="#7C1F2D"/></linearGradient></defs>
         <rect width="64" height="64" rx="17" fill="url(#lgBg)"/>
@@ -1324,7 +1341,7 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
         <div class="f fsub"><label>Ansicht</label><div id="anaSub2" class="seg-toggle"></div></div>
       </div>
       <div class="card">
-        <div class="c-head"><div><h2>Saison-Verlauf <span id="vlName" style="color:var(--red)"></span></h2>
+        <div class="c-head"><div><h2>Saison-Verlauf <span id="vlName" style="color:var(--ink2)"></span></h2>
           <div class="c-sub">Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten — Rennen für Rennen. <b>Tiefer = schneller</b>. Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.</div></div></div>
         <div id="vlChips" class="kf-bar" style="margin-bottom:10px"></div>
         <div class="chart-shell" id="vlShell"></div>
@@ -1342,7 +1359,7 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
         <div class="f fsub"><label>Ansicht</label><div id="anaSub3" class="seg-toggle"></div></div>
       </div>
       <div class="card">
-        <div class="c-head"><div><h2>Athleten-Profil <span id="pfName" style="color:var(--red)"></span></h2>
+        <div class="c-head"><div><h2>Athleten-Profil <span id="pfName" style="color:var(--ink2)"></span></h2>
           <div class="c-sub">Stärken &amp; Schwächen auf einen Blick: Kennzahlen, Terrain-Profil (Steil/Flach/Drehend/Direkt) und beste/schwächste Rennen der Auswahl. Basis: Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten.</div></div></div>
         <div id="pfContent"></div>
       </div>
@@ -1461,6 +1478,8 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
         </thead><tbody id="tagBody"></tbody></table></div>
         <div class="fis-row" id="fisRow">
           <span class="fis-title">FIS-Zeit</span>
+          <label class="fis-chk fis-nofis" title="Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten)."><input type="checkbox" id="mNoFis"> Ohne FIS-Zeit</label>
+          <span class="fis-sep"></span>
           <label class="fis-chk"><input type="checkbox" id="mBest"> Laufbestzeit</label>
           <label class="fis-gap" id="gapLab">Rückstand <input type="number" id="mGap" step="0.01" min="0" placeholder="0.00"> <span class="unit">s</span></label>
         </div>
@@ -1909,7 +1928,7 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
         </div>
         <div class="cloud-share">
           <div class="cloud-sec">Kollegen verbinden</div>
-          <label class="cloud-auto"><input type="checkbox" id="ghShareTok" checked> Zugangs-Token in den Code aufnehmen (Ein-Klick-Verbindung — nur an vertrauenswürdige Kollegen weitergeben)</label>
+          <label class="cloud-auto"><input type="checkbox" id="ghShareTok" checked> Zugangs-Token &amp; Coach-Link-Setup mitgeben (Ein-Klick — Kollegen können sofort verbinden und Coach-Links erstellen; nur an vertrauenswürdige Kollegen)</label>
           <div class="cloud-coderow">
             <input type="text" id="ghCodeOut" readonly placeholder="Code erscheint hier">
             <button class="btn-mini solid" id="ghCodeCopy">📋 Kopieren</button>
@@ -1941,28 +1960,31 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
     <div class="modal-head"><h2>Coach-Link erstellen</h2><button class="modal-x" id="coachClose">✕</button></div>
     <div class="modal-body cloud-body">
       <div class="cloud-intro"><b id="cmEvt">—</b></div>
-      <label class="mf"><span>GitHub Access Token</span><input type="password" id="cmToken" placeholder="github_pat_… / ghp_…"></label>
-      <details class="cm-adv"><summary>GitHub-Ziel (Repo &amp; Pages) – meist automatisch</summary>
-        <label class="mf" style="margin-top:8px"><span>Repository (Owner/Name)</span><input type="text" id="cmRepo" placeholder="gate-to-gate/gtg-app"></label>
-        <div class="cloud-row2">
-          <label class="mf"><span>Branch</span><input type="text" id="cmBranch" value="main"></label>
-          <label class="mf"><span>Pages-URL (Basis)</span><input type="text" id="cmBase" placeholder="https://…github.io/gtg-app/"></label>
+      <div id="cmReady" class="cm-ready" style="display:none">✓ Setup vorhanden — du kannst den Coach-Link direkt erstellen.</div>
+      <details id="cmSettings" class="cm-settings"><summary>⚙ Einstellungen (Token, Repo, Video-Speicher) — meist nur beim ersten Mal</summary>
+        <label class="mf" style="margin-top:8px"><span>GitHub Access Token</span><input type="password" id="cmToken" placeholder="github_pat_… / ghp_…"></label>
+        <details class="cm-adv"><summary>GitHub-Ziel (Repo &amp; Pages) – meist automatisch</summary>
+          <label class="mf" style="margin-top:8px"><span>Repository (Owner/Name)</span><input type="text" id="cmRepo" placeholder="gate-to-gate/gtg-app"></label>
+          <div class="cloud-row2">
+            <label class="mf"><span>Branch</span><input type="text" id="cmBranch" value="main"></label>
+            <label class="mf"><span>Pages-URL (Basis)</span><input type="text" id="cmBase" placeholder="https://…github.io/gtg-app/"></label>
+          </div>
+        </details>
+        <label class="cm-r2on"><input type="checkbox" id="cmR2On"> Videos zu Cloudflare&nbsp;R2 hochladen</label>
+        <div id="cmR2Box" style="display:none">
+          <label class="mf"><span>Öffentliche Basis-URL (r2.dev)</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
+          <label class="mf"><span>Upload-Worker-URL</span><input type="text" id="cmR2Worker" placeholder="https://gtg-upload.&lt;name&gt;.workers.dev"></label>
+          <label class="mf"><span>Upload-Passwort <span class="cm-r2hint">(optional)</span></span><input type="password" id="cmR2Wkey" placeholder="wie im Worker"></label>
+          <details class="cm-adv"><summary>Ohne Worker: direkte S3-Schlüssel</summary>
+            <label class="mf" style="margin-top:8px"><span>R2 S3-Endpoint</span><input type="text" id="cmR2Endpoint" placeholder="https://&lt;account-id&gt;.r2.cloudflarestorage.com"></label>
+            <div class="cloud-row2">
+              <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
+              <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="Access Key ID"></label>
+            </div>
+            <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
+          </details>
         </div>
       </details>
-      <label class="cm-r2on"><input type="checkbox" id="cmR2On"> Videos zu Cloudflare&nbsp;R2 hochladen</label>
-      <div id="cmR2Box" style="display:none">
-        <label class="mf"><span>Öffentliche Basis-URL (r2.dev)</span><input type="text" id="cmR2Base" placeholder="https://pub-….r2.dev/"></label>
-        <label class="mf"><span>Upload-Worker-URL</span><input type="text" id="cmR2Worker" placeholder="https://gtg-upload.&lt;name&gt;.workers.dev"></label>
-        <label class="mf"><span>Upload-Passwort <span class="cm-r2hint">(optional)</span></span><input type="password" id="cmR2Wkey" placeholder="wie im Worker"></label>
-        <details class="cm-adv"><summary>Ohne Worker: direkte S3-Schlüssel</summary>
-          <label class="mf" style="margin-top:8px"><span>R2 S3-Endpoint</span><input type="text" id="cmR2Endpoint" placeholder="https://&lt;account-id&gt;.r2.cloudflarestorage.com"></label>
-          <div class="cloud-row2">
-            <label class="mf"><span>Bucket</span><input type="text" id="cmR2Bucket" placeholder="gtg-coach-videos"></label>
-            <label class="mf"><span>Access Key ID</span><input type="text" id="cmR2Key" placeholder="Access Key ID"></label>
-          </div>
-          <label class="mf"><span>Secret Access Key</span><input type="password" id="cmR2Secret" placeholder="R2 Secret"></label>
-        </details>
-      </div>
       <button class="save-btn" id="cmGo">Videos hochladen &amp; Link erstellen</button>
       <div id="cmProg" class="save-msg" style="margin-top:10px"></div>
       <div id="cmResult" style="display:none;margin-top:10px">
@@ -1978,7 +2000,6 @@ body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
   <div class="modal" style="max-width:460px">
     <div class="modal-head"><h2>Event bearbeiten</h2><button class="modal-x" id="evEditX">✕</button></div>
     <div class="modal-body">
-      <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Passt Datum, Ort, Disziplin, Geschlecht und Lauf dieses Events an. Getaggte Läufe, Kurssetzung und Videos werden mit umgestellt.</p>
       <label class="mf"><span>Datum</span><input type="date" id="evDate"></label>
       <label class="mf"><span>Ort</span><input type="text" id="evVenue" placeholder="z. B. Adelboden"></label>
       <div class="cloud-row2">
@@ -2070,6 +2091,9 @@ function initConfirm(){ const ok=document.getElementById('cfOk'), c=document.get
 
 const $ = s => document.querySelector(s);
 const tt = $('#tt');
+// Landing-Page-Ziel für den Logo-Klick (hier bei Bedarf die genaue URL eintragen)
+const GTG_LANDING = 'https://gate-to-gate.github.io/';
+document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
@@ -2126,6 +2150,7 @@ function runLong(mode,disc,run){ return needsRun(mode,disc)? ('Lauf '+run) : dis
 function runShort(mode,disc,run){ return needsRun(mode,disc)? ('L'+run) : '—'; }
 let ARCHIVED=new Set();   // archivierte Event-Keys (in Analyse ausgeblendet, nicht gelöscht)
 function evKey(e){ return `${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}`; }
+function genHtml(g){ g=g||''; return `<span class="gsex ${g==='W'?'w':(g==='M'?'m':'')}">${g}</span>`; }   // W pink, M dunkelblau
 function isArchived(e){ return ARCHIVED.has(evKey(e)); }
 
 /* ---------- filter cascade ---------- */
@@ -3082,7 +3107,7 @@ const VL_CATS=[
 ];
 function vlAthletes(){ const cnt={};
   DATA.filter(e=>e.discipline===VL.disc&&e.gender===VL.gen&&e.hasTop&&e.mode!=='train')
-    .forEach(e=> e.skiers.forEach(s=>{ cnt[s.name]=(cnt[s.name]||0)+1; }));
+    .forEach(e=> e.skiers.forEach(s=>{ if((s.nation||natOf(s.name))!=='SUI') return; cnt[s.name]=(cnt[s.name]||0)+1; }));   // nur Schweizer:innen
   return Object.keys(cnt).filter(n=>cnt[n]>=2).sort(); }
 function vlData(name){
   name=name||VL.ath;
@@ -3299,6 +3324,7 @@ function renderProfil(){
   const cats4=VL_CATS.filter(c=>c.need);
   const radar=profilRadar(cats4, aggA, aggB, VL.ath, PF.athB);
   h+=`<div class="pf-sec"><b>Terrain-Fingerabdruck</b> · Ø Rückstand pro Tor auf den Laufbesten`+(aggB?' — <span style="color:var(--red)">■</span> '+VL.ath+' vs. <span style="color:#1f6fb2">■</span> '+PF.athB:'')+`</div>`;
+  h+=`<div class="pf-explain">So liest du die Grafik: Jede der vier Achsen ist ein Geländetyp (Steil, Flach, Drehend, Direkt). Je <b>weiter aussen</b> der Punkt liegt, desto <b>schneller</b> ist ${aggB?'der jeweilige Athlet':'die Athletin/der Athlet'} auf diesem Terrain (kleinerer Rückstand pro Tor). Eine <b>grosse, gleichmässige</b> Fläche heisst überall stark; eine <b>Delle Richtung Mitte</b> zeigt eine Schwäche auf diesem Geländetyp. Die Zahlen rechts sind der Ø Gate-to-Gate-Rückstand pro Tor gegenüber dem Laufbesten: <span style="color:var(--good)">− = schneller</span>, <span style="color:var(--bad)">+ = langsamer</span>.</div>`;
   if(radar){
     h+=`<div class="pf-radarwrap"><div class="pf-radar">${radar}</div><div class="pf-vtab">`;
     h+=`<div class="pf-vrow pf-vhead"><span>Terrain</span><span style="color:var(--red)">${aggB?VL.ath.split(' ').slice(-1)[0]:'Ø s/Tor'}</span>${aggB?`<span style="color:#1f6fb2">${PF.athB.split(' ').slice(-1)[0]}</span>`:''}</div>`;
@@ -3754,6 +3780,9 @@ function propagateFiguresToEvent(rec){
   if(typeof ghAutoSync==='function') ghAutoSync();
   return touched.length;
 }
+// «Ohne FIS-Zeit»: Laufbestzeit/Rückstand deaktivieren – Endrückstand kommt dann rein aus den Taggings
+function updateFisMode(){ const nf=$('#mNoFis')&&$('#mNoFis').checked; const row=$('#fisRow'); if(row) row.classList.toggle('nofis',!!nf);
+  if(nf){ if($('#mBest')) $('#mBest').checked=false; if($('#mGap')) $('#mGap').value=''; if($('#gapLab')) $('#gapLab').classList.remove('off'); } }
 function saveRun(){
   const mode=TG.mode||'comp';
   const date=$('#mDate').value, venue=getVenue(), disc=$('#mDisc').value, gen=$('#mGen').value;
@@ -3771,11 +3800,13 @@ function saveRun(){
     SAVED_TRAIN.push(rec); LS.set('gtg_runs_train',SAVED_TRAIN);
     fisTxt=' · Training (schnellster getaggter = Referenz)';
   } else {
-    const best=$('#mBest').checked; const gapVal=parseFloat($('#mGap').value); const officialGap = best?0:(isFinite(gapVal)?gapVal:null);
+    const noFis=$('#mNoFis')&&$('#mNoFis').checked;
+    const best=!noFis && $('#mBest').checked; const gapVal=parseFloat($('#mGap').value);
+    const officialGap = noFis? null : (best?0:(isFinite(gapVal)?gapVal:null));
     rec={mode:'comp',date,venue,disc,gen,run,name,nation:natOf(name)||'',gates,figures, officialBest:best, officialGap};
     const id=runId(rec); SAVED=SAVED.filter(r=>runId(r)!==id);   // vorhandenes überschreiben
     SAVED.push(rec); LS.set('gtg_runs',SAVED);
-    fisTxt = best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)');
+    fisTxt = noFis ? ' · ohne FIS-Zeit · Endrückstand aus Taggings' : (best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)'));
   }
   applyRun(rec);
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
@@ -4111,6 +4142,7 @@ async function loadFromLib(id){
     $('#mAth').value=r.name;
     $('#mBest').checked=!!r.officialBest; $('#gapLab').classList.toggle('off', !!r.officialBest);
     $('#mGap').value=(!r.officialBest && r.officialGap!=null)? r.officialGap : '';
+    if($('#mNoFis')) $('#mNoFis').checked=(!r.officialBest && r.officialGap==null); updateFisMode();
     updateMetaSummary(); renderTags(); tgResetHistory();
     const m=$('#saveMsg'); m.className='save-msg ok'; m.textContent=`Geladen: ${r.name} · ${r.venue} ${r.disc} ${r.gen} ${runLong(r.mode||'comp', r.disc, r.run)} (${(r.tags||[]).length} Tags).`;
   }
@@ -4608,6 +4640,7 @@ function initTagging(){
   $('#metaModal').addEventListener('click',e=>{ if(e.target.id==='metaModal') closeMetaModal(); });
   window.addEventListener('resize',()=>{ if(S.view==='tagging') syncDataHeight(); });
   $('#mBest').onchange=e=>{ $('#gapLab').classList.toggle('off', e.target.checked); if(e.target.checked) $('#mGap').value=''; };
+  if($('#mNoFis')) $('#mNoFis').onchange=()=>{ updateFisMode(); if(typeof computeOverlaySteps==='function'){ computeOverlaySteps(); updateOverlay(); } };
   // wheel scrub over video
   $('.vid-wrap')?.addEventListener('wheel',e=>{ if(!v.src)return; e.preventDefault(); stepFrame(e.deltaY>0?1:-1); },{passive:false});
   // new athlete
@@ -4697,7 +4730,7 @@ const NAT_AUTH={}; DATA.forEach(e=>e.skiers.forEach(s=>{ if(!(s.name in NAT_AUTH
 
 /* ===================== GITHUB (Daten-Sync & Backup) ===================== */
 /* Videos bleiben lokal. Nur Athleten/Läufe/Kurse werden in ein GitHub-Repo (JSON) synchronisiert. */
-let GH={repo:'',branch:'main',path:'gtg_data.json',token:'',auto:true,connected:false,syncing:false,timer:null,lastSync:0,pending:0};
+let GH={repo:'',branch:'main',path:'gtg_data.json',token:'',auto:true,connected:false,syncing:false,pulling:false,timer:null,lastSync:0,pending:0};
 function ghAgo(ts){ if(!ts) return 'noch nie'; const s=Math.floor((Date.now()-ts)/1000);
   if(s<60) return 'gerade eben'; const m=Math.floor(s/60); if(m<60) return 'vor '+m+' Min'; const h=Math.floor(m/60); if(h<24) return 'vor '+h+' Std';
   const d=Math.floor(h/24); return 'vor '+d+' Tag'+(d>1?'en':''); }
@@ -4735,7 +4768,10 @@ function ghRenderState(){
 function updateCloudHint(){ const h=$('#tagCloudHint'); if(!h) return;
   h.style.display = (S.view==='tagging' && !GH.connected) ? 'flex' : 'none'; }
 /* ---- Einladungscode: Kollegen mit einem Einfügen verbinden ---- */
-function ghMakeCode(withTok){ try{ const o={r:GH.repo,b:GH.branch||'main',p:GH.path||'gtg_data.json'}; if(withTok&&GH.token) o.t=GH.token; return 'GTG1-'+btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }catch(e){ return ''; } }
+function ghMakeCode(withTok){ try{ const o={r:GH.repo,b:GH.branch||'main',p:GH.path||'gtg_data.json'};
+  if(withTok){ if(GH.token) o.t=GH.token;   // mit Token: auch das Coach-Link-Setup mitgeben (Kollegen müssen nichts mehr ausfüllen)
+    try{ const cc=LS.get('gtg_coachcfg',null); if(cc&&cc.repo) o.cc=cc; const r2=LS.get('gtg_r2cfg',null); if(r2&&(r2.endpoint||r2.worker)) o.r2=r2; }catch(_){} }
+  return 'GTG1-'+btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }catch(e){ return ''; } }
 function ghRefreshCode(){ const el=$('#ghCodeOut'); if(!el) return; if(!GH.connected){ el.value=''; return; } const wt=$('#ghShareTok')?$('#ghShareTok').checked:false; el.value=ghMakeCode(wt); }
 function ghCopyCode(){ const wt=$('#ghShareTok')?$('#ghShareTok').checked:false; const code=ghMakeCode(wt); if(!code){ cloudMsg('Kein Code verfügbar.',false); return; }
   const el=$('#ghCodeOut'); if(el) el.value=code;
@@ -4746,7 +4782,8 @@ function ghCopyCode(){ const wt=$('#ghShareTok')?$('#ghShareTok').checked:false;
 function ghApplyCode(){ let s=($('#ghCodeIn')?$('#ghCodeIn').value:'').trim(); if(!s){ cloudMsg('Bitte Einladungscode einfügen.',false); return; }
   try{ if(s.indexOf('GTG1-')===0) s=s.slice(5); const o=JSON.parse(decodeURIComponent(escape(atob(s))));
     if(o.r&&$('#ghRepo')) $('#ghRepo').value=o.r; if(o.b&&$('#ghBranch')) $('#ghBranch').value=o.b; if(o.p&&$('#ghPath')) $('#ghPath').value=o.p; if(o.t&&$('#ghToken')) $('#ghToken').value=o.t;
-    if(o.t){ cloudMsg('Code erkannt — verbinde…'); ghConnect(); }
+    try{ if(o.cc) LS.set('gtg_coachcfg',o.cc); if(o.r2) LS.set('gtg_r2cfg',o.r2); }catch(_){}   // Coach-Link-Setup übernehmen
+    if(o.t){ cloudMsg('Code erkannt — verbinde…'+((o.cc||o.r2)?' (inkl. Coach-Link-Setup)':'')); ghConnect(); }
     else cloudMsg('Code übernommen — jetzt nur noch deinen Access Token eintragen und «Verbinden & prüfen».',true);
   }catch(e){ cloudMsg('Ungültiger Einladungscode.',false); }
 }
@@ -4776,7 +4813,8 @@ function ghMergeIn(o){ if(!o) return; let changed=false;
   if(Array.isArray(o.runs)) o.runs.forEach(rec=>{ const rc={...rec,mode:'comp'}; const id=runId(rc); if(!SAVED.some(x=>runId({...x,mode:'comp'})===id)){ SAVED.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   if(Array.isArray(o.trainRuns)) o.trainRuns.forEach(rec=>{ const rc={...rec,mode:'train'}; const id=runId(rc); if(!SAVED_TRAIN.some(x=>runId({...x,mode:'train'})===id)){ SAVED_TRAIN.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN);
-  if(Array.isArray(o.courses)) o.courses.forEach(c=>{ if(c&&c.id){ COURSES[c.id]=c; try{vdbPut(c,'courses');}catch(e){} changed=true; } });
+  if(Array.isArray(o.courses)) o.courses.forEach(c=>{ if(c&&c.id){ const ex=COURSES[c.id];
+    if(!ex || JSON.stringify(ex)!==JSON.stringify(c)){ COURSES[c.id]=c; try{vdbPut(c,'courses');}catch(e){} changed=true; } } });   // nur bei echter Änderung (sonst 90-Sek-Toast/Schreib-Schleife)
   buildFilters(); if(typeof renderLibrary==='function') renderLibrary(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope();
   return changed;
 }
@@ -4800,12 +4838,14 @@ function refreshAfterSync(){ try{
     else if(S.view==='kurs' && typeof renderKursAnalysis==='function') renderKursAnalysis();
   }catch(e){} }
 async function ghPull(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zuerst verbinden.',false); return; }
+  if(GH.pulling){ return; } GH.pulling=true;   // kein überlappender Pull (Poll + visibilitychange + Verbinden)
   try{ if(!silent) cloudMsg('Lade aus GitHub…'); const {json}=await ghGet();
     if(!json){ if(!silent) cloudMsg('Im Repo ist noch keine Datei — sichere zuerst mit «In GitHub sichern».'); return; }
     const changed=ghMergeIn(json);
     if(changed){ refreshAfterSync(); if(silent && typeof gtgToast==='function') gtgToast('Neue Team-Daten geladen.','ok'); }
     if(!silent) cloudMsg(`✓ Geladen: ${(json.runs||[]).length} Läufe, ${(json.trainRuns||[]).length} Trainings, ${(json.courses||[]).length} Kurse.`,true);
   }catch(e){ if(!silent) cloudMsg('Fehler beim Laden: '+e.message,false); }
+  finally{ GH.pulling=false; }
 }
 async function ghPush(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zuerst verbinden.',false); return; }
   if(GH.syncing){ return; } GH.syncing=true; ghStatusRender();
@@ -4861,8 +4901,8 @@ function initCloud(){
   updateCloudHint();
   if(GH.connected) ghPull(true);   // beim Start still synchronisieren
   // Regelmäßiger Hintergrund-Abgleich, damit neue Team-Taggings ohne Neuladen erscheinen
-  if(!window._ghPoll){ window._ghPoll=setInterval(()=>{ if(GH.connected && GH.auto && !GH.syncing && document.visibilityState!=='hidden') ghPull(true); }, 90000); }
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && GH.connected && GH.auto && !GH.syncing) ghPull(true); });
+  if(!window._ghPoll){ window._ghPoll=setInterval(()=>{ if(GH.connected && GH.auto && !GH.syncing && !GH.pulling && document.visibilityState!=='hidden') ghPull(true); }, 90000); }
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && GH.connected && GH.auto && !GH.syncing && !GH.pulling) ghPull(true); });
 }
 
 /* ===================== DATENBANK (Events / Taggings / Videos) ===================== */
@@ -4951,7 +4991,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
     return `<tr class="${r.archived?'db-arch':''}">
-      <td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${e.gender}</td><td>${runLbl}</td>
+      <td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td><td>${runLbl}</td>
       <td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td>
       <td>${clBtn}</td>
       <td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':'del'}" data-k="${r.key}">${r.archived?'↩ Aktivieren':'Archivieren'}</button></td></tr>`; }).join('');
@@ -5026,14 +5066,18 @@ function gateUndoPush(id,i,oldVal,newVal){ GATE_UNDO.push({id,i,oldVal,newVal});
 function editTagGate(id, i, val, noUndo){
   let rec=SAVED.find(r=>runId(r)===id), isT=false;
   if(!rec){ rec=SAVED_TRAIN.find(r=>runId(r)===id); isT=true; }
-  if(rec){ if(!rec.gates||i<0||i>=rec.gates.length) return;
+  if(rec){ if(i<0) return; if(!rec.gates) rec.gates=[];
+    if(val==null && i>=rec.gates.length) return;                 // leeres Feld leer lassen
+    while(rec.gates.length<=i) rec.gates.push(null);             // vergessene/fehlende Tore auffüllen
     const oldVal=rec.gates[i]; if(oldVal===val) return;
     rec.gates[i]=val; LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
     try{ applyRun(rec); }catch(e){} if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; }
   // Databank-Lauf: passenden Event-Skier direkt bearbeiten und dauerhaft merken
   const p=id.split('|'); const date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4],name=p.slice(5).join('|');
   for(const arr of [DATA,TRAIN]){ const e=arr.find(x=>x.date===date&&x.venue===venue&&x.discipline===disc&&x.gender===gen&&String(x.run)===String(run));
-    if(e){ const s=(e.skiers||[]).find(x=>x.name===name); if(s&&s.gates&&i>=0&&i<s.gates.length){
+    if(e){ const s=(e.skiers||[]).find(x=>x.name===name); if(s&&i>=0){ if(!s.gates) s.gates=[];
+      if(val==null && i>=s.gates.length) return;                 // leeres Feld leer lassen
+      while(s.gates.length<=i) s.gates.push(null);               // vergessene/fehlende Tore auffüllen
       const oldVal=s.gates[i]; if(oldVal===val) return;
       s.gates[i]=val; try{ recomputeEvent(e); }catch(_){}
       const ov=LS.get('gtg_gate_override',{}); ov[id]=s.gates.slice(); LS.set('gtg_gate_override',ov);
@@ -5080,7 +5124,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
       const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
-      return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${r.gen}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+      return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
     }).join('');
     const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
     // pro Event+Tor Median/MAD über alle Athleten -> Ausreisser (Sync-/Schnittfehler) markieren
@@ -5112,6 +5156,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
   });
 }
 /* ---- Taggings: Raster-Ansicht pro Event (Athleten × Tore, direkt editierbar) ---- */
+let DBT_GRID_EXTRA=0, DBT_GRID_EXTRA_KEY=null;
 function renderDbtGrid(list){
   const sel=$('#dbtGridEvt'), wrap=$('#dbtGridWrap');
   if(!sel||!wrap){ if(DBTVIEW!=='list'){ DBTVIEW='list'; if($('#dbtView')) $('#dbtView').querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on',b.dataset.v==='list')); if($('#dbtListBox')) $('#dbtListBox').style.display=''; if($('#dbtGridBox')) $('#dbtGridBox').style.display='none'; renderDbTaggings(); } return; }
@@ -5131,17 +5176,21 @@ function renderDbtGrid(list){
   if(!cur){ wrap.innerHTML='<div style="padding:18px">'+dbEmpty(onlyAnom?'Keine Events mit Auffälligkeiten.':'Keine Events für diesen Filter.', 2, 'search')+'</div>'; return; }
   const runs=evMap[cur].slice().sort((a,b)=> (b.officialBest?1:0)-(a.officialBest?1:0) || (a.name||'').localeCompare(b.name));
   const maxG=Math.max(0,...runs.map(r=>(r.gates||[]).length));
+  if(cur!==DBT_GRID_EXTRA_KEY){ DBT_GRID_EXTRA=0; DBT_GRID_EXTRA_KEY=cur; }   // Extra-Spalten pro Event zurücksetzen
+  const cols=maxG+DBT_GRID_EXTRA;
   const per={}; for(let i=0;i<maxG;i++){ const vals=runs.map(r=>(r.gates||[])[i]).filter(v=>v!=null).map(v=>+v); if(vals.length>=3){ const md=_median(vals); per[i]={md, mad:_median(vals.map(v=>Math.abs(v-md)))||0}; } }
   const bad=(g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g-s.md) >= 0.25; };   // ≥ 0,25 s Abweichung zum Median
   let h=`<table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet</th><th class="dbtg-src">Quelle</th>`;
-  for(let i=0;i<maxG;i++) h+=`<th class="num">${i+1}</th>`;
+  for(let i=0;i<cols;i++) h+=`<th class="num">${i+1}</th>`;
+  h+=`<th class="dbtg-addcol"><button class="dbtg-add" id="dbtGridAddCol" title="Vergessenes Tor am Ende hinzufügen (Spalte)">+ Tor</button></th>`;
   h+=`</tr></thead><tbody>`;
   runs.forEach((r,ri)=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
     h+=`<tr><td class="dbtg-ath">${r.name}${r.officialBest?' <span class="db-badge gold">Best</span>':''}</td><td class="dbtg-src">${srcB}</td>`;
-    for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"></td>`; }
-    h+=`</tr>`; });
+    for(let i=0;i<cols;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"></td>`; }
+    h+=`<td></td></tr>`; });
   h+=`</tbody></table>`; wrap.innerHTML=h;
-  DBT_GRID_CUR={ key:cur, runs, maxG };
+  DBT_GRID_CUR={ key:cur, runs, maxG:cols };
+  const addBtn=$('#dbtGridAddCol'); if(addBtn) addBtn.onclick=()=>{ DBT_GRID_EXTRA++; renderDbtGrid(list); };
   wrap.querySelectorAll('.dbt-gedit').forEach(inp=>{
     inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); };
     inp.onkeydown=e=>{ const c=+inp.dataset.i, tr=+inp.dataset.r; let go=null;
@@ -5185,6 +5234,7 @@ function openTaggingFromRecord(rec){ switchView('tagging'); if(typeof setTagMode
   $('#mAth').value=rec.name;
   $('#mBest').checked=!!rec.officialBest; if($('#gapLab')) $('#gapLab').classList.toggle('off', !!rec.officialBest);
   $('#mGap').value=(!rec.officialBest && rec.officialGap!=null)? rec.officialGap : '';
+  if($('#mNoFis')) $('#mNoFis').checked=(!rec.officialBest && rec.officialGap==null); if(typeof updateFisMode==='function') updateFisMode();
   updateMetaSummary(); renderTags(); if(typeof tgResetHistory==='function') tgResetHistory();
   const m=$('#saveMsg'); if(m){ m.className='save-msg ok'; m.textContent=`Zum Bearbeiten geladen: ${rec.name} · ${rec.venue} (kein Video – nur Zeiten).`; }
 }
@@ -5749,6 +5799,14 @@ function openCoachLink(key){
   if(typeof GH!=='undefined'&&GH&&GH.token&&$('#cmToken')&&!$('#cmToken').value)$('#cmToken').value=GH.token;
   if($('#cmEvt'))$('#cmEvt').textContent=`${venue} · ${dmy(date)} · ${gender==='M'?'Männer':'Frauen'}`;
   if($('#cmResult'))$('#cmResult').style.display='none'; cmProg('');
+  // Ist das Setup schon vollständig (z. B. per Einladungscode übernommen)? Dann Einstellungen eingeklappt lassen.
+  const val=id2=>{ const el=$(id2); return el? String(el.value||'').trim():''; };
+  const tokenOk = !!(val('#cmToken') || (typeof GH!=='undefined'&&GH&&GH.token));
+  const r2on = $('#cmR2On')&&$('#cmR2On').checked;
+  const r2Ok = !r2on || (val('#cmR2Base') && (val('#cmR2Worker') || val('#cmR2Endpoint')));
+  const complete = tokenOk && val('#cmBase') && val('#cmRepo') && r2Ok;
+  if($('#cmSettings')) $('#cmSettings').open = !complete;
+  if($('#cmReady')) $('#cmReady').style.display = complete?'':'none';
   const m=$('#coachModal'); if(m) m.style.display='flex';
 }
 async function coachCreate(){
