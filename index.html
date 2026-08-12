@@ -3818,13 +3818,18 @@ function download(fn,txt,mime){ const b=new Blob([txt],{type:mime}); const u=URL
 const VDB={db:null};
 function GD(){ return (typeof window!=='undefined' && window.gtgDesktop && typeof window.gtgDesktop.saveVideo==='function') ? window.gtgDesktop : null; }
 function vdbOpen(){ return new Promise((res,rej)=>{ if(VDB.db) return res(VDB.db);
-  let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ return rej(e); }
+  if(VDB.failed) return rej(new Error('IndexedDB nicht verfügbar'));   // einmal gescheitert -> nicht endlos neu versuchen (Anzeige nie blockieren)
+  let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ VDB.failed=true; return rej(e); }
+  let done=false; const fin=(ok,val)=>{ if(done) return; done=true; clearTimeout(to); if(ok){ res(val); } else { VDB.failed=true; rej(val); } };
+  const to=setTimeout(()=>fin(false,new Error('IndexedDB-Timeout')), 3000);   // hängt das Öffnen (z. B. blockiert), nach 3 s aufgeben statt ewig warten
   r.onupgradeneeded=e=>{ const db=e.target.result;
     if(!db.objectStoreNames.contains('videos')) db.createObjectStore('videos',{keyPath:'id'});
     if(!db.objectStoreNames.contains('courses')) db.createObjectStore('courses',{keyPath:'id'});
     if(!db.objectStoreNames.contains('kurspdf')) db.createObjectStore('kurspdf',{keyPath:'id'});
     if(!db.objectStoreNames.contains('backups')) db.createObjectStore('backups',{keyPath:'id'}); };
-  r.onsuccess=e=>{ VDB.db=e.target.result; res(VDB.db); }; r.onerror=()=>rej(r.error); }); }
+  r.onsuccess=e=>{ VDB.db=e.target.result; fin(true,VDB.db); };
+  r.onerror=()=>fin(false, r.error||new Error('IndexedDB-Fehler'));
+  r.onblocked=()=>fin(false, new Error('IndexedDB blockiert (andere Registerkarte offen?)')); }); }
 function _idbPut(rec,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(rec); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); })); }
 function _idbGet(id,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const rq=db.transaction(store,'readonly').objectStore(store).get(id); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); })); }
 function vdbPut(rec,store='videos'){
