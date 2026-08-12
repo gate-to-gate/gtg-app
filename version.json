@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.5",
+  "desktopVersion": "1.4.6",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Figuren: keine Figur mehr doppelt pro Lauf; eine Figur-Änderung überträgt sich beim Speichern auf alle anderen getaggten Videos desselben Laufs. Ausserdem: Auto-Sync der Team-Taggings, Coach-Link nur mit lokalen Videos (+ Desktop-Upload-Fix)."
+  "notes": "Raster: vergessene Tore nachtragbar (füllbare Zellen + «+ Tor»). Figuren nicht doppelt & Übernahme auf andere Videos. «Ohne FIS-Zeit» (Endrückstand aus Taggings). Coach-Link stark vereinfacht (Setup per Einladungscode, ein Klick). Profil/Verlauf: nur SUI im Dropdown, Radar-Erklärung, Titel dunkelgrau. Geschlecht farbig (W pink, M dunkelblau). Logo führt zur Startseite."
 }
