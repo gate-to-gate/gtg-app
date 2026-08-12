@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.7",
+  "desktopVersion": "1.4.8",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Struktur: Kurssetzung-Tab entfernt — Kurs-PDFs & Upload jetzt in Datenbank → Kurssetzung; die kombinierte Analyse ist aufgeteilt (Stärken-Spider im Athleten-Profil, Detail-nach-Filter im Saison-Verlauf). Neues App-Icon (G2G). Frame-Schritt nach Pause korrigiert, Chart-Tooltip bleibt beim Cursor, Kurs-PDF ort-unabhängig, Logo führt zur Startseite."
+  "notes": "Athleten-Profil: Vergleich ist jetzt Mehrfach-Auswahl — mehrere Schweizerinnen als farbige Linien im Terrain-Radar (redundante Spider-Grafik entfernt). Nur Schweizer:innen im Dropdown, Nachnamen in der Tabelle. Header: rote Tab-Linie wieder auf der Kante, Logo bleibt zentriert. Neues G2G-Icon auch als Favicon."
 }
