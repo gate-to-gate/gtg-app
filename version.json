@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.8",
+  "desktopVersion": "1.4.9",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Athleten-Profil: Vergleich ist jetzt Mehrfach-Auswahl — mehrere Schweizerinnen als farbige Linien im Terrain-Radar (redundante Spider-Grafik entfernt). Nur Schweizer:innen im Dropdown, Nachnamen in der Tabelle. Header: rote Tab-Linie wieder auf der Kante, Logo bleibt zentriert. Neues G2G-Icon auch als Favicon."
+  "notes": "Dark-Mode überall im Analyse-/Kurssetzung-Bereich verbessert (Drop-Bereich, Chips, Balkengrafik, leere Felder). «Detail nach Filter»-Grafik kompakter, Umschalter gleich hoch wie die Ansicht-Tabs. Athleten-Profil: Mehrfach-Vergleich im Radar."
 }
