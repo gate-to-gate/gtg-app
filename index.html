@@ -27,8 +27,8 @@ h1,h2,h3{margin:0;font-weight:680;letter-spacing:-.01em}
 .wrap{max-width:1340px;margin:0 auto;padding:0 22px 60px}
 
 /* Header */
-header{background:#fff;color:var(--ink);padding:8px 0 0;margin-bottom:16px;position:sticky;top:0;z-index:40}
-.head-in{max-width:1340px;margin:0 auto;padding:0 18px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+header{background:#fff;color:var(--ink);padding:9px 0;margin-bottom:16px;position:sticky;top:0;z-index:40}
+.head-in{max-width:1340px;margin:0 auto;padding:0 18px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:44px}
 .brand{display:flex;align-items:center;gap:10px;margin-right:4px}
 .logo{width:34px;height:34px;flex:none;display:block;filter:drop-shadow(0 2px 8px rgba(124,31,45,.5))}
 .brand-txt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1}
@@ -431,8 +431,8 @@ svg.chart{width:100%;display:block;overflow:visible}
 .pf-vrow .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .pf-vhead{font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);background:none!important}
 .pf-vhead span{font-weight:700!important}
-.tt{position:absolute;pointer-events:none;background:#14181f;color:#fff;border-radius:9px;padding:9px 11px;font-size:12px;
-  box-shadow:0 8px 26px rgba(0,0,0,.28);opacity:0;transition:opacity .1s;z-index:30;min-width:120px;transform:translate(-50%,-112%)}
+.tt{position:fixed;pointer-events:none;background:#14181f;color:#fff;border-radius:9px;padding:9px 11px;font-size:12px;
+  box-shadow:0 8px 26px rgba(0,0,0,.28);opacity:0;transition:opacity .1s;z-index:80;min-width:120px;transform:translate(-50%,-112%)}
 .tt .tt-h{font-weight:700;font-size:11px;color:#aeb8c6;margin-bottom:5px;letter-spacing:.03em}
 .tt .tt-r{display:flex;justify-content:space-between;gap:14px;line-height:1.55}
 .tt .tt-r .n{display:flex;align-items:center;gap:6px}
@@ -829,6 +829,11 @@ body.dark .fis-row input[type=number]{background:#2d3644;color:#eef1f6;border-co
 .dbtg-add{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:3px 9px;font:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
 .dbtg-add:hover{color:var(--red);border-color:var(--red)}
 .dbtg-table th.dbtg-addcol{background:var(--card)}
+.dbtg-table th.dbtg-colh{position:relative}
+.dbtg-delcol{display:none;position:absolute;top:1px;right:2px;width:14px;height:14px;line-height:11px;text-align:center;border:none;background:transparent;color:#c0392b;font-size:11px;font-weight:800;cursor:pointer;padding:0;border-radius:3px}
+.dbtg-table th.dbtg-colh:hover .dbtg-delcol{display:block}
+.dbtg-delcol:hover{background:#fdecea}
+body.dark .dbtg-delcol:hover{background:#3d2020}
 /* Profil-Erklärung */
 .pf-explain{font-size:12px;color:var(--muted);line-height:1.5;margin:2px 0 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
 .pf-explain b{color:var(--ink2)}
@@ -4618,7 +4623,7 @@ function initTagging(){
   // controls
   const v=$('#vid');
   $('#btnPlay').onclick=()=>{ if(v.paused){ v.play(); playLoop(); $('#btnPlay').textContent='❚❚'; } else { v.pause(); $('#btnPlay').textContent='▶'; } };
-  v.onpause=()=>{ $('#btnPlay').textContent='▶'; cancelAnimationFrame(TG.raf); updateOSD(); };
+  v.onpause=()=>{ $('#btnPlay').textContent='▶'; cancelAnimationFrame(TG.raf); TG.frame=Math.round(v.currentTime*curFps()); updateOSD(); };   // exakt auf aktuellen Playhead syncen (sonst springt der 1. Frame-Schritt zurück)
   v.onplay=()=>{ $('#btnPlay').textContent='❚❚'; playLoop(); };
   v.onseeked=updateOSD; v.ontimeupdate=()=>{ if(!v.paused){ TG.frame=Math.round(v.currentTime*curFps()); } updateOSD(); };
   $('#btnBack1').onclick=()=>stepFrame(-1); $('#btnFwd1').onclick=()=>stepFrame(1);
@@ -4814,6 +4819,7 @@ function ghMergeIn(o){ if(!o) return; let changed=false;
   if(Array.isArray(o.trainRuns)) o.trainRuns.forEach(rec=>{ const rc={...rec,mode:'train'}; const id=runId(rc); if(!SAVED_TRAIN.some(x=>runId({...x,mode:'train'})===id)){ SAVED_TRAIN.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN);
   if(Array.isArray(o.courses)) o.courses.forEach(c=>{ if(c&&c.id){ const ex=COURSES[c.id];
+    if(ex){ if(ex._pdf && !c._pdf) c._pdf=ex._pdf; if(ex._hosted && !c._hosted) c._hosted=ex._hosted; }   // hinterlegte PDF-Verknüpfung nicht verlieren
     if(!ex || JSON.stringify(ex)!==JSON.stringify(c)){ COURSES[c.id]=c; try{vdbPut(c,'courses');}catch(e){} changed=true; } } });   // nur bei echter Änderung (sonst 90-Sek-Toast/Schreib-Schleife)
   buildFilters(); if(typeof renderLibrary==='function') renderLibrary(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope();
   return changed;
@@ -4842,7 +4848,7 @@ async function ghPull(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zu
   try{ if(!silent) cloudMsg('Lade aus GitHub…'); const {json}=await ghGet();
     if(!json){ if(!silent) cloudMsg('Im Repo ist noch keine Datei — sichere zuerst mit «In GitHub sichern».'); return; }
     const changed=ghMergeIn(json);
-    if(changed){ refreshAfterSync(); if(silent && typeof gtgToast==='function') gtgToast('Neue Team-Daten geladen.','ok'); }
+    if(changed){ refreshAfterSync(); }   // still aktualisieren, kein Toast beim Auto-Sync
     if(!silent) cloudMsg(`✓ Geladen: ${(json.runs||[]).length} Läufe, ${(json.trainRuns||[]).length} Trainings, ${(json.courses||[]).length} Kurse.`,true);
   }catch(e){ if(!silent) cloudMsg('Fehler beim Laden: '+e.message,false); }
   finally{ GH.pulling=false; }
@@ -4940,12 +4946,14 @@ function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
       renderDbKurs(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope(); if(typeof renderKursAnalysis==='function') renderKursAnalysis(); }); });
 }
 const KURS_BASE='https://gate-to-gate.github.io/gtg-app/kurs/';
+let HOSTED_PDF={};   // Datum|Disz|Gesch|Lauf -> hinterlegte Saison-PDF-URL (ort-unabhängig)
 function seedHostedCourses(){
   const url=KURS_BASE+'manifest.json'; const dk=GD();
   const getTxt=(dk&&dk.fetchText)? Promise.resolve(dk.fetchText(url)).catch(()=>null)
     : fetch(url,{cache:'no-store'}).then(r=>r.ok?r.text():null).catch(()=>null);
   return getTxt.then(txt=>{ if(!txt) return; let list; try{ list=JSON.parse(txt); }catch(e){ return; }
     (list||[]).forEach(c=>{ const pdfUrl=c.pdf?(KURS_BASE+c.pdf):null;
+      if(pdfUrl) HOSTED_PDF[`${c.date}|${c.disc}|${c.gen}|${c.run}`]=pdfUrl;
       if(!COURSES[c.id]){ COURSES[c.id]={id:c.id,date:c.date,venue:c.venue,disc:c.disc,gen:c.gen,run:c.run,gates:c.gates||[],savedAt:0,_hosted:true,_pdf:pdfUrl}; }
       else if(!COURSES[c.id]._pdf && pdfUrl){ COURSES[c.id]._pdf=pdfUrl; }
     });
@@ -4956,7 +4964,9 @@ function openKursPdf(id){
   vdbGet(id,'kurspdf').then(rec=>{
     if(rec && rec.pdf){ const url=URL.createObjectURL(rec.pdf); window.open(url,'_blank'); setTimeout(()=>URL.revokeObjectURL(url),60000); return; }
     if(c && c._pdf){ window.open(c._pdf,'_blank'); return; }   // vorab eingebaute Saison-PDF (gehostet)
-    gtgToast('Für diese Kurssetzung ist keine PDF gespeichert.');
+    // Fallback: hinterlegte Saison-PDF ort-unabhängig über Datum/Disziplin/Geschlecht/Lauf finden
+    if(c){ const k=`${c.date}|${c.disc}|${c.gen}|${c.run}`; if(HOSTED_PDF[k]){ COURSES[id]._pdf=HOSTED_PDF[k]; window.open(HOSTED_PDF[k],'_blank'); return; } }
+    gtgToast('Für diese Kurssetzung ist keine PDF gespeichert. Nur die 88 Saison-Kurssetzungen haben eine hinterlegte PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.');
   }).catch(()=>gtgToast('PDF konnte nicht geladen werden.'));
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
@@ -5181,7 +5191,7 @@ function renderDbtGrid(list){
   const per={}; for(let i=0;i<maxG;i++){ const vals=runs.map(r=>(r.gates||[])[i]).filter(v=>v!=null).map(v=>+v); if(vals.length>=3){ const md=_median(vals); per[i]={md, mad:_median(vals.map(v=>Math.abs(v-md)))||0}; } }
   const bad=(g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g-s.md) >= 0.25; };   // ≥ 0,25 s Abweichung zum Median
   let h=`<table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet</th><th class="dbtg-src">Quelle</th>`;
-  for(let i=0;i<cols;i++) h+=`<th class="num">${i+1}</th>`;
+  for(let i=0;i<cols;i++) h+=`<th class="num dbtg-colh"><span class="dbtg-cn">${i+1}</span><button class="dbtg-delcol" data-col="${i}" title="Diese Tor-Spalte bei allen Athleten löschen">✕</button></th>`;
   h+=`<th class="dbtg-addcol"><button class="dbtg-add" id="dbtGridAddCol" title="Vergessenes Tor am Ende hinzufügen (Spalte)">+ Tor</button></th>`;
   h+=`</tr></thead><tbody>`;
   runs.forEach((r,ri)=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
@@ -5191,6 +5201,7 @@ function renderDbtGrid(list){
   h+=`</tbody></table>`; wrap.innerHTML=h;
   DBT_GRID_CUR={ key:cur, runs, maxG:cols };
   const addBtn=$('#dbtGridAddCol'); if(addBtn) addBtn.onclick=()=>{ DBT_GRID_EXTRA++; renderDbtGrid(list); };
+  wrap.querySelectorAll('.dbtg-delcol').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); dbtGridDelCol(+b.dataset.col, cur, maxG); });
   wrap.querySelectorAll('.dbt-gedit').forEach(inp=>{
     inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); };
     inp.onkeydown=e=>{ const c=+inp.dataset.i, tr=+inp.dataset.r; let go=null;
@@ -5198,6 +5209,24 @@ function renderDbtGrid(list){
       e.preventDefault(); const t=wrap.querySelector(`.dbt-gedit[data-r="${go}"][data-i="${c}"]`); if(t){ t.focus(); if(t.select) t.select(); } };
   });
   }catch(err){ console.error('renderDbtGrid',err); wrap.innerHTML='<div style="padding:20px;color:#c0392b;font-weight:600">Fehler im Raster: '+((err&&err.message)||err)+'</div>'; }
+}
+// Eine Tor-Spalte im Raster löschen (bei allen Athleten des Laufs); folgende Tore rücken auf.
+function dbtGridDelCol(i, key, maxG){
+  if(i>=maxG){ if(DBT_GRID_EXTRA>0) DBT_GRID_EXTRA--; renderDatenbank(); return; }   // leere Extra-Spalte einfach entfernen
+  gtgConfirm({title:'Tor-Spalte löschen', danger:true, okLabel:'Löschen', msg:`Tor ${i+1} bei allen Athleten dieses Laufs löschen? Die folgenden Tore rücken auf.`}).then(okc=>{ if(!okc) return;
+    const p=key.split('|'), date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4];
+    const shiftFigs=arr=> Array.isArray(arr)? arr.map(f=> f.gate>i?{gate:f.gate-1,label:f.label}:f).filter(f=>f.gate!==i) : arr;
+    [SAVED,SAVED_TRAIN].forEach(a=> a.forEach(r=>{ if([r.date,r.venue,r.disc,r.gen,r.run].join('|')===key){
+      if(Array.isArray(r.gates)&&i<r.gates.length) r.gates.splice(i,1); r.figures=shiftFigs(r.figures); } }));
+    LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN);
+    [DATA,TRAIN].forEach(a=> a.forEach(e=>{ if(e.date===date&&e.venue===venue&&e.discipline===disc&&e.gender===gen&&String(e.run)===String(run)){
+      (e.skiers||[]).forEach(s=>{ if(Array.isArray(s.gates)&&i<s.gates.length){ s.gates.splice(i,1);
+        const id=`${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}|${s.name}`; const ov=LS.get('gtg_gate_override',{}); ov[id]=s.gates.slice(); LS.set('gtg_gate_override',ov); } });
+      e.figures=shiftFigs(e.figures); try{ recomputeEvent(e); }catch(_){}
+    } }));
+    [SAVED,SAVED_TRAIN].forEach(a=> a.forEach(r=>{ if([r.date,r.venue,r.disc,r.gen,r.run].join('|')===key){ try{ applyRun(r); }catch(_){} } }));
+    ghAutoSync(); buildFilters(); renderDatenbank(); gtgToast('Tor '+(i+1)+' gelöscht.','ok');
+  });
 }
 function exportDbtGridCsv(){ const c=DBT_GRID_CUR; if(!c||!c.runs||!c.runs.length){ gtgToast('Kein Event ausgewählt.'); return; }
   const maxG=c.maxG||Math.max(0,...c.runs.map(r=>(r.gates||[]).length));
