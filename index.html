@@ -500,7 +500,7 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .figpill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
 .figpill i{width:8px;height:8px;border-radius:2px}
 /* tabs */
-.tabs{display:flex;gap:4px;background:none;padding:0;border-radius:0;margin-left:10px;align-self:flex-end;margin-bottom:-9px}
+.tabs{display:flex;gap:4px;background:none;padding:0;border-radius:0;margin-left:10px;align-self:stretch;margin-top:-9px;margin-bottom:-9px}
 .tab{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border:none;border-bottom:2.5px solid transparent;background:none;font:inherit;font-size:12.5px;font-weight:700;color:#414751;padding:0 10px;border-radius:0;cursor:pointer;transition:.15s}
 .tab svg{width:14px;height:14px}
 .tab:hover{color:var(--ink)}
@@ -3325,12 +3325,12 @@ function renderProfil(){
   const radar=profilRadar(cats4, series);
   const legend = cmp.length? ' — '+series.map(s=>`<span style="color:${s.color}">■</span> ${s.name.split(' ')[0]}`).join(' vs. ') : '';
   h+=`<div class="pf-sec"><b>Terrain-Fingerabdruck</b> · Ø Rückstand pro Tor auf den Laufbesten${legend}</div>`;
-  h+=`<div class="pf-explain">So liest du die Grafik: Jede der vier Achsen ist ein Geländetyp (Steil, Flach, Drehend, Direkt). Je <b>weiter aussen</b> der Punkt liegt, desto <b>schneller</b> ist die jeweilige Athletin/der Athlet auf diesem Terrain (kleinerer Rückstand pro Tor). Eine <b>grosse, gleichmässige</b> Fläche heisst überall stark; eine <b>Delle Richtung Mitte</b> zeigt eine Schwäche. Die Zahlen rechts sind der Ø Gate-to-Gate-Rückstand pro Tor gegenüber dem Laufbesten: <span style="color:var(--good)">− = schneller</span>, <span style="color:var(--bad)">+ = langsamer</span>.</div>`;
+  h+=`<div class="pf-explain">Vier Achsen = Geländetypen. Je <b>weiter aussen</b>, desto <b>schneller</b> (kleinerer Rückstand/Tor); <b>Delle nach innen</b> = Schwäche. Zahlen rechts: Ø Rückstand/Tor auf den Laufbesten — <span style="color:var(--good)">− schneller</span>, <span style="color:var(--bad)">+ langsamer</span>.</div>`;
   if(radar){
     const gcols=`grid-template-columns:1fr repeat(${series.length},minmax(56px,1fr))`;
     const vc=v=> v==null?'var(--muted)':(v>0?'var(--bad)':'var(--good)');
     h+=`<div class="pf-radarwrap"><div class="pf-radar">${radar}</div><div class="pf-vtab">`;
-    h+=`<div class="pf-vrow pf-vhead" style="${gcols}"><span>Terrain</span>`+series.map(s=>`<span style="color:${s.color}">${series.length>1?s.name.split(' ')[0]:'Ø s/Tor'}</span>`).join('')+`</div>`;
+    h+=`<div class="pf-vrow pf-vhead" style="${gcols}"><span>Terrain</span>`+series.map(s=>`<span style="color:${series.length>1?s.color:'var(--ink2)'}">${series.length>1?s.name.split(' ')[0]:'Ø s/Tor'}</span>`).join('')+`</div>`;
     cats4.forEach(c=>{ h+=`<div class="pf-vrow" style="${gcols}"><span><span class="dot" style="background:${c.color}"></span>${c.label}</span>`
       +series.map(s=>{ const v=s.agg[c.key]; return `<span style="color:${vc(v)}">${v==null?'–':pfFmt(v)}</span>`; }).join('')+`</div>`; });
     h+=`</div></div>`;
