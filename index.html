@@ -13,18 +13,12 @@
   --shadow:0 1px 3px rgba(20,24,31,.06),0 6px 22px rgba(20,24,31,.06);
   --top:#9aa3af;
 }
-/* Dark-Mode: dunkle Chrome, Datenflächen/Charts bleiben hell & lesbar */
+/* Dark-Mode: Variablen (Element-Overrides stehen am Ende des Stylesheets, damit sie gewinnen) */
 body.dark{
-  --ink:#e7ebf1; --ink2:#c4ccd6; --muted:#98a2b0; --line:#2b323c;
-  --bg:#0f1319; --card:#171d26; --good-l:#123024; --bad-l:#33191a;
-  --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.45); --top:#7a8494;
+  --ink:#eef1f6; --ink2:#cfd6e0; --muted:#9aa6b4; --line:#39424f;
+  --bg:#1b212b; --card:#252d39; --good-l:#173a2b; --bad-l:#3d2020;
+  --shadow:0 1px 3px rgba(0,0,0,.35),0 8px 26px rgba(0,0,0,.4); --top:#8892a0;
 }
-body.dark header{background:#171d26;border-bottom:1px solid #232a34}
-body.dark .hdr-ico,body.dark .pdf-btn,body.dark select,body.dark input,body.dark .seg-toggle{background:#1f2632;color:var(--ink);border-color:#2b323c}
-body.dark .hdr-ico:hover{background:#283040}
-body.dark .brand-sub,body.dark .brand .sub{color:#8b95a3}
-body.dark .chart-shell,body.dark .pf-radar svg{background:#f4f6f9;border-radius:10px}
-body.dark #darkBtn{background:var(--red);border-color:var(--red);color:#fff}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
@@ -1122,6 +1116,52 @@ table.hmp .g b{font-size:6.5px}
 #wfStage.wf-armed .wf-hint{display:inline-flex;animation:wfHintPulse 1.8s ease-in-out infinite}
 @keyframes wfHintPulse{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
 @media(max-width:640px){.wf-lab{display:none}.wf-svg{height:170px}.wf-stage{height:300px}}
+
+/* ================= DARK-MODE OVERRIDES (am Ende -> gewinnen per Quell-Reihenfolge) ================= */
+body.dark #darkBtn{background:var(--red);border-color:var(--red);color:#fff}
+/* Header & Icon-Buttons */
+body.dark header{background:#252d39;border-bottom:1px solid #313a48}
+body.dark .hdr-ico,body.dark .pdf-btn{background:#2d3644;color:#e7ebf1;border-color:#3a4452}
+body.dark .hdr-ico:hover,body.dark .pdf-btn:hover{background:#38424f;color:#fff}
+body.dark .brand-sub,body.dark .brand .sub{color:#9aa6b4}
+body.dark .evt-chip{color:#aeb8c6}
+body.dark .cloud-badge{border-color:#252d39}
+/* Formular-Felder & Filter */
+body.dark .filters{background:#252d39}
+body.dark select,body.dark input,body.dark textarea,
+body.dark .f select,body.dark #kScope,body.dark .clip-selb{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+body.dark select option{background:#252d39;color:#eef1f6}
+body.dark input::placeholder,body.dark textarea::placeholder{color:#8892a0}
+body.dark .f label{color:#9aa6b4}
+/* Segment-Umschalter (Raster/Liste, Ansicht, Filter-Pillen) */
+body.dark .seg-toggle{background:#1a212b;border-color:#3a4452}
+body.dark .seg-toggle .seg-btn{color:#c2ccd8}
+body.dark .seg-toggle .seg-btn:hover{color:#fff}
+body.dark .seg-toggle .seg-btn.on{background:#3a4452;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+body.dark #anaSub .seg-btn,body.dark #anaSub2 .seg-btn,body.dark #anaSub3 .seg-btn{color:#c2ccd8}
+body.dark #anaSub .seg-btn.on,body.dark #anaSub2 .seg-btn.on,body.dark #anaSub3 .seg-btn.on{background:#3a4452;color:#fff}
+/* Tabellen (Datenbank etc.) */
+body.dark .db-wrap{border-color:#3a4452}
+body.dark .db-table thead th{background:#2d3644;color:#cfd6e0;border-bottom-color:#3a4452}
+body.dark .db-table td{border-color:#333c48}
+body.dark .db-table tbody tr.dbt-open{background:#2a3340}
+body.dark .dbt-detail td{background:#20272f}
+body.dark .dbt-gate{background:#2d3644;border-color:#3a4452;color:#eef1f6}
+body.dark .dbt-gate .dbt-gedit,body.dark .dbtg-cell .dbt-gedit{background:#1f2630;color:#eef1f6;border-color:#3a4452}
+body.dark tr.dbt-selected td,body.dark tr.dbv-selected td{background:#22344d!important}
+body.dark .dbtg-table thead th{background:#2d3644;color:#cfd6e0}
+body.dark .dbtg-table .dbtg-ath{background:#252d39}
+body.dark table.hm thead th,body.dark table.hm .gate-c{background:#2d3644;color:#eef1f6}
+body.dark .hm tr.hm-start td{background:#20272f!important}
+/* Karten, Legenden, Badges, Buttons */
+body.dark .clip-sbsbtn,body.dark .clip-sbsbar button,body.dark .coach-run{background:#2d3644;color:#e7ebf1;border-color:#3a4452}
+body.dark .lg{color:#cfd6e0}
+body.dark .lg:hover{background:#2d3644}
+/* Charts bleiben auf hellem Panel (SVG-Texte sind dunkel gesetzt) */
+body.dark .chart-shell,body.dark .pf-radar svg{background:#f1f3f6;border-radius:10px}
+body.dark .gh-status.dirty{background:#3a2e16;color:#e0a94a}
+body.dark .gh-status.sync{background:#1e2b3d;color:#7db1e8}
+body.dark .gh-status.off{background:#20272f;color:#9aa6b4}
 </style>
 </head>
 <body>
@@ -3033,7 +3073,23 @@ function drawVlChart(data){
   // Legende rechts
   let ly=mt+6; cats.forEach(cat=>{ svg+=`<circle cx="${ml+iw+16}" cy="${ly}" r="4.5" fill="${cat.color}"/><text x="${ml+iw+26}" y="${ly+3.5}" font-size="11" font-weight="${cat.key==='overall'?800:600}" fill="#3a4350">${cat.label}</text>`; ly+=20; });
   svg+=`<text x="${ml}" y="11" font-size="9" fill="#9aa3af">Ø Rückstand s/Tor · tiefer = schneller</text>`;
+  // Hover: Führungslinie, Punkte je Kategorie, Tooltip mit Rennkontext + Werten
+  svg+=`<line id="vlG" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="#1c2430" stroke-width="1.2" opacity="0"/>`;
+  svg+=`<g id="vlGm">`+cats.map((c,ci)=>`<circle data-c="${ci}" r="3.6" fill="${c.color}" stroke="#fff" stroke-width="1.5" opacity="0"/>`).join('')+`</g>`;
+  svg+=`<rect id="vlHov" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg+='</svg>'; shell.innerHTML=svg;
+  const svgN=shell.querySelector('svg'), hov=shell.querySelector('#vlHov'), gl=shell.querySelector('#vlG'), gm=shell.querySelector('#vlGm');
+  if(hov){
+    hov.addEventListener('mousemove',ev=>{
+      const pt=localPt(svgN,ev); let i = n>1? Math.round((pt.x-ml)/iw*(n-1)) : 0; i=Math.max(0,Math.min(n-1,i));
+      const d=data[i], px=x(i); gl.setAttribute('x1',px); gl.setAttribute('x2',px); gl.setAttribute('opacity','.5');
+      cats.forEach((c,ci)=>{ const dot=gm.children[ci]; const v=d.vals[c.key]; if(v!=null){ dot.setAttribute('cx',px); dot.setAttribute('cy',y(v)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); });
+      const rows=cats.map(c=>{ const v=d.vals[c.key]; if(v==null) return ''; return `<div class="tt-r"><span class="n"><i style="background:${c.color}"></i>${c.label}</span><b>${(v>0?'+':'')}${v.toFixed(3)} s</b></div>`; }).join('');
+      tt.innerHTML=`<div class="tt-h">${(d.venue||'')} · ${dmy(d.date)} · Lauf ${d.run}${d.isTop?' · Laufbestzeit':''}</div>${rows||'<div class="tt-r"><span class="n">keine Terrain-Werte</span></div>'}`;
+      showTT(svgN,px,mt+10);
+    });
+    hov.addEventListener('mouseleave',()=>{ tt.style.opacity=0; gl.setAttribute('opacity','0'); [...gm.children].forEach(dt=>dt.setAttribute('opacity','0')); });
+  }
 }
 function vlInsight(data){
   const host=$('#vlInsight'); if(!host) return;
@@ -3097,7 +3153,7 @@ function pfAgg(name){
   return agg;
 }
 // Radar/Spider: aussen = schneller (kleiner Rückstand). Zwei Athleten überlagerbar.
-function profilRadar(cats, aA, aB){
+function profilRadar(cats, aA, aB, nameA, nameB){
   const vals=[]; cats.forEach(c=>{ if(aA&&aA[c.key]!=null) vals.push(aA[c.key]); if(aB&&aB[c.key]!=null) vals.push(aB[c.key]); });
   const okA=cats.filter(c=>aA&&aA[c.key]!=null).length, okB=aB?cats.filter(c=>aB[c.key]!=null).length:0;
   if(vals.length<3 || okA<3 && okB<3) return '';
@@ -3112,12 +3168,15 @@ function profilRadar(cats, aA, aB){
     svg+=`<path d="${p}Z" fill="none" stroke="#e6e9ee" stroke-width="1"/>`; }
   cats.forEach((c,i)=>{ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e6e9ee"/>`;
     const [lx,ly]=pt(i,R+22); svg+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${c.color}">${c.label}</text>`; });
-  const poly=(agg,color,fill)=>{ const av=cats.map((c,i)=> agg&&agg[c.key]!=null? {i,r:rOf(agg[c.key])}:null).filter(Boolean);
+  const poly=(agg,color,fill,who)=>{ const av=cats.map((c,i)=> agg&&agg[c.key]!=null? {i,r:rOf(agg[c.key])}:null).filter(Boolean);
     if(av.length<3) return ''; let p=''; av.forEach(q=>{ const [x,y]=pt(q.i,q.r); p+=(p?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; });
     let s=`<path d="${p}Z" fill="${fill}" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>`;
-    av.forEach(q=>{ const [x,y]=pt(q.i,q.r); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="${color}"/>`; }); return s; };
-  if(aB) svg+=poly(aB,'#1f6fb2','rgba(31,111,178,.15)');
-  svg+=poly(aA,'var(--red)','rgba(218,41,28,.16)');
+    av.forEach(q=>{ const [x,y]=pt(q.i,q.r); const val=agg[cats[q.i].key];
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="${color}"/>`;
+      s+=`<circle class="pf-rdot" data-lbl="${cats[q.i].label}" data-who="${who||''}" data-v="${val}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="transparent" style="pointer-events:all;cursor:pointer"/>`; });
+    return s; };
+  if(aB) svg+=poly(aB,'#1f6fb2','rgba(31,111,178,.15)',nameB);
+  svg+=poly(aA,'var(--red)','rgba(218,41,28,.16)',nameA);
   svg+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10" fill="#6b7785">weiter aussen = schneller als der Laufbeste</text>`;
   svg+='</svg>'; return svg;
 }
@@ -3171,7 +3230,7 @@ function renderProfil(){
   h+='</div>';
   // Terrain-Fingerabdruck (Radar) + Werte-Tabelle
   const cats4=VL_CATS.filter(c=>c.need);
-  const radar=profilRadar(cats4, aggA, aggB);
+  const radar=profilRadar(cats4, aggA, aggB, VL.ath, PF.athB);
   h+=`<div class="pf-sec"><b>Terrain-Fingerabdruck</b> · Ø Rückstand pro Tor auf den Laufbesten`+(aggB?' — <span style="color:var(--red)">■</span> '+VL.ath+' vs. <span style="color:#1f6fb2">■</span> '+PF.athB:'')+`</div>`;
   if(radar){
     h+=`<div class="pf-radarwrap"><div class="pf-radar">${radar}</div><div class="pf-vtab">`;
@@ -3188,6 +3247,13 @@ function renderProfil(){
     if(worstR) h+=`<div class="pf-race worst"><span class="pf-rt">Schwächstes Rennen</span><span class="pf-rn">${worstR.venue} · ${dmy(worstR.date)} · L${worstR.run}</span><b>${pfFmt(worstR.vals.overall)}</b></div>`;
     h+='</div>'; }
   host.innerHTML=h;
+  // Radar-Tooltips (exakter Wert + Athlet)
+  host.querySelectorAll('.pf-rdot').forEach(el=>{
+    el.addEventListener('mousemove',ev=>{ const svgN=el.ownerSVGElement; if(!svgN) return; const v=parseFloat(el.dataset.v);
+      tt.innerHTML=`<div class="tt-h">${el.dataset.lbl} · ${el.dataset.who}</div><div class="tt-r"><span class="n">Ø Rückstand / Tor</span><b>${(v>0?'+':'')}${v.toFixed(3)} s</b></div>`;
+      const p=localPt(svgN,ev); showTT(svgN,p.x,p.y-14); });
+    el.addEventListener('mouseleave',()=>{ tt.style.opacity=0; });
+  });
 }
 function initProfil(){
   segFill('#anaSub3',['analyse','verlauf','profil'], v=> v==='analyse'?'Analyse':v==='verlauf'?'Saison-Verlauf':'Athleten-Profil', S.anaSub, setAnaSub);
