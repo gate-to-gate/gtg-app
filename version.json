@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.6",
+  "desktopVersion": "1.4.7",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Raster: vergessene Tore nachtragbar (füllbare Zellen + «+ Tor»). Figuren nicht doppelt & Übernahme auf andere Videos. «Ohne FIS-Zeit» (Endrückstand aus Taggings). Coach-Link stark vereinfacht (Setup per Einladungscode, ein Klick). Profil/Verlauf: nur SUI im Dropdown, Radar-Erklärung, Titel dunkelgrau. Geschlecht farbig (W pink, M dunkelblau). Logo führt zur Startseite."
+  "notes": "Struktur: Kurssetzung-Tab entfernt — Kurs-PDFs & Upload jetzt in Datenbank → Kurssetzung; die kombinierte Analyse ist aufgeteilt (Stärken-Spider im Athleten-Profil, Detail-nach-Filter im Saison-Verlauf). Neues App-Icon (G2G). Frame-Schritt nach Pause korrigiert, Chart-Tooltip bleibt beim Cursor, Kurs-PDF ort-unabhängig, Logo führt zur Startseite."
 }
