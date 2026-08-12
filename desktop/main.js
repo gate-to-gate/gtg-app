@@ -35,8 +35,12 @@ ipcMain.handle('gtg:quitAndInstall', () => {
 //                     %APPDATA%/Gate-to-Gate/videos (Windows)
 function videoDir(){ return path.join(app.getPath('userData'), 'videos'); }
 async function ensureDir(){ await fsp.mkdir(videoDir(), { recursive: true }); }
-function safeId(id){ return String(id).replace(/[^a-zA-Z0-9._|=-]/g, '_'); }
+// WICHTIG: '|' (und andere Zeichen) sind in Windows-Dateinamen verboten (< > : " / \ | ? *).
+// Darum alle Nicht-Erlaubten -> '_'. (Früher blieb '|' erhalten -> copyFile-ENOENT auf Windows.)
+function safeId(id){ return String(id).replace(/[^a-zA-Z0-9._=-]/g, '_'); }
+function safeIdLegacy(id){ return String(id).replace(/[^a-zA-Z0-9._|=-]/g, '_'); }   // altes Schema (Mac konnte '|' speichern)
 function pathFor(id){ return path.join(videoDir(), safeId(id) + '.vid'); }
+function pathForLegacy(id){ return path.join(videoDir(), safeIdLegacy(id) + '.vid'); }
 
 // --- IPC: Video-Bytes schreiben / lesen / löschen ---
 ipcMain.handle('gtg:saveVideo', async (_e, { id, buf }) => {
@@ -66,7 +70,9 @@ ipcMain.handle('gtg:saveVideoPath', async (_e, { id, src }) => {
 
 ipcMain.handle('gtg:getVideo', async (_e, { id }) => {
   try {
-    const b = await fsp.readFile(pathFor(id));
+    let b;
+    try { b = await fsp.readFile(pathFor(id)); }
+    catch (e1) { b = await fsp.readFile(pathForLegacy(id)); }   // altes Mac-Schema mit '|' weiter lesbar
     // Als ArrayBuffer zurückgeben (strukturierte Kopie über IPC)
     return { buffer: b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) };
   } catch (_err) {
@@ -76,6 +82,7 @@ ipcMain.handle('gtg:getVideo', async (_e, { id }) => {
 
 ipcMain.handle('gtg:deleteVideo', async (_e, { id }) => {
   try { await fsp.unlink(pathFor(id)); } catch (_err) { /* egal, wenn schon weg */ }
+  try { await fsp.unlink(pathForLegacy(id)); } catch (_err) { /* altes Schema mit aufräumen */ }
   return { ok: true };
 });
 

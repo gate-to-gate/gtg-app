@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.1",
+  "desktopVersion": "1.4.2",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Athleten-Profil (Radar + A/B-Vergleich), Dark-Mode, einheitliche Chart-Tooltips, Sync-Status. Fix: Datenbank/Taggings blieben leer, wenn die Video-Datenbank (IndexedDB) nicht antwortete – jetzt mit Timeout & Fallback robust."
+  "notes": "Windows-Fix: Videos speichern schlug fehl, weil '|' in der Lauf-ID unter Windows kein gültiges Dateizeichen ist (ENOENT). Dateinamen werden jetzt sauber bereinigt. Ausserdem: Athleten-Profil, Dark-Mode, Chart-Tooltips, robuste Datenbank."
 }
