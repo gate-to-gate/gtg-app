@@ -4980,7 +4980,8 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
 }
 /* ---- Taggings: Raster-Ansicht pro Event (Athleten × Tore, direkt editierbar) ---- */
 function renderDbtGrid(list){
-  const sel=$('#dbtGridEvt'), wrap=$('#dbtGridWrap'); if(!sel||!wrap) return;
+  const sel=$('#dbtGridEvt'), wrap=$('#dbtGridWrap');
+  if(!sel||!wrap){ if(DBTVIEW!=='list'){ DBTVIEW='list'; if($('#dbtView')) $('#dbtView').querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on',b.dataset.v==='list')); if($('#dbtListBox')) $('#dbtListBox').style.display=''; if($('#dbtGridBox')) $('#dbtGridBox').style.display='none'; renderDbTaggings(); } return; }
   try{
   const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
   const evMap={}; list.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; (evMap[k]=evMap[k]||[]).push(r); });
