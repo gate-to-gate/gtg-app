@@ -311,8 +311,8 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .seg-toggle .seg-btn{border:none;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#59636f;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.12s;white-space:nowrap}
 .f .seg-toggle{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
 .f .seg-toggle .seg-btn{display:flex;align-items:center;padding:0 14px;font-size:12.5px}
-#kFiltDisc,#kFiltGen{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
-#kFiltDisc .seg-btn,#kFiltGen .seg-btn{display:flex;align-items:center;padding:0 14px;font-size:12.5px}
+#kFiltDisc,#kFiltGen,#kFiltDiscV,#kFiltGenV{height:34px;box-sizing:border-box;align-items:stretch;padding:2.5px;border-radius:8px}
+#kFiltDisc .seg-btn,#kFiltGen .seg-btn,#kFiltDiscV .seg-btn,#kFiltGenV .seg-btn{display:flex;align-items:center;padding:0 14px;font-size:12.5px}
 .seg-toggle .seg-btn:hover{color:var(--ink)}
 .seg-toggle .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.22)}
 /* Ansicht-Umschalter dunkler/prägnanter als die übrigen */
@@ -1233,6 +1233,17 @@ body.dark .hm tr.hm-start td{background:#20272f!important}
 body.dark .cv-bar,body.dark .defbar .db-track,body.dark .lib-storage .ls-bar{background:#333d4b}
 /* Notiz-/Info-Flächen leicht abdunkeln, Text hell */
 body.dark .db-bulk{background:#1e2b3d;border-color:#2c3f57;color:#cfe0fb}
+/* Analyse/Kurssetzung im Dark-Mode */
+body.dark .kf-chip{background:#2d3644;color:#c2ccd8;border-color:#3a4452}
+body.dark .kf-chip:hover{color:#fff;border-color:#4a5563}
+body.dark .kf-chip.on{background:#e9edf2;color:#14181f;border-color:#e9edf2}
+body.dark .kf-bar{background:#1f2632}
+body.dark .ktog{background:#2d3644;color:#e7ebf1;border-color:#3a4452}
+body.dark .ktog.off{opacity:.5}
+body.dark #dropZone{background:radial-gradient(120% 100% at 50% 0%,#2c2420 0%,#241f29 45%,#1a1f28 100%);border-color:#5a4a44}
+body.dark .dropzone .dz-bg span{background:#5a6473}
+body.dark .chart-shell:has(.empty){background:transparent}
+body.dark .empty{color:#9aa6b4}
 </style>
 </head>
 <body>
@@ -4313,20 +4324,22 @@ function initKFilt(){ KFILT={pitch:new Set(PITCH_CATS), char:new Set(CHAR_CATS),
 function typeBucket2(t){ return t==='Open'?'Open':(t==='Hairpin'||t==='V.Comb')?'Kombination':null; }  // Delayed/Finish -> ausgeschlossen
 function matchFilt(p){ return KFILT.pitch.has(pitchBucket(p.pitch)) && KFILT.char.has(charBucket(p.offset)) && typeBucket2(p.type)!=null; }  // Delayed/Finish ausgeschlossen
 function drawSingleBars(items,W,H){
+  const dk=document.body.classList.contains('dark');
+  const gZero=dk?'#5a6473':'#c3cad4', gLine=dk?'#333c48':'#eef1f5', axC=dk?'#aeb8c6':'#9aa3af', nmC=dk?'#cfd6e0':'#3a4350', toC=dk?'#8b95a3':'#9aa3af';
   const ml=40,mr=12,mt=14,mb=42, iw=W-ml-mr, ih=H-mt-mb;
   const vals=items.map(i=>i.v).filter(v=>v!=null);
   let maxAbs=Math.max(0.02,...vals.map(v=>Math.abs(v)))*1.2;
   const n=items.length||1, gw=iw/n, bw=Math.min(42,gw*0.46);
   const y=v=> mt+ih/2 - v/maxAbs*(ih/2);
   let svg=svgEl(W,H);
-  [maxAbs/2,0,-maxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+3.5}" text-anchor="end" font-size="10" fill="#9aa3af">${t>0?'+':''}${t.toFixed(2)}</text>`; });
+  [maxAbs/2,0,-maxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?gZero:gLine}"/>`;
+    svg+=`<text x="${ml-6}" y="${y(t)+3.5}" text-anchor="end" font-size="10" fill="${axC}">${t>0?'+':''}${t.toFixed(2)}</text>`; });
   items.forEach((it,i)=>{ const cx=ml+gw*i+gw/2;
     if(it.v!=null){ const Y=it.v>=0?y(it.v):y(0); const h=Math.abs(y(it.v)-y(0));
       svg+=`<rect x="${cx-bw/2}" y="${Y}" width="${bw}" height="${Math.max(h,.6)}" rx="3" fill="${it.color}" opacity=".92"/>`;
       svg+=`<text x="${cx}" y="${it.v>=0?Y-5:Y+h+13}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${it.color}">${(it.v>=0?'+':'')}${it.v.toFixed(3)}</text>`; }
-    svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3a4350">${it.name.split(' ')[0]}</text>`;
-    svg+=`<text x="${cx}" y="${H-mb+30}" text-anchor="middle" font-size="9.5" fill="#9aa3af">${it.n} Tore</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${nmC}">${it.name.split(' ')[0]}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+28}" text-anchor="middle" font-size="8.5" fill="${toC}">${it.n} Tore</text>`;
   });
   svg+=`<text x="${W-mr}" y="${mt-2}" text-anchor="end" font-size="10.5" fill="var(--bad)">▲ langsamer</text>`;
   svg+='</svg>'; return svg;
