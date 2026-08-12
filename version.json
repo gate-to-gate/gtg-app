@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.4",
+  "desktopVersion": "1.4.5",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Auto-Sync: Team-Taggings erscheinen jetzt automatisch (Abgleich beim Start, im Hintergrund & beim Zurückkehren). Coach-Link nur noch möglich, wenn Videos lokal vorliegen (sonst Hinweis) — und Coach-Link lädt Videos jetzt auch auf dem Desktop korrekt von der Festplatte hoch."
+  "notes": "Figuren: keine Figur mehr doppelt pro Lauf; eine Figur-Änderung überträgt sich beim Speichern auf alle anderen getaggten Videos desselben Laufs. Ausserdem: Auto-Sync der Team-Taggings, Coach-Link nur mit lokalen Videos (+ Desktop-Upload-Fix)."
 }
