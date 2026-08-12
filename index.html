@@ -4313,22 +4313,22 @@ function initKFilt(){ KFILT={pitch:new Set(PITCH_CATS), char:new Set(CHAR_CATS),
 function typeBucket2(t){ return t==='Open'?'Open':(t==='Hairpin'||t==='V.Comb')?'Kombination':null; }  // Delayed/Finish -> ausgeschlossen
 function matchFilt(p){ return KFILT.pitch.has(pitchBucket(p.pitch)) && KFILT.char.has(charBucket(p.offset)) && typeBucket2(p.type)!=null; }  // Delayed/Finish ausgeschlossen
 function drawSingleBars(items,W,H){
-  const ml=46,mr=14,mt=18,mb=54, iw=W-ml-mr, ih=H-mt-mb;
+  const ml=40,mr=12,mt=14,mb=42, iw=W-ml-mr, ih=H-mt-mb;
   const vals=items.map(i=>i.v).filter(v=>v!=null);
   let maxAbs=Math.max(0.02,...vals.map(v=>Math.abs(v)))*1.2;
-  const n=items.length||1, gw=iw/n, bw=Math.min(64,gw*0.58);
+  const n=items.length||1, gw=iw/n, bw=Math.min(42,gw*0.46);
   const y=v=> mt+ih/2 - v/maxAbs*(ih/2);
   let svg=svgEl(W,H);
   [maxAbs/2,0,-maxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="#9aa3af">${t>0?'+':''}${t.toFixed(2)}</text>`; });
+    svg+=`<text x="${ml-6}" y="${y(t)+3.5}" text-anchor="end" font-size="10" fill="#9aa3af">${t>0?'+':''}${t.toFixed(2)}</text>`; });
   items.forEach((it,i)=>{ const cx=ml+gw*i+gw/2;
     if(it.v!=null){ const Y=it.v>=0?y(it.v):y(0); const h=Math.abs(y(it.v)-y(0));
       svg+=`<rect x="${cx-bw/2}" y="${Y}" width="${bw}" height="${Math.max(h,.6)}" rx="3" fill="${it.color}" opacity=".92"/>`;
-      svg+=`<text x="${cx}" y="${it.v>=0?Y-6:Y+h+15}" text-anchor="middle" font-size="13" font-weight="800" fill="${it.color}">${(it.v>=0?'+':'')}${it.v.toFixed(3)}</text>`; }
-    svg+=`<text x="${cx}" y="${H-mb+20}" text-anchor="middle" font-size="13" font-weight="700" fill="#3a4350">${it.name.split(' ')[0]}</text>`;
-    svg+=`<text x="${cx}" y="${H-mb+36}" text-anchor="middle" font-size="11" fill="#9aa3af">${it.n} Tore</text>`;
+      svg+=`<text x="${cx}" y="${it.v>=0?Y-5:Y+h+13}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${it.color}">${(it.v>=0?'+':'')}${it.v.toFixed(3)}</text>`; }
+    svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3a4350">${it.name.split(' ')[0]}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+30}" text-anchor="middle" font-size="9.5" fill="#9aa3af">${it.n} Tore</text>`;
   });
-  svg+=`<text x="${W-mr}" y="${mt-4}" text-anchor="end" font-size="12" fill="var(--bad)">▲ langsamer</text>`;
+  svg+=`<text x="${W-mr}" y="${mt-2}" text-anchor="end" font-size="10.5" fill="var(--bad)">▲ langsamer</text>`;
   svg+='</svg>'; return svg;
 }
 const RADAR_AX=[
@@ -4390,7 +4390,7 @@ function renderKursAnalysis(){
     profile=`<div class="kchart-title">Kursprofil — ${vName} ${dmy(scopeCourse.date)}</div>
     <div class="kchart-sub">Pitch (Gefälle) pro Tor; Marker für Tor-Kombinationen.</div>${drawCourseProfile(scopeCourse)}`; }
   const valid=items.filter(i=>i.v!=null);
-  const chart = (athletes.length && valid.length) ? drawSingleBars(items,760,300)
+  const chart = (athletes.length && valid.length) ? drawSingleBars(items,760,200)
     : '<div class="empty" style="padding:24px">'+(athletes.length?'Keine Tore für diese Filter-Kombination — Filter erweitern.':'Kein Athlet ausgewählt.')+'</div>';
   let ins='';
   if(valid.length){ const s=[...valid].sort((a,b)=>a.v-b.v); const best=s[0], worst=s[s.length-1];
