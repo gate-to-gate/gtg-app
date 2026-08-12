@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.4.0",
+  "desktopVersion": "1.4.1",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Neu: Athleten-Profil (Analyse) – Kennzahlen, Terrain-Stärken und beste/schwächste Rennen pro Athlet. Plus Rückgängig (Cmd/Ctrl+Z) beim Bearbeiten in der Datenbank."
+  "notes": "Athleten-Profil (Radar + A/B-Vergleich), Dark-Mode, einheitliche Chart-Tooltips, Sync-Status. Fix: Datenbank/Taggings blieben leer, wenn die Video-Datenbank (IndexedDB) nicht antwortete – jetzt mit Timeout & Fallback robust."
 }
