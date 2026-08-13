@@ -1502,6 +1502,7 @@ body.dark .empty{color:#9aa6b4}
         <div class="c-head"><div><h2>Tagging Data</h2>
           <div class="c-sub" id="tagSummary">Noch keine Tags.</div></div>
           <div style="display:flex;gap:6px">
+            <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).">⌖ Start setzen</button>
             <label class="btn-mini" title="Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.">CSV → Tags<input type="file" id="impTagsCsv" accept=".csv,text/csv" hidden></label>
             <button class="btn-mini" id="btnClearTags">Alle löschen</button>
           </div>
@@ -4652,6 +4653,11 @@ function initTagging(){
   $('#inpFps').onchange=()=>{ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='#9aa3af'; } renderTags(); updateOSD(); };
   $('#scrub').oninput=e=>{ setTime(parseFloat(e.target.value)); updateOSD(); };
   $('#btnTag').onclick=addTag; $('#btnClearTags').onclick=clearTags;
+  if($('#btnSyncStart')) $('#btnSyncStart').onclick=()=>{ const v=$('#vid');
+    if(!v||!v.src||!(TG.tags&&TG.tags.length)){ gtgToast('Erst Video laden und einen Frame wählen.','warn'); return; }
+    const off=Math.round((v.currentTime-TG.tags[0].t)*1000)/1000;
+    TG.tags.forEach(t=>t.t=Math.round((t.t+off)*1000)/1000); renderTags(); if(typeof tgPush==='function') tgPush();
+    gtgToast('Start gesetzt: Tor 1 auf aktuellem Frame (alle Tags um '+off.toFixed(3)+' s verschoben). Zum Sichern «Save».','ok'); };
   $('#btnNewVideo').onclick=()=>resetVideo();
   // Lupe / Zeitlupe / Undo / Redo
   if($('#btnZoom')) $('#btnZoom').onclick=()=>toggleZoom();
