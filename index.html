@@ -822,16 +822,16 @@ table.tag-list .figsel-wrap select.figb{opacity:.85}
 table.tag-list tbody tr.unsure td{background:#fff7e9}
 table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .gap-tick.unsure{background:#ffcf66;box-shadow:0 0 0 1px #b07a1e;width:7px;height:7px}
-.fis-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:var(--ink2)}
-.fis-row .fis-title{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-right:4px;border-right:1px solid var(--line)}
-.fis-row label{display:flex;align-items:center;gap:7px;cursor:pointer}
-.fis-row input[type=checkbox]{width:17px;height:17px;accent-color:var(--red);cursor:pointer}
-.fis-row input[type=number]{width:66px;border:1.4px solid var(--line);border-radius:8px;padding:6px 9px;font:inherit;font-size:13px;font-weight:700;text-align:right;background:#fff}
+.fis-row{display:flex;flex-direction:column;align-items:flex-start;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--ink2)}
+.fis-row .fis-title{font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.fis-row .fis-opts{display:flex;flex-wrap:wrap;align-items:center;gap:7px 20px}
+.fis-row label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.fis-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--red);cursor:pointer}
+.fis-row .fis-gap{gap:8px}
+.fis-row input[type=number]{width:60px;border:1.4px solid var(--line);border-radius:7px;padding:4px 8px;font:inherit;font-size:12px;font-weight:700;text-align:right;background:#fff}
 .fis-row input[type=number]:focus{outline:none;border-color:var(--red)}
 .fis-row .unit{color:var(--muted);font-weight:600}
 .fis-row .fis-gap.off{opacity:.4;pointer-events:none}
-.fis-row{gap:10px;padding:8px 12px}
-.fis-row .fis-sep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
 .fis-row.nofis .fis-chk:not(.fis-nofis),.fis-row.nofis .fis-gap{opacity:.38;pointer-events:none}
 .fis-nofis{font-weight:700}
 body.dark .fis-row input[type=number]{background:#2d3644;color:#eef1f6;border-color:#3a4452}
@@ -1512,14 +1512,16 @@ body.dark .empty{color:#9aa6b4}
             <button class="btn-mini" id="btnClearTags">Löschen</button>
           </div>
         </div>
+        </div><!-- /c-head -->
         <div class="tag-list-wrap"><table class="tag-list"><thead>
           <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Gate (s)</th><th>Figur</th><th></th></tr>
         </thead><tbody id="tagBody"></tbody></table></div>
         <div class="fis-row" id="fisRow">
           <span class="fis-title">FIS-Zeit</span>
-          <label class="fis-chk fis-nofis" title="Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten)."><input type="checkbox" id="mNoFis"> Ohne FIS-Zeit</label>
-          <span class="fis-sep"></span>
-          <label class="fis-chk"><input type="checkbox" id="mBest"> Laufbestzeit</label>
+          <div class="fis-opts">
+            <label class="fis-chk fis-nofis" title="Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten)."><input type="checkbox" id="mNoFis"> Ohne FIS-Zeit</label>
+            <label class="fis-chk"><input type="checkbox" id="mBest"> Laufbestzeit</label>
+          </div>
           <label class="fis-gap" id="gapLab">Rückstand <input type="number" id="mGap" step="0.01" min="0" placeholder="0.00"> <span class="unit">s</span></label>
         </div>
         <div class="save-row">
@@ -1527,7 +1529,6 @@ body.dark .empty{color:#9aa6b4}
           <div class="save-exports">
             <span class="se-group" title="Einzelner Lauf als CSV">
               <button class="btn-ghost" id="btnExportCsv" title="Diesen getaggten Lauf als CSV-Datei speichern">CSV export</button>
-              <label class="btn-ghost" title="Getaggte Läufe aus CSV-Datei(en) laden (mehrere möglich)">CSV import<input type="file" id="impCsv" accept=".csv,text/csv" multiple hidden></label>
             </span>
             <span class="se-sep"></span>
             <span class="se-group" title="Komplettes Backup (alle Daten)">
@@ -1543,7 +1544,6 @@ body.dark .empty{color:#9aa6b4}
           <button id="tagCloudConnect" type="button">Verbinden</button>
         </div>
       </div>
-    </div>
     </div><!-- /tg-grid -->
 
     <!-- VIDEO-BIBLIOTHEK -->
@@ -1651,6 +1651,7 @@ body.dark .empty{color:#9aa6b4}
           <select id="dbtVid" class="mini"><option value="">Mit + ohne Video</option><option value="1">Nur mit Video</option><option value="0">Nur ohne Video</option></select>
           <select id="dbtDnf" class="mini"><option value="">Alle Läufe</option><option value="dnf">Nur DNF (wenig Tore)</option><option value="full">Nur vollständige</option></select>
           <div class="seg-toggle seg-sm dbt-viewseg" id="dbtView"></div>
+          <label class="btn-mini" style="margin-left:auto" title="Fertig getaggte Läufe aus CSV-Datei(en) importieren (mehrere möglich) — ohne Video, direkt in Datenbank &amp; Analyse.">⭳ CSV import<input type="file" id="impCsv" accept=".csv,text/csv" multiple hidden></label>
           <span id="dbtCount" class="lib-count"></span>
         </div>
         <div class="db-bulk" id="dbtBulk" style="display:none"><span class="db-selinfo" id="dbtSel">0 ausgewählt</span><button class="btn-mini" id="dbtExport">⭳ Zeiten exportieren (CSV)</button><button class="btn-mini del" id="dbtDel">Ausgewählte löschen</button></div>
