@@ -809,7 +809,7 @@ table.tag-list select.figsel{border:1px solid var(--line);border-radius:6px;padd
 table.tag-list .figsel-wrap{display:flex;gap:5px;align-items:center}
 table.tag-list .figsel-wrap select.figb{opacity:.85}
 .tg-data-card{display:flex;flex-direction:column}
-.tg-data-card .c-head{flex-wrap:nowrap}
+.tg-data-card .c-head{flex-wrap:wrap}
 .tg-data-card .c-head>div:first-child{min-width:0}
 .tg-head-btns{align-self:center;flex:none}
 .tg-head-btns .btn-mini{padding:5px 9px;font-size:11px;white-space:nowrap;flex:none}
@@ -1506,7 +1506,7 @@ body.dark .empty{color:#9aa6b4}
         <div class="c-head"><div><h2>Tagging Data</h2>
           <div class="c-sub" id="tagSummary">Noch keine Tags.</div></div>
           <div style="display:flex;gap:6px">
-          <div class="tg-head-btns" style="display:flex;gap:5px;flex-wrap:nowrap">
+          <div class="tg-head-btns" style="display:flex;gap:5px;flex-wrap:wrap">
             <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).">⌖ Start</button>
             <label class="btn-mini" title="Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.">CSV → Tags<input type="file" id="impTagsCsv" accept=".csv,text/csv" hidden></label>
             <button class="btn-mini" id="btnClearTags">Löschen</button>
@@ -1582,6 +1582,7 @@ body.dark .empty{color:#9aa6b4}
       <div id="libGrid" class="lib-grid"></div>
     </div>
   </div>
+  </div><!-- /viewTagging -->
 
 
   <!-- POP-UP: Kurssetzung hinzufügen (global, unabhängig von einer Seite) -->
