@@ -297,7 +297,8 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .pdf-btn:active{transform:translateY(0)}
 
 /* Filter bar */
-.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;background:var(--card);padding:9px 12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px}
+.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;background:var(--card);padding:9px 12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px;position:sticky;top:62px;z-index:30}
+.filters.stuck{box-shadow:0 6px 16px rgba(20,24,31,.12)}
 .f{display:flex;flex-direction:column;gap:3px;min-width:110px;flex:1}
 .f.fsub{flex:0 0 auto;min-width:0;margin-left:auto}
 .f label{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
@@ -359,7 +360,7 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
   .wrap{padding:0 12px 40px}
   .head-in{gap:7px;padding:0 12px}
   .tabs{order:5;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .filters{gap:7px}
+  .filters{gap:7px;position:static;top:auto}
   .f{min-width:0}
   .f .seg-toggle,.f select{width:100%}
   .fsub{margin-left:0!important;width:100%}
@@ -421,9 +422,9 @@ svg.chart{width:100%;display:block;overflow:visible}
 .pf-race .pf-rt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
 .pf-race .pf-rn{font-size:13px;font-weight:600;color:var(--ink)}
 .pf-race b{font-size:15px;font-variant-numeric:tabular-nums}
-.pf-radarwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-.pf-radar{flex:1 1 340px;min-width:280px}
-.pf-vtab{flex:1 1 240px;min-width:220px;display:flex;flex-direction:column;gap:2px}
+.pf-radarwrap{display:flex;gap:26px;align-items:center;justify-content:center;flex-wrap:wrap}
+.pf-radar{flex:2 1 440px;min-width:340px}
+.pf-vtab{flex:1 1 260px;min-width:240px;max-width:360px;display:flex;flex-direction:column;gap:2px}
 .pf-vrow{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:7px 10px;border-radius:8px;font-size:13px}
 .pf-vrow:nth-child(even){background:var(--bg)}
 .pf-vrow span:nth-child(1){display:flex;align-items:center;gap:7px;font-weight:600}
@@ -835,6 +836,20 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .fis-row.nofis .fis-chk:not(.fis-nofis),.fis-row.nofis .fis-gap{opacity:.38;pointer-events:none}
 .fis-nofis{font-weight:700}
 body.dark .fis-row input[type=number]{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+/* Leerzustand / Ablauf, wenn (noch) kein Video geladen ist */
+.tg-empty{display:none;flex-direction:column;gap:14px;padding:16px 6px 20px}
+.tg-data-card.no-video .tag-list-wrap{display:none}
+.tg-data-card.no-video #tgEmpty{display:flex}
+.tge-step{display:flex;gap:12px;align-items:flex-start}
+.tge-n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.tge-tx{display:flex;flex-direction:column;gap:2px}
+.tge-tx b{font-size:13px;color:var(--ink)}
+.tge-tx span{font-size:12px;line-height:1.45;color:var(--muted)}
+.tg-empty kbd,.tg-taghint kbd{display:inline-block;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:11px;font-weight:700;font-family:inherit;color:var(--ink2)}
+.tg-taghint{display:none;align-items:center;gap:6px;justify-content:center;padding:14px 10px;margin-bottom:10px;font-size:12.5px;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:10px}
+.tg-data-card.no-tags #tgTagHint{display:flex}
+.tg-data-card.no-video .tg-head-btns,.tg-data-card.no-video .fis-row{opacity:.4;pointer-events:none}
+body.dark .tge-tx b{color:#eef1f6}
 /* Coach-Raster: + Tor Spalte */
 .dbtg-add{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:3px 9px;font:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
 .dbtg-add:hover{color:var(--red);border-color:var(--red)}
@@ -1513,9 +1528,15 @@ body.dark .empty{color:#9aa6b4}
           </div>
         </div>
         </div><!-- /c-head -->
+        <div id="tgEmpty" class="tg-empty">
+          <div class="tge-step"><span class="tge-n">1</span><div class="tge-tx"><b>Video laden</b><span>Datei links reinziehen oder «Datei wählen». Bleibt lokal auf deinem Gerät.</span></div></div>
+          <div class="tge-step"><span class="tge-n">2</span><div class="tge-tx"><b>Tore taggen</b><span>Video abspielen (<kbd>Leertaste</kbd>), bei jedem Tor <kbd>Enter</kbd>. Feineinstellung: <kbd>x</kbd>/<kbd>y</kbd> = 1 Frame.</span></div></div>
+          <div class="tge-step"><span class="tge-n">3</span><div class="tge-tx"><b>Speichern</b><span>FIS-Zeit-Modus wählen, dann «✓ Save» — der Lauf landet in Datenbank &amp; Analyse.</span></div></div>
+        </div>
         <div class="tag-list-wrap"><table class="tag-list"><thead>
           <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Gate (s)</th><th>Figur</th><th></th></tr>
         </thead><tbody id="tagBody"></tbody></table></div>
+        <div id="tgTagHint" class="tg-taghint">▶ Video abspielen (<kbd>Leertaste</kbd>) und bei jedem Tor <kbd>Enter</kbd> drücken.</div>
         <div class="fis-row" id="fisRow">
           <span class="fis-title">FIS-Zeit</span>
           <div class="fis-opts">
@@ -2159,9 +2180,11 @@ function needsRun(mode,disc){ return mode==='train' || disc==='GS' || disc==='SL
 function runLong(mode,disc,run){ return needsRun(mode,disc)? ('Lauf '+run) : discName(disc); }
 function runShort(mode,disc,run){ return needsRun(mode,disc)? ('L'+run) : '—'; }
 let ARCHIVED=new Set();   // archivierte Event-Keys (in Analyse ausgeblendet, nicht gelöscht)
+let DELETED=new Set();    // dauerhaft gelöschte Event-Keys (überall ausgeblendet, Taggings entfernt)
 function evKey(e){ return `${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}`; }
 function genHtml(g){ g=g||''; return `<span class="gsex ${g==='W'?'w':(g==='M'?'m':'')}">${g}</span>`; }   // W pink, M dunkelblau
 function isArchived(e){ return ARCHIVED.has(evKey(e)); }
+function isDeleted(e){ return DELETED.has(evKey(e)); }
 
 /* ---------- filter cascade ---------- */
 function evLabel(e){ return `${dmy(e.date)} · ${e.venue}`; }
@@ -2198,7 +2221,7 @@ function refreshGen(){
   refreshEvt();
 }
 function refreshEvt(){
-  const evs = DS().filter(e=>e.discipline===S.disc && e.gender===S.gen && e.hasTop && !isArchived(e))
+  const evs = DS().filter(e=>e.discipline===S.disc && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e))
     .sort((a,b)=> a.date<b.date?1:-1 || a.venue.localeCompare(b.venue));
   const keys = uniq(evs.map(e=> e.date+'|'+e.venue));
   fill($('#selEvt'), keys, k=>{ const e=evs.find(x=> x.date+'|'+x.venue===k); return evLabel(e); },
@@ -2208,7 +2231,7 @@ function refreshEvt(){
 function refreshRun(){
   S.evtKey = $('#selEvt').value;
   const [date,venue]=S.evtKey.split('|');
-  const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e))
+  const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e))
     .map(e=>e.run);
   runs.sort((a,b)=>(+a)-(+b));
   fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), runs.includes(S.run)?S.run:runs[0], true);
@@ -2437,12 +2460,12 @@ function kpiHTML(){
   let bigLoss={v:-9}; c.sui.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
   const nFig = c.figs.length;
   return `<div class="kpis">
-    <div class="kpi gold"><div class="k-lab">Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${top.name}</div><div class="k-sub">${top.nation} · Referenz 0.00</div></div>
-    <div class="kpi"><div class="k-lab">Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
-    <div class="kpi"><div class="k-lab">Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
-    <div class="kpi"><div class="k-lab">Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
-    <div class="kpi"><div class="k-lab">SUI Athleten</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
-    <div class="kpi"><div class="k-lab">Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
+    <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Athleten berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${top.name}</div><div class="k-sub">${top.nation} · Referenz 0.00</div></div>
+    <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
+    <div class="kpi" title="Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps)."><div class="k-lab">Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
+    <div class="kpi" title="Bester Schweizer Athlet in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
+    <div class="kpi" title="Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind."><div class="k-lab">SUI Athleten</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
+    <div class="kpi" title="Grösster Einzel-Zeitverlust eines Schweizers an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
   </div>`;
 }
 
@@ -2614,7 +2637,7 @@ function drawBump(){
   const shell=$('#bumpShell'); if(!shell) return; const c=S.comp, n=c.n;
   const key=S.excludeAnom?'cumClean':'cumRaw';
   const sk=c.skiers.filter(s=>!S.hidden.has(s.name));
-  if(sk.length<2 || n<2){ shell.innerHTML='<div class="empty" style="padding:26px">Zu wenig Athleten für den Positionsverlauf.</div>'; return; }
+  if(sk.length<2 || n<2){ shell.innerHTML=emptyBox('Zu wenig Athleten für den Positionsverlauf – wähle einen Lauf mit mehreren getaggten Athleten.','chart'); return; }
   const N=sk.length;
   const W=620,H=Math.max(280, 70+N*52), ml=18,mr=128,mt=24,mb=30, iw=W-ml-mr, ih=H-mt-mb;
   const x=g=> ml+(n<=1?0:(g-1)/(n-1))*iw;
@@ -2647,11 +2670,11 @@ function drawWaterfall(){
   const shell=$('#waterShell'); if(!shell) return; const c=S.comp;
   const name = S.wfAth || S.perGate;
   const s=c.skiers.find(x=>x.name===name); const nm=$('#wfAthName'); if(nm) nm.textContent=s?s.name:'—';
-  if(!s){ shell.innerHTML='<div class="empty" style="padding:26px">Kein Athlet gewählt.</div>'; return; }
+  if(!s){ shell.innerHTML=emptyBox('Kein Athlet gewählt.','chart'); return; }
   let segs=(c.sectors&&c.sectors.length)? c.sectors.slice() : [];
   if(!segs.length){ const k=Math.min(6,c.n||1), sz=Math.ceil((c.n||1)/k); for(let a=0;a<c.n;a+=sz) segs.push([a+1,Math.min(c.n,a+sz)]); }
   const items=segs.map((sec,idx)=>{ let sum=0,has=false; for(let i=sec[0]-1;i<sec[1];i++){ const d=s.cleanDiff[i]; if(d!=null){ sum+=d; has=true; } } return {label:'S'+(idx+1), delta:has?sum:null}; }).filter(it=>it.delta!=null);
-  if(!items.length){ shell.innerHTML='<div class="empty" style="padding:26px">Keine Daten.</div>'; return; }
+  if(!items.length){ shell.innerHTML=emptyBox('Keine Daten für diese Auswahl.','chart'); return; }
   let cum=0; const steps=items.map(it=>{ const start=cum; cum+=it.delta; return {label:it.label,delta:it.delta,start,end:cum}; });
   const total=cum;
   const W=620,H=300, ml=42,mr=14,mt=18,mb=42, iw=W-ml-mr, ih=H-mt-mb;
@@ -2694,7 +2717,7 @@ function drawTerrainBand(course){ const band=$('#heroBand'); if(!band) return; c
 function drawCourseMap(course){ const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;
   const fs=c.skiers.find(z=>z.name===S.perGate), dkey=S.excludeAnom?'cleanDiff':'diff';
   const gates=course.gates.filter(z=>z.type!=='Finish'), m=Math.min(n,gates.length);
-  if(m<2){ shell.innerHTML='<div class="empty" style="padding:24px">Keine Kursdaten.</div>'; return; }
+  if(m<2){ shell.innerHTML=emptyBox('Keine Kursdaten – hinterlege eine Kurssetzung für diesen Lauf (Datenbank → Kurssetzung).','gate'); return; }
   const W=440, H=Math.max(360, 56+m*11), ml=30,mr=30,mt=30,mb=22, iw=W-ml-mr, ih=H-mt-mb;
   const maxOff=Math.max(...gates.slice(0,m).map(z=>z.offset||0),4), cx=ml+iw/2, A=iw*0.32;
   // Tore alternierend links/rechts der Falllinie, Schwung-Amplitude moderat -> realistische Schlängellinie
@@ -2788,7 +2811,7 @@ function drawBar(){
 /* ---------- sector analysis ---------- */
 function drawSector(){
   const c=S.comp; const secs=c.sectors; const sui=c.sui;
-  if(!secs.length){ $('#secShell').innerHTML='<div class="empty" style="padding:30px">Keine Lap-Marker für Sektoren.</div>'; return; }
+  if(!secs.length){ $('#secShell').innerHTML=emptyBox('Keine Lap-Marker gesetzt – ohne Laps lassen sich keine Abschnitte bilden.','chart'); return; }
   const key=S.excludeAnom?'cleanDiff':'diff';
   const data = sui.map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
   const W=620,H=320, ml=42,mr=12,mt=20,mb=52, iw=W-ml-mr, ih=H-mt-mb;
@@ -2868,7 +2891,7 @@ function suiCardsHTML(){
       <div style="text-align:right"><div style="font-weight:760;font-size:16px;color:${s.finalClean>0.001?'var(--bad)':'var(--good)'}">${inc?'—':fmt(s.finalClean)+' s'}</div>
         <div style="font-size:10.5px;color:var(--muted)">${inc?'unvollständig':(s.officialGap!=null?'= FIS-Rückstand':'Endrückstand')}</div></div>
     </div>`;}).join('');
-  $('#suiCards').innerHTML=rows||'<div class="empty">Keine SUI Athleten.</div>';
+  $('#suiCards').innerHTML=rows||emptyBox('Keine Schweizer Athlet:innen in diesem Lauf.','info');
 }
 
 /* ---------- heatmap ---------- */
@@ -3139,11 +3162,11 @@ function vlData(name){
 }
 function drawVlChart(data){
   const shell=$('#vlShell'); if(!shell) return;
-  if(!data.length){ shell.innerHTML='<div class="empty" style="padding:34px">Keine Rennen für diesen Athleten in dieser Auswahl. Wähle eine andere Disziplin/Geschlecht oder einen anderen Athleten.</div>'; return; }
+  if(!data.length){ shell.innerHTML=emptyBox('Keine Rennen für diesen Athleten in dieser Auswahl. Wähle eine andere Disziplin/Geschlecht oder einen anderen Athleten.','chart'); return; }
   const cats=VL_CATS.filter(c=>VL.cats.has(c.key));
   const W=900,H=390, ml=48,mr=120,mt=18,mb=88, iw=W-ml-mr, ih=H-mt-mb, n=data.length;
   let vals=[]; cats.forEach(c=> data.forEach(d=>{ const v=d.vals[c.key]; if(v!=null) vals.push(v); }));
-  if(!vals.length){ shell.innerHTML='<div class="empty" style="padding:34px">Für die gewählten Kategorien gibt es keine Werte. Aktiviere «Gesamt» oder hinterlege Kurssetzungen für die Terrain-Linien.</div>'; return; }
+  if(!vals.length){ shell.innerHTML=emptyBox('Für die gewählten Kategorien gibt es keine Werte. Aktiviere «Gesamt» oder hinterlege Kurssetzungen für die Terrain-Linien.','chart'); return; }
   let mn=Math.min(0,...vals), mx=Math.max(...vals); const pad=(mx-mn)*0.14||0.05; mn-=pad; mx+=pad;
   const x=i=> n>1? ml+i/(n-1)*iw : ml+iw/2;
   const y=v=> mt + (mx-v)/(mx-mn)*ih;     // grosser Rückstand oben, klein (schnell) unten
@@ -3266,15 +3289,15 @@ function profilRadar(cats, series){
   if(vals.length<3 || !anyOk) return '';
   let vBest=Math.min(-0.02,...vals), vWorst=Math.max(0.10,...vals);
   if(vWorst-vBest<0.02) vWorst=vBest+0.02;
-  const W=400,H=340,cx=W/2,cy=H/2+4,R=112,n=cats.length;
+  const W=470,H=410,cx=W/2,cy=H/2+2,R=142,n=cats.length;
   const ang=i=> -Math.PI/2 + i*2*Math.PI/n;
   const rOf=v=>{ const t=(vWorst-v)/(vWorst-vBest); return R*Math.max(0.06,Math.min(1,t)); };
   const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
-  let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart" style="max-width:440px;margin:0 auto;display:block">`;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart" style="max-width:520px;margin:0 auto;display:block">`;
   for(let k=1;k<=4;k++){ const rr=R*k/4; let p=''; for(let i=0;i<n;i++){ const [x,y]=pt(i,rr); p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; }
     svg+=`<path d="${p}Z" fill="none" stroke="#e6e9ee" stroke-width="1"/>`; }
   cats.forEach((c,i)=>{ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e6e9ee"/>`;
-    const [lx,ly]=pt(i,R+22); svg+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${c.color}">${c.label}</text>`; });
+    const [lx,ly]=pt(i,R+25); svg+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="800" fill="${c.color}">${c.label}</text>`; });
   const poly=(agg,color,fill,who)=>{ const av=cats.map((c,i)=> agg&&agg[c.key]!=null? {i,r:rOf(agg[c.key])}:null).filter(Boolean);
     if(av.length<3) return ''; let p=''; av.forEach(q=>{ const [x,y]=pt(q.i,q.r); p+=(p?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; });
     let s=`<path d="${p}Z" fill="${fill}" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>`;
@@ -3288,7 +3311,7 @@ function profilRadar(cats, series){
   svg+='</svg>'; return svg;
 }
 function profilTerrainBars(terr, agg){
-  if(!terr.length) return '<div class="empty" style="padding:20px">Keine Terrain-Werte — dafür müssen zu den Rennen Kurssetzungen hinterlegt sein (Tab «Kurssetzung»).</div>';
+  if(!terr.length) return emptyBox('Keine Terrain-Werte — dafür müssen zu den Rennen Kurssetzungen hinterlegt sein (Datenbank → Kurssetzung).','gate');
   const maxAbs=Math.max(0.05, ...terr.map(c=>Math.abs(agg[c.key])));
   return '<div class="pf-bars">'+terr.map(c=>{ const v=agg[c.key]; const pct=Math.min(50, Math.abs(v)/maxAbs*50); const neg=v<0;
     return `<div class="pf-bar"><span class="pf-bl" style="color:${c.color}"><span class="dot" style="background:${c.color}"></span>${c.label}</span>`
@@ -3317,9 +3340,9 @@ function renderProfil(){
     ssel.value=VL.season; }
   if($('#pfName')) $('#pfName').textContent = VL.ath? ('· '+VL.ath+(PF.compare.length?(' vs. '+PF.compare.join(', ')):'')+(VL.season?' · Saison '+VL.season:'')) : '';
   const host=$('#pfContent'); if(!host) return;
-  if(!VL.ath){ host.innerHTML='<div class="empty" style="padding:34px">Wähle oben einen Athleten für das Profil.</div>'; return; }
+  if(!VL.ath){ host.innerHTML=emptyBox('Wähle oben einen Athleten für das Profil.','info'); return; }
   const aggA=pfAgg(VL.ath);
-  if(!aggA){ host.innerHTML='<div class="empty" style="padding:34px">Keine Rennen für diesen Athleten in dieser Auswahl.</div>'; return; }
+  if(!aggA){ host.innerHTML=emptyBox('Keine Rennen für diesen Athleten in dieser Auswahl.','info'); return; }
   const cmp=PF.compare.map((n,i)=>({name:n,color:PF_PAL[i%PF_PAL.length]})).map(o=>({...o,agg:pfAgg(o.name),fill:hexA(o.color,.13)})).filter(o=>o.agg);
   const primary={agg:aggA,name:VL.ath,color:'#DA291C',fill:'rgba(218,41,28,.16)'};
   const series=[primary,...cmp];
@@ -3336,10 +3359,10 @@ function renderProfil(){
     trendTxt = d<-0.01? '<span style="color:var(--good)">↗ besser</span>' : d>0.01? '<span style="color:var(--bad)">↘ langsamer</span>' : 'stabil'; }
   // Kennzahlen (Athlet A)
   let h='<div class="pf-kpis">';
-  h+=`<div class="pf-kpi"><div class="pf-kl">Rennen</div><div class="pf-kv">${data.length}</div><div class="pf-ks">${topN}× Laufbestzeit-Nähe</div></div>`;
-  h+=`<div class="pf-kpi"><div class="pf-kl">Ø Rückstand / Tor</div><div class="pf-kv" style="color:${aggA.overall>0.001?'var(--bad)':(aggA.overall<-0.001?'var(--good)':'var(--ink)')}">${pfFmt(aggA.overall)}</div><div class="pf-ks">Trend: ${trendTxt}</div></div>`;
-  h+=`<div class="pf-kpi"><div class="pf-kl">Stärkstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${bestT?bestT.color:'var(--muted)'}">${bestT?bestT.label:'–'}</div><div class="pf-ks">${bestT?pfFmt(aggA[bestT.key]):'—'}</div></div>`;
-  h+=`<div class="pf-kpi"><div class="pf-kl">Schwächstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${worstT?worstT.color:'var(--muted)'}">${worstT?worstT.label:'–'}</div><div class="pf-ks">${worstT?pfFmt(aggA[worstT.key]):'—'}</div></div>`;
+  h+=`<div class="pf-kpi" title="Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit-Nähe» = Läufe, in denen er sehr nah an der Bestzeit war."><div class="pf-kl">Rennen</div><div class="pf-kv">${data.length}</div><div class="pf-ks">${topN}× Laufbestzeit-Nähe</div></div>`;
+  h+=`<div class="pf-kpi" title="Durchschnittlicher Rückstand pro Tor auf den jeweiligen Laufbesten, über alle ausgewerteten Läufe. Grün = schneller als der Schnitt, rot = langsamer. «Trend» vergleicht neuere mit älteren Rennen."><div class="pf-kl">Ø Rückstand / Tor</div><div class="pf-kv" style="color:${aggA.overall>0.001?'var(--bad)':(aggA.overall<-0.001?'var(--good)':'var(--ink)')}">${pfFmt(aggA.overall)}</div><div class="pf-ks">Trend: ${trendTxt}</div></div>`;
+  h+=`<div class="pf-kpi" title="Geländetyp (Steil/Flach/Drehend/Direkt), in dem der Athlet im Schnitt am wenigsten Rückstand pro Tor hat – seine Stärke."><div class="pf-kl">Stärkstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${bestT?bestT.color:'var(--muted)'}">${bestT?bestT.label:'–'}</div><div class="pf-ks">${bestT?pfFmt(aggA[bestT.key]):'—'}</div></div>`;
+  h+=`<div class="pf-kpi" title="Geländetyp mit dem grössten durchschnittlichen Rückstand pro Tor – hier liegt das grösste Verbesserungspotenzial."><div class="pf-kl">Schwächstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${worstT?worstT.color:'var(--muted)'}">${worstT?worstT.label:'–'}</div><div class="pf-ks">${worstT?pfFmt(aggA[worstT.key]):'—'}</div></div>`;
   h+='</div>';
   // Terrain-Fingerabdruck (Radar) + Werte-Tabelle
   const cats4=VL_CATS.filter(c=>c.need);
@@ -3498,7 +3521,7 @@ function loadVideoBlob(blob){
   $('#dropZone').style.display='none'; const pl=$('#player'); pl.style.display=''; pl.classList.add('loading');
   const fa=$('#fpsAuto'); if(fa) fa.textContent='';
   v.onerror=()=>{ pl.classList.remove('loading'); gtgToast('Video konnte nicht geladen werden (Format?).'); };
-  v.onloadedmetadata=()=>{ pl.classList.remove('loading'); TG.dur=v.duration; TG.frame=0; $('#scrub').max=v.duration; updateOSD(); setTimeout(syncDataHeight,60);
+  v.onloadedmetadata=()=>{ pl.classList.remove('loading'); TG.dur=v.duration; TG.frame=0; $('#scrub').max=v.duration; updateOSD(); setTimeout(syncDataHeight,60); updateTaggingState();
     if(TG.wantFps) detectFps(); };
 }
 /* ---- fps automatisch aus dem Video messen (requestVideoFrameCallback) ---- */
@@ -3698,6 +3721,16 @@ function syncDataHeight(){ const vc=document.querySelector('.tg-video-card'), dc
 }
 function delTag(i){ TG.tags.splice(i,1); renderTags(); tgPush(); }
 function clearTags(){ TG.tags=[]; renderTags(); tgPush(); }
+/* Leerzustand/Ablauf steuern: ohne geladenes Video Workflow zeigen & Buttons ausgrauen */
+function updateTaggingState(){
+  const v=$('#vid'); const hasVid=!!(v && v.src);
+  const card=document.querySelector('.tg-data-card'); if(!card) return;
+  card.classList.toggle('no-video', !hasVid);
+  card.classList.toggle('no-tags', hasVid && (!TG.tags || TG.tags.length===0));
+  const dis=!hasVid;
+  ['btnSyncStart','btnClearTags'].forEach(id=>{ const b=$('#'+id); if(b) b.disabled=dis; });
+  const csv=$('#impTagsCsv'); if(csv){ const lab=csv.closest('label'); if(lab) lab.classList.toggle('is-disabled', dis); csv.disabled=dis; }
+}
 
 const FIGOPTS = ['','Lap1','Lap2','Lap3','Lap4','B1','B2','B3','B4','H1','H2','H3','H4','H5','H6','F1','F2','F3','K'];
 function renderTags(){
@@ -3742,7 +3775,7 @@ function renderTags(){
   $('#btnSaveRun').disabled = !(TG.tags.length>=2);
   // neu gesetzten Tag sichtbar machen (automatisch dorthin scrollen)
   const nr=tb.querySelector('tr.row-new'); if(nr){ try{ nr.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){ nr.scrollIntoView(); } }
-  computeOverlaySteps(); updateOverlay(); syncDataHeight();
+  computeOverlaySteps(); updateOverlay(); syncDataHeight(); updateTaggingState();
 }
 
 /* gates-array + figures aus Tags */
@@ -3761,10 +3794,18 @@ function recomputeEvent(ev){
   const withGap = ev.skiers.filter(s=>typeof s.officialGap==='number');
   if(marked){ best=marked; }
   else if(withGap.length){ best = withGap.reduce((a,b)=> b.officialGap<a.officialGap?b:a); }
-  else { // Fallback (keine offiziellen Zeiten): kleinste getaggte Gesamtzeit
-    const cand = ev.skiers.filter(s=> s.gates.filter(x=>x!=null).length >= ev.nGates*0.9);
-    const pool = cand.length?cand:ev.skiers; let bestSum=1e18;
-    pool.forEach(s=>{ const sum=s.gates.reduce((a,b)=>a+(b||0),0); if(sum<bestSum){bestSum=sum;best=s;} });
+  else { // Keine offiziellen Zeiten (Training / alle Läufe „Ohne FIS-Zeit"):
+    // Referenz-Bestzeit = schnellster getaggter Athlet nach getaggter Gesamtzeit.
+    // Für einen fairen Totalzeit-Vergleich zuerst nur vollständig getaggte Läufe nehmen
+    // (sonst würde ein Lauf ohne Ziel-Tag mit kleinerer Summe fälschlich „gewinnen").
+    const cnt = s => s.gates.filter(x=>typeof x==='number' && x>0).length;
+    const full = ev.skiers.filter(s=> cnt(s) >= ev.nGates);
+    const pool = full.length ? full : ev.skiers.filter(s=> cnt(s) >= ev.nGates*0.9);
+    const use  = pool.length ? pool : ev.skiers;
+    let bestSum=1e18;
+    use.forEach(s=>{ const g=s.gates.filter(x=>typeof x==='number' && x>0); if(!g.length) return;
+      const sum=g.reduce((a,b)=>a+b,0); if(sum<bestSum){ bestSum=sum; best=s; } });
+    if(!best) best=ev.skiers[0];
   }
   ev.skiers.forEach(s=> s.fastest = (s===best));
   ev.hasTop = ev.skiers.some(s=>s.fastest); ev.hasSUI = ev.skiers.some(s=>s.nation==='SUI');
@@ -4395,9 +4436,9 @@ function renderKursAnalysis(){
   const {athletes:allAth0,nCourses}=gatherKurs(scope);
   if(!allAth0.length){
     const noCourse = scope!=='season' && !findCourseByRace(scope);
-    const emsg='<div class="empty" style="padding:30px">'+(noCourse
+    const emsg=emptyBox(noCourse
       ? 'Für diesen Lauf ist noch <b>keine Kurssetzung</b> hochgeladen. Lade das Kurssetzungs-PDF in der <b>Datenbank → Kurssetzung</b> mit gleichem Datum/Ort/Lauf — danach erscheint die Analyse hier.'
-      : 'Für diese Auswahl gibt es keinen Kurs mit passenden Tagging-Daten. Tagge den Lauf (Tab «Tagging») und lade die Kurssetzung mit gleichem Datum/Ort/Lauf.')+'</div>';
+      : 'Für diese Auswahl gibt es keinen Kurs mit passenden Tagging-Daten. Tagge den Lauf (Tab «Tagging») und lade die Kurssetzung mit gleichem Datum/Ort/Lauf.','gate');
     if(sHost) sHost.innerHTML=emsg; if(dHost) dHost.innerHTML=emsg; return; }
   // Saison: Athleten mit zu wenig getaggten Toren ausschliessen (nicht fair vergleichbar). Einzel-Lauf: alle.
   const MIN_GATES=100, isSeason=scope==='season';
@@ -4421,7 +4462,7 @@ function renderKursAnalysis(){
     <div class="kchart-sub">Pitch (Gefälle) pro Tor; Marker für Tor-Kombinationen.</div>${drawCourseProfile(scopeCourse)}`; }
   const valid=items.filter(i=>i.v!=null);
   const chart = (athletes.length && valid.length) ? drawSingleBars(items,760,200)
-    : '<div class="empty" style="padding:24px">'+(athletes.length?'Keine Tore für diese Filter-Kombination — Filter erweitern.':'Kein Athlet ausgewählt.')+'</div>';
+    : emptyBox(athletes.length?'Keine Tore für diese Filter-Kombination — erweitere die Steilheit-/Charakter-Filter.':'Kein Athlet ausgewählt.','chart');
   let ins='';
   if(valid.length){ const s=[...valid].sort((a,b)=>a.v-b.v); const best=s[0], worst=s[s.length-1];
     const f3=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(3);
@@ -4433,7 +4474,7 @@ function renderKursAnalysis(){
       + (s.length>1? `<div style="margin-top:5px"><b style="color:${best.color}">${best.name.split(' ')[0]}</b> ist am schnellsten (${f3(best.v)} s/Tor), <b style="color:${worst.color}">${worst.name.split(' ')[0]}</b> am langsamsten (${f3(worst.v)} s/Tor).</div>`
         : `<div style="margin-top:5px"><b style="color:${best.color}">${best.name.split(' ')[0]}</b>: ${f3(best.v)} s/Tor.</div>`)
       + `<div style="margin-top:5px;color:var(--muted)">Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.</div></div>`; }
-  const radar = (athletes.length) ? drawRadar(athletes) : '<div class="empty" style="padding:24px">Kein Athlet ausgewählt.</div>';
+  const radar = (athletes.length) ? drawRadar(athletes) : emptyBox('Kein Athlet ausgewählt.','chart');
   const spiderHTML = `${toggles}${profile}
         <div class="kchart-title">Stärken-Profil (Spider)</div>
         <div class="kchart-sub"><b>aussen = stärker</b>: je Kategorie geht der schnellste der gewählten Athleten nach aussen, der langsamste nach innen. Berücksichtigt alle Läufe der Auswahl.</div>
@@ -5005,8 +5046,8 @@ function openKursPdf(id){
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
 function dbEvents(){ const tk=dbTaggedKeys(); const out=[];
-  DATA.forEach(e=>{ const k=evKey(e); const tg=tk.has(k); if(!e.hasTop && !tg) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
-  TRAIN.forEach(e=>{ if(!(e.skiers||[]).length && !e.hasTop) return; const k=evKey(e); out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
+  DATA.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
+  TRAIN.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; if(!(e.skiers||[]).length && !e.hasTop) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
   return out.sort((a,b)=> (b.e.date||'').localeCompare(a.e.date||'') || (a.e.venue||'').localeCompare(b.e.venue) || String(a.e.run).localeCompare(String(b.e.run))); }
 function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
   const q=($('#dbSearch')?.value||'').trim().toLowerCase(), fd=$('#dbDisc')?.value||'', fg=$('#dbGen')?.value||'', fm=$('#dbMode')?.value||'', fs=$('#dbSrc')?.value||'', fst=$('#dbStatus')?.value||'';
@@ -5038,15 +5079,42 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
       <td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td><td>${runLbl}</td>
       <td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td>
       <td>${clBtn}</td>
-      <td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':'del'}" data-k="${r.key}">${r.archived?'↩ Aktivieren':'Archivieren'}</button></td></tr>`; }).join('');
+      <td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button></td></tr>`; }).join('');
    body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
    body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
    body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
+   body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
+     const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
+     const p=k.split('|'); const lbl=`${p[1]} · ${p[2]} ${p[3]} · L${p[4]} · ${dmy(p[0])}`;
+     gtgConfirm({title:'Event dauerhaft löschen?', danger:true, okLabel:'Endgültig löschen',
+       msg:`«${lbl}» wird komplett gelöscht.\n\nAlle ${nTag>0?nTag+' ':''}getaggten Läufe dieses Events${nTag>0?' (inkl. Videos auf diesem Gerät)':''} werden dabei ebenfalls unwiderruflich entfernt. Dies kann nicht rückgängig gemacht werden.`})
+       .then(ok=>{ if(ok){ deleteEvent(k); renderDatenbank(); buildFilters(); gtgToast('Event gelöscht.'); } }); });
    body.querySelectorAll('button[data-sw]').forEach(b=> b.onclick=()=>{ const k=b.dataset.sw; const cur=dbEvents().find(x=>x.key===k); const to=cur&&cur.mode==='train'?'Wettkampf':'Training';
     const tagged=dbTaggedKeys().has(k);
     gtgConfirm({title:'Modus wechseln', okLabel:`Nach ${to}`, msg:`Dieses Event nach «${to}» verschieben?${tagged?' Alle getaggten Athleten dieses Laufs wechseln den Modus.':''}`})
       .then(okc=>{ if(okc){ if(tagged) switchEventMode(k); else overrideEventMode(k); renderDatenbank(); } }); });
   });
+}
+/* ---- Ganzen Event dauerhaft löschen (inkl. aller getaggten Läufe) ---- */
+function deleteEvent(key){
+  const match=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`===key;
+  // 1) getaggte Läufe entfernen (Wettkampf + Training)
+  let ch=false;
+  for(let i=SAVED.length-1;i>=0;i--){ if(match(SAVED[i])){ SAVED.splice(i,1); ch=true; } }
+  for(let i=SAVED_TRAIN.length-1;i>=0;i--){ if(match(SAVED_TRAIN[i])){ SAVED_TRAIN.splice(i,1); ch=true; } }
+  if(ch){ LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN); }
+  // 2) aus den In-Memory-Events entfernen (sofortige Wirkung)
+  for(let i=DATA.length-1;i>=0;i--){ if(evKey(DATA[i])===key) DATA.splice(i,1); }
+  for(let i=TRAIN.length-1;i>=0;i--){ if(evKey(TRAIN[i])===key) TRAIN.splice(i,1); }
+  // 3) Kurssetzung (Daten + PDF)
+  if(COURSES[key]){ delete COURSES[key]; try{ vdbDel(key,'courses'); vdbDel(key,'kurspdf'); }catch(_){}
+    if(typeof saveCourses==='function'){ try{ saveCourses(); }catch(_){} } }
+  // 4) Videos dieses Events (lokal auf diesem Gerät) löschen
+  try{ vdbAll().then(vs=>{ (vs||[]).forEach(v=>{ if(`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`===key){ try{ vdbDel(v.id,'videos'); }catch(_){} } }); }); }catch(_){}
+  // 5) dauerhaft merken (gebackene Events bleiben nach Reload ausgeblendet) & aus Archiv nehmen
+  DELETED.add(key); LS.set('gtg_deleted',[...DELETED]);
+  if(ARCHIVED.has(key)){ ARCHIVED.delete(key); LS.set('gtg_archived',[...ARCHIVED]); }
+  try{ ghAutoSync&&ghAutoSync(); }catch(_){}
 }
 /* ---- Event-Parameter nachträglich bearbeiten ---- */
 let EVEDIT_KEY=null;
@@ -5367,7 +5435,7 @@ function dbvStorageBanner(all){ const el=$('#dbvStore'); if(!el) return;
     else finish(sum,0);
   });
 }
-function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[]));
+function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[])); DELETED=new Set(LS.get('gtg_deleted',[]));
   if($('#dbSub')) segFill('#dbSub',['events','taggings','videos','kurssetzung'], s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':'Kurssetzung', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
   ['#dbkDisc','#dbkGen'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbkSearch')) $('#dbkSearch').oninput=renderDatenbank;
@@ -5968,6 +6036,12 @@ initProfil();
 initSbs();
 initCloud();
 initDatenbank();
+/* Sticky Filterleiste: stärkerer Schatten, sobald angeheftet (nur wenn sichtbar) */
+(function(){
+  const onScroll=()=>{ document.querySelectorAll('.filters').forEach(f=>{ if(f.offsetParent===null){ f.classList.remove('stuck'); return; }
+    const t=f.getBoundingClientRect().top; f.classList.toggle('stuck', t<=63.5); }); };
+  window.addEventListener('scroll', onScroll, {passive:true}); window.addEventListener('resize', onScroll, {passive:true}); onScroll();
+})();
 /* ===================== Tutorial-Tour ===================== */
 const TOUR=[
   {title:'Willkommen bei Gate-to-Gate', text:'Dieses Tool analysiert Ski-Rennläufe <b>Tor für Tor</b>: An welchem Tor genau gewinnt oder verliert ein Athlet Zeit gegenüber der Bestzeit? Gemacht für <b>Trainer:innen & Analyst:innen von Swiss-Ski</b>. Der rote Faden: <b>Video taggen → auswerten → mit den Coaches teilen</b>. Los geht\'s – ca. 2 Minuten.'},
