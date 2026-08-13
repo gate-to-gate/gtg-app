@@ -809,6 +809,10 @@ table.tag-list select.figsel{border:1px solid var(--line);border-radius:6px;padd
 table.tag-list .figsel-wrap{display:flex;gap:5px;align-items:center}
 table.tag-list .figsel-wrap select.figb{opacity:.85}
 .tg-data-card{display:flex;flex-direction:column}
+.tg-data-card .c-head{flex-wrap:nowrap}
+.tg-data-card .c-head>div:first-child{min-width:0}
+.tg-head-btns{align-self:center;flex:none}
+.tg-head-btns .btn-mini{padding:5px 9px;font-size:11px;white-space:nowrap;flex:none}
 .tg-data-card .tag-list-wrap{flex:1;min-height:120px;max-height:none;overflow:auto}
 .row-del{color:var(--muted);cursor:pointer;border:none;background:none;font-size:15px;line-height:1}
 .row-del:hover{color:var(--bad)}
@@ -826,7 +830,10 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .fis-row input[type=number]:focus{outline:none;border-color:var(--red)}
 .fis-row .unit{color:var(--muted);font-weight:600}
 .fis-row .fis-gap.off{opacity:.4;pointer-events:none}
-.fis-row{gap:10px;padding:8px 12px}
+.fis-row{gap:8px 10px;padding:6px 11px;font-size:12px;margin-bottom:10px}
+.fis-row input[type=number]{width:58px;padding:4px 8px;font-size:12px}
+.fis-row input[type=checkbox]{width:15px;height:15px}
+.fis-row .fis-title{font-size:9px}
 .fis-row .fis-sep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
 .fis-row.nofis .fis-chk:not(.fis-nofis),.fis-row.nofis .fis-gap{opacity:.38;pointer-events:none}
 .fis-nofis{font-weight:700}
@@ -1502,9 +1509,10 @@ body.dark .empty{color:#9aa6b4}
         <div class="c-head"><div><h2>Tagging Data</h2>
           <div class="c-sub" id="tagSummary">Noch keine Tags.</div></div>
           <div style="display:flex;gap:6px">
-            <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).">⌖ Start setzen</button>
+          <div class="tg-head-btns" style="display:flex;gap:5px;flex-wrap:nowrap">
+            <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).">⌖ Start</button>
             <label class="btn-mini" title="Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.">CSV → Tags<input type="file" id="impTagsCsv" accept=".csv,text/csv" hidden></label>
-            <button class="btn-mini" id="btnClearTags">Alle löschen</button>
+            <button class="btn-mini" id="btnClearTags">Löschen</button>
           </div>
         </div>
         <div class="tag-list-wrap"><table class="tag-list"><thead>
@@ -2933,7 +2941,9 @@ function heatmapPrint(){
 function normStart(cum, k=5){
   const i0 = cum.findIndex(v=>v!=null); if(i0<0) return cum.slice();
   const d0 = cum[i0]; if(!d0) return cum.slice();
-  return cum.map((v,i)=>{ if(v==null) return null; const rel=i-i0; const f = rel>=k?0:(k-rel)/k; return Math.round((v - d0*f)*1000)/1000; });
+  // Alle Linien starten gemeinsam bei 0 am ersten Tor: den Anfangsrückstand komplett abziehen,
+  // sodass nur die tatsächlichen Tor-für-Tor-Unterschiede die Linien auseinanderlaufen lassen.
+  return cum.map(v=> v==null ? null : Math.round((v - d0)*1000)/1000);
 }
 /* ---------- utils ---------- */
 function niceTicks(min,max,count){ const span=max-min; if(span<=0) return [0];
