@@ -3431,6 +3431,13 @@ function initSbs(){
 
 /* ---- video ---- */
 function loadVideo(file){ TG.file=file; TG.wantFps=true; loadVideoBlob(file);
+  // Ist bereits ein Tagging geladen (z. B. aus der Datenbank geöffnet)? Dann Video nur ANHÄNGEN,
+  // Angaben & Tags NICHT aus dem Dateinamen überschreiben (Dateiname kann veralteten Ort/Datum haben).
+  if(TG.tags && TG.tags.length>=2){
+    if($('#pbName')) $('#pbName').textContent=file.name||'';
+    const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent='Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Sichern «Save».'; }
+    if(typeof gtgToast==='function') gtgToast('Video angehängt — Tags & Angaben bleiben. Jetzt «Save».','ok');
+    return; }
   if($('#mMode')) $('#mMode').value='comp'; setTagMode('comp');   // Standard: Wettkampf, wird bei Erkennung ggf. überschrieben
   const found=autofillFromFilename(file.name||''); openMetaModal();
   const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent = found.length ? ('Aus Dateiname übernommen: '+found.join(', ')+' — bitte prüfen.') : 'Bitte Angaben manuell auswählen.'; } }
