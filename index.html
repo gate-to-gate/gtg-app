@@ -1237,7 +1237,7 @@ body.dark .clip-sbsbtn,body.dark .clip-sbsbar button,body.dark .coach-run{backgr
 body.dark .lg{color:#cfd6e0}
 body.dark .lg:hover{background:#2d3644}
 /* Charts bleiben auf hellem Panel (SVG-Texte sind dunkel gesetzt) */
-body.dark .chart-shell,body.dark .pf-radar svg{background:#f1f3f6;border-radius:10px}
+body.dark .chart-shell,body.dark .pf-radar svg{background:transparent}
 body.dark .gh-status.dirty{background:#3a2e16;color:#e0a94a}
 body.dark .gh-status.sync{background:#1e2b3d;color:#7db1e8}
 body.dark .gh-status.off{background:#20272f;color:#9aa6b4}
@@ -2509,6 +2509,10 @@ function figStrip(){
 /* ===== generic SVG helpers ===== */
 function svgEl(w,h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`; }
 
+function chTheme(){ const d=document.body.classList.contains('dark');
+  return d ? { dark:true, bg:'transparent', halo:'#252d39', grid:'#39424f', grid2:'#2c343f', axis:'#556170', zero:'#7d8896', txt:'#cfd6e0', txt2:'#8f99a6', prof:'#6f7b8a', gold:'#d8b24a' }
+           : { dark:false, bg:'#ffffff', halo:'#ffffff', grid:'#e6eaef', grid2:'#f1f4f7', axis:'#c3cad4', zero:'#c3cad4', txt:'#6b7785', txt2:'#9aa3af', prof:'#8b95a3', gold:'#a9801a' }; }
+
 /* optische Glättung der kumulierten Kurve: gleitender Mittelwert (±1 Tor), Endpunkte exakt */
 function smoothCum(arr){
   const n=arr.length, out=arr.slice(); let first=-1,last=-1;
@@ -2521,6 +2525,7 @@ function smoothCum(arr){
 }
 /* ---------- HERO: cumulative gap line ---------- */
 function drawHero(){
+  const T=chTheme();
   const c=S.comp, n=c.n;
   const W=980,H=(S.printMode?440:420), ml=74,mr=20,mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
@@ -2555,12 +2560,12 @@ function drawHero(){
       const top=[]; for(let i=0;i<m;i++){ const t=(e[i]-eMin)/span; top.push({x:x(i+1), y: yTop + (1-t)*(mt+ih-yTop)}); }
       // Fläche als gerade Polylinie (ehrliche Winkel, keine Rundung)
       const topStr='M'+top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L');
-      svg+=`<path d="${topStr} L ${x(m).toFixed(1)} ${(mt+ih)} L ${x(1).toFixed(1)} ${(mt+ih)} Z" fill="#8b95a3" opacity=".08"/>`;
+      svg+=`<path d="${topStr} L ${x(m).toFixed(1)} ${(mt+ih)} L ${x(1).toFixed(1)} ${(mt+ih)} Z" fill="${T.prof}" opacity=".08"/>`;
       // Linie in Segmenten, eingefärbt nach Steilheit: flach = hell, steil = dunkel + etwas dicker
       for(let i=1;i<m;i++){ const p0=top[i-1], p1=top[i]; const t=(pit[i]-pMin)/pRange;
         const g=Math.round(178-72*t); const col=`rgb(${g+18},${g+26},${g+38})`; const wseg=(1+1.7*t).toFixed(2);
         svg+=`<line x1="${p0.x.toFixed(1)}" y1="${p0.y.toFixed(1)}" x2="${p1.x.toFixed(1)}" y2="${p1.y.toFixed(1)}" stroke="${col}" stroke-width="${wseg}" opacity=".55" stroke-linecap="round"/>`; }
-      svg+=`<text x="${(ml+iw/2).toFixed(1)}" y="${(mt+ih-7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" letter-spacing=".05em" fill="#8b95a3" opacity=".6">HÖHENPROFIL</text>`;
+      svg+=`<text x="${(ml+iw/2).toFixed(1)}" y="${(mt+ih-7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" letter-spacing=".05em" fill="${T.prof}" opacity=".6">HÖHENPROFIL</text>`;
     }
   }
   // y gridlines
@@ -2568,16 +2573,16 @@ function drawHero(){
   const tStep=0.25, kStart=Math.ceil(vmin/tStep), kEnd=Math.floor(vmax/tStep);
   for(let k=kStart;k<=kEnd;k++){ const t=Math.round(k*tStep*100)/100;
     const isZero=Math.abs(t)<1e-9, major=Math.abs(t*2-Math.round(t*2))<1e-9; // Vielfaches von 0.5
-    if(!isZero) svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${major?'#e6eaef':'#f1f4f7'}" stroke-width="1"/>`;
-    svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?'#6b7785':'#9aa3af'}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
-  svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="#a9801a">BESTZEIT</text>`;
-  svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="#6b7785" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
+    if(!isZero) svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${major?T.grid:T.grid2}" stroke-width="1"/>`;
+    svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
+  svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
+  svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
   // x axis ticks: jedes 5. Tor beschriften (plus erstes & letztes)
   for(let g=1;g<=n;g++){ const show=(g===1)||(g%5===0)||(g===n);
     if(!show) continue;
-    svg+=`<line x1="${x(g)}" x2="${x(g)}" y1="${mt}" y2="${mt+ih}" stroke="#f3f5f8"/>`;
-    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="#9aa3af">${g+1}</text>`; }
-  svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7785">Tor-Nr.</text>`;
+    svg+=`<line x1="${x(g)}" x2="${x(g)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
+    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${g+1}</text>`; }
+  svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${T.txt}">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
   const figByGate={}; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; (figByGate[f.gate]=figByGate[f.gate]||[]).push(f); });
@@ -2609,15 +2614,15 @@ function drawHero(){
     // farbige Linie
     svg+=`<path d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
     // anomaly markers (Position auf der dargestellten Linie)
-    if(S.excludeAnom) s.anom.forEach((a,i)=>{ if(a && PVs[i]!=null){ const X=x(i+1),Y=y(PVs[i]); svg+=`<circle cx="${X}" cy="${Y}" r="3.4" fill="#fff" stroke="var(--red)" stroke-width="1.8"/>`; } });
+    if(S.excludeAnom) s.anom.forEach((a,i)=>{ if(a && PVs[i]!=null){ const X=x(i+1),Y=y(PVs[i]); svg+=`<circle cx="${X}" cy="${Y}" r="3.4" fill="${T.halo}" stroke="var(--red)" stroke-width="1.8"/>`; } });
     // DNF / Ausfall: Endpunkt markieren
     if(s.dnf && PVs[s.lastReal]!=null){ const X=x(s.lastReal+1),Y=y(PVs[s.lastReal]);
-      svg+=`<circle cx="${X}" cy="${Y}" r="4.6" fill="#fff" stroke="${col}" stroke-width="2.2"/>`;
+      svg+=`<circle cx="${X}" cy="${Y}" r="4.6" fill="${T.halo}" stroke="${col}" stroke-width="2.2"/>`;
       svg+=`<text x="${X+7}" y="${Y-7}" font-size="9.5" font-weight="800" fill="${col}">DNF</text>`; }
   });
   // hover: Führungslinie, Punkte je Athlet, Werte + Steilheit
-  svg+=`<line id="hg" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="#1c2430" stroke-width="1.3" opacity="0"/>`;
-  svg+=`<g id="hgm">`+series.map((s,i)=>`<circle data-i="${i}" r="3.6" fill="${s.color}" stroke="#fff" stroke-width="1.6" opacity="0"/>`).join('')+`</g>`;
+  svg+=`<line id="hg" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="${T.zero}" stroke-width="1.3" opacity="0"/>`;
+  svg+=`<g id="hgm">`+series.map((s,i)=>`<circle data-i="${i}" r="3.6" fill="${s.color}" stroke="${T.halo}" stroke-width="1.6" opacity="0"/>`).join('')+`</g>`;
   svg+=`<rect id="hov" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg+='</svg>';
   $('#heroShell').innerHTML=svg;
@@ -2654,6 +2659,7 @@ function smoothD(pts){ if(!pts.length) return ''; if(pts.length<3) return 'M'+pt
     d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`; }
   return d; }
 function drawBump(){
+  const T=chTheme();
   const shell=$('#bumpShell'); if(!shell) return; const c=S.comp, n=c.n;
   const key=S.excludeAnom?'cumClean':'cumRaw';
   const sk=c.skiers.filter(s=>!S.hidden.has(s.name));
@@ -2667,26 +2673,27 @@ function drawBump(){
     alive.sort((a,b)=> a[key][g]-b[key][g]); alive.forEach((s,i)=> ranks[s.name][g]=i+1); }
   let svg=svgEl(W,H);
   // Zeilen-Bänder + Rang-Labels
-  for(let r=1;r<=N;r++){ if(r%2===0) svg+=`<rect x="${ml}" y="${y(r)-(ih/(N-1))/2}" width="${iw}" height="${ih/(N-1)}" fill="#f7f9fb"/>`;
-    svg+=`<text x="${ml-4}" y="${y(r)+4}" text-anchor="end" font-size="11" font-weight="700" fill="#b7bfca">${r}.</text>`; }
+  for(let r=1;r<=N;r++){ if(r%2===0) svg+=`<rect x="${ml}" y="${y(r)-(ih/(N-1))/2}" width="${iw}" height="${ih/(N-1)}" fill="${T.grid2}"/>`;
+    svg+=`<text x="${ml-4}" y="${y(r)+4}" text-anchor="end" font-size="11" font-weight="700" fill="${T.txt2}">${r}.</text>`; }
   // pro Athlet geglättete Kurve mit weissem Halo
   sk.forEach(s=>{ const pts=[]; for(let g=0;g<n;g++){ const r=ranks[s.name][g]; if(r!=null) pts.push({x:x(g+1),y:y(r)}); }
     if(!pts.length) return; const d=smoothD(pts);
-    svg+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    svg+=`<path d="${d}" fill="none" stroke="${T.halo}" stroke-width="6.5" stroke-linejoin="round" stroke-linecap="round"/>`;
     svg+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
     const last=pts[pts.length-1]; const dnf = (ranks[s.name][n-1]==null);
-    svg+=`<circle cx="${last.x}" cy="${last.y}" r="4" fill="#fff" stroke="${s.color}" stroke-width="2.4"/>`;
+    svg+=`<circle cx="${last.x}" cy="${last.y}" r="4" fill="${T.halo}" stroke="${s.color}" stroke-width="2.4"/>`;
     if(dnf){ svg+=`<text x="${last.x+8}" y="${last.y+4}" font-size="10.5" font-weight="800" fill="${s.color}">${s.name.split(' ')[0]} ·DNF</text>`; }
     else { svg+=`<text x="${x(n)+9}" y="${last.y+4}" font-size="11.5" font-weight="800" fill="${s.color}">${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}</text>`; }
   });
   // X-Achse
-  for(let g=1;g<=n;g+=(n>40?10:(n>15?5:2))){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="10" fill="#9aa3af">${g}</text>`; }
-  svg+=`<text x="${ml+iw/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="#6b7785">Tor-Nr.</text>`;
+  for(let g=1;g<=n;g+=(n>40?10:(n>15?5:2))){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="10" fill="${T.txt2}">${g}</text>`; }
+  svg+=`<text x="${ml+iw/2}" y="${H-4}" text-anchor="middle" font-size="10" fill="${T.txt}">Tor-Nr.</text>`;
   svg+='</svg>'; shell.innerHTML=svg;
 }
 
 /* ---------- Wasserfall: Aufbau des Endrückstands ---------- */
 function drawWaterfall(){
+  const T=chTheme();
   const shell=$('#waterShell'); if(!shell) return; const c=S.comp;
   const name = S.wfAth || S.perGate;
   const s=c.skiers.find(x=>x.name===name); const nm=$('#wfAthName'); if(nm) nm.textContent=s?s.name:'—';
@@ -2703,18 +2710,18 @@ function drawWaterfall(){
   const y=v=> mt + (vmax-v)/(vmax-vmin)*ih;
   const m=steps.length+1, gw=iw/m, bw=Math.min(48,gw*0.62);
   let svg=svgEl(W,H);
-  niceTicks(vmin,vmax,4).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${Math.abs(t)<1e-9?'#c3cad4':'#eef1f5'}"/><text x="${ml-5}" y="${y(t)+3}" text-anchor="end" font-size="9" fill="#9aa3af">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
+  niceTicks(vmin,vmax,4).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${Math.abs(t)<1e-9?T.zero:T.grid2}"/><text x="${ml-5}" y="${y(t)+3}" text-anchor="end" font-size="9" fill="${T.txt2}">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
   steps.forEach((st,i)=>{ const cx=ml+gw*i+gw/2; const Y1=y(st.start),Y2=y(st.end); const top=Math.min(Y1,Y2),h=Math.max(1.5,Math.abs(Y2-Y1));
     const col=st.delta>0.0005?'#d65a4e':st.delta<-0.0005?'#22a06b':'#9aa3af';
     svg+=`<rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${h}" rx="2" fill="${col}" opacity=".92"/>`;
-    if(i<steps.length-1){ const nx=ml+gw*(i+1)+gw/2; svg+=`<line x1="${cx+bw/2}" y1="${y(st.end)}" x2="${nx-bw/2}" y2="${y(st.end)}" stroke="#c3cad4" stroke-dasharray="2 2"/>`; }
-    svg+=`<text x="${cx}" y="${H-mb+14}" text-anchor="middle" font-size="9" font-weight="700" fill="#6b7785">${st.label}</text>`;
+    if(i<steps.length-1){ const nx=ml+gw*(i+1)+gw/2; svg+=`<line x1="${cx+bw/2}" y1="${y(st.end)}" x2="${nx-bw/2}" y2="${y(st.end)}" stroke="${T.axis}" stroke-dasharray="2 2"/>`; }
+    svg+=`<text x="${cx}" y="${H-mb+14}" text-anchor="middle" font-size="9" font-weight="700" fill="${T.txt}">${st.label}</text>`;
     svg+=`<text x="${cx}" y="${st.delta>0?top+h+11:top-4}" text-anchor="middle" font-size="9" font-weight="800" fill="${col}">${(st.delta>0?'+':'')}${st.delta.toFixed(2)}</text>`;
   });
   const tcx=ml+gw*steps.length+gw/2, tcol= total>0?'#b54a3e':'#1c7a52';
   svg+=`<rect x="${tcx-bw/2}" y="${Math.min(y(0),y(total))}" width="${bw}" height="${Math.max(1.5,Math.abs(y(total)-y(0)))}" rx="2" fill="${tcol}"/>`;
   svg+=`<line x1="${tcx-bw/2-3}" x2="${tcx+bw/2+3}" y1="${y(total)}" y2="${y(total)}" stroke="${tcol}" stroke-width="1.5"/>`;
-  svg+=`<text x="${tcx}" y="${H-mb+14}" text-anchor="middle" font-size="9" font-weight="800" fill="#1c2430">Total</text>`;
+  svg+=`<text x="${tcx}" y="${H-mb+14}" text-anchor="middle" font-size="9" font-weight="800" fill="${T.txt}">Total</text>`;
   svg+=`<text x="${tcx}" y="${total>0?y(total)+13:y(total)-5}" text-anchor="middle" font-size="10.5" font-weight="900" fill="${tcol}">${(total>0?'+':'')}${total.toFixed(2)}s</text>`;
   svg+='</svg>'; shell.innerHTML=svg;
 }
@@ -2731,7 +2738,7 @@ function updateTerrainBand(){ const band=$('#heroBand'); if(!band) return;
     band.innerHTML='<div class="hb-cap" style="color:#9aa3af">Kein Kurs hinterlegt — Terrain nicht verfügbar. Lade die Kurssetzung (Datenbank → Kurssetzung) mit gleichem Datum/Ort/Lauf.</div>'; return; }
   drawTerrainBand(course);
 }
-function drawTerrainBand(course){ const band=$('#heroBand'); if(!band||!S.comp) return; const n=S.comp.n;
+function drawTerrainBand(course){ const T=chTheme(); const band=$('#heroBand'); if(!band||!S.comp) return; const n=S.comp.n;
   const g=course.gates||[], W=980, ml=74, mr=20, iw=W-ml-mr;
   const x=k=> ml+(n<=1?0:(k-1)/(n-1))*iw, seg=Math.max(2, iw/Math.max(1,n-1));
   const rowH=9, gap=4, y1=13, y2=y1+rowH+gap, H=y2+rowH+3;
@@ -2739,8 +2746,8 @@ function drawTerrainBand(course){ const band=$('#heroBand'); if(!band||!S.comp) 
   const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?'#d65a4e':(z.pitch<25?'#22a06b':CN)) : CMISS;
   const oCol=z=> (z&&z.offset!=null) ? (z.offset>=3?'#7a3fb5':(z.offset<2?'#1f6fb2':CN)) : CMISS;
   let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">`;
-  svg+=`<text x="${ml-7}" y="${y1+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="#9aa3af">STEIL.</text>`;
-  svg+=`<text x="${ml-7}" y="${y2+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="#9aa3af">CHAR.</text>`;
+  svg+=`<text x="${ml-7}" y="${y1+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="${T.txt2}">STEIL.</text>`;
+  svg+=`<text x="${ml-7}" y="${y2+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="${T.txt2}">CHAR.</text>`;
   for(let i=0;i<n;i++){ const z=g[i]; const xx=(x(i+1)-seg/2).toFixed(1);
     svg+=`<rect x="${xx}" y="${y1}" width="${seg.toFixed(1)}" height="${rowH}" fill="${pCol(z)}"/>`;
     svg+=`<rect x="${xx}" y="${y2}" width="${seg.toFixed(1)}" height="${rowH}" fill="${oCol(z)}"/>`; }
@@ -2748,7 +2755,7 @@ function drawTerrainBand(course){ const band=$('#heroBand'); if(!band||!S.comp) 
   const leg=`<span class="tb-i"><i style="background:#d65a4e"></i>Steil</span><span class="tb-i"><i style="background:#22a06b"></i>Flach</span><span class="tb-i"><i style="background:#7a3fb5"></i>Drehend</span><span class="tb-i"><i style="background:#1f6fb2"></i>Direkt</span><span class="tb-i"><i style="background:${CN}"></i>mittel</span>`;
   band.innerHTML=`<div class="hb-cap">Terrain pro Tor — Steilheit &amp; Charakter (aus der Kurssetzung)</div>${svg}<div class="tb-leg">${leg}</div>`;
 }
-function drawCourseMap(course){ const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;
+function drawCourseMap(course){ const T=chTheme(); const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;
   const fs=c.skiers.find(z=>z.name===S.perGate), dkey=S.excludeAnom?'cleanDiff':'diff';
   const gates=course.gates.filter(z=>z.type!=='Finish'), m=Math.min(n,gates.length);
   if(m<2){ shell.innerHTML=emptyBox('Keine Kursdaten – hinterlege eine Kurssetzung für diesen Lauf (Datenbank → Kurssetzung).','gate'); return; }
@@ -2762,22 +2769,22 @@ function drawCourseMap(course){ const shell=$('#courseMapShell'); if(!shell) ret
   const colOf=d=>{ if(d==null) return '#cbd2da'; const t=Math.min(1,Math.abs(d)/maxAbs), a=0.35+t*0.6; return d>0.003?`rgba(214,90,78,${a})`:d<-0.003?`rgba(34,160,107,${a})`:'#cbd2da'; };
   let svg=svgEl(W,H);
   // weiche Falllinie (dezent) als Referenz
-  svg+=`<line x1="${cx}" y1="${mt}" x2="${cx}" y2="${mt+ih}" stroke="#eef1f5" stroke-width="1.5" stroke-dasharray="3 5"/>`;
+  svg+=`<line x1="${cx}" y1="${mt}" x2="${cx}" y2="${mt+ih}" stroke="${T.grid2}" stroke-width="1.5" stroke-dasharray="3 5"/>`;
   // weisser Halo unter der Spur
-  let dWhole=smoothD(P); svg+=`<path d="${dWhole}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
+  let dWhole=smoothD(P); svg+=`<path d="${dWhole}" fill="none" stroke="${T.halo}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
   // farbige, geschwungene Segmente (Catmull-Rom pro Abschnitt)
   for(let i=1;i<m;i++){ const p0=P[i-2]||P[i-1], p1=P[i-1], p2=P[i], p3=P[i+1]||P[i];
     const c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6, c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
     const d=fs?fs[dkey][i]:null;
     svg+=`<path d="M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}" fill="none" stroke="${colOf(d)}" stroke-width="5" stroke-linecap="round"/>`; }
   // Tore (alternierend rot/blau, klein)
-  for(let i=0;i<m;i++){ svg+=`<circle cx="${P[i].x.toFixed(1)}" cy="${P[i].y.toFixed(1)}" r="3" fill="${(i%2===0)?'#e63a2e':'#2aa3d6'}" stroke="#fff" stroke-width="1.2"/>`; }
-  svg+=`<text x="${cx}" y="16" text-anchor="middle" font-size="10.5" font-weight="800" fill="#6b7785">▲ Start</text>`;
-  svg+=`<text x="${cx}" y="${H-5}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#6b7785">Ziel ▼</text>`;
+  for(let i=0;i<m;i++){ svg+=`<circle cx="${P[i].x.toFixed(1)}" cy="${P[i].y.toFixed(1)}" r="3" fill="${(i%2===0)?'#e63a2e':'#2aa3d6'}" stroke="${T.halo}" stroke-width="1.2"/>`; }
+  svg+=`<text x="${cx}" y="16" text-anchor="middle" font-size="10.5" font-weight="800" fill="${T.txt}">▲ Start</text>`;
+  svg+=`<text x="${cx}" y="${H-5}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${T.txt}">Ziel ▼</text>`;
   svg+=`<text x="${ml-4}" y="${mt-12}" font-size="9" font-weight="700" fill="#22a06b">grün = schneller</text><text x="${W-mr+4}" y="${mt-12}" text-anchor="end" font-size="9" font-weight="700" fill="#d65a4e">rot = langsamer</text>`;
   svg+='</svg>'; shell.innerHTML=svg;
 }
-function drawProfileOverlay(course){ const shell=$('#profileOvShell'); if(!shell) return; const c=S.comp,n=c.n;
+function drawProfileOverlay(course){ const T=chTheme(); const shell=$('#profileOvShell'); if(!shell) return; const c=S.comp,n=c.n;
   const s=c.skiers.find(z=>z.name===S.perGate);
   const gates=course.gates.filter(z=>z.type!=='Finish'), m=Math.min(n,gates.length);
   const W=560,H=430, ml=40,mr=48,mt=22,mb=30, iw=W-ml-mr, ih=H-mt-mb;
@@ -2789,19 +2796,20 @@ function drawProfileOverlay(course){ const shell=$('#profileOvShell'); if(!shell
   const key=S.excludeAnom?'cumClean':'cumRaw'; let vals=[]; if(s) for(let i=0;i<m;i++){ const v=s[key][i]; if(v!=null) vals.push(v); }
   if(s && vals.length){ let vmax=Math.max(...vals,0.05),vmin=Math.min(...vals,0); const pad=(vmax-vmin)*0.1||0.05; vmax+=pad; vmin-=pad;
     const yC=v=> mt + (vmax-v)/(vmax-vmin)*ih;
-    niceTicks(vmin,vmax,4).forEach(t=>{ svg+=`<text x="${W-mr+5}" y="${yC(t)+3}" font-size="9" fill="#9aa3af">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
-    svg+=`<line x1="${ml}" x2="${W-mr}" y1="${yC(0)}" y2="${yC(0)}" stroke="#c3cad4" stroke-dasharray="3 3"/>`;
+    niceTicks(vmin,vmax,4).forEach(t=>{ svg+=`<text x="${W-mr+5}" y="${yC(t)+3}" font-size="9" fill="${T.txt2}">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
+    svg+=`<line x1="${ml}" x2="${W-mr}" y1="${yC(0)}" y2="${yC(0)}" stroke="${T.zero}" stroke-dasharray="3 3"/>`;
     let d='',st=false; for(let i=0;i<m;i++){ const v=s[key][i]; if(v==null){st=false;continue;} d+=(st?'L':'M')+x(i).toFixed(1)+' '+yC(v).toFixed(1)+' '; st=true; }
     svg+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.6" stroke-linejoin="round"/>`; }
-  svg+=`<text x="${ml}" y="12" font-size="9" fill="#6b7785">Pitch %</text>`;
-  svg+=`<text x="${W-mr+4}" y="12" font-size="9" fill="${s?s.color:'#6b7785'}">Rückstand s</text>`;
-  [0,25,38,maxP].forEach(t=>{ if(t>maxP)return; svg+=`<text x="${ml-5}" y="${yP(t)+3}" text-anchor="end" font-size="8.5" fill="#9aa3af">${Math.round(t)}</text>`; });
-  for(let i=9;i<m;i+=10){ svg+=`<text x="${x(i)}" y="${H-4}" text-anchor="middle" font-size="8.5" fill="#9aa3af">${i+1}</text>`; }
+  svg+=`<text x="${ml}" y="12" font-size="9" fill="${T.txt}">Pitch %</text>`;
+  svg+=`<text x="${W-mr+4}" y="12" font-size="9" fill="${s?s.color:T.txt}">Rückstand s</text>`;
+  [0,25,38,maxP].forEach(t=>{ if(t>maxP)return; svg+=`<text x="${ml-5}" y="${yP(t)+3}" text-anchor="end" font-size="8.5" fill="${T.txt2}">${Math.round(t)}</text>`; });
+  for(let i=9;i<m;i+=10){ svg+=`<text x="${x(i)}" y="${H-4}" text-anchor="middle" font-size="8.5" fill="${T.txt2}">${i+1}</text>`; }
   svg+='</svg>'; shell.innerHTML=svg;
 }
 
 /* ---------- per-gate diverging bars ---------- */
 function drawBar(){
+  const T=chTheme();
   const c=S.comp, n=c.n, s=c.skiers.find(x=>x.name===S.perGate); if(!s){ $('#barShell').innerHTML=''; return; }
   const W=620,H=300, ml=40,mr=12,mt=14,mb=40, iw=W-ml-mr, ih=H-mt-mb;
   const vmaxAbs=Math.max(0.2,...s.diff.map((d,i)=> d!=null&&!s.anom[i]?Math.abs(d):0))*1.12;
@@ -2814,8 +2822,8 @@ function drawBar(){
   let svg=svgEl(W,H)+hatchDef('hatchBar');
   if(worstG>=0){ const cw=Math.max(bw+8,iw/n); svg+=`<rect x="${x(worstG+1)-cw/2}" y="${mt}" width="${cw}" height="${ih}" fill="url(#hatchBar)" opacity=".9"/>`;
     svg+=`<text x="${x(worstG+1)}" y="${mt+9}" text-anchor="middle" font-size="9" font-weight="800" fill="#b8860b">grösster Verlust</text>`; }
-  [vmaxAbs/2,0,-vmaxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="13" fill="#9aa3af">${fmt(t)}</text>`;});
+  [vmaxAbs/2,0,-vmaxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"/>`;
+    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="13" fill="${T.txt2}">${fmt(t)}</text>`;});
   // figure lines
   c.figs.forEach(f=>{ if(f.gate<1||f.gate>n)return; const col=FIG[f.type]?FIG[f.type].c:'#ccc';
     svg+=`<line x1="${x(f.gate)}" x2="${x(f.gate)}" y1="${mt}" y2="${mt+ih}" stroke="${col}" stroke-dasharray="3 3" opacity=".4"/>`;});
@@ -2826,8 +2834,8 @@ function drawBar(){
     if(anom) svg+=`<text x="${x(i+1)}" y="${y(0)-4}" text-anchor="middle" font-size="9" fill="var(--red)">⚠</text>`;
   });
   const step=n>40?10:5;
-  for(let g=step;g<=n;g+=step){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="13" fill="#9aa3af">${g+1}</text>`; }
-  svg+=`<text x="${ml+iw/2}" y="${H-3}" text-anchor="middle" font-size="13" font-weight="600" fill="#6b7785">Tor-Nr.</text>`;
+  for(let g=step;g<=n;g+=step){ svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="13" fill="${T.txt2}">${g+1}</text>`; }
+  svg+=`<text x="${ml+iw/2}" y="${H-3}" text-anchor="middle" font-size="13" font-weight="600" fill="${T.txt}">Tor-Nr.</text>`;
   svg+=`<text x="${W-mr}" y="${mt+9}" text-anchor="end" font-size="12.5" fill="var(--bad)">▲ langsamer</text>`;
   svg+=`<text x="${W-mr}" y="${mt+ih-2}" text-anchor="end" font-size="12.5" fill="var(--good)">▼ schneller</text>`;
   svg+='</svg>'; $('#barShell').innerHTML=svg;
@@ -2844,6 +2852,7 @@ function drawBar(){
 
 /* ---------- sector analysis ---------- */
 function drawSector(){
+  const T=chTheme();
   const c=S.comp; const secs=c.sectors; const sui=c.sui;
   if(!secs.length){ $('#secShell').innerHTML=emptyBox('Keine Lap-Marker gesetzt – ohne Laps lassen sich keine Abschnitte bilden.','chart'); return; }
   const key=S.excludeAnom?'cleanDiff':'diff';
@@ -2865,8 +2874,8 @@ function drawSector(){
     // Label vertikal am linken Rand, oben bündig (überschneidet die Balken/Namen nicht)
     const lx=ml+gw*worst+9, ly=mt+7;
     svg+=`<text x="${lx}" y="${ly}" transform="rotate(-90 ${lx} ${ly})" text-anchor="end" font-size="9" font-weight="800" letter-spacing=".04em" fill="#b8860b" opacity=".85">grösster Zeitverlust</text>`; }
-  niceTicks(vmin,vmax,5).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="#9aa3af">${fmt(t)}</text>`;});
+  niceTicks(vmin,vmax,5).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"/>`;
+    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="${T.txt2}">${fmt(t)}</text>`;});
   secs.forEach(([a,b],si)=>{
     const cx=ml+gw*si+gw/2;
     const totW=bw*sui.length; let bx=cx-totW/2;
@@ -2876,8 +2885,8 @@ function drawSector(){
       const bxc=bx+(bw-2)/2, ty=(v>=0?y(v):y(0))-5, nm=d.s.name.split(' ')[0];
       svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="start" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${d.s.color}">${nm}</text>`; }
       bx+=bw; });
-    svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="#6b7785">S${si+1}</text>`;
-    svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="#9aa3af">Tor ${a+1}–${b+1}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="${T.txt2}">Tor ${a+1}–${b+1}</text>`;
   });
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
@@ -2889,6 +2898,7 @@ function drawSector(){
 
 /* ---------- rhythm bars ---------- */
 function drawRhythm(){
+  const T=chTheme();
   const c=S.comp, [lo,hi]=bounds(c.disc);
   const list=c.skiers.filter(s=>s.avg!=null).sort((a,b)=>a.avg-b.avg);
   const n=list.length||1;
@@ -2901,15 +2911,15 @@ function drawRhythm(){
   let svg=svgEl(W,H);
   const topAvg=c.top.avg;
   // dezente vertikale Gitterlinien
-  for(let k=0;k<=3;k++){ const gx=ml+iw*k/3; svg+=`<line x1="${gx}" x2="${gx}" y1="${mt}" y2="${mt+ih}" stroke="#eef1f5" stroke-width="1"/>`; }
+  for(let k=0;k<=3;k++){ const gx=ml+iw*k/3; svg+=`<line x1="${gx}" x2="${gx}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}" stroke-width="1"/>`; }
   list.forEach((s,i)=>{ const Y=mt+gap+(bh+gap)*i; const col=s.color;
-    svg+=`<text x="${ml-11}" y="${Y+bh/2+5}" text-anchor="end" font-size="14" font-weight="${s.sui?700:600}" fill="${s.sui?'var(--ink)':'#6b7785'}">${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}</text>`;
+    svg+=`<text x="${ml-11}" y="${Y+bh/2+5}" text-anchor="end" font-size="14" font-weight="${s.sui?700:600}" fill="${s.sui?'var(--ink)':T.txt}">${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}</text>`;
     svg+=`<rect x="${ml}" y="${Y}" width="${Math.max(2,x(s.avg)-ml)}" height="${bh}" rx="4" fill="${col}" opacity=".92"/>`;
     svg+=`<text x="${x(s.avg)+7}" y="${Y+bh/2+5}" font-size="14" font-weight="800" fill="${col}">${fmt0(s.avg)}s</text>`;
   });
   // top reference (Bestzeit)
   svg+=`<line x1="${x(topAvg)}" x2="${x(topAvg)}" y1="${mt-2}" y2="${mt+ih+2}" stroke="#B07A00" stroke-width="2.2" stroke-dasharray="4 3" opacity="1"/>`;
-  svg+=`<text x="${x(topAvg)}" y="${mt+ih+22}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#8F6200">Bestzeit ${fmt0(topAvg)}s</text>`;
+  svg+=`<text x="${x(topAvg)}" y="${mt+ih+22}" text-anchor="middle" font-size="12.5" font-weight="800" fill="${T.gold}">Bestzeit ${fmt0(topAvg)}s</text>`;
   svg+='</svg>'; $('#rhyShell').innerHTML=svg;
 }
 
@@ -3195,6 +3205,7 @@ function vlData(name){
   }).filter(Boolean);
 }
 function drawVlChart(data){
+  const T=chTheme();
   const shell=$('#vlShell'); if(!shell) return;
   if(!data.length){ shell.innerHTML=emptyBox('Keine Rennen für diesen Athleten in dieser Auswahl. Wähle eine andere Disziplin/Geschlecht oder einen anderen Athleten.','chart'); return; }
   const cats=VL_CATS.filter(c=>VL.cats.has(c.key));
@@ -3207,17 +3218,17 @@ function drawVlChart(data){
   let svg=svgEl(W,H);
   // Y-Gitter + Ticks
   const ticks=niceTicks(mn,mx,5);
-  ticks.forEach(t=>{ svg+=`<line x1="${ml}" x2="${ml+iw}" y1="${y(t)}" y2="${y(t)}" stroke="${Math.abs(t)<1e-9?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+3}" text-anchor="end" font-size="9.5" fill="#9aa3af">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
+  ticks.forEach(t=>{ svg+=`<line x1="${ml}" x2="${ml+iw}" y1="${y(t)}" y2="${y(t)}" stroke="${Math.abs(t)<1e-9?T.zero:T.grid2}"/>`;
+    svg+=`<text x="${ml-6}" y="${y(t)+3}" text-anchor="end" font-size="9.5" fill="${T.txt2}">${(t>0?'+':'')}${t.toFixed(2)}</text>`; });
   // X-Labels: ausgedünnt + gedreht, damit bei vielen Rennen lesbar
   const step=Math.max(1,Math.ceil(n/12));
   data.forEach((d,i)=>{ const show=(i%step===0)||i===n-1;
-    svg+=`<line x1="${x(i)}" x2="${x(i)}" y1="${mt}" y2="${mt+ih}" stroke="#f6f8fb"/>`;
+    svg+=`<line x1="${x(i)}" x2="${x(i)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
     if(!show) return;
-    svg+=`<line x1="${x(i)}" x2="${x(i)}" y1="${mt+ih}" y2="${mt+ih+4}" stroke="#c3cad4"/>`;
+    svg+=`<line x1="${x(i)}" x2="${x(i)}" y1="${mt+ih}" y2="${mt+ih+4}" stroke="${T.axis}"/>`;
     const lbl=`${(d.venue||'').slice(0,5)} ${dmy(d.date).slice(0,5)}·L${d.run}`;
     const lx=x(i), ly=mt+ih+14;
-    svg+=`<text x="${lx}" y="${ly}" transform="rotate(-42 ${lx} ${ly})" text-anchor="end" font-size="9.5" font-weight="600" fill="#6b7785">${lbl}</text>`; });
+    svg+=`<text x="${lx}" y="${ly}" transform="rotate(-42 ${lx} ${ly})" text-anchor="end" font-size="9.5" font-weight="600" fill="${T.txt}">${lbl}</text>`; });
   // Linien je Kategorie
   cats.forEach(cat=>{ const pts=data.map((d,i)=>({i,v:d.vals[cat.key]})).filter(p=>p.v!=null);
     if(!pts.length) return;
@@ -3231,11 +3242,11 @@ function drawVlChart(data){
     pts.forEach(pt=> svg+=`<circle cx="${x(pt.i)}" cy="${y(pt.v)}" r="${cat.key==='overall'?3.6:2.8}" fill="${cat.color}"/>`);
   });
   // Legende rechts
-  let ly=mt+6; cats.forEach(cat=>{ svg+=`<circle cx="${ml+iw+16}" cy="${ly}" r="4.5" fill="${cat.color}"/><text x="${ml+iw+26}" y="${ly+3.5}" font-size="11" font-weight="${cat.key==='overall'?800:600}" fill="#3a4350">${cat.label}</text>`; ly+=20; });
-  svg+=`<text x="${ml}" y="11" font-size="9" fill="#9aa3af">Ø Rückstand s/Tor · tiefer = schneller</text>`;
+  let ly=mt+6; cats.forEach(cat=>{ svg+=`<circle cx="${ml+iw+16}" cy="${ly}" r="4.5" fill="${cat.color}"/><text x="${ml+iw+26}" y="${ly+3.5}" font-size="11" font-weight="${cat.key==='overall'?800:600}" fill="${T.txt}">${cat.label}</text>`; ly+=20; });
+  svg+=`<text x="${ml}" y="11" font-size="9" fill="${T.txt2}">Ø Rückstand s/Tor · tiefer = schneller</text>`;
   // Hover: Führungslinie, Punkte je Kategorie, Tooltip mit Rennkontext + Werten
-  svg+=`<line id="vlG" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="#1c2430" stroke-width="1.2" opacity="0"/>`;
-  svg+=`<g id="vlGm">`+cats.map((c,ci)=>`<circle data-c="${ci}" r="3.6" fill="${c.color}" stroke="#fff" stroke-width="1.5" opacity="0"/>`).join('')+`</g>`;
+  svg+=`<line id="vlG" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="${T.zero}" stroke-width="1.2" opacity="0"/>`;
+  svg+=`<g id="vlGm">`+cats.map((c,ci)=>`<circle data-c="${ci}" r="3.6" fill="${c.color}" stroke="${T.halo}" stroke-width="1.5" opacity="0"/>`).join('')+`</g>`;
   svg+=`<rect id="vlHov" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg+='</svg>'; shell.innerHTML=svg;
   const svgN=shell.querySelector('svg'), hov=shell.querySelector('#vlHov'), gl=shell.querySelector('#vlG'), gm=shell.querySelector('#vlGm');
@@ -3317,6 +3328,7 @@ function pfAgg(name){
 // Radar/Spider: aussen = schneller (kleiner Rückstand). Beliebig viele Athletinnen überlagerbar.
 // series: [{agg,name,color,fill}] – erstes Element = Hauptathletin (liegt oben).
 function profilRadar(cats, series){
+  const T=chTheme();
   series=(series||[]).filter(s=>s&&s.agg);
   const vals=[]; series.forEach(s=> cats.forEach(c=>{ if(s.agg[c.key]!=null) vals.push(s.agg[c.key]); }));
   const anyOk = series.some(s=> cats.filter(c=>s.agg[c.key]!=null).length>=3);
@@ -3329,8 +3341,8 @@ function profilRadar(cats, series){
   const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
   let svg=`<svg viewBox="0 0 ${W} ${H}" class="chart" style="max-width:520px;margin:0 auto;display:block">`;
   for(let k=1;k<=4;k++){ const rr=R*k/4; let p=''; for(let i=0;i<n;i++){ const [x,y]=pt(i,rr); p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; }
-    svg+=`<path d="${p}Z" fill="none" stroke="#e6e9ee" stroke-width="1"/>`; }
-  cats.forEach((c,i)=>{ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e6e9ee"/>`;
+    svg+=`<path d="${p}Z" fill="none" stroke="${T.grid}" stroke-width="1"/>`; }
+  cats.forEach((c,i)=>{ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${T.grid}"/>`;
     const [lx,ly]=pt(i,R+25); svg+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="800" fill="${c.color}">${c.label}</text>`; });
   const poly=(agg,color,fill,who)=>{ const av=cats.map((c,i)=> agg&&agg[c.key]!=null? {i,r:rOf(agg[c.key])}:null).filter(Boolean);
     if(av.length<3) return ''; let p=''; av.forEach(q=>{ const [x,y]=pt(q.i,q.r); p+=(p?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; });
@@ -3341,7 +3353,7 @@ function profilRadar(cats, series){
     return s; };
   for(let i=series.length-1;i>=1;i--) svg+=poly(series[i].agg, series[i].color, series[i].fill||hexA(series[i].color,.13), series[i].name);
   svg+=poly(series[0].agg, series[0].color, series[0].fill||'rgba(218,41,28,.16)', series[0].name);
-  svg+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10" fill="#6b7785">weiter aussen = schneller als der Laufbeste</text>`;
+  svg+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10" fill="${T.txt}">weiter aussen = schneller als der Laufbeste</text>`;
   svg+='</svg>'; return svg;
 }
 function profilTerrainBars(terr, agg){
@@ -4399,19 +4411,20 @@ function meanBy(pts, keyFn, cats){
 
 /* ---- grouped bars (signed: + = Rückstand rot, − = Vorsprung grün) ---- */
 function drawGroupedBars(catLabels, series, W, H){
+  const T=chTheme();
   const ml=38,mr=10,mt=14,mb=40, iw=W-ml-mr, ih=H-mt-mb;
   let maxAbs=0; series.forEach(s=>s.vals.forEach(v=> v!=null && (maxAbs=Math.max(maxAbs,Math.abs(v)))));
   maxAbs=maxAbs||0.05; maxAbs*=1.15;
   const ng=catLabels.length, gw=iw/ng, n=series.length, bw=Math.min(26, gw/(n+0.8));
   const y=v=> mt+ih/2 - v/maxAbs*(ih/2);
   let svg=svgEl(W,H);
-  [maxAbs/2,0,-maxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?'#c3cad4':'#eef1f5'}"/>`;
-    svg+=`<text x="${ml-5}" y="${y(t)+3}" text-anchor="end" font-size="9" fill="#9aa3af">${t>0?'+':''}${t.toFixed(2)}</text>`; });
+  [maxAbs/2,0,-maxAbs/2].forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"/>`;
+    svg+=`<text x="${ml-5}" y="${y(t)+3}" text-anchor="end" font-size="9" fill="${T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; });
   catLabels.forEach((cat,ci)=>{ const cx=ml+gw*ci+gw/2; const tot=bw*n; let bx=cx-tot/2;
     series.forEach(s=>{ const v=s.vals[ci]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
       svg+=`<rect class="kb" data-info="${s.name.split(' ')[0]} · ${cat}: ${(v>=0?'+':'')}${v.toFixed(3)}s" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${s.color}" opacity=".92"/>`; }
       bx+=bw; });
-    svg+=`<text x="${cx}" y="${H-mb+15}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7785">${cat}</text>`; });
+    svg+=`<text x="${cx}" y="${H-mb+15}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${T.txt}">${cat}</text>`; });
   svg+=`<text x="${W-mr}" y="${mt-3}" text-anchor="end" font-size="8.5" fill="var(--bad)">▲ langsamer</text>`;
   svg+='</svg>'; return svg;
 }
@@ -4422,8 +4435,8 @@ function initKFilt(){ KFILT={pitch:new Set(PITCH_CATS), char:new Set(CHAR_CATS),
 function typeBucket2(t){ return t==='Open'?'Open':(t==='Hairpin'||t==='V.Comb')?'Kombination':null; }  // Delayed/Finish -> ausgeschlossen
 function matchFilt(p){ return KFILT.pitch.has(pitchBucket(p.pitch)) && KFILT.char.has(charBucket(p.offset)) && typeBucket2(p.type)!=null; }  // Delayed/Finish ausgeschlossen
 function drawSingleBars(items,W,H){
-  const dk=document.body.classList.contains('dark');
-  const gZero=dk?'#5a6473':'#c3cad4', gLine=dk?'#333c48':'#eef1f5', axC=dk?'#aeb8c6':'#9aa3af', nmC=dk?'#cfd6e0':'#3a4350', toC=dk?'#8b95a3':'#9aa3af';
+  const T=chTheme();
+  const gZero=T.zero, gLine=T.grid2, axC=T.txt2, nmC=T.txt, toC=T.txt2;
   const ml=40,mr=12,mt=14,mb=42, iw=W-ml-mr, ih=H-mt-mb;
   const vals=items.map(i=>i.v).filter(v=>v!=null);
   let maxAbs=Math.max(0.02,...vals.map(v=>Math.abs(v)))*1.2;
@@ -4449,6 +4462,7 @@ const RADAR_AX=[
   {l:'Direkt', f:p=>charBucket(p.offset)==='Direkt (<2m)'},
   {l:'Drehend', f:p=>charBucket(p.offset)==='Drehend (>3m)'} ];
 function drawRadar(athletes){
+  const T=chTheme();
   const W=400,H=380, cx=W/2, cy=H/2+2, R=Math.min(W,H)/2-50, n=RADAR_AX.length;
   athletes.forEach(a=> a._r=RADAR_AX.map(ax=>{ const v=a.pts.filter(ax.f); return v.length? v.reduce((s,p)=>s+p.diff,0)/v.length : null; }));
   // relativer Vergleich PRO ACHSE: schnellster (kleinster Rückstand) der gewählten Athleten -> aussen, langsamster -> innen
@@ -4460,10 +4474,10 @@ function drawRadar(athletes){
   const pt=(i,r)=>[cx+r*Math.cos(ang(i)), cy+r*Math.sin(ang(i))];
   let svg=svgEl(W,H);
   [0.34,0.67,1].forEach(f=>{ let p=''; for(let i=0;i<n;i++){ const [x,y]=pt(i,f*R); p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; } p+='Z';
-    svg+=`<path d="${p}" fill="none" stroke="#eef1f5" stroke-width="1"/>`; });
-  for(let i=0;i<n;i++){ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#eef1f5"/>`;
+    svg+=`<path d="${p}" fill="none" stroke="${T.grid2}" stroke-width="1"/>`; });
+  for(let i=0;i<n;i++){ const [x,y]=pt(i,R); svg+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${T.grid2}"/>`;
     const [lx,ly]=pt(i,R+18); const co=Math.cos(ang(i)); const anchor=Math.abs(co)<0.3?'middle':(co>0?'start':'end');
-    svg+=`<text x="${lx}" y="${ly+3}" text-anchor="${anchor}" font-size="11" font-weight="650" fill="#6b7785">${RADAR_AX[i].l}</text>`; }
+    svg+=`<text x="${lx}" y="${ly+3}" text-anchor="${anchor}" font-size="11" font-weight="650" fill="${T.txt}">${RADAR_AX[i].l}</text>`; }
   athletes.forEach(a=>{ let p=''; for(let i=0;i<n;i++){ const [x,y]=pt(i,rOf(i,a._r[i])); p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; } p+='Z';
     svg+=`<path d="${p}" fill="${a.color}" fill-opacity=".13" stroke="${a.color}" stroke-width="2.4" stroke-linejoin="round"/>`;
     for(let i=0;i<n;i++){ const [x,y]=pt(i,rOf(i,a._r[i])); svg+=`<circle cx="${x}" cy="${y}" r="2.6" fill="${a.color}"/>`; } });
@@ -4563,6 +4577,7 @@ function kInsight(athletes,sP,sC,sT,nCourses){
   return `<div class="kins">${lines}<div style="margin-top:6px;color:var(--muted)">Basis: ${nCourses} Lauf/Läufe.</div></div>`;
 }
 function drawCourseProfile(course){
+  const T=chTheme();
   const gates=course.gates.filter(g=>g.type!=='Finish'); const n=gates.length;
   const W=1040,H=150, ml=34,mr=12,mt=14,mb=30, iw=W-ml-mr, ih=H-mt-mb;
   const maxP=Math.max(...gates.map(g=>g.pitch||0),10);
@@ -4570,13 +4585,13 @@ function drawCourseProfile(course){
   const y=p=> mt+ih-(p/maxP)*ih;
   const pcol=p=> p<25?'#7fbf9b': p<38?'#e0a85a':'#d65a4e';
   let svg=svgEl(W,H);
-  [0,25,38,maxP].forEach(t=>{ if(t>maxP)return; svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="#eef1f5"/><text x="${ml-4}" y="${y(t)+3}" text-anchor="end" font-size="8.5" fill="#9aa3af">${t.toFixed?Math.round(t):t}</text>`; });
+  [0,25,38,maxP].forEach(t=>{ if(t>maxP)return; svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${T.grid2}"/><text x="${ml-4}" y="${y(t)+3}" text-anchor="end" font-size="8.5" fill="${T.txt2}">${t.toFixed?Math.round(t):t}</text>`; });
   gates.forEach((g,i)=>{ svg+=`<rect x="${x(i)-bw/2}" y="${y(g.pitch)}" width="${bw}" height="${mt+ih-y(g.pitch)}" rx="1" fill="${pcol(g.pitch)}" opacity=".85"/>`;
     if(g.type!=='Open'){ const c=g.type==='Hairpin'?'#7a3fb5':g.type==='V.Comb'?'#0f9b8e':'#e08a00';
       svg+=`<circle cx="${x(i)}" cy="${mt+ih+8}" r="2.6" fill="${c}"/>`; } });
   // x labels every 10
-  for(let i=9;i<n;i+=10){ svg+=`<text x="${x(i)}" y="${H-4}" text-anchor="middle" font-size="8.5" fill="#9aa3af">${i+1}</text>`; }
-  svg+=`<text x="${ml}" y="10" font-size="9" fill="#6b7785">Pitch %</text>`;
+  for(let i=9;i<n;i+=10){ svg+=`<text x="${x(i)}" y="${H-4}" text-anchor="middle" font-size="8.5" fill="${T.txt2}">${i+1}</text>`; }
+  svg+=`<text x="${ml}" y="10" font-size="9" fill="${T.txt}">Pitch %</text>`;
   svg+='</svg>';
   const leg=`<div class="klegend" style="margin-top:4px"><span class="lg" style="cursor:default"><span class="dot" style="background:#7a3fb5"></span>Hairpin</span><span class="lg" style="cursor:default"><span class="dot" style="background:#0f9b8e"></span>V.Comb</span><span class="lg" style="cursor:default"><span class="dot" style="background:#e08a00"></span>Delayed</span></div>`;
   return svg+leg;
