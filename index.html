@@ -344,8 +344,21 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .hero-band{margin-top:8px}
 .hb-cap{font-size:10px;font-weight:600;color:var(--muted);margin-bottom:3px}
 .hero-band svg{display:block;width:100%;border-radius:4px;overflow:hidden}
+.tb-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px}
+.tb-i{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ink2)}
+.tb-i i{width:11px;height:11px;border-radius:3px;display:inline-block}
+body.dark .tb-i{color:#c4ccd6}
 @media(max-width:980px){.vrow,.cv-grid{grid-template-columns:1fr}}
 .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px}
+/* Hover-Lift auf Analyse-Karten (KPI + kleine Panels) */
+.kpi,.row3 .card{transition:transform .16s ease, box-shadow .16s ease}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 9px 22px -10px rgba(20,24,31,.20)}
+.row3 .card:hover{transform:translateY(-2px);box-shadow:0 11px 26px -12px rgba(20,24,31,.18)}
+body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rgba(0,0,0,.5)}
+/* Sanfter Übergang beim Event-/Athletenwechsel */
+@keyframes anaFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+#main>.grid,.pf-radarwrap{animation:anaFade .3s ease}
+@media(prefers-reduced-motion:reduce){#main>.grid,.pf-radarwrap{animation:none}.kpi,.row3 .card{transition:none}}
 .card .c-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap}
 .card h2{font-size:15.5px}
 .card .c-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
@@ -740,7 +753,7 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .db-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
 .db-filters .lib-search{flex:1;min-width:190px}
 .db-filters .mini{border:1.4px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:600;background:#fbfcfe;cursor:pointer}
-.db-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:8px}
+.db-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
 .db-table tbody tr.dbt-row{cursor:pointer}
 .db-table tbody tr.dbt-open{background:#f4f8fd}
 .dbt-detail td{background:#f8fafc;padding:0!important}
@@ -2171,7 +2184,7 @@ const figType = lbl => (lbl||'').trim().charAt(0).toUpperCase();
 
 /* ---------- state ---------- */
 let S = {disc:'GS', gen:'M', evtKey:null, run:null, ev:null, comp:null,
-  excludeAnom:true, heroSmooth:true, perGate:null, heroFocus:'', hidden:new Set(), mode:'comp', anaSub:'analyse'};   // heroSmooth: Kurve visuell glätten (Default an)
+  excludeAnom:true, heroSmooth:true, terrain:false, perGate:null, heroFocus:'', hidden:new Set(), mode:'comp', anaSub:'analyse'};   // heroSmooth: Kurve visuell glätten (Default an); terrain: Terrain-Band einblenden
 let TRAIN = [];          // Trainings-Events (parallel zu DATA)
 let SAVED_TRAIN = [];    // persistierte Trainings-Läufe
 function DS(){ return S.mode==='train'? TRAIN : DATA; }   // aktive Analyse-Datenquelle
@@ -2387,6 +2400,9 @@ function render(){
             <label class="toggle" title="Nur optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Endwert und Analyse bleiben unverändert.">
               <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
               <span class="tg-txt">Kurve glätten<small>nur optisch, Werte unverändert</small></span></label>
+            <label class="toggle" title="Blendet unter der Kurve ein Farbband ein: Steilheit (steil/flach) und Charakter (drehend/direkt) pro Tor – aus der Kurssetzung. Zeigt, in welchem Gelände Zeit gewonnen/verloren wird.">
+              <input type="checkbox" id="tgTerrain" ${S.terrain?'checked':''}><span class="sw"></span>
+              <span class="tg-txt">Terrain<small>Steilheit &amp; Charakter pro Tor</small></span></label>
             <label class="hero-focus"><span>Hervorheben</span><select class="mini" id="selAthH"></select></label>
           </div>
         </div>
@@ -2436,6 +2452,7 @@ function render(){
   // listeners
   $('#tgAnom').onchange = e=>{ S.excludeAnom=e.target.checked; savePrefs(); drawHero(); drawSector(); drawCourseViz(); };
   if($('#tgSmooth')) $('#tgSmooth').onchange = e=>{ S.heroSmooth=e.target.checked; savePrefs(); drawHero(); };
+  if($('#tgTerrain')) $('#tgTerrain').onchange = e=>{ S.terrain=e.target.checked; savePrefs(); updateTerrainBand(); };
   const sa=$('#selAth'), sah=$('#selAthH');
   if(sah) sah.innerHTML='<option value="">— keiner —</option>';
   c.skiers.filter(s=>!s.isTop).forEach(s=>{ const t=s.name+(s.sui?' 🇨🇭':'');
@@ -2555,10 +2572,11 @@ function drawHero(){
     svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?'#6b7785':'#9aa3af'}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
   svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="#a9801a">BESTZEIT</text>`;
   svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="#6b7785" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
-  // x axis ticks
-  const step=n>40?10:(n>15?5:2);
-  for(let g=1;g<=n;g+= (g===1?step-1:step)){ const gg=g===1?1:g; svg+=`<line x1="${x(gg)}" x2="${x(gg)}" y1="${mt}" y2="${mt+ih}" stroke="#f3f5f8"/>`;
-    svg+=`<text x="${x(gg)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="#9aa3af">${gg+1}</text>`; }
+  // x axis ticks: jedes 5. Tor beschriften (plus erstes & letztes)
+  for(let g=1;g<=n;g++){ const show=(g===1)||(g%5===0)||(g===n);
+    if(!show) continue;
+    svg+=`<line x1="${x(g)}" x2="${x(g)}" y1="${mt}" y2="${mt+ih}" stroke="#f3f5f8"/>`;
+    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="#9aa3af">${g+1}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7785">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
@@ -2704,17 +2722,31 @@ function drawWaterfall(){
 /* ---------- Strecken-Visualisierungen (brauchen Kurssetzung) ---------- */
 function curCourse(){ if(!S.ev||typeof findCourseByRace!=='function') return null;
   return findCourseByRace(`${S.ev.date}|${S.ev.discipline}|${S.ev.gender}|${S.ev.run}`); }
-function drawCourseViz(){
-  const band=$('#heroBand'); if(band) band.innerHTML='';   // Steilheits-Band entfernt (Info steckt jetzt im Höhenprofil)
+function drawCourseViz(){ updateTerrainBand(); }
+/* Terrain-Band (umschaltbar): 2 Zeilen — Steilheit (steil/flach) und Charakter (drehend/direkt) pro Tor. */
+function updateTerrainBand(){ const band=$('#heroBand'); if(!band) return;
+  if(!S.terrain){ band.innerHTML=''; return; }
+  const course=(typeof curCourse==='function')?curCourse():null;
+  if(!course||!course.gates||!course.gates.length){
+    band.innerHTML='<div class="hb-cap" style="color:#9aa3af">Kein Kurs hinterlegt — Terrain nicht verfügbar. Lade die Kurssetzung (Datenbank → Kurssetzung) mit gleichem Datum/Ort/Lauf.</div>'; return; }
+  drawTerrainBand(course);
 }
-function drawTerrainBand(course){ const band=$('#heroBand'); if(!band) return; const n=S.comp.n;
-  const g=course.gates, W=980, ml=74, mr=20, H=18, iw=W-ml-mr;
-  const x=k=> ml+(n<=1?0:(k-1)/(n-1))*iw, maxP=Math.max(...g.map(z=>z.pitch||0),10), seg=iw/Math.max(1,n-1);
-  let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:18px">`;
-  for(let i=0;i<n;i++){ const z=g[i]; if(!z||z.pitch==null) continue; const f=Math.min(1,z.pitch/maxP);
-    svg+=`<rect x="${(x(i+1)-seg/2).toFixed(1)}" y="0" width="${Math.max(1,seg).toFixed(1)}" height="${H}" fill="rgba(40,52,66,${(0.12+f*0.84).toFixed(2)})"/>`; }
+function drawTerrainBand(course){ const band=$('#heroBand'); if(!band||!S.comp) return; const n=S.comp.n;
+  const g=course.gates||[], W=980, ml=74, mr=20, iw=W-ml-mr;
+  const x=k=> ml+(n<=1?0:(k-1)/(n-1))*iw, seg=Math.max(2, iw/Math.max(1,n-1));
+  const rowH=9, gap=4, y1=13, y2=y1+rowH+gap, H=y2+rowH+3;
+  const CN='#e6eaef', CMISS='#f0f2f5';
+  const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?'#d65a4e':(z.pitch<25?'#22a06b':CN)) : CMISS;
+  const oCol=z=> (z&&z.offset!=null) ? (z.offset>=3?'#7a3fb5':(z.offset<2?'#1f6fb2':CN)) : CMISS;
+  let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">`;
+  svg+=`<text x="${ml-7}" y="${y1+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="#9aa3af">STEIL.</text>`;
+  svg+=`<text x="${ml-7}" y="${y2+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="#9aa3af">CHAR.</text>`;
+  for(let i=0;i<n;i++){ const z=g[i]; const xx=(x(i+1)-seg/2).toFixed(1);
+    svg+=`<rect x="${xx}" y="${y1}" width="${seg.toFixed(1)}" height="${rowH}" fill="${pCol(z)}"/>`;
+    svg+=`<rect x="${xx}" y="${y2}" width="${seg.toFixed(1)}" height="${rowH}" fill="${oCol(z)}"/>`; }
   svg+=`</svg>`;
-  band.innerHTML=`<div class="hb-cap">Steilheit pro Tor · dunkler = steiler</div>${svg}`;
+  const leg=`<span class="tb-i"><i style="background:#d65a4e"></i>Steil</span><span class="tb-i"><i style="background:#22a06b"></i>Flach</span><span class="tb-i"><i style="background:#7a3fb5"></i>Drehend</span><span class="tb-i"><i style="background:#1f6fb2"></i>Direkt</span><span class="tb-i"><i style="background:${CN}"></i>mittel</span>`;
+  band.innerHTML=`<div class="hb-cap">Terrain pro Tor — Steilheit &amp; Charakter (aus der Kurssetzung)</div>${svg}<div class="tb-leg">${leg}</div>`;
 }
 function drawCourseMap(course){ const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;
   const fs=c.skiers.find(z=>z.name===S.perGate), dkey=S.excludeAnom?'cleanDiff':'diff';
@@ -3031,7 +3063,7 @@ function getVenue(){ const nw=$('#mVenueNew'); if(nw && nw.style.display!=='none
   const s=$('#mVenueSel'); return (s && s.value && s.value!=='__new__') ? normVenue(s.value) : ''; }
 
 /* ---- view switching ---- */
-function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth}); }catch(e){} }
+function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain}); }catch(e){} }
 function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
   const b=$('#darkBtn'); if(b) b.classList.toggle('on', !!on); }
 function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e){} setDark(on);
@@ -4596,7 +4628,7 @@ function advanceQueue(){ if(KIDX < KQUEUE.length-1){ KIDX++; processNextCourse()
 function initKurs(){
   vdbAll('courses').then(list=>{ (list||[]).forEach(c=>COURSES[c.id]=c); return seedHostedCourses(); }).then(()=>{
     renderCourseList(); fillKScope();
-    if(S.comp){ try{ drawHero(); }catch(e){} }   // Höhenprofil nach dem (asynchronen) Laden der Kurse nachzeichnen
+    if(S.comp){ try{ drawHero(); if(typeof updateTerrainBand==='function') updateTerrainBand(); }catch(e){} }   // Höhenprofil/Terrain nach dem (asynchronen) Laden der Kurse nachzeichnen
     if(typeof renderKursAnalysis==='function'){ try{ renderKursAnalysis(); }catch(e){} }
     if(typeof renderDatenbank==='function' && S.view==='datenbank'){ try{ renderDatenbank(); }catch(e){} } });
   const today=new Date().toISOString().slice(0,10); if($('#kDate')) $('#kDate').value=today;
@@ -6031,6 +6063,7 @@ const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.g
 if(PREFS.anaSub==='verlauf') S.anaSub='verlauf';
 if(typeof PREFS.excludeAnom==='boolean') S.excludeAnom=PREFS.excludeAnom;
 if(typeof PREFS.heroSmooth==='boolean') S.heroSmooth=PREFS.heroSmooth;
+if(typeof PREFS.terrain==='boolean') S.terrain=PREFS.terrain;
 let prefView=PREFS.view; if(prefView==='verlauf'){ prefView='analyse'; S.anaSub='verlauf'; }   // alte Verlauf-Ansicht -> Analyse-Unterseite
 const startView=['tagging','analyse','workflow','sbs','datenbank'].includes(prefView)?prefView:'tagging';
 S.view=startView;
@@ -6053,34 +6086,41 @@ initDatenbank();
 /* ===================== Tutorial-Tour ===================== */
 const TOUR=[
   {title:'Willkommen bei Gate-to-Gate', text:'Dieses Tool analysiert Ski-Rennläufe <b>Tor für Tor</b>: An welchem Tor genau gewinnt oder verliert ein Athlet Zeit gegenüber der Bestzeit? Gemacht für <b>Trainer:innen & Analyst:innen von Swiss-Ski</b>. Der rote Faden: <b>Video taggen → auswerten → mit den Coaches teilen</b>. Los geht\'s – ca. 2 Minuten.'},
-  {view:'tagging', sel:'.tab[data-view="tagging"]', title:'1 · Tagging – das Fundament', text:'„Taggen" heisst: du markierst im Video jeden Moment, in dem der Athlet ein <b>Tor</b> passiert. Aus den Zeitabständen zwischen den Toren entstehen die <b>Tor-zu-Tor-Zeiten</b> – die Basis jeder Analyse. Oben wählst du zwischen <b>Wettkampf</b> und <b>Training</b>.'},
-  {view:'tagging', sel:'#dropZone', title:'Video laden', text:'Video hierher ziehen oder auswählen. <b>Ort, Datum, Disziplin, Athlet</b> liest die App – wenn möglich – aus dem Dateinamen. Das Video bleibt <b>lokal auf deinem Gerät</b>, es wird nichts hochgeladen.'},
-  {view:'tagging', title:'So taggst du', text:'Video abspielen und an jedem Tor einen Marker setzen – auch <b>frame-genau</b> vor/zurück für die exakte Stelle. Vertippt? Der letzte Marker lässt sich löschen. Markiere den <b>Laufbesten</b> als Referenz und trage bei Wettkämpfen den FIS-Rückstand ein. Am Schluss <b>„Save"</b> – der Lauf ist sofort in Analyse & Bibliothek.'},
-  {view:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten, Rhythmus und Höhenprofil.'},
-  {view:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>: oben = wenig Rückstand, unten = mehr. So siehst du sofort, <b>wo</b> Zeit verloren oder gewonnen wird. <b>Klick auf ein Tor</b> öffnet das Video an genau dieser Stelle.'},
-  {view:'analyse', sel:'#heroShell', title:'Video-Pop-up mit Rückstands-Balken', text:'Beim Klick auf ein Tor (in Grafik oder Tabelle) öffnet ein <b>Pop-up</b>: links das <b>Video</b>, rechts die <b>Grafik bzw. Tabelle</b>. Direkt unter dem Video läuft ein <b>Balken</b> mit, der live den <b>Vorsprung (grün) / Rückstand (rot)</b> am aktuellen Tor anzeigt – dazu <b>Zeitlupe</b> und <b>Frame-Schritt</b> für die Technikanalyse.'},
-  {view:'analyse', sel:'#hmWrap', title:'Detail-Matrix', text:'Alle Tore auf einen Blick: <b>Δ pro Tor</b> und <b>Σ kumuliert</b>, farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.'},
-  {view:'analyse', sel:'#cvSbsBtn', title:'Side-by-Side – zwei Läufe vergleichen', text:'Mit diesem Button <b>„Side-by-Side"</b> (im Video-Bereich) schaltest du zwei Videos nebeneinander. Wähle je einen Athleten, spiele <b>beide synchron</b> ab und <b>synchronisiere sie an einem Tor</b> – jedes Video mit eigenem Rückstands-Balken. Ideal, um Linien und Technik direkt zu vergleichen.'},
-  {view:'datenbank', sel:'.tab[data-view="datenbank"]', title:'3 · Kurssetzung', text:'Kurssetzungs-PDFs importierst du jetzt in der <b>Datenbank → Kurssetzung</b> (Tor-Abstände, Offsets, Figuren). Sie fliessen ins <b>Höhenprofil</b> und in die Analyse (Athleten-Profil & Saison-Verlauf) ein.'},
-  {view:'datenbank', sel:'.tab[data-view="datenbank"]', title:'4 · Datenbank', text:'Zentrale Verwaltung aller <b>Events, Taggings & Videos</b>: filtern, suchen, öffnen, löschen. Und hier erstellst du den <b>Coach-Link</b>.'},
-  {view:'analyse', sel:'#cloudBtn', title:'☁ Cloud · lokal vs. online', text:'<b>Videos bleiben lokal</b> auf deinem Gerät (schont Speicher & Datenschutz). Deine <b>Analyse-Daten</b> (Läufe, Kurse) synchronisierst du übers Cloud-Symbol sicher mit dem Team. <b>Nur beim Coach-Link</b> werden die betreffenden Videos <b>online</b> gestellt, damit die Trainer sie öffnen können.'},
-  {view:'datenbank', sel:'.btn-mini.coach', title:'Coach-Link – und los!', text:'Über den <b>„Coach-Link"</b>-Button (hier bei jedem Event in der Datenbank) teilst du eine fertige Analyse: die Trainer sehen nur die Analyse dieses Events inkl. Videos – klickbar bis ins einzelne Tor, mit Balken, Side-by-Side und Zeitlupe, auch am Handy. <b>Das war\'s – viel Erfolg!</b> Diese Tour startest du jederzeit unten über „Tutorial" neu.'}
+  {view:'tagging', sel:'.tab[data-view="tagging"]', title:'1 · Tagging – das Fundament', text:'„Taggen" heisst: du markierst im Video jeden Moment, in dem der Athlet ein <b>Tor</b> passiert. Aus den Zeitabständen entstehen die <b>Tor-zu-Tor-Zeiten</b> – die Basis jeder Analyse. Oben wählst du zwischen <b>Wettkampf</b> und <b>Training</b>.'},
+  {view:'tagging', sel:'#dropZone', title:'Video laden', text:'Video hierher ziehen oder «Datei wählen». <b>Ort, Datum, Disziplin, Athlet</b> liest die App – wenn möglich – aus dem Dateinamen. Das Video bleibt <b>lokal auf deinem Gerät</b>, es wird nichts hochgeladen.'},
+  {view:'tagging', sel:'.tg-data-card', title:'So taggst du', text:'Video abspielen (<b>Leertaste</b>) und an jedem Tor <b>Enter</b> drücken. Frame-genau feinjustieren mit <b>x</b>/<b>y</b> (± 1 Frame). Letztes Tor löschen mit <b>⌫</b>. Rechts füllt sich die Tor-Tabelle mit — am Schluss <b>«Save»</b>, und der Lauf ist sofort in Analyse & Bibliothek.'},
+  {view:'tagging', sel:'#fisRow', title:'FIS-Zeit & Training', text:'Bei <b>Wettkämpfen</b> trägst du den <b>FIS-Rückstand</b> ein oder markierst den <b>Laufbesten</b> als Referenz. Beim <b>Training</b> gibt es keine FIS-Zeit: aktiviere <b>«Ohne FIS-Zeit»</b> – dann wird automatisch der <b>schnellste getaggte Athlet</b> (Gesamtzeit) zur Referenz-Bestzeit.'},
+  {view:'analyse', sub:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten, Rhythmus und Höhenprofil.'},
+  {view:'analyse', sub:'analyse', sel:'#anaSub', title:'Drei Ansichten', text:'Oben rechts schaltest du um: <b>Analyse</b> (ein Lauf, Tor für Tor), <b>Saison-Verlauf</b> (Entwicklung über die Saison) und <b>Athleten-Profil</b> (Stärken/Schwächen nach Geländetyp, mit Radar & Mehrfach-Vergleich).'},
+  {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>: oben = wenig Rückstand, unten = mehr. Alle Linien starten gemeinsam bei 0, so siehst du sofort, <b>wo</b> Zeit verloren/gewonnen wird. Klick in der Legende blendet einzelne Athleten aus.'},
+  {view:'analyse', sub:'analyse', sel:'#tgTerrain', title:'Terrain einblenden', text:'Mit dem Schalter <b>«Terrain»</b> legst du unter die Kurve ein Farbband: <b>Steilheit</b> (steil/flach) und <b>Charakter</b> (drehend/direkt) pro Tor. So erkennst du, in welchem Gelände Zeit gewonnen/verloren wird. Braucht eine hinterlegte Kurssetzung.'},
+  {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Video-Pop-up & Side-by-Side', text:'<b>Klick auf ein Tor</b> (Grafik oder Tabelle) öffnet ein Pop-up mit dem <b>Video</b> an genau dieser Stelle – mit mitlaufendem <b>Rückstands-Balken</b> (grün = Vorsprung, rot = Rückstand), <b>Zeitlupe</b>, <b>Frame-Schritt</b> und <b>Side-by-Side</b>, um zwei Läufe synchron zu vergleichen.'},
+  {view:'analyse', sub:'analyse', sel:'#hmWrap', title:'Detail-Matrix', text:'Alle Tore auf einen Blick: <b>Δ pro Tor</b> und <b>Σ kumuliert</b>, farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.'},
+  {view:'datenbank', sel:'.tab[data-view="datenbank"]', title:'3 · Datenbank', text:'Die zentrale Verwaltung aller <b>Events, Taggings, Videos & Kurssetzungen</b> – filtern, suchen, öffnen, bearbeiten.'},
+  {view:'datenbank', sel:'#dbSub', title:'Bereiche: Events · Taggings · Videos · Kurssetzung', text:'Über diese Reiter verwaltest du alles: <b>Events</b> (bearbeiten, <b>archivieren</b> oder <b>löschen</b>, Coach-Link), <b>Taggings</b> (editierbar, CSV-Import), <b>Videos</b> und <b>Kurssetzung</b> – hier importierst du das Kurs-PDF, das ins <b>Höhenprofil</b> und in die <b>Terrain-Analyse</b> einfliesst.'},
+  {view:'datenbank', sel:['.btn-mini.coach','#dbBody','.tab[data-view="datenbank"]'], title:'Coach-Link teilen', text:'Bei jedem Event mit lokalem Video erstellst du einen <b>Coach-Link</b> (Spalte «Coach-Link»): die Trainer sehen nur die Analyse dieses Events inkl. Videos – klickbar bis ins einzelne Tor, mit Balken, Side-by-Side und Zeitlupe, auch am Handy.'},
+  {view:'analyse', sel:'#cloudBtn', title:'☁ Cloud · lokal vs. online', text:'<b>Videos bleiben lokal</b> auf deinem Gerät (schont Speicher & Datenschutz). Deine <b>Analyse-Daten</b> (Läufe, Kurse) synchronisierst du übers Cloud-Symbol sicher mit dem Team. <b>Nur beim Coach-Link</b> werden die betreffenden Videos online gestellt. <b>Das war\'s – viel Erfolg!</b> Die Tour startest du unten über «Tutorial» jederzeit neu.'}
 ];
 let TOURi=0;
 function tourStart(){ TOURi=0; const t=$('#tour'); if(t) t.style.display='block'; tourShow(); }
 function tourEnd(){ const t=$('#tour'); if(t) t.style.display='none'; }
 function tourGo(d){ const ni=TOURi+d; if(ni<0) return; if(ni>=TOUR.length){ tourEnd(); return; } TOURi=ni; tourShow(); }
+function tourEl(sel){ if(!sel) return null; const list=Array.isArray(sel)?sel:[sel];
+  for(const s of list){ const el=document.querySelector(s); if(el && el.offsetParent!==null){ const r=el.getBoundingClientRect(); if(r.width>2&&r.height>2) return el; } }
+  for(const s of list){ const el=document.querySelector(s); if(el) return el; }   // Fallback: existiert, evtl. noch nicht sichtbar
+  return null; }
 function tourShow(){ const step=TOUR[TOURi];
   if(step.view && typeof switchView==='function'){ try{ switchView(step.view); }catch(e){} }
+  if(step.view==='analyse' && typeof setAnaSub==='function'){ try{ setAnaSub(step.sub||'analyse'); }catch(e){} }   // richtige Unteransicht, damit das Ziel sichtbar ist
   if($('#tcStep')) $('#tcStep').textContent=(TOURi+1)+' / '+TOUR.length;
   if($('#tcTitle')) $('#tcTitle').textContent=step.title;
   if($('#tcText')) $('#tcText').innerHTML=step.text;
   if($('#tcPrev')) $('#tcPrev').style.visibility=TOURi===0?'hidden':'';
   if($('#tcNext')) $('#tcNext').textContent=TOURi===TOUR.length-1?'Fertig':'Weiter';
   if($('#tcDots')) $('#tcDots').innerHTML=TOUR.map((_,i)=>`<i class="${i===TOURi?'on':''}"></i>`).join('');
-  setTimeout(()=>tourPosition(step), step.view?110:20); }
+  setTimeout(()=>tourPosition(step), step.view?150:20); }
 function tourPosition(step){ const spot=$('#tourSpot'), card=$('#tourCard'); if(!spot||!card) return;
-  const el=step.sel?document.querySelector(step.sel):null;
+  const el=tourEl(step.sel);
   if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
   setTimeout(()=>{ const r=el?el.getBoundingClientRect():null;
     if(r && r.width>2 && r.height>2 && r.bottom>0 && r.top<window.innerHeight){
