@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.5.0",
+  "desktopVersion": "1.6.0",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Layout-Fixes: Datenbank rendert wieder, Video-Bibliothek volle Breite, Tag-Tabelle korrekt zwischen Kopfzeile und FIS-Karte. FIS-Zeit-Karte neu strukturiert und kompakter. «CSV import» in Datenbank → Taggings verschoben. Hauptgrafik: alle Linien starten gemeinsam bei 0."
+  "notes": "Ganzen Event löschen (mit Warnung) & Archiv-Filter. Training ohne FIS-Zeit: schnellster getaggter Athlet wird automatisch Referenz. Tagging-Leerzustand mit Ablauf. Terrain-Band in der Hauptgrafik (Steilheit & Charakter, umschaltbar), x-Achse jedes 5. Tor. Sticky Filterleiste, KPI-Tooltips, grösserer Radar, einheitliche Leerzustände, Hover-/Fade-Effekte. Tutorial überarbeitet. Mobil: Datenbank-Tabellen seitlich scrollbar."
 }
