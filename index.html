@@ -84,6 +84,10 @@ body.dark .gh-status.dirty{background:#2a2113}
 #clipVideo,#clipVideoB{width:100%;max-height:50vh;display:block;background:#000}
 .clip-viz{margin-top:12px}
 .clip-viz svg{width:100%;display:block;height:auto;cursor:pointer}
+.cv-vizswitch{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--bg);align-self:flex-start}
+.cv-vizswitch button{border:none;background:transparent;padding:6px 14px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.cv-vizswitch button.on{background:var(--red);color:#fff}
+body.dark .cv-vizswitch{border-color:#3a4452}
 #clipDot{transition:cx .25s cubic-bezier(.4,0,.2,1),cy .25s cubic-bezier(.4,0,.2,1)}
 #clipDotLine{transition:x1 .25s cubic-bezier(.4,0,.2,1),x2 .25s cubic-bezier(.4,0,.2,1)}
 td.clip-hi{transition:outline-color .15s}
@@ -992,9 +996,15 @@ table.hmp .g b{font-size:6.5px}
   #heroCard .toggle{display:none!important}
   #legend{margin-bottom:5px!important;margin-top:3px!important}
   #legend .lg{font-size:11px}
-  #heroShell svg.chart{max-height:none;width:100%}   /* Hauptgrafik füllt Seite 1 in der Höhe (viewBox beim Druck höher) */
+  #heroShell svg.chart{max-height:140mm;width:100%}   /* Hauptgrafik gross, lässt aber Platz für die kleine Abschnitts-Grafik darunter */
   #heroShell path{stroke-width:2.8px}
-  #barCard,#secCard{display:none!important}   /* Seite 1 = nur die Hauptgrafik (quer); Zusatzgrafik nicht ins PDF */
+  #barCard{display:none!important}   /* Gate-to-Gate Differenz nicht ins PDF */
+  /* «Zeitverlust nach Abschnitt»: klein & mittig unter der Hauptgrafik auf Seite 1 */
+  #secCard{break-inside:avoid;page-break-inside:avoid;margin-top:3px;padding:3px 10px 5px}
+  #secCard h2{font-size:11px}
+  #secCard .c-sub{display:none!important}
+  #secCard .chart-shell{max-width:360px!important;margin:0 auto!important;height:46mm}
+  #secCard svg.chart{max-height:46mm;max-width:100%;height:auto;width:auto;margin:0 auto;display:block}
   /* zwei kleinere Grafiken getrennt unter der Hauptgrafik, alles auf Seite 1 */
   .row3{grid-template-columns:1fr 1fr!important;gap:12px;margin-top:6px}
   #p2start{break-inside:avoid;page-break-inside:avoid;break-before:avoid;page-break-before:avoid}
@@ -1350,39 +1360,35 @@ body.dark .empty{color:#9aa6b4}
       </div>
       <div id="main"></div>
       <div id="coachVid" class="card no-print" style="display:none">
-        <div class="c-head"><div><h2>Videos <span id="cvEvt" style="color:var(--red)"></span></h2>
-          <div class="c-sub">Athlet wählen und abspielen. <b>Klick auf ein Tor</b> in der Grafik «Zeitrückstand auf die Bestzeit» springt im Video an diese Stelle.</div></div>
-          <button id="cvSbsBtn" class="btn-mini cv-sbs-btn" title="Zwei Videos nebeneinander vergleichen"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="8" height="14" rx="1.5"/><rect x="13" y="5" width="8" height="14" rx="1.5"/></svg>Side-by-Side</button>
+        <div class="c-head"><div><h2>Video <span id="cvEvt" style="color:var(--red)"></span></h2>
+          <div class="c-sub"><b>Klick auf ein Tor</b> in der Grafik oben (oder in der Detail-Tabelle) springt hier im Video an genau die Stelle.</div></div>
+          <div class="cv-vizswitch"><button id="cvVizChart" class="on" type="button">Grafik</button><button id="cvVizTable" type="button">Tabelle</button></div>
         </div>
-        <div id="cvSingle">
-          <div id="cvAth" class="cv-ath"></div>
-          <div class="cv-stage">
-            <div class="cv-videowrap"><video id="cvVideo" controls playsinline preload="metadata"></video></div>
-            <div id="cvDefbar" class="defbar"></div>
-            <div id="cvCtrl" class="cv-ctrl"></div>
-            <div id="cvBar" class="cv-bar"><div id="cvTicks" class="cv-ticks"></div></div>
-          </div>
-          <div id="cvHint" class="cv-hint"></div>
+        <div class="clip-chiprow">
+          <div id="clipAth" class="clip-chips"></div>
+          <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg>Side-by-Side</button>
         </div>
-        <div id="cvSyncBar" class="cv-sbs-sync" style="display:none">
-          <button id="cvSyncPlay" class="btn-mini solid">▶ Beide</button>
-          <span class="cvs-speed"><span class="cvs-lab">Tempo</span><button class="btn-mini cvspd" data-r="0.25">0.25×</button><button class="btn-mini cvspd" data-r="0.5">0.5×</button><button class="btn-mini cvspd on" data-r="1">1×</button></span>
-          <span class="cvs-gate">Sync Tor <input id="cvSyncGate" type="number" min="1" value="2"> <button id="cvSyncBtn" class="btn-mini">🔗 Synchronisieren</button></span>
-          <button id="cvSyncOff" class="btn-mini" title="Kopplung lösen">Lösen</button>
-        </div>
-        <div id="cvDouble" class="cv-double" style="display:none">
-          <div class="cv-col">
-            <select class="cv-sel" data-col="a"></select>
-            <div class="cv-videowrap"><video class="cv-dv" data-col="a" controls playsinline preload="metadata"></video></div>
-            <div class="defbar cv-ddef" data-col="a"></div>
-            <div class="cv-ctrl" data-col="a"></div>
+        <div class="clip-main">
+          <div class="clip-left">
+            <div class="clip-vids" id="clipVids">
+              <div class="clip-vcol" data-col="a">
+                <div class="clip-alabel" id="clipLabelA"></div>
+                <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
+                <div id="clipDefbar" class="defbar"></div>
+              </div>
+              <div class="clip-vcol clip-colb" id="clipColB" data-col="b" style="display:none">
+                <select id="clipSelB" class="clip-selb" aria-label="Zweiter Athlet"></select>
+                <div class="clip-videowrap"><video id="clipVideoB" playsinline controls preload="metadata"></video></div>
+                <div id="clipDefbarB" class="defbar"></div>
+              </div>
+            </div>
+            <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
+              <button id="clipSyncPlay" type="button">▶ Beide</button>
+              <button id="clipSyncBtn" type="button">An diesem Tor synchronisieren</button>
+              <button id="clipSyncOff" type="button">Lösen</button>
+            </div>
           </div>
-          <div class="cv-col">
-            <select class="cv-sel" data-col="b"></select>
-            <div class="cv-videowrap"><video class="cv-dv" data-col="b" controls playsinline preload="metadata"></video></div>
-            <div class="defbar cv-ddef" data-col="b"></div>
-            <div class="cv-ctrl" data-col="b"></div>
-          </div>
+          <div id="clipViz" class="clip-viz"></div>
         </div>
       </div>
     </div>
@@ -2057,39 +2063,6 @@ body.dark .empty{color:#9aa6b4}
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
         <button class="btn-mini" id="evEditCancel">Abbrechen</button>
         <button class="btn-mini solid" id="evEditSave">Speichern</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="clipModal" class="modal-backdrop" style="display:none">
-  <div class="modal clip-modal">
-    <div class="modal-head"><h2 id="clipTitle">Tor</h2><button class="modal-x" id="clipClose">✕</button></div>
-    <div class="modal-body clip-body">
-      <div class="clip-chiprow">
-        <div id="clipAth" class="clip-chips"></div>
-        <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg>Side-by-Side</button>
-      </div>
-      <div class="clip-main">
-        <div class="clip-left">
-          <div class="clip-vids" id="clipVids">
-            <div class="clip-vcol" data-col="a">
-              <div class="clip-alabel" id="clipLabelA"></div>
-              <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
-              <div id="clipDefbar" class="defbar"></div>
-            </div>
-            <div class="clip-vcol clip-colb" id="clipColB" data-col="b" style="display:none">
-              <select id="clipSelB" class="clip-selb" aria-label="Zweiter Athlet"></select>
-              <div class="clip-videowrap"><video id="clipVideoB" playsinline controls preload="metadata"></video></div>
-              <div id="clipDefbarB" class="defbar"></div>
-            </div>
-          </div>
-          <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
-            <button id="clipSyncPlay" type="button">▶ Beide</button>
-            <button id="clipSyncBtn" type="button">An diesem Tor synchronisieren</button>
-            <button id="clipSyncOff" type="button">Lösen</button>
-          </div>
-        </div>
-        <div id="clipViz" class="clip-viz"></div>
       </div>
     </div>
   </div>
@@ -5545,21 +5518,23 @@ function cvRenderPanel(){
   const panel=$('#coachVid'); if(!panel) return;
   cvVideosForCurrent().then(vids=>{
     if(!vids.length){ panel.style.display = COACH.on?'':'none';
-      if(COACH.on){ $('#cvAth').innerHTML=''; if($('#cvHint'))$('#cvHint').textContent='Für diesen Lauf sind keine Videos hinterlegt.'; if($('#cvEvt'))$('#cvEvt').textContent=''; }
-      VID=null; return; }
+      if($('#clipViz')) $('#clipViz').innerHTML=''; if($('#clipAth')) $('#clipAth').innerHTML='';
+      if(COACH.on && $('#cvEvt')) $('#cvEvt').textContent='';
+      CVVIDS=[]; CLIPNAME=null; return; }
     panel.style.display='';
-    CVVIDS = vids; CVGATE = null;
+    CVVIDS = vids;
     if($('#cvEvt')) $('#cvEvt').textContent = S.ev? `· ${S.ev.venue} · ${runLong(S.mode,S.disc,S.run)}` : '';
-    const host=$('#cvAth');
-    host.innerHTML = vids.map(v=>`<button class="cv-chip" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
-    host.querySelectorAll('.cv-chip').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.id); host.querySelectorAll('.cv-chip').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cvLoad(vids.find(v=>v.id===id)); if(CVGATE!=null) coachSeekGate(CVGATE); });
-    const def = vids.find(v=>v.name===S.perGate) || vids[0];
-    const defBtn=[...host.querySelectorAll('.cv-chip')].find(b=>decodeURIComponent(b.dataset.id)===def.id);
-    if(defBtn) defBtn.classList.add('on');
-    cvLoad(def);
-    buildVidCtrl($('#cvCtrl'), $('#cvVideo'));
-    if($('#cvSbsBtn')) $('#cvSbsBtn').onclick=()=>cvSetSbs(!CVSBS);
-    if(CVSBS) cvSetSbs(true);   // im SBS-Modus die neuen Videos übernehmen
+    const host=$('#clipAth');
+    if(host){
+      host.innerHTML = vids.map(v=>`<button class="cv-chip" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
+      host.querySelectorAll('.cv-chip').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.id); const v=vids.find(x=>x.id===id); if(!v) return; host.querySelectorAll('.cv-chip').forEach(x=>x.classList.toggle('on',x===b)); clipLoad(v, CLIPGATE||0); });
+    }
+    const def = vids.find(v=>v.name===(CLIPNAME||S.perGate)) || vids[0];
+    if(host){ const defBtn=[...host.querySelectorAll('.cv-chip')].find(b=>decodeURIComponent(b.dataset.id)===def.id); if(defBtn) defBtn.classList.add('on'); }
+    CLIPSRC = CV_SRC; cvVizSwitchUI();
+    if(typeof clipSetSbs==='function') clipSetSbs(false);
+    clipLoad(def, CLIPGATE||0);
+    if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS);
   });
 }
 /* ---- Coach: Side-by-Side (zwei Videos nebeneinander, je mit Rückstands-Balken) ---- */
@@ -5680,27 +5655,27 @@ function coachSelectAndSeek(name, g, source){
 }
 
 /* ---- Coach-Klick-Pop-up: Video + Grafik/Tabelle mit Highlight ---- */
-let CLIPNAME=null, CLIPGATE=null, CLIPSRC='chart', CLIP_MOVEDOT=null, CLIP_MOVECELL=null;
+let CLIPNAME=null, CLIPGATE=null, CLIPSRC='chart', CLIP_MOVEDOT=null, CLIP_MOVECELL=null, CV_SRC='chart';
 function clipCurrentGate(){ const v=(CVVIDS||[]).find(x=>x.name===CLIPNAME); const tags=(v&&v.tags)||[]; const vid=$('#clipVideo'); const t=vid?vid.currentTime||0:0; let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; } return g; }
 let CLIP_LASTG=null;
 function clipPlayheadSync(force){ const g=clipCurrentGate(); if(!force && g===CLIP_LASTG) return; CLIP_LASTG=g;
   if(CLIPSRC==='table'){ if(CLIP_MOVECELL) CLIP_MOVECELL(g); } else { if(CLIP_MOVEDOT) CLIP_MOVEDOT(g); } }
+// Klick auf ein Tor/Athlet: aktualisiert die grosse Video-Ansicht (Panel) inline – kein Modal mehr
 function openClip(name, g, source){
-  const vids=CVVIDS||[]; if(!vids.length){ if(typeof coachSeekGate==='function') coachSeekGate(g,true); return; }
-  if(!name || !vids.some(v=>v.name===name)) name=(VID&&VID.name)||vids[0].name;
-  CLIPGATE=g; CLIPSRC=source||'chart';
-  const host=$('#clipAth');
-  if(host){
-    host.innerHTML = vids.map(v=>`<button class="cv-chip${v.name===name?' on':''}" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
-    host.querySelectorAll('.cv-chip').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.id); const v=vids.find(x=>x.id===id); if(!v) return; host.querySelectorAll('.cv-chip').forEach(x=>x.classList.toggle('on',x===b)); clipLoad(v, CLIPGATE); });
-  }
-  const m=$('#clipModal'); if(m) m.style.display='flex';
-  if(typeof clipSetSbs==='function') clipSetSbs(false);   // frisches Popup: Einzelansicht
-  const v=vids.find(x=>x.name===name)||vids[0]; clipLoad(v, g);
+  const vids=CVVIDS||[]; if(!vids.length) return;
+  if(!name || !vids.some(v=>v.name===name)) name=(CLIPNAME&&vids.some(v=>v.name===CLIPNAME))?CLIPNAME:vids[0].name;
+  CLIPGATE=g; if(source){ CLIPSRC=source; CV_SRC=source; cvVizSwitchUI(); }
+  const panel=$('#coachVid'); if(panel) panel.style.display='';
+  const v=vids.find(x=>x.name===name)||vids[0];
+  const host=$('#clipAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id));
+  clipLoad(v, g);
+  try{ (panel||$('#clipViz')).scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
 }
+function cvVizSwitchUI(){ const cb=$('#cvVizChart'), tb=$('#cvVizTable'); if(cb) cb.classList.toggle('on',CV_SRC!=='table'); if(tb) tb.classList.toggle('on',CV_SRC==='table'); }
+function cvVizReload(){ const v=(CVVIDS||[]).find(x=>x.name===CLIPNAME)||(CVVIDS||[])[0]; if(v) clipLoad(v, CLIPGATE||0); }
 function clipLoad(v, g){
   if(!v) return; CLIPNAME=v.name; CLIPGATE=g; CLIP_LASTG=null;
-  const _body=document.querySelector('.clip-body'); if(_body) _body.classList.toggle('clip-tablemode', CLIPSRC==='table');
+  const _body=document.querySelector('.clip-main'); if(_body) _body.classList.toggle('clip-tablemode', CLIPSRC==='table');
   const vid=$('#clipVideo'); if(!vid) return;
   const url = v.url || (v.blob?URL.createObjectURL(v.blob):null); if(!url) return;
   cvBindMedia(vid, vid.closest('.clip-videowrap'));
@@ -5822,6 +5797,8 @@ function initClip(){
   if($('#clipModal')) $('#clipModal').addEventListener('click',e=>{ if(e.target.id==='clipModal') closeClip(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
   const cv=$('#clipVideo'); if(cv){ ['timeupdate','seeked'].forEach(ev=> cv.addEventListener(ev, clipPlayheadSync)); }
+  if($('#cvVizChart')) $('#cvVizChart').onclick=()=>{ CV_SRC='chart'; CLIPSRC='chart'; cvVizSwitchUI(); cvVizReload(); };
+  if($('#cvVizTable')) $('#cvVizTable').onclick=()=>{ CV_SRC='table'; CLIPSRC='table'; cvVizSwitchUI(); cvVizReload(); };
 }
 /* ---- Rückstands-/Vorsprungs-Balken über dem Video ---- */
 function ensureDefBar(slot){ if(!slot) return null; if(!slot.querySelector('.db-track')){ slot.innerHTML='<span class="db-gate"></span><div class="db-track"><div class="db-mid"></div><div class="db-fill"></div></div><span class="db-val"></span>'; } return slot; }
