@@ -990,34 +990,38 @@ table.hmp .g b{font-size:6.5px}
   .hFocusFill{display:none!important}        /* Fokus-Fläche nicht ins PDF */
   #main .kpis{display:none!important}        /* KPIs nicht auf Seite 1 */
   #figstrip,#heroBand,.vrow,#courseVizCard{display:none!important}  /* Zusatz-Grafiken nicht ins PDF */
-  #heroCard{padding:9px 10px}
-  #heroCard h2{font-size:15.5px}
-  #heroCard .c-sub{display:none}
-  #heroCard .toggle{display:none!important}
-  #legend{margin-bottom:5px!important;margin-top:3px!important}
+  /* Seite 1 füllt die ganze Höhe: Hauptgrafik wächst bis zur Abschnitts-Box, gleiche Ränder rundum */
+  .wrap{display:flex;flex-direction:column;min-height:210mm;box-sizing:border-box}
+  #printHead{flex:0 0 auto}
+  #viewAnalyse{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  #anaMain,#anaMain #main,#anaMain #main>.grid{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #anaMain #main>.grid{gap:4mm}
+  #heroCard{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:6px 10px}
+  #heroCard h2{font-size:15px}
+  #heroCard .c-sub,#heroCard .toggle,#heroCard .hero-ctrls{display:none!important}
+  #legend{flex:0 0 auto;margin:2px 0 4px!important}
   #legend .lg{font-size:11px}
-  #heroShell svg.chart{max-height:140mm;width:100%}   /* Hauptgrafik gross, lässt aber Platz für die kleine Abschnitts-Grafik darunter */
-  #heroShell path{stroke-width:2.8px}
-  #barCard{display:none!important}   /* Gate-to-Gate Differenz nicht ins PDF */
-  /* «Zeitverlust nach Abschnitt»: klein & mittig unter der Hauptgrafik auf Seite 1 */
-  #secCard{break-inside:avoid;page-break-inside:avoid;margin-top:3px;padding:3px 10px 5px}
+  #heroCard .chart-shell{flex:1 1 auto;min-height:0}
+  #heroShell{height:100%}
+  #heroShell svg.chart{width:100%;height:100%;max-height:100%}
+  #heroShell path{stroke-width:2.6px}
+  #barCard{display:none!important}
+  /* «Zeitverlust nach Abschnitt»: unten am Rand; Chart mittig (Verhältnis 1:2), Legende links & rechts */
+  #secCard{flex:0 0 auto;padding:5px 10px 6px}
   #secCard h2{font-size:11px}
-  #secCard .c-sub{display:none!important}
-  #secCard .chart-shell{max-width:360px!important;margin:0 auto!important;height:46mm}
-  #secCard svg.chart{max-height:46mm;max-width:100%;height:auto;width:auto;margin:0 auto;display:block}
-  /* zwei kleinere Grafiken getrennt unter der Hauptgrafik, alles auf Seite 1 */
-  .row3{grid-template-columns:1fr 1fr!important;gap:12px;margin-top:6px}
-  #p2start{break-inside:avoid;page-break-inside:avoid;break-before:avoid;page-break-before:avoid}
-  .p2 .card{padding:5px 10px}
-  .p2 h2{font-size:11.5px}
-  .p2 .c-sub,.p2 .c-head select{display:none!important}
-  .p2 .chart-shell{height:205px;max-height:205px;display:flex;align-items:center;justify-content:center;width:100%}
-  .p2 svg.chart{max-height:100%;max-width:100%;height:auto;width:auto}
+  #secCard .c-head .c-sub{display:none!important}
+  #secRow{display:flex;align-items:center;justify-content:center;gap:8mm}
+  .sec-info{flex:1 1 0;max-width:64mm;font-size:8.6px;line-height:1.42;color:var(--ink2)}
+  .sec-info .si-h{font-weight:800;font-size:9.5px;color:var(--red);margin-bottom:2px}
+  .sec-info .si-row{display:flex;align-items:center;gap:5px;margin-top:3px}
+  .sec-info .si-dot{width:12px;height:5px;border-radius:2px;display:inline-block;flex:0 0 auto}
+  #secCard .chart-shell{flex:0 0 auto;width:96mm!important;max-width:96mm!important;height:48mm;margin:0!important}
+  #secCard svg.chart{max-height:48mm;width:100%;height:auto;display:block;margin:0 auto}
 
   /* ===== SEITE 2: Detail-Matrix (Δ pro Tor, nicht kumuliert) – Hochformat ===== */
   /* Seite 2 Hochformat: Breite explizit auf A4-Hochformat (210mm − 2×9mm Rand) fixieren,
      damit der Querformat-Containing-Block die Tabelle rechts nicht abschneidet */
-  #hmCard{page:matrix;break-before:page;page-break-before:always;width:192mm;padding:8mm 7mm 7mm}
+  #hmCard{page:matrix;break-before:page;page-break-before:always;flex:0 0 auto;width:192mm;padding:14mm 9mm 9mm}   /* Seite 2 hoch: oben gewöhnlicher Randabstand */
   #hmCard h2{font-size:16px;margin-bottom:6px}
   #hmCard .c-sub{display:none!important}
   #hmCard .seg{display:none!important}
@@ -2385,7 +2389,19 @@ function render(){
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
           <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div></div></div>
-        <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
+        <div id="secRow">
+          <div class="print-only sec-info sec-info-l">
+            <div class="si-h">Hauptgrafik lesen</div>
+            <div>Kumulierter Rückstand pro Tor auf die Bestzeit — <b>tiefer = langsamer</b>. Alle Linien starten bei 0; fällt eine Linie ab, wird Zeit verloren.</div>
+            <div class="si-row"><span class="si-dot" style="background:#D9A400"></span> Gold = Bestzeit (Referenz)</div>
+          </div>
+          <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
+          <div class="print-only sec-info sec-info-r">
+            <div class="si-h">Abschnitte lesen</div>
+            <div>Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen.</div>
+            <div>Farbe = Athlet (gleich wie in der Hauptgrafik).</div>
+          </div>
+        </div>
       </div>
 
       <div class="card" id="hmCard">
@@ -2479,7 +2495,7 @@ function drawHero(){
   const pad=(vmax-vmin)*0.08+0.02; vmax+=pad; vmin-=pad;
   const x=g=> ml + (n<=1?0:(g-1)/(n-1))*iw;
   const y=v=> mt + (v-vmin)/(vmax-vmin)*ih;   // Bestzeit (0) oben, mehr Rückstand nach unten
-  let svg=svgEl(W,H);
+  let svg = S.printMode ? `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` : svgEl(W,H);   // im PDF: Kurve füllt den ganzen Rahmen
   // Farbverlauf-Def für die Fokus-Füllung
   const focusName=S.heroFocus||''; const _focus=focusName?series.find(z=>!z.isTop && z.name===focusName):null; const focusCol=_focus?_focus.color:'#da291c';
   svg+=`<defs><linearGradient id="hFocusGrad" gradientUnits="userSpaceOnUse" x1="0" y1="${mt}" x2="0" y2="${mt+ih}"><stop offset="0" stop-color="${focusCol}" stop-opacity="0"/><stop offset="1" stop-color="${focusCol}" stop-opacity=".3"/></linearGradient></defs>`;
