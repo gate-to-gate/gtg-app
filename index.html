@@ -994,7 +994,7 @@ table.hmp .g b{font-size:6.5px}
   #legend .lg{font-size:11px}
   #heroShell svg.chart{max-height:none;width:100%}   /* Hauptgrafik füllt Seite 1 in der Höhe (viewBox beim Druck höher) */
   #heroShell path{stroke-width:2.8px}
-  #barCard{display:none!important}   /* Gate-to-Gate Differenz nicht ins PDF */
+  #barCard,#secCard{display:none!important}   /* Seite 1 = nur die Hauptgrafik (quer); Zusatzgrafik nicht ins PDF */
   /* zwei kleinere Grafiken getrennt unter der Hauptgrafik, alles auf Seite 1 */
   .row3{grid-template-columns:1fr 1fr!important;gap:12px;margin-top:6px}
   #p2start{break-inside:avoid;page-break-inside:avoid;break-before:avoid;page-break-before:avoid}
@@ -2143,17 +2143,18 @@ document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
+// bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
-  'ODERMATT Marco':'#C42A1E','AERNI Luca':'#2f6fd0','MEILLARD Loic':'#16a085',
-  'TUMLER Thomas':'#8e44ad','YULE Daniel':'#27ae60','NEF Tanguy':'#e84393',
-  'FUX Giuliano':'#e67e22','JANUTIN Fadri':'#00b8d4','VON ALLMEN Franjo':'#8d5524',
-  'HOLDENER Wendy':'#2f6fd0','RAST Camille':'#C42A1E','KASPER Vanessa':'#16a085',
+  'ODERMATT Marco':'#2c3e50','AERNI Luca':'#2f6fd0','MEILLARD Loic':'#00a3c4',
+  'TUMLER Thomas':'#8e44ad','YULE Daniel':'#e67e22','NEF Tanguy':'#e84393',
+  'FUX Giuliano':'#8d5524','JANUTIN Fadri':'#5d6d7e','VON ALLMEN Franjo':'#af601a',
+  'HOLDENER Wendy':'#2f6fd0','RAST Camille':'#2c3e50','KASPER Vanessa':'#00a3c4',
   'MEILLARD Melanie':'#8e44ad','GISIN Michelle':'#e84393','GUT-BEHRAMI Lara':'#e67e22',
-  'DANIOTH Aline':'#27ae60','GRENAT Anuk':'#00b8d4'
+  'DANIOTH Aline':'#8d5524','GRENAT Anuk':'#5d6d7e'
 };
-// Reserve-Palette für übrige Athleten – bewusst andere Töne als die Fix-Farben
-const ATH_PAL = ['#6b8e23','#2c3e50','#d35400','#16537e','#9b59b6','#1f8a70','#a93226',
-  '#5d6d7e','#b7950b','#7d3c98','#117a65','#af601a','#4a235a','#784212','#566573'];
+// Reserve-Palette für übrige Athleten – ebenfalls ohne klares Rot/Grün
+const ATH_PAL = ['#34618e','#6c3483','#b9770e','#7f8c8d','#c0399a','#1f6fb2',
+  '#4a5b7a','#985a1e','#5b3a8e','#0e7c99','#8d6e63','#495a6b','#a15c9a','#3d5a80'];
 const ATH_COLOR = (function(){
   const names=[...new Set(DATA.flatMap(e=>e.skiers.map(s=>s.name)))].sort();
   const fixedVals=new Set(Object.values(ATH_FIXED));
@@ -2394,16 +2395,12 @@ function render(){
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
             <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div></div>
           <div class="hero-ctrls no-print">
-            <label class="toggle" title="Einzelne, offensichtlich fehlerhafte Tag-Zeiten (z.B. ausgelassener Video-Tag → zusammengefasstes Tor) werden für die Kurve ausgeblendet.">
-              <input type="checkbox" id="tgAnom" ${S.excludeAnom?'checked':''}><span class="sw"></span>
-              <span class="tg-txt">Tagging-Anomalien ausschliessen<small>fehlerhafte Tag-Zeiten ignorieren</small></span></label>
-            <label class="toggle" title="Nur optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Endwert und Analyse bleiben unverändert.">
+            <label class="toggle" title="Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.">
               <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
-              <span class="tg-txt">Kurve glätten<small>nur optisch, Werte unverändert</small></span></label>
-            <label class="toggle" title="Blendet unter der Kurve ein Farbband ein: Steilheit (steil/flach) und Charakter (drehend/direkt) pro Tor – aus der Kurssetzung. Zeigt, in welchem Gelände Zeit gewonnen/verloren wird.">
+              <span class="tg-txt">Kurve glätten</span></label>
+            <label class="toggle" title="Blendet unter der Kurve ein Farbband ein: Steilheit und Charakter pro Tor (aus der Kurssetzung).">
               <input type="checkbox" id="tgTerrain" ${S.terrain?'checked':''}><span class="sw"></span>
-              <span class="tg-txt">Terrain<small>Steilheit &amp; Charakter pro Tor</small></span></label>
-            <label class="hero-focus"><span>Hervorheben</span><select class="mini" id="selAthH"></select></label>
+              <span class="tg-txt">Terrain</span></label>
           </div>
         </div>
         <div id="legend" class="legend" style="margin-bottom:10px"></div>
@@ -2412,30 +2409,15 @@ function render(){
         <div id="figstrip" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
       </div>
 
-      <div class="row3 p2" id="p2start">
-        <div class="card" id="barCard">
-          <div class="c-head">
-            <div><h2>Gate-to-Gate Differenz pro Tor</h2>
-              <div class="c-sub">Zeit­gewinn / -verlust an jedem einzelnen Tor gegenüber der Bestzeit.</div></div>
-            <select class="mini" id="selAth"></select>
-          </div>
-          <div class="chart-shell" id="barShell"></div>
-        </div>
-        <div class="card">
-          <div class="c-head"><div><h2>Rhythmus — Ø Zeit pro Tor</h2>
-            <div class="c-sub">Mittelwert der offenen Tore (${bounds(S.disc)[0]}–${bounds(S.disc)[1]}s gefiltert).</div></div></div>
-          <div class="chart-shell" id="rhyShell"></div>
-        </div>
-        <div class="card">
-          <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
-            <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div></div></div>
-          <div class="chart-shell" id="secShell"></div>
-        </div>
+      <div class="card" id="secCard">
+        <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
+          <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div></div></div>
+        <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
       </div>
 
       <div class="card" id="hmCard">
         <div class="c-head"><div><h2>Detail-Matrix · alle Tore</h2>
-          <div class="c-sub">Differenz zur Bestzeit pro Tor (Δ) und kumuliert (Σ). Rot = langsamer, grün = schneller. <span style="display:inline-block;padding:1px 7px;border:2px solid var(--red);border-radius:6px;font-weight:700;color:var(--bad);line-height:1.5;white-space:nowrap">rot umrandet</span> = Tagging-Anomalie.</div></div>
+          <div class="c-sub">Differenz zur Bestzeit pro Tor (Δ) und kumuliert (Σ). Rot = langsamer, grün = schneller.</div></div>
           <div class="seg no-print" id="hmMode"><button data-m="diff" class="on">Δ pro Tor</button><button data-m="cum">Σ kumuliert</button></div>
         </div>
         <div id="hmWrap"></div>
@@ -2443,30 +2425,17 @@ function render(){
       </div>
 
       <div class="note">
-        <b>Legende Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.<br>
-        <b>Ø Zeit pro Tor:</b> Werte unter ${bounds(S.disc)[0]} s und über ${bounds(S.disc)[1]} s werden ausgeschlossen, um den Rhythmus der offenen Tore darzustellen.<br>
-        <b>Tagging-Anomalien:</b> Einzelne Gate-Zeiten, die deutlich über dem Feld-Median liegen (z.B. ausgelassener Video-Tag → zusammengefasstes Tor), werden erkannt und können für die kumulierten Kurven ausgeblendet werden.
+        <b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.
       </div>
     </div>`;
 
   // listeners
-  $('#tgAnom').onchange = e=>{ S.excludeAnom=e.target.checked; savePrefs(); drawHero(); drawSector(); drawCourseViz(); };
   if($('#tgSmooth')) $('#tgSmooth').onchange = e=>{ S.heroSmooth=e.target.checked; savePrefs(); drawHero(); };
   if($('#tgTerrain')) $('#tgTerrain').onchange = e=>{ S.terrain=e.target.checked; savePrefs(); updateTerrainBand(); };
-  const sa=$('#selAth'), sah=$('#selAthH');
-  if(sah) sah.innerHTML='<option value="">— keiner —</option>';
-  c.skiers.filter(s=>!s.isTop).forEach(s=>{ const t=s.name+(s.sui?' 🇨🇭':'');
-    if(sa){ const o=document.createElement('option'); o.value=s.name; o.textContent=t; sa.appendChild(o); }
-    if(sah){ const o=document.createElement('option'); o.value=s.name; o.textContent=t; sah.appendChild(o); } });
-  if(sa){ const opts=[...sa.options].map(o=>o.value);
-    let def = (S.perGate && opts.includes(S.perGate)) ? S.perGate : (bestSui()?.name||'');
-    if(!opts.includes(def)) def = opts[0]||'';
-    sa.value=def; S.perGate=def;
-    sa.onchange=e=>{ S.perGate=e.target.value; drawBar(); drawCourseViz(); }; }
-  if(sah){ sah.value=S.heroFocus||''; sah.onchange=e=>{ S.heroFocus=e.target.value; drawHero(); }; }
+  S.perGate = (S.perGate && c.skiers.some(s=>!s.isTop && s.name===S.perGate)) ? S.perGate : (bestSui()?.name || c.skiers.find(s=>!s.isTop)?.name || '');
   $('#hmMode').querySelectorAll('button').forEach(b=> b.onclick=()=>{ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); drawHeatmap(b.dataset.m); });
 
-  buildLegend(); drawHero(); drawBar(); drawSector(); drawRhythm(); drawHeatmap(COACH.on?'cum':'diff'); figStrip();
+  buildLegend(); drawHero(); drawSector(); drawHeatmap(COACH.on?'cum':'diff'); figStrip();
   if(COACH.on && $('#hmMode')){ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.m==='cum')); }
   drawCourseViz();
   cvRenderPanel();
@@ -3314,7 +3283,7 @@ function initVerlauf(){
 
 /* ---- Athleten-Profil (Analyse-Unterseite) ---- */
 let PF={compare:[]};   // mehrere Vergleichs-Athletinnen im Profil-Radar
-const PF_PAL=['#1f6fb2','#7a3fb5','#e0a85a','#22a06b','#c0563f','#0d9488'];
+const PF_PAL=['#1f6fb2','#7a3fb5','#e0a85a','#00a3c4','#8d5524','#5d6d7e'];
 function hexA(h,a){ const m=/^#?([0-9a-f]{6})$/i.exec(h||''); if(!m) return h; const n=parseInt(m[1],16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
 function pfFmt(v){ return v==null?'–':((v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(3)+' s'); }
 function pfAgg(name){
@@ -6105,7 +6074,7 @@ const TOUR=[
   {view:'tagging', sel:'#dropZone', title:'Video laden', text:'Video hierher ziehen oder «Datei wählen». <b>Ort, Datum, Disziplin, Athlet</b> liest die App – wenn möglich – aus dem Dateinamen. Das Video bleibt <b>lokal auf deinem Gerät</b>, es wird nichts hochgeladen.'},
   {view:'tagging', sel:'.tg-data-card', title:'So taggst du', text:'Video abspielen (<b>Leertaste</b>) und an jedem Tor <b>Enter</b> drücken. Frame-genau feinjustieren mit <b>x</b>/<b>y</b> (± 1 Frame). Letztes Tor löschen mit <b>⌫</b>. Rechts füllt sich die Tor-Tabelle mit — am Schluss <b>«Save»</b>, und der Lauf ist sofort in Analyse & Bibliothek.'},
   {view:'tagging', sel:'#fisRow', title:'FIS-Zeit & Training', text:'Bei <b>Wettkämpfen</b> trägst du den <b>FIS-Rückstand</b> ein oder markierst den <b>Laufbesten</b> als Referenz. Beim <b>Training</b> gibt es keine FIS-Zeit: aktiviere <b>«Ohne FIS-Zeit»</b> – dann wird automatisch der <b>schnellste getaggte Athlet</b> (Gesamtzeit) zur Referenz-Bestzeit.'},
-  {view:'analyse', sub:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten, Rhythmus und Höhenprofil.'},
+  {view:'analyse', sub:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten und Höhenprofil.'},
   {view:'analyse', sub:'analyse', sel:'#anaSub', title:'Drei Ansichten', text:'Oben rechts schaltest du um: <b>Analyse</b> (ein Lauf, Tor für Tor), <b>Saison-Verlauf</b> (Entwicklung über die Saison) und <b>Athleten-Profil</b> (Stärken/Schwächen nach Geländetyp, mit Radar & Mehrfach-Vergleich).'},
   {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>: oben = wenig Rückstand, unten = mehr. Alle Linien starten gemeinsam bei 0, so siehst du sofort, <b>wo</b> Zeit verloren/gewonnen wird. Klick in der Legende blendet einzelne Athleten aus.'},
   {view:'analyse', sub:'analyse', sel:'#tgTerrain', title:'Terrain einblenden', text:'Mit dem Schalter <b>«Terrain»</b> legst du unter die Kurve ein Farbband: <b>Steilheit</b> (steil/flach) und <b>Charakter</b> (drehend/direkt) pro Tor. So erkennst du, in welchem Gelände Zeit gewonnen/verloren wird. Braucht eine hinterlegte Kurssetzung.'},
