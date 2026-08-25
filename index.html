@@ -2188,7 +2188,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202608251203';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202608251240';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6085,8 +6085,14 @@ function readR2cfg(){ const on=$('#cmR2On')&&$('#cmR2On').checked;
     base:($('#cmR2Base')?.value||'').trim(), key:($('#cmR2Key')?.value||'').trim(), secret:($('#cmR2Secret')?.value||'').trim(),
     worker:($('#cmR2Worker')?.value||'').trim().replace(/\/+$/,''), wkey:($('#cmR2Wkey')?.value||'').trim(), region:'auto' }; }
 async function workerPut(r2, key, blob, contentType){
-  const res=await fetch(`${r2.worker}/${key.split('/').map(encodeURIComponent).join('/')}`,{method:'PUT',
-    headers:{'Content-Type':contentType||'application/octet-stream', ...(r2.wkey?{'x-gtg-key':r2.wkey}:{})}, body:blob });
+  // Preflight-freier Upload: POST als "einfache Anfrage" (Content-Type text/plain,
+  // keine Custom-Header) -> loest KEINEN CORS-Vorabcheck (OPTIONS) aus.
+  // Das behebt "Failed to fetch" bei Antivirus/Proxies, die den Vorabcheck blocken.
+  // Metadaten (Pfad, echter Content-Type, Passwort) laufen als Query-Parameter mit.
+  const q=new URLSearchParams({ path:key, ct:(contentType||'application/octet-stream') });
+  if(r2.wkey) q.set('key', r2.wkey);
+  const res=await fetch(`${r2.worker.replace(/\/+$/,'')}/?${q.toString()}`,{
+    method:'POST', headers:{'Content-Type':'text/plain'}, body:blob });
   if(!res.ok) throw new Error('Worker '+res.status+' · '+(await res.text()).slice(0,160));
   return true;
 }
