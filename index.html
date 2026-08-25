@@ -3763,11 +3763,15 @@ function currentCourse(){ const key=`${$('#mDate').value}|${getVenue()}|${$('#mD
 // Figuren-Vorlage für den aktuellen Lauf: aus Kurssetzung ODER aus bereits getaggten Athleten desselben Laufs (gleiches Datum/Ort/Disziplin/Geschlecht/Lauf)
 function getFigTemplate(){
   const date=$('#mDate').value, venue=getVenue(), disc=$('#mDisc').value, gen=$('#mGen').value, run=formRun();
+  // map ist nach TOR-NUMMER geschlüsselt (1 = Tor 1). renderTags liest tpl[i+1] für tag[i] («Tor i+1»).
   const map={};
-  const addFrom=src=>{ if(!src) return; if(src.gates) src.gates.forEach(g=>{ if(g.fig && !(g.no in map)) map[g.no]=g.fig; }); if(src.figures) src.figures.forEach(f=>{ if(f.label && !(f.gate in map)) map[f.gate]=f.label; }); };
-  // exakter Lauf (Datum + Ort + Disziplin + Geschlecht + Lauf): aus Kurssetzung oder zuvor getaggten Athleten desselben Laufs
-  addFrom(COURSES[`${date}|${venue}|${disc}|${gen}|${run}`]);
-  addFrom(DATA.find(e=>e.date===date&&e.venue===venue&&e.discipline===disc&&e.gender===gen&&e.run===run));
+  // 1) Zuvor getaggte Athlet:innen desselben Laufs haben VORRANG (inkl. manueller Figuren wie Laps).
+  //    In gespeicherten Läufen ist figure.gate der Tag-Index (0-basiert) = «Tor gate+1» -> Schlüssel = gate+1.
+  const ev=DATA.find(e=>e.date===date&&e.venue===venue&&e.discipline===disc&&e.gender===gen&&e.run===run);
+  if(ev && Array.isArray(ev.figures)) ev.figures.forEach(f=>{ if(f && f.label){ const tor=(+f.gate)+1; if(!(tor in map)) map[tor]=f.label; } });
+  // 2) Kurssetzung füllt die restlichen Tore (g.no = Tor-Nummer).
+  const course=COURSES[`${date}|${venue}|${disc}|${gen}|${run}`];
+  if(course && Array.isArray(course.gates)) course.gates.forEach(g=>{ if(g && g.fig && !(g.no in map)) map[g.no]=g.fig; });
   return map;
 }
 function flashTag(){ const b=$('#btnTag'); b.style.transform='scale(.9)'; setTimeout(()=>b.style.transform='',110); }
@@ -6153,7 +6157,13 @@ async function coachCreate(){
 function initCoachLink(){
   if($('#coachClose'))$('#coachClose').onclick=()=>{ const m=$('#coachModal'); if(m)m.style.display='none'; };
   if($('#coachModal'))$('#coachModal').addEventListener('click',e=>{ if(e.target.id==='coachModal')$('#coachModal').style.display='none'; });
-  if($('#cmGo'))$('#cmGo').onclick=()=>{ $('#cmGo').disabled=true; coachCreate().catch(e=>cmProg('Fehler: '+(e.message||e),false)).finally(()=>{ $('#cmGo').disabled=false; }); };
+  if($('#cmGo'))$('#cmGo').onclick=()=>{ $('#cmGo').disabled=true; coachCreate().catch(e=>{
+    let m=(e&&e.message)||String(e);
+    if(/failed to fetch|networkerror|load failed|typeerror/i.test(m)){
+      m='Upload-Server nicht erreichbar. Bitte prüfen: 1) Internet/Firewall auf diesem PC — evtl. blockiert das Netzwerk Cloudflare (*.workers.dev / *.r2.dev). Test: die Upload-Worker-URL im Browser öffnen. 2) Worker-URL korrekt & online. 3) Der Worker muss Anfragen von dieser Web-Adresse erlauben (CORS/OPTIONS). Alternative: Häkchen «Videos zu Cloudflare R2 hochladen» entfernen — dann Upload über GitHub (nur für kleinere Videos).';
+    }
+    cmProg('Fehler: '+m,false);
+  }).finally(()=>{ $('#cmGo').disabled=false; }); };
   if($('#cmCopy'))$('#cmCopy').onclick=()=>{ const i=$('#cmLink'); if(!i)return; i.select(); try{document.execCommand('copy');}catch(e){} try{ navigator.clipboard&&navigator.clipboard.writeText(i.value); }catch(e){} cmProg('Link kopiert.',true); };
   if($('#cmR2On'))$('#cmR2On').onchange=e=>{ if($('#cmR2Box')) $('#cmR2Box').style.display = e.target.checked?'':'none'; };
 }
