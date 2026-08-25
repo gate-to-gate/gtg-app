@@ -563,6 +563,13 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .wc-hint{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:10px}
 .wc-skip{display:block;margin:16px auto 0;background:none;border:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
 body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+/* Auto-Update-Banner */
+.upd-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:12px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);font-size:13px;font-weight:600;animation:updIn .25s ease}
+@keyframes updIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+.upd-banner button#updReload{background:var(--red);color:#fff;border:none;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
+.upd-banner button#updReload:hover{background:var(--red-d)}
+.upd-banner .upd-x{background:none;border:none;color:#cfd6e0;font-size:14px;cursor:pointer;padding:2px 6px}
+@media print{.upd-banner{display:none!important}}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .modal{background:var(--card);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:pop .14s ease}
 .modal-head{flex:0 0 auto}
@@ -2181,6 +2188,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
+const WEB_BUILD='202608251203';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3688,7 +3696,8 @@ function updateOverlay(){ const ov=$('#gapOverlay'), cmp=$('#gapCmp'); if(!ov) r
   $('#gapMarker').style.top=(frac*100)+'%';
   const col=gapColor(v), txt=(Math.abs(v)/GAP_FULL>0.5)?'#fff':'#14181f';
   const card=$('#gapCard'); card.style.background=col; card.style.color=txt;
-  const sign = v>0.0005?'+':(v<-0.0005?'−':'±');
+  // Vorzeichen nach Rückstands-Konvention: Rückstand = + (rot), schneller = − (grün). (v = +Vorsprung)
+  const sign = v>0.0005?'−':(v<-0.0005?'+':'±');
   card.innerHTML=`${sign}${Math.abs(v).toFixed(2)}<small>s</small>`;
   $('#gapDot').style.background=col;
 }
@@ -5100,7 +5109,36 @@ function initWelcome(){
   if($('#wcBack')) $('#wcBack').onclick=()=>{ const cb=$('#wcCodeBox'); if(cb) cb.style.display='none'; const ch=$('#wcChoices'); if(ch) ch.style.display=''; wcMsg(''); };
   if($('#wcConnect')) $('#wcConnect').onclick=wcConnect;
 }
+const DEFAULT_WORKER='https://gtg-upload.swiss-ski-club.workers.dev';
+// Einmalige Auto-Korrektur: falsche Worker-Subdomain (lvsiebenthal) -> richtige (swiss-ski-club),
+// damit bereits verbundene Kolleg:innen ohne Zutun die korrekte Upload-URL bekommen.
+function migrateWorkerUrl(){ try{
+  const fix=u=> (typeof u==='string') ? u.replace(/gtg-upload\.lvsiebenthal\.workers\.dev/g,'gtg-upload.swiss-ski-club.workers.dev') : u;
+  const r2=LS.get('gtg_r2cfg',null);
+  if(r2 && r2.worker){ const nw=fix(r2.worker); if(nw!==r2.worker){ r2.worker=nw; LS.set('gtg_r2cfg',r2); } }
+}catch(e){} }
+/* ---- Auto-Update: neue Web-Version erkennen und per Klick nachladen (ohne Hard-Refresh) ---- */
+let UPDATE_SHOWN=false;
+function showUpdateBanner(ver){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
+  const b=document.createElement('div'); b.id='updateBanner'; b.className='upd-banner';
+  b.innerHTML='<span>✨ Neue Version verfügbar</span><button id="updReload" type="button">Jetzt aktualisieren</button><button id="updDismiss" type="button" class="upd-x" title="Später">✕</button>';
+  document.body.appendChild(b);
+  b.querySelector('#updReload').onclick=()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ location.reload(); } };
+  b.querySelector('#updDismiss').onclick=()=>{ b.remove(); };
+}
+function checkForUpdate(){
+  if(/BUILDVER/.test(WEB_BUILD)) return;   // ungebaute Dev-Version -> nicht prüfen
+  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=> r.ok?r.json():null).then(j=>{
+    if(j && j.webVersion && j.webVersion!==WEB_BUILD) showUpdateBanner(j.webVersion);
+  }).catch(()=>{});
+}
+function initUpdateCheck(){
+  setTimeout(checkForUpdate, 20000);                 // kurz nach dem Start
+  setInterval(checkForUpdate, 5*60*1000);            // alle 5 Minuten
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkForUpdate(); });
+}
 function initCloud(){
+  migrateWorkerUrl();
   const cfg=LS.get('gtg_github',{}); GH.repo=cfg.repo||''; GH.branch=cfg.branch||'main'; GH.path=cfg.path||'gtg_data.json'; GH.token=cfg.token||''; if(typeof cfg.auto==='boolean') GH.auto=cfg.auto;
   GH.connected = !!(GH.repo && GH.token);
   GH.lastSync = LS.get('gtg_gh_last',0)||0; GH.pending = LS.get('gtg_gh_pending',0)||0;
@@ -6062,7 +6100,7 @@ function openCoachLink(key){
   if($('#cmR2Base')) $('#cmR2Base').value=r2.base||'';
   if($('#cmR2Key')) $('#cmR2Key').value=r2.key||'';
   if($('#cmR2Secret')) $('#cmR2Secret').value=r2.secret||'';
-  if($('#cmR2Worker')) $('#cmR2Worker').value=r2.worker||'';
+  if($('#cmR2Worker')) $('#cmR2Worker').value=r2.worker||DEFAULT_WORKER;
   if($('#cmR2Wkey')) $('#cmR2Wkey').value=r2.wkey||'';
   if($('#cmR2Box')) $('#cmR2Box').style.display = ($('#cmR2On')&&$('#cmR2On').checked)?'':'none';
   // Auto-Standard aus der aktuellen Pages-Adresse ableiten (wo die App gehostet ist)
@@ -6259,6 +6297,7 @@ initConfirm();
 initClip();
 initTour();
 initWelcome();
+initUpdateCheck();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
