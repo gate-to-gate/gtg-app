@@ -536,6 +536,31 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .meta-summary #msText{font-size:13px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(20,24,31,.5);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .12s ease}
+/* Willkommens-Bildschirm (Erststart) */
+.wc-overlay{position:fixed;inset:0;z-index:200;background:rgba(20,24,31,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .15s ease}
+.wc-card{background:var(--card);border-radius:20px;box-shadow:0 26px 74px -20px rgba(0,0,0,.5);max-width:560px;width:100%;padding:28px 28px 20px}
+.wc-brand{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.wc-logo{width:46px;height:46px;border-radius:13px;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;letter-spacing:-.5px;flex:0 0 auto}
+.wc-title{font-size:20px;font-weight:800;color:var(--ink)}
+.wc-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.wc-choices{display:flex;flex-direction:column;gap:12px}
+.wc-choice{display:flex;align-items:center;gap:14px;text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:16px;cursor:pointer;transition:.15s;font:inherit;width:100%}
+.wc-choice:hover{border-color:var(--red);box-shadow:0 10px 24px -14px rgba(218,41,28,.45);transform:translateY(-1px)}
+.wc-ic{flex:0 0 auto;color:var(--red)}
+.wc-ic svg{width:30px;height:30px}
+.wc-ct{display:flex;flex-direction:column;gap:3px}
+.wc-ct b{font-size:15px;color:var(--ink)}
+.wc-ct span{font-size:12.5px;color:var(--muted);line-height:1.42}
+.wc-codebox{margin-top:16px}
+.wc-clab{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.wc-code{width:100%;margin-top:6px;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;font-size:13px;resize:vertical;background:var(--card);color:var(--ink);box-sizing:border-box}
+.wc-code:focus{outline:none;border-color:var(--red)}
+.wc-msg{font-size:12px;margin-top:6px;min-height:15px}
+.wc-msg.err{color:var(--red)}.wc-msg.ok{color:#1a8f5a}
+.wc-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.wc-hint{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:10px}
+.wc-skip{display:block;margin:16px auto 0;background:none;border:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
+body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .modal{background:var(--card);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:pop .14s ease}
 .modal-head{flex:0 0 auto}
@@ -2077,6 +2102,37 @@ body.dark .empty{color:#9aa6b4}
     <div class="modal-head"><h2 id="cfTitle">Bestätigen</h2><button class="modal-x" id="cfX">✕</button></div>
     <div class="modal-body"><div id="cfMsg" style="font-size:13.5px;line-height:1.55;color:var(--ink2);white-space:pre-line"></div></div>
     <div class="modal-foot"><button class="btn-mini" id="cfCancel">Abbrechen</button><button class="save-btn" id="cfOk">Bestätigen</button></div>
+  </div>
+</div>
+
+<!-- ===================== WILLKOMMEN (Erststart) ===================== -->
+<div id="welcome" class="wc-overlay" style="display:none">
+  <div class="wc-card">
+    <div class="wc-brand">
+      <div class="wc-logo">G2G</div>
+      <div><div class="wc-title">Gate-to-Gate</div><div class="wc-sub">Willkommen — wie möchtest du starten?</div></div>
+    </div>
+    <div class="wc-choices" id="wcChoices">
+      <button type="button" class="wc-choice" id="wcLocal">
+        <div class="wc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="wc-ct"><b>Ohne Cloud</b><span>Alles bleibt lokal auf diesem Gerät. Sofort loslegen — keine Eingabe nötig.</span></div>
+      </button>
+      <button type="button" class="wc-choice" id="wcCloud">
+        <div class="wc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg></div>
+        <div class="wc-ct"><b>Mit Cloud (Team)</b><span>Taggings, Athlet:innen &amp; Kurse mit dem Team synchronisieren. Einmalig den Team-Code einfügen.</span></div>
+      </button>
+    </div>
+    <div class="wc-codebox" id="wcCodeBox" style="display:none">
+      <label class="wc-clab" for="wcCode">Team-Code einfügen</label>
+      <textarea id="wcCode" class="wc-code" rows="3" placeholder="GTG1-…" spellcheck="false"></textarea>
+      <div id="wcMsg" class="wc-msg"></div>
+      <div class="wc-actions">
+        <button type="button" class="btn-mini" id="wcBack">← Zurück</button>
+        <button type="button" class="save-btn" id="wcConnect">Verbinden</button>
+      </div>
+      <div class="wc-hint">Den Code bekommst du <b>einmalig</b> von deinem Team (z. B. per Chat). Du fügst ihn nur einmal ein — danach bleibt die Verbindung dauerhaft auf diesem Gerät.</div>
+    </div>
+    <button type="button" class="wc-skip" id="wcSkip">Später entscheiden</button>
   </div>
 </div>
 
@@ -4972,6 +5028,38 @@ function renderAutoBackups(){ const el=$('#ghBackups'); if(!el) return;
 function restoreAutoBackup(id){ vdbGet(id,'backups').then(b=>{ if(!b) return;
   gtgConfirm({title:'Sicherung wiederherstellen', okLabel:'Wiederherstellen', msg:`Stand vom ${new Date(b.at).toLocaleString('de-CH')} laden? Fehlende Läufe, Trainings und Kurse werden wieder hinzugefügt (nichts wird gelöscht).`})
     .then(ok=>{ if(!ok) return; ghMergeIn(b); renderAutoBackups(); gtgToast('Sicherung wiederhergestellt.','ok'); }); }).catch(()=>{}); }
+/* ---- Willkommens-Bildschirm beim ersten Start: Ohne Cloud (lokal) / Mit Cloud (Team) ---- */
+function wcClose(choice){ if(choice){ try{ LS.set('gtg_onboarded',choice); }catch(e){} } const o=$('#welcome'); if(o) o.style.display='none'; }
+function wcMsg(t, ok){ const m=$('#wcMsg'); if(m){ m.textContent=t||''; m.className='wc-msg'+(ok===true?' ok':(ok===false?' err':'')); } }
+function wcConnect(){
+  let s=($('#wcCode')?$('#wcCode').value:'').trim(); if(!s){ wcMsg('Bitte den Team-Code einfügen.',false); return; }
+  try{
+    let raw=s; if(raw.indexOf('GTG1-')===0) raw=raw.slice(5);
+    const o=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!o || !o.t){ wcMsg('Dieser Code enthält keinen Zugang. Bitte den vollständigen Team-Code verwenden.',false); return; }
+    if($('#ghRepo')&&o.r) $('#ghRepo').value=o.r; if($('#ghBranch')&&o.b) $('#ghBranch').value=o.b; if($('#ghPath')&&o.p) $('#ghPath').value=o.p; if($('#ghToken')) $('#ghToken').value=o.t;
+    try{ if(o.cc) LS.set('gtg_coachcfg',o.cc); if(o.r2) LS.set('gtg_r2cfg',o.r2); }catch(_){}   // Coach-Link-Setup mitübernehmen
+    wcMsg('Code erkannt — verbinde…', true);
+    if(typeof ghConnect==='function'){
+      Promise.resolve(ghConnect()).then(()=>{
+        if(typeof GH!=='undefined' && GH.connected){ wcMsg('✓ Verbunden!', true); setTimeout(()=>wcClose('cloud'), 700); }
+        else wcMsg('Verbindung fehlgeschlagen — Code prüfen, oder später übers Cloud-Symbol oben verbinden.', false);
+      });
+    } else { wcClose('cloud'); }
+  }catch(e){ wcMsg('Ungültiger Team-Code. Bitte den ganzen Code kopieren und einfügen.', false); }
+}
+function initWelcome(){
+  const o=$('#welcome'); if(!o) return;
+  const done = LS.get('gtg_onboarded','');
+  const isCoach = (typeof COACH!=='undefined' && COACH && COACH.on);
+  if(done || isCoach || (typeof GH!=='undefined' && GH.connected)){ o.style.display='none'; return; }
+  o.style.display='flex';
+  if($('#wcLocal')) $('#wcLocal').onclick=()=> wcClose('local');
+  if($('#wcSkip')) $('#wcSkip').onclick=()=> wcClose('local');
+  if($('#wcCloud')) $('#wcCloud').onclick=()=>{ const cb=$('#wcCodeBox'); if(cb) cb.style.display=''; const ch=$('#wcChoices'); if(ch) ch.style.display='none'; const c=$('#wcCode'); if(c){ try{ c.focus(); }catch(e){} } };
+  if($('#wcBack')) $('#wcBack').onclick=()=>{ const cb=$('#wcCodeBox'); if(cb) cb.style.display='none'; const ch=$('#wcChoices'); if(ch) ch.style.display=''; wcMsg(''); };
+  if($('#wcConnect')) $('#wcConnect').onclick=wcConnect;
+}
 function initCloud(){
   const cfg=LS.get('gtg_github',{}); GH.repo=cfg.repo||''; GH.branch=cfg.branch||'main'; GH.path=cfg.path||'gtg_data.json'; GH.token=cfg.token||''; if(typeof cfg.auto==='boolean') GH.auto=cfg.auto;
   GH.connected = !!(GH.repo && GH.token);
@@ -6123,6 +6211,7 @@ initCoachLink();
 initConfirm();
 initClip();
 initTour();
+initWelcome();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
