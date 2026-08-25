@@ -2188,7 +2188,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202608251240';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202608251248';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5121,7 +5121,7 @@ function migrateWorkerUrl(){ try{
 let UPDATE_SHOWN=false;
 function showUpdateBanner(ver){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
   const b=document.createElement('div'); b.id='updateBanner'; b.className='upd-banner';
-  b.innerHTML='<span>✨ Neue Version verfügbar</span><button id="updReload" type="button">Jetzt aktualisieren</button><button id="updDismiss" type="button" class="upd-x" title="Später">✕</button>';
+  b.innerHTML='<span>✨ Update vorhanden – bitte aktualisieren</span><button id="updReload" type="button">Jetzt aktualisieren</button><button id="updDismiss" type="button" class="upd-x" title="Später">✕</button>';
   document.body.appendChild(b);
   b.querySelector('#updReload').onclick=()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ location.reload(); } };
   b.querySelector('#updDismiss').onclick=()=>{ b.remove(); };
@@ -6318,7 +6318,7 @@ if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.dis
 }
 // Desktop-App: beim Start prüfen, ob eine neuere Version vorliegt
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
-function showUpdateBanner(cur, latest, url){
+function showDesktopUpdateBanner(cur, latest, url){
   if(document.getElementById('updBanner')) return;
   const b=document.createElement('div'); b.id='updBanner'; b.className='upd-banner no-print';
   b.innerHTML=`<span>Neue Version <b>v${latest}</b> verfügbar — du nutzt v${cur}.</span>`+
@@ -6359,7 +6359,7 @@ function showUpdateReadyBanner(v){
   Promise.resolve(dk.checkUpdate()).then(r=>{
     if(!r || !r.latest) return;
     if(cmpVer(r.latest, r.current)>0 && LS.get('gtg_update_dismissed')!==r.latest){
-      showUpdateBanner(r.current, r.latest, r.url || 'https://github.com/gate-to-gate/gtg-app/releases/latest');
+      showDesktopUpdateBanner(r.current, r.latest, r.url || 'https://github.com/gate-to-gate/gtg-app/releases/latest');
     }
   }).catch(()=>{});
 })();

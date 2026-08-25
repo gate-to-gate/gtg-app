@@ -2,5 +2,5 @@
   "desktopVersion": "1.7.0",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
   "notes": "Video-Upload jetzt preflight-frei (POST) – behebt «Failed to fetch» bei Antivirus/Proxy auf einzelnen PCs (benötigt neuen Worker-Code). Willkommens-Bildschirm beim ersten Start (Ohne Cloud / Mit Cloud – Team-Code). Cloud-Menü vereinfacht (manuelle Buttons hinter «Manuell»). Grosse Video-Ansicht = gleiche Darstellung wie beim Tor-Klick, inkl. Grafik/Tabelle-Umschalter. Analyse entschlackt: «Hervorheben», «Gate-to-Gate» und «Rhythmus» entfernt, Erklärungen gekürzt. Athletenfarben ohne klares Rot/Grün. Echter Dark-Mode für alle Grafiken. PDF: Hauptgrafik gross, Abschnitts-Grafik unten mit Legende.",
-  "webVersion": "202608251240"
+  "webVersion": "202608251248"
 }
