@@ -3809,7 +3809,9 @@ function renderTags(){
   TG.tags.sort((a,b)=>a.t-b.t); const fps=curFps(); const tb=$('#tagBody'); tb.innerHTML='';
   // Figuren-Vorlage übernehmen (Kurssetzung oder zuvor getaggte Athleten desselben Laufs) – nur noch leere Tags
   const tpl=getFigTemplate();
-  TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ tag.fig = (i>=1 && tpl[i]) ? tpl[i] : ''; } });
+  // Tag-Index i = «Tor i+1». Wir taggen ab Tor 1 (nicht den Start), die Kurssetzung zählt ab Tor 1:
+  // Kurs-Tor N gehört auf «Tor N» (tag[N-1]) — daher tpl[i+1], sonst erscheint die Figur ein Tor zu spät.
+  TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ tag.fig = tpl[i+1] ? tpl[i+1] : ''; } });
   // Bereits im Lauf vergebene Figuren (jede Figur darf nur einmal vorkommen)
   const usedFig=new Set(); TG.tags.forEach((t,idx)=>{ if(idx===0) return; String(t.fig||'').split('+').forEach(v=>{ if(v) usedFig.add(v); }); });
   TG.tags.forEach((tag,i)=>{
@@ -4710,8 +4712,18 @@ function initKurs(){
 const VENUE_STOP=new Set('gtg csv pdf mp4 mov avi mkv video clip copy kopie draft entwurf final finale finals wc ec world cup worldcup weltcup europacup europa fis men women herren damen frauen ladies mixed gs sl sg dh ac giant slalom super superg downhill riesenslalom abfahrt run lauf rennen race quali qualifikation kurssetzung coursesetting course setting training ski night nacht day tag section'.split(' '));
 function detectVenueToken(tokens){
   const venues=[...new Set(DATA.map(e=>e.venue))];
-  for(const t of tokens){ if(t.length<3) continue; const v=venues.find(v=>venueFold(v)===venueFold(t)); if(v) return {isNew:false,value:v}; }
-  for(const t of tokens){ if(/\d/.test(t)) continue; const nt=venueFold(t); if(nt.length<3) continue; if(VENUE_STOP.has(nt)) continue;
+  const athFirst=new Set((typeof ATHLETES!=='undefined'?ATHLETES:[]).map(a=>String(a.name).split(' ')[0].toLowerCase()));   // bekannte Nachnamen
+  const skip=(t,idx)=>{ const nt=venueFold(t);
+    if(idx===0) return true;                       // erster Token = Athletenname (steht im Dateinamen immer zuerst)
+    if(/\d/.test(t)) return true;                  // Datum / Lauf-Nr / Zahlen
+    if(nt.length<3) return true;                   // zu kurz (SL, GS, TV, M, W …)
+    if(VENUE_STOP.has(nt)) return true;            // Disziplin/Lauf/Geschlecht/Marker
+    if(athFirst.has(t.toLowerCase())) return true; // bekannter Athleten-Nachname
+    return false; };
+  // 1) bekannter Ort (ausser dem ersten Token = Athlet)
+  for(let i=1;i<tokens.length;i++){ const t=tokens[i]; if(t.length<3||/\d/.test(t)) continue; const v=venues.find(v=>venueFold(v)===venueFold(t)); if(v) return {isNew:false,value:v}; }
+  // 2) erster «freier» Token = Ort (neu oder bestehend); Athlet/Disziplin/Lauf/Datum/Marker werden übersprungen
+  for(let i=0;i<tokens.length;i++){ const t=tokens[i]; if(skip(t,i)) continue;
     const canon=normVenue(t.charAt(0).toUpperCase()+t.slice(1).toLowerCase());
     const ex=venues.find(v=>venueFold(v)===venueFold(canon));
     return ex ? {isNew:false,value:ex} : {isNew:true,value:canon}; }
