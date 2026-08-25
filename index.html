@@ -4317,16 +4317,34 @@ async function parseCoursePdf(file){
   const seq=a=>(a||[]).sort((p,q)=>p.top-q.top).map(p=>p.s);
   const types=seq(cols.type), dist=seq(cols.dist), offset=seq(cols.offset), pitch=seq(cols.pitch), angle=seq(cols.angle);
   const n=Math.max(types.length,dist.length,pitch.length);
-  const gates=[]; let cH=0,cF=0,cB=0;
+  const gates=[]; const tnorms=[];
+  for(let i=0;i<n;i++){ const ty=(types[i]||'').replace(/\s/g,'');
+    tnorms[i] = /finish/i.test(ty)?'Finish': /hairpin/i.test(ty)?'Hairpin': /v\.?comb/i.test(ty)?'V.Comb': /delay/i.test(ty)?'Delayed':'Open'; }
+  // Mehrtorige Figuren zusammenfassen: Hairpin = 2 Tore, V.Comb = 3 Tore = EINE Figur.
+  // Label (H1, F1 …) nur aufs erste Tor der Gruppe; folgende Tore der Figur bleiben leer.
+  // 4 Hairpin-Tore hintereinander -> H1 (Tor 1) + H2 (Tor 3).
+  const figFor = deriveCourseFigs(tnorms);
   for(let i=0;i<n;i++){
-    const ty=(types[i]||'').replace(/\s/g,'');
-    if(/finish/i.test(ty)){ gates.push({no:i+1,type:'Finish',dist:kNum(dist[i]),offset:null,pitch:kNum(pitch[i]),angle:null,fig:''}); continue; }
-    const tnorm = /hairpin/i.test(ty)?'Hairpin': /v\.?comb/i.test(ty)?'V.Comb': /delay/i.test(ty)?'Delayed':'Open';
-    // Figur automatisch aus Tor-Typ ableiten (Laps ergänzt der User)
-    const fig = tnorm==='Hairpin'?('H'+(++cH)): tnorm==='V.Comb'?('F'+(++cF)): tnorm==='Delayed'?('B'+(++cB)):'';
-    gates.push({no:i+1, type:tnorm, dist:kNum(dist[i]), offset:kNum(offset[i]), pitch:kNum(pitch[i]), angle:kNum(angle[i]), fig});
+    const tnorm=tnorms[i];
+    if(tnorm==='Finish'){ gates.push({no:i+1,type:'Finish',dist:kNum(dist[i]),offset:null,pitch:kNum(pitch[i]),angle:null,fig:''}); continue; }
+    gates.push({no:i+1, type:tnorm, dist:kNum(dist[i]), offset:kNum(offset[i]), pitch:kNum(pitch[i]), angle:kNum(angle[i]), fig:figFor[i]||''});
   }
   return gates;
+}
+/* Figuren-Labels aus einer Tor-Typ-Liste ableiten: aufeinanderfolgende gleiche Figuren-Tore gruppieren
+   (Hairpin = 2 Tore, V.Comb = 3 Tore = eine Figur). Label nur aufs erste Tor jeder Gruppe. */
+function deriveCourseFigs(tnorms){
+  const SPAN={Hairpin:2,'V.Comb':3}, LET={Hairpin:'H','V.Comb':'F',Delayed:'B'};
+  const out=new Array(tnorms.length).fill(''); let cH=0,cF=0,cB=0; let prev=null, runPos=0;
+  for(let i=0;i<tnorms.length;i++){ const t=tnorms[i];
+    if(t==='Hairpin' || t==='V.Comb'){ const span=SPAN[t];
+      if(t===prev) runPos++; else runPos=0;
+      if(runPos % span === 0){ out[i] = t==='Hairpin' ? ('H'+(++cH)) : ('F'+(++cF)); }
+      prev=t;
+    } else if(t==='Delayed'){ out[i]='B'+(++cB); prev=null; runPos=0; }
+    else { prev=null; runPos=0; }   // Open / Finish
+  }
+  return out;
 }
 
 /* ---- editierbare Vorschau ---- */
