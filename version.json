@@ -1,5 +1,5 @@
 {
-  "desktopVersion": "1.6.0",
+  "desktopVersion": "1.7.0",
   "downloadUrl": "https://github.com/gate-to-gate/gtg-app/releases/latest",
-  "notes": "Ganzen Event löschen (mit Warnung) & Archiv-Filter. Training ohne FIS-Zeit: schnellster getaggter Athlet wird automatisch Referenz. Tagging-Leerzustand mit Ablauf. Terrain-Band in der Hauptgrafik (Steilheit & Charakter, umschaltbar), x-Achse jedes 5. Tor. Sticky Filterleiste, KPI-Tooltips, grösserer Radar, einheitliche Leerzustände, Hover-/Fade-Effekte. Tutorial überarbeitet. Mobil: Datenbank-Tabellen seitlich scrollbar."
+  "notes": "Willkommens-Bildschirm beim ersten Start (Ohne Cloud / Mit Cloud – Team-Code). Cloud-Menü vereinfacht (manuelle Buttons hinter «Manuell»). Grosse Video-Ansicht = gleiche Darstellung wie beim Tor-Klick, inkl. Grafik/Tabelle-Umschalter. Analyse entschlackt: «Hervorheben», «Gate-to-Gate» und «Rhythmus» entfernt, Erklärungen gekürzt. Athletenfarben ohne klares Rot/Grün. Echter Dark-Mode für alle Grafiken. PDF: Hauptgrafik gross, Abschnitts-Grafik unten mit Legende."
 }
