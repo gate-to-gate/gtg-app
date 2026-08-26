@@ -878,7 +878,8 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .gap-tick.unsure{background:#ffcf66;box-shadow:0 0 0 1px #b07a1e;width:7px;height:7px}
 .fis-row{display:flex;flex-direction:column;align-items:flex-start;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--ink2)}
 .fis-row .fis-title{font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
-.fis-row .fis-opts{display:flex;flex-wrap:wrap;align-items:center;gap:7px 20px}
+.fis-row .fis-opts{display:flex;flex-wrap:wrap;align-items:center;gap:9px 16px;width:100%}
+.fis-row .fis-sep{width:1px;height:16px;background:var(--line);flex:none}
 .fis-row label{display:flex;align-items:center;gap:6px;cursor:pointer}
 .fis-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--red);cursor:pointer}
 .fis-row .fis-gap{gap:8px}
@@ -1604,9 +1605,11 @@ body.dark .empty{color:#9aa6b4}
           <span class="fis-title">FIS-Zeit</span>
           <div class="fis-opts">
             <label class="fis-chk fis-nofis" title="Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten)."><input type="checkbox" id="mNoFis"> Ohne FIS-Zeit</label>
+            <span class="fis-sep"></span>
             <label class="fis-chk"><input type="checkbox" id="mBest"> Laufbestzeit</label>
+            <span class="fis-sep"></span>
+            <label class="fis-gap" id="gapLab">Rückstand <input type="number" id="mGap" step="0.01" min="0" placeholder="0.00"> <span class="unit">s</span></label>
           </div>
-          <label class="fis-gap" id="gapLab">Rückstand <input type="number" id="mGap" step="0.01" min="0" placeholder="0.00"> <span class="unit">s</span></label>
         </div>
         <div class="save-row">
           <button class="save-btn" id="btnSaveRun">✓ Save</button>
@@ -2197,7 +2200,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202608260847';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202608260903';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2618,7 +2621,7 @@ function drawHero(){
   for(let g=1;g<=n;g++){ const show=(g===1)||(g%5===0)||(g===n);
     if(!show) continue;
     svg+=`<line x1="${x(g)}" x2="${x(g)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
-    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${g+1}</text>`; }
+    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${g}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${T.txt}">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
