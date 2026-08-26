@@ -928,6 +928,8 @@ body.dark .dbtg-delcol:hover{background:#3d2020}
 .save-btn.danger{background:var(--red);box-shadow:0 2px 8px rgba(218,41,28,.3)}
 .save-btn:hover{background:#178a5d}
 .save-btn:disabled{background:#c5ccd4;box-shadow:none;cursor:not-allowed}
+.export-legend{margin:8px 0 0;font-size:11px;line-height:1.5;color:var(--muted)}
+.export-legend b{font-weight:650;color:var(--ink2)}
 .save-msg{margin-top:10px;font-size:12.5px;font-weight:600;min-height:16px}
 .save-msg.ok{color:var(--good)} .save-msg.warn{color:var(--bad)}
 
@@ -1617,6 +1619,7 @@ body.dark .empty{color:#9aa6b4}
             </span>
           </div>
         </div>
+        <p class="export-legend"><b>CSV export</b>: nur dieser Lauf als Tabelle (z. B. für Excel). · <b>Backup sichern</b>: alle Daten (Läufe, Athleten, Kurssetzungen) in eine Datei speichern. · <b>Backup laden</b>: eine solche Datei wieder einlesen.</p>
         <div id="saveMsg" class="save-msg"></div>
         <div id="tagCloudHint" class="tag-cloud-hint" style="display:none">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg>
@@ -2188,7 +2191,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202608251248';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202608260723';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
