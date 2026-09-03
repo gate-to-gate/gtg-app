@@ -305,6 +305,31 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 /* Filter bar */
 .filters{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;background:var(--card);padding:9px 12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px;position:sticky;top:62px;z-index:30}
 .filters.stuck{box-shadow:0 6px 16px rgba(20,24,31,.12)}
+.series-pick{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:11px 14px;margin:-4px 0 14px}
+.series-pick .sp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.series-pick .sp-title{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.series-pick .sp-quick{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.series-pick .sp-qbtn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:4px 10px;font:inherit;font-size:11px;font-weight:650;color:var(--muted);cursor:pointer}
+.series-pick .sp-qbtn:hover{border-color:#c3cad4;color:var(--ink2)}
+.series-pick .sp-athrow{margin:0 0 8px}
+.series-pick .sp-athname{font-size:12px;font-weight:750;color:var(--ink);margin-bottom:4px}
+.series-pick .sp-laufs{display:flex;gap:7px;flex-wrap:wrap}
+.series-pick .sp-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:650;color:var(--ink2);cursor:pointer;transition:.12s}
+.series-pick .sp-chip:hover{border-color:#c3cad4}
+.series-pick .sp-chip.on{border-color:var(--red);background:rgba(218,41,28,.06);color:var(--ink)}
+.series-pick .sp-chip input{width:14px;height:14px;accent-color:var(--red);cursor:pointer;margin:0}
+body.dark .series-pick{background:#252d39;border-color:#3a4452}
+body.dark .series-pick .sp-qbtn,body.dark .series-pick .sp-chip{background:#1f2732;border-color:#3a4452;color:#c2ccd8}
+body.dark .series-pick .sp-athname{color:#eef1f6}
+.dba-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.dba-form input[type=text]{border:1.4px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px;background:#fff}
+.dba-form #dbaName{flex:1 1 200px}
+.dba-form #dbaFis{flex:0 0 130px}
+.dba-msg{font-size:12px;font-weight:600;color:var(--muted)}
+.dba-msg.err{color:var(--red)}
+.dba-msg.ok{color:var(--good)}
+body.dark .dba-form{background:#252d39;border-color:#3a4452}
+body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;color:#eef1f6}
 .f{display:flex;flex-direction:column;gap:3px;min-width:110px;flex:1}
 .f.fsub{flex:0 0 auto;min-width:0;margin-left:auto}
 .f label{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
@@ -1398,9 +1423,10 @@ body.dark .empty{color:#9aa6b4}
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Disziplin</label><div id="selDisc" class="seg-toggle"></div></div>
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Geschlecht</label><div id="selGen" class="seg-toggle"></div></div>
         <div class="f" style="flex:1 1 auto;min-width:160px"><label>Event</label><select id="selEvt"></select></div>
-        <div class="f" style="flex:0 0 118px;min-width:100px"><label id="selRunLbl">Lauf</label><select id="selRun"></select></div>
+        <div class="f" id="selRunField" style="flex:0 0 118px;min-width:100px"><label id="selRunLbl">Lauf</label><select id="selRun"></select></div>
         <div class="f fsub"><label>Ansicht</label><div id="anaSub" class="seg-toggle"></div></div>
       </div>
+      <div id="seriesPick" class="series-pick no-print" style="display:none"></div>
       <div id="main"></div>
       <div id="coachVid" class="card no-print" style="display:none">
         <div class="c-head"><div><h2>Video <span id="cvEvt" style="color:var(--red)"></span></h2>
@@ -1785,6 +1811,25 @@ body.dark .empty{color:#9aa6b4}
         <div class="db-wrap"><table class="db-table"><thead>
           <tr><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th class="num">Tore</th><th>PDF</th><th></th></tr>
         </thead><tbody id="dbkBody"></tbody></table></div>
+      </div>
+      <div id="dbSecAthletes" style="display:none">
+        <div class="db-filters">
+          <input type="text" id="dbaSearch" class="lib-search" placeholder="Suche Name oder FIS-Code …">
+          <select id="dbaNat" class="mini"><option value="">Alle Nationen</option></select>
+          <span id="dbaCount" class="lib-count"></span>
+          <button class="btn-mini solid" id="dbaNewBtn" style="margin-left:auto">＋ Neue:r Athlet:in</button>
+        </div>
+        <div id="dbaForm" class="dba-form" style="display:none">
+          <input type="text" id="dbaName" placeholder="Name (z. B. Odermatt Marco)">
+          <input type="text" id="dbaFis" placeholder="FIS-Code" inputmode="numeric">
+          <select id="dbaNatSel" class="mini"></select>
+          <button class="btn-mini solid" id="dbaSave">Speichern</button>
+          <button class="btn-mini" id="dbaCancel">Abbrechen</button>
+          <span id="dbaMsg" class="dba-msg"></span>
+        </div>
+        <div class="db-wrap"><table class="db-table"><thead>
+          <tr><th>Name</th><th>Nation</th><th>FIS-Code</th><th class="num">Taggings</th><th></th></tr>
+        </thead><tbody id="dbaBody"></tbody></table></div>
       </div>
     </div>
   </div>
@@ -2200,7 +2245,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202608260903';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609030639';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2224,6 +2269,7 @@ const ATH_COLOR = (function(){
   return map;
 })();
 const athColor = (name,isTop)=> isTop ? GOLD : (ATH_COLOR[name]||'#7a8694');
+function palHash(str, pal){ let h=0; str=String(str); for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return pal[h%pal.length]; }
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
 const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
   H:{n:'Hairpin / Wende',c:'#7a3fb5'},F:{n:'Flush (3er)',c:'#0f9b8e'},K:{n:'Kuppe (Schlüsselstelle)',c:'#d6457f'}};
@@ -2244,7 +2290,8 @@ const figType = lbl => (lbl||'').trim().charAt(0).toUpperCase();
 
 /* ---------- state ---------- */
 let S = {disc:'GS', gen:'M', evtKey:null, run:null, ev:null, comp:null,
-  excludeAnom:true, heroSmooth:true, terrain:false, perGate:null, heroFocus:'', hidden:new Set(), mode:'comp', anaSub:'analyse'};   // heroSmooth: Kurve visuell glätten (Default an); terrain: Terrain-Band einblenden
+  excludeAnom:true, heroSmooth:true, terrain:false, perGate:null, heroFocus:'', hidden:new Set(), mode:'comp', anaSub:'analyse',
+  trainSel:{mode:'all', lauf:null, picked:new Set()}};   // trainSel: Serien-Auswahl in der Trainings-Analyse (all | L<n> | custom)
 let TRAIN = [];          // Trainings-Events (parallel zu DATA)
 let SAVED_TRAIN = [];    // persistierte Trainings-Läufe
 function DS(){ return S.mode==='train'? TRAIN : DATA; }   // aktive Analyse-Datenquelle
@@ -2265,6 +2312,7 @@ function isDeleted(e){ return DELETED.has(evKey(e)); }
 function evLabel(e){ return `${dmy(e.date)} · ${e.venue}`; }
 function dmy(iso){ const [y,m,d]=iso.split('-'); return `${d}.${m}.${y}`; }
 function uniq(a){ return [...new Set(a)]; }
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function segFill(sel, vals, lab, cur, onPick){
   const el=$(sel); el.innerHTML='';
@@ -2274,7 +2322,7 @@ function segFill(sel, vals, lab, cur, onPick){
 }
 function buildModeToggle(){ if(!$('#selMode')) return;
   segFill('#selMode',['comp','train'], m=> m==='comp'?'Wettkampf':'Training', S.mode, v=>{ if(v===S.mode) return; S.mode=v; S.evtKey=null; S.run=null; savePrefs(); buildFilters(); });
-  const lbl=$('#selRunLbl'); if(lbl) lbl.textContent = 'Lauf'; }
+  const lbl=$('#selRunLbl'); if(lbl) lbl.textContent = isTrain()?'Serien':'Lauf'; }
 function buildFilters(){
   buildModeToggle();
   const D=DS();
@@ -2305,12 +2353,98 @@ function refreshEvt(){
 }
 function refreshRun(){
   S.evtKey = $('#selEvt').value;
+  if(isTrain()){ refreshTrainSeries(); return; }
+  const rf=$('#selRunField'); if(rf) rf.style.display='';
+  const sp=$('#seriesPick'); if(sp) sp.style.display='none';
   const [date,venue]=S.evtKey.split('|');
   const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e))
     .map(e=>e.run);
   runs.sort((a,b)=>(+a)-(+b));
   fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), runs.includes(S.run)?S.run:runs[0], true);
   loadEvent();
+}
+
+/* ---------- Training: Sektion → Serien-Auswahl (Athlet · Lauf) ---------- */
+function seriesKey(name,run){ return name+'|'+run; }
+function trainSectionSeries(date,venue){
+  const evs = TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e));
+  const out=[];
+  evs.forEach(e=> (e.skiers||[]).forEach(s=> out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run})));
+  // sortiert nach Athlet, dann Lauf
+  out.sort((a,b)=> a.name.localeCompare(b.name) || (+a.run)-(+b.run));
+  return out;
+}
+function refreshTrainSeries(){
+  const sp=$('#seriesPick'), rf=$('#selRunField');
+  if(rf) rf.style.display='none';   // im Training kein Einzel-Lauf-Dropdown
+  if(!S.evtKey){ if(sp) sp.style.display='none'; return; }
+  const [date,venue]=S.evtKey.split('|');
+  const all=trainSectionSeries(date,venue);
+  const secKey=[S.disc,S.gen,S.evtKey].join('|');
+  if(!S.trainSel || S.trainSel.sectionKey!==secKey){
+    S.trainSel={ sectionKey:secKey, picked:new Set(all.map(s=>seriesKey(s.name,s.run))) };   // Default: alle Serien
+  }
+  const laufs=uniq(all.map(s=>+s.run)).sort((a,b)=>a-b);
+  renderSeriesPick(all, laufs);
+  if(sp) sp.style.display = all.length? 'block':'none';
+  loadTrainEvent(all);
+}
+function renderSeriesPick(all, laufs){
+  const sp=$('#seriesPick'); if(!sp) return;
+  if(!all.length){ sp.innerHTML=''; return; }
+  const byAth=new Map();
+  all.forEach(s=>{ if(!byAth.has(s.name)) byAth.set(s.name,[]); byAth.get(s.name).push(+s.run); });
+  let h='<div class="sp-head"><span class="sp-title">Serien (Athlet · Lauf)</span>'
+    +'<div class="sp-quick"><button class="sp-qbtn" data-q="all">Alle</button><button class="sp-qbtn" data-q="none">Keine</button>'
+    + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">Nur Lauf ${l}</button>`).join('')
+    +'</div></div>';
+  [...byAth.entries()].forEach(([name,runs])=>{
+    const sur=String(name).split(' ')[0];
+    h+=`<div class="sp-athrow"><div class="sp-athname">${escHtml(sur)}</div><div class="sp-laufs">`;
+    runs.sort((a,b)=>a-b).forEach(r=>{ const k=seriesKey(name,r); const on=S.trainSel.picked.has(k);
+      h+=`<label class="sp-chip${on?' on':''}"><input type="checkbox" data-k="${escHtml(k)}"${on?' checked':''}> L${r}</label>`; });
+    h+='</div></div>';
+  });
+  sp.innerHTML=h;
+  sp.querySelectorAll('input[type=checkbox]').forEach(cb=> cb.onchange=()=>{
+    const k=cb.dataset.k; if(cb.checked) S.trainSel.picked.add(k); else S.trainSel.picked.delete(k);
+    const ch=cb.closest('.sp-chip'); if(ch) ch.classList.toggle('on',cb.checked); loadTrainEvent(all); });
+  sp.querySelectorAll('.sp-qbtn').forEach(b=> b.onclick=()=>{
+    const q=b.dataset.q;
+    if(q==='all') all.forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run)));
+    else if(q==='none') S.trainSel.picked.clear();
+    else if(/^L\d+$/.test(q)){ S.trainSel.picked.clear(); all.filter(s=>+s.run===+q.slice(1)).forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run))); }
+    renderSeriesPick(all,laufs); loadTrainEvent(all); });
+}
+function loadTrainEvent(all){
+  if(!S.evtKey){ return; }
+  const [date,venue]=S.evtKey.split('|');
+  if(!all) all=trainSectionSeries(date,venue);
+  if(!all.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Noch keine Trainings-Läufe in dieser Sektion.', 'tag')+'</div>'; return; }
+  const sel = all.filter(s=> S.trainSel.picked.has(seriesKey(s.name,s.run)));
+  if(!sel.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.', 'chart')+'</div>'; return; }
+  // Serien -> eindeutige Einträger «Nachname·L<Lauf>» (eigene Farbe je Serie über athColor)
+  const skiers = sel.map(s=>{ const sur=String(s.name).split(' ')[0];
+    return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run}; });
+  // Figuren der Sektion zusammenführen
+  const evsF=TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e));
+  const fmap=new Map(); evsF.forEach(e=>(e.figures||[]).forEach(f=>{ if(!fmap.has(f.gate)) fmap.set(f.gate,f.label); }));
+  const ev={date,venue,discipline:S.disc,gender:S.gen,run:'—',mode:'train',nGates:0,
+    figures:[...fmap.entries()].map(([gate,label])=>({gate,label})).sort((a,b)=>a.gate-b.gate),
+    skiers,hasSUI:false,hasTop:false};
+  recomputeEvent(ev);
+  S.ev=ev; S.run=null; S.hidden=new Set();
+  S.comp=compute(ev);
+  // eigene, stabile Farben je Serie (sonst wären alle nicht-schnellsten grau) – Top bleibt Gold
+  S.comp.skiers.forEach(s=>{ if(!s.isTop) s.color=palHash(s.name, ATH_PAL); });
+  S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
+  S.wfAth=S.perGate; S.heroFocus='';
+  const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
+  const selLbl = `${sel.length} Serien · ${nAth} Athlet:innen · ${nRun} Läufe`;
+  const phM=$('#printHeadMeta'); if(phM) phM.textContent=`${evLabel(ev)} · ${discName(S.disc)} · ${S.gen==='M'?'Männer':'Frauen'} · Training · ${selLbl}`;
+  const phD=$('#printHeadDate'); if(phD){ try{ phD.textContent='Erstellt '+new Date().toLocaleDateString('de-CH'); }catch(e){} }
+  S.pdfName = `GtG_${ev.venue}_${S.disc}_${S.gen}_Training_${ev.date}`;
+  render();
 }
 function fill(sel, vals, lab, cur, isNum){
   sel.innerHTML='';
@@ -2320,6 +2454,7 @@ function fill(sel, vals, lab, cur, isNum){
 }
 
 function loadEvent(){
+  if(isTrain()){ return loadTrainEvent(); }
   if(!$('#selRun')||$('#selRun').value===''){ return; }
   S.run = Number($('#selRun').value);
   const [date,venue]=S.evtKey.split('|');
@@ -3080,8 +3215,19 @@ function setTagMode(mode){ TG.mode=mode;
   renderLibrary(); updateMetaSummary();
 }
 // Laufnummer-Feld zeigen: immer im Training, im Wettkampf nur bei GS/SL
-function updateRunField(){ const disc=$('#mDisc')?$('#mDisc').value:'GS'; const show=needsRun(TG.mode||'comp',disc);
-  if($('#mfRun')) $('#mfRun').style.display = show?'':'none'; }
+function updateRunField(){ const disc=$('#mDisc')?$('#mDisc').value:'GS'; const train=(TG.mode||'comp')==='train'; const show=needsRun(TG.mode||'comp',disc);
+  if($('#mfRun')) $('#mfRun').style.display = show?'':'none';
+  const lbl=$('#mfRun')?$('#mfRun').querySelector('span'):null; if(lbl) lbl.textContent = train?'Lauf-Nr.':'Lauf'; }
+// Training: nächste freie Lauf-Nr. für den gewählten Athleten in dieser Sektion vorschlagen (editierbar)
+function suggestTrainLauf(){
+  if((TG.mode||'comp')!=='train') return;
+  const name=$('#mAth')?$('#mAth').value:''; if(!name) return;
+  const date=$('#mDate')?$('#mDate').value:''; const venue=(typeof getVenue==='function'?getVenue():'');
+  const disc=$('#mDisc')?$('#mDisc').value:'GS'; const gen=$('#mGen')?$('#mGen').value:'M';
+  if(!date||!venue) return;
+  const used=SAVED_TRAIN.filter(r=>r.date===date&&r.venue===venue&&r.disc===disc&&r.gen===gen&&r.name===name).map(r=>(+r.run)||0);
+  const next = used.length? Math.max(...used)+1 : 1;
+  if($('#mRun')) $('#mRun').value=String(next); }
 // aktuelle Laufnummer aus dem Formular (SG/DH im Wettkampf -> 1, kein Feld)
 function formRun(){ const disc=$('#mDisc')?$('#mDisc').value:'GS'; return needsRun(TG.mode||'comp',disc)? (parseInt($('#mRun')?.value,10)||1) : 1; }
 
@@ -4803,6 +4949,9 @@ function initTagging(){
   $('#mGap').addEventListener('input',refreshOv); $('#mVenueNew').addEventListener('input',refreshOv);
   if($('#mSession')) $('#mSession').addEventListener('input',refreshOv);
   if($('#mDisc')) $('#mDisc').addEventListener('change',updateRunField);   // Lauf-Feld je Disziplin ein-/ausblenden
+  // Training: bei Athlet-/Sektionswechsel die nächste freie Lauf-Nr. vorschlagen
+  ['#mAth','#mDate','#mDisc','#mGen','#mVenueSel'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change',suggestTrainLauf); });
+  if($('#mVenueNew')) $('#mVenueNew').addEventListener('change',suggestTrainLauf);
   // tabs
   document.querySelectorAll('#tabs .tab').forEach(b=> b.onclick=()=>switchView(b.dataset.view));
   if($('#wfBtn')) $('#wfBtn').onclick=()=>switchView('workflow');
@@ -5187,9 +5336,11 @@ function renderDatenbank(){
   if($('#dbSecTaggings')) $('#dbSecTaggings').style.display = DBSUB==='taggings'?'':'none';
   if($('#dbSecVideos')) $('#dbSecVideos').style.display = DBSUB==='videos'?'':'none';
   if($('#dbSecKurs')) $('#dbSecKurs').style.display = DBSUB==='kurssetzung'?'':'none';
+  if($('#dbSecAthletes')) $('#dbSecAthletes').style.display = DBSUB==='athletes'?'':'none';
   if(DBSUB==='taggings') renderDbTaggings();
   else if(DBSUB==='videos') renderDbVideos();
   else if(DBSUB==='kurssetzung') renderDbKurs();
+  else if(DBSUB==='athletes') renderDbAthletes();
   else renderDbEvents();
 }
 function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
@@ -5627,10 +5778,91 @@ function dbvStorageBanner(all){ const el=$('#dbvStore'); if(!el) return;
     else finish(sum,0);
   });
 }
+/* ---------- Datenbank: Athlet:innen (CRUD) ---------- */
+let DBA_EDIT=null;
+function athTagCount(name){ return [...SAVED,...SAVED_TRAIN].filter(r=>r.name===name).length; }
+function fillDbaNat(cur){ const sel=$('#dbaNatSel'); if(!sel) return; sel.innerHTML='<option value="">Nation</option>'+allNations().map(n=>`<option value="${n}">${n}</option>`).join(''); if(cur) sel.value=cur; }
+function renderDbAthletes(){
+  const body=$('#dbaBody'); if(!body) return;
+  const natSel=$('#dbaNat'); if(natSel){ const cur=natSel.value; const nats=uniq(ATHLETES.map(a=>a.nation).filter(Boolean)).sort();
+    natSel.innerHTML='<option value="">Alle Nationen</option>'+nats.map(n=>`<option value="${escHtml(n)}">${escHtml(n)}</option>`).join(''); if(nats.includes(cur)) natSel.value=cur; }
+  const q=($('#dbaSearch')&&$('#dbaSearch').value||'').trim().toLowerCase();
+  const fn=natSel?natSel.value:'';
+  let list=ATHLETES.filter(a=>a&&a.name);
+  if(fn) list=list.filter(a=>a.nation===fn);
+  if(q) list=list.filter(a=> a.name.toLowerCase().includes(q) || String(a.fis||'').toLowerCase().includes(q));
+  list=[...list].sort((a,b)=>a.name.localeCompare(b.name));
+  if($('#dbaCount')) $('#dbaCount').textContent = `${list.length} / ${ATHLETES.length}`;
+  body.innerHTML = list.length? list.map(a=>{
+    const cnt=athTagCount(a.name); const sur=a.name.split(' ')[0], rest=a.name.split(' ').slice(1).join(' ');
+    return `<tr><td><b>${escHtml(sur)}</b>${rest?' '+escHtml(rest):''}</td>`
+      +`<td>${a.nation?`<span class="gsex">${escHtml(a.nation)}</span>`:'—'}</td>`
+      +`<td>${a.fis?escHtml(a.fis):'<span style="color:var(--muted)">—</span>'}</td>`
+      +`<td class="num">${cnt||'<span style="color:var(--muted)">–</span>'}</td>`
+      +`<td class="db-actions" style="white-space:nowrap;text-align:right"><button class="btn-mini" data-edit="${escHtml(a.name)}">Bearbeiten</button> <button class="btn-mini danger" data-del="${escHtml(a.name)}">Löschen</button></td></tr>`;
+  }).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:22px">Keine Athlet:innen gefunden. Oben «＋ Neue:r Athlet:in» hinzufügen.</td></tr>`;
+  body.querySelectorAll('[data-edit]').forEach(b=> b.onclick=()=>dbaOpenForm(b.dataset.edit));
+  body.querySelectorAll('[data-del]').forEach(b=> b.onclick=()=>dbaDelete(b.dataset.del));
+}
+function dbaOpenForm(name){
+  DBA_EDIT=name||null;
+  const a=name?ATHLETES.find(x=>x.name===name):null;
+  if($('#dbaForm')) $('#dbaForm').style.display='flex';
+  fillDbaNat(a?a.nation:'SUI');
+  if($('#dbaName')) $('#dbaName').value=a?a.name:'';
+  if($('#dbaFis')) $('#dbaFis').value=a&&a.fis?a.fis:'';
+  const msg=$('#dbaMsg'); if(msg){ msg.className='dba-msg'; msg.textContent = name?('Bearbeiten: '+name):'Neue:r Athlet:in'; }
+  if($('#dbaName')) $('#dbaName').focus();
+}
+function dbaCloseForm(){ DBA_EDIT=null; if($('#dbaForm')) $('#dbaForm').style.display='none'; }
+function dbaRename(oldName,newName){
+  [SAVED,SAVED_TRAIN].forEach(arr=>arr.forEach(r=>{ if(r.name===oldName) r.name=newName; }));
+  LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN);
+  [DATA,TRAIN].forEach(arr=>arr.forEach(ev=>{ let ch=false; (ev.skiers||[]).forEach(s=>{ if(s.name===oldName){ s.name=newName; ch=true; } }); if(ch) recomputeEvent(ev); }));
+}
+function dbaSave(){
+  const msg=$('#dbaMsg'); const setErr=t=>{ if(msg){ msg.className='dba-msg err'; msg.textContent=t; } };
+  const raw=($('#dbaName')?$('#dbaName').value:'').trim();
+  if(!raw){ setErr('Bitte Name eingeben.'); return; }
+  const nm=canonName(raw);
+  const fis=($('#dbaFis')?$('#dbaFis').value:'').trim();
+  const nat=($('#dbaNatSel')?$('#dbaNatSel').value:'').trim();
+  const exists=ATHLETES.find(a=>a.name===nm);
+  if(DBA_EDIT){
+    const a=ATHLETES.find(x=>x.name===DBA_EDIT); if(!a){ dbaCloseForm(); renderDbAthletes(); return; }
+    if(nm!==DBA_EDIT && exists){ setErr('Dieser Name existiert bereits.'); return; }
+    if(nm!==DBA_EDIT){ const cnt=athTagCount(DBA_EDIT);
+      if(cnt && !confirm(`«${DBA_EDIT}» in «${nm}» umbenennen?\n${cnt} Tagging(s) werden übernommen. Bereits hochgeladene Videos können am alten Namen bleiben.`)) return;
+      dbaRename(DBA_EDIT,nm); a.name=nm; }
+    a.nation=nat||a.nation||''; if(fis) a.fis=fis; else delete a.fis;
+  } else {
+    if(exists){ setErr('Diese:r Athlet:in existiert bereits.'); return; }
+    const o={name:nm, nation:nat||''}; if(fis) o.fis=fis; ATHLETES.push(o);
+  }
+  ATHLETES.sort((a,b)=>a.name.localeCompare(b.name));
+  persistAthletes(); if(typeof fillAthleteSelect==='function') fillAthleteSelect(); if(typeof ghAutoSync==='function') try{ ghAutoSync(); }catch(_){}
+  dbaCloseForm(); renderDbAthletes();
+}
+function dbaDelete(name){
+  const cnt=athTagCount(name);
+  if(!confirm(`«${name}» aus der Athlet:innen-Liste löschen?${cnt?`\n${cnt} bestehende Tagging(s) bleiben erhalten und behalten den Namen.`:''}`)) return;
+  ATHLETES=ATHLETES.filter(a=>a.name!==name);
+  persistAthletes(); if(typeof fillAthleteSelect==='function') fillAthleteSelect(); if(typeof ghAutoSync==='function') try{ ghAutoSync(); }catch(_){}
+  renderDbAthletes();
+}
+
 function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[])); DELETED=new Set(LS.get('gtg_deleted',[]));
-  if($('#dbSub')) segFill('#dbSub',['events','taggings','videos','kurssetzung'], s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':'Kurssetzung', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
+  if($('#dbSub')) segFill('#dbSub',['events','taggings','videos','kurssetzung','athletes'], s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':s==='kurssetzung'?'Kurssetzung':'Athlet:innen', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
   ['#dbkDisc','#dbkGen'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbkSearch')) $('#dbkSearch').oninput=renderDatenbank;
+  // Athlet:innen-Seite
+  if($('#dbaSearch')) $('#dbaSearch').oninput=renderDbAthletes;
+  if($('#dbaNat')) $('#dbaNat').onchange=renderDbAthletes;
+  if($('#dbaNewBtn')) $('#dbaNewBtn').onclick=()=>dbaOpenForm(null);
+  if($('#dbaSave')) $('#dbaSave').onclick=dbaSave;
+  if($('#dbaCancel')) $('#dbaCancel').onclick=dbaCloseForm;
+  if($('#dbaName')) $('#dbaName').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); dbaSave(); } });
+  if($('#dbaFis')) $('#dbaFis').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); dbaSave(); } });
   if($('#evEditSave')) $('#evEditSave').onclick=()=>{ if(!EVEDIT_KEY) return;
     const date=$('#evDate').value, venue=($('#evVenue').value||'').trim(), disc=$('#evDisc').value, gen=$('#evGen').value, run=parseInt($('#evRun').value,10);
     if(!date||!venue||!(run>=1)){ if($('#evEditMsg')){ $('#evEditMsg').className='save-msg warn'; $('#evEditMsg').textContent='Datum, Ort und Lauf angeben.'; } return; }
