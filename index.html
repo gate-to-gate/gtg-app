@@ -2245,7 +2245,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609030639';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609030651';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5933,6 +5933,19 @@ function cvVideosForCurrent(){
       res((cur&&cur.videos)||[]); return;
     }
     if(!S.ev){ res([]); return; }
+    // Training-Multi-Serien: Videos aller gewählten Serien (Athlet·Lauf) laden.
+    // Anzeigename = «Nachname·L<Lauf>», passend zu den synthetischen Serien in S.comp.
+    if(isTrain() && S.run==null && S.trainSel && S.trainSel.picked){
+      const picks=S.trainSel.picked;
+      vdbAll().then(list=>{
+        const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && r.video && picks.has(r.name+'|'+r.run));
+        // stabile Reihenfolge wie im Panel
+        vids.sort((a,b)=> String(a.name).localeCompare(String(b.name)) || ((+a.run)-(+b.run)));
+        res(vids.map(r=>{ const sur=String(r.name).split(' ')[0];
+          return { id:r.id, name: sur+'·L'+r.run, nation:r.nation, tags:(r.tags||[]), blob:r.video, _base:r.name, _lauf:r.run }; }));
+      }).catch(()=>res([]));
+      return;
+    }
     vdbAll().then(list=>{
       const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && String(r.run)===String(S.run) && r.video);
       res(vids.map(r=>({ id:r.id, name:r.name, nation:r.nation, tags:(r.tags||[]), blob:r.video })));
@@ -5950,7 +5963,7 @@ function cvRenderPanel(){
       CVVIDS=[]; CLIPNAME=null; return; }
     panel.style.display='';
     CVVIDS = vids;
-    if($('#cvEvt')) $('#cvEvt').textContent = S.ev? `· ${S.ev.venue} · ${runLong(S.mode,S.disc,S.run)}` : '';
+    if($('#cvEvt')) $('#cvEvt').textContent = S.ev? `· ${S.ev.venue} · ${(isTrain()&&S.run==null)?'Training':runLong(S.mode,S.disc,S.run)}` : '';
     const host=$('#clipAth');
     if(host){
       host.innerHTML = vids.map(v=>`<button class="cv-chip" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
