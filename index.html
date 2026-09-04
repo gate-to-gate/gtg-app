@@ -115,6 +115,27 @@ td.clip-hi{transition:outline-color .15s}
 .clip-vids.sbs #clipVideo,.clip-vids.sbs #clipVideoB{max-height:46vh}
 .clip-main.clip-sbs .clip-left{flex:1 1 72%}
 .clip-main.clip-sbs .clip-viz{flex:1 1 28%}
+.clip-bigbtn{display:inline-flex;align-items:center;gap:6px}
+.clip-bigbtn svg{width:15px;height:15px}
+/* Vergrössern-Pop-up (Side-by-Side gross) */
+.clipbig{position:fixed;inset:0;z-index:200;background:rgba(13,17,22,.93);display:flex;flex-direction:column;padding:14px 16px 18px;box-sizing:border-box}
+.clipbig-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;color:#fff}
+.clipbig-title{font-size:15px;font-weight:800}
+.clipbig-switch{margin-left:6px;display:inline-flex;background:rgba(255,255,255,.14);border-radius:9px;padding:3px;gap:2px}
+.clipbig-switch button{border:none;background:none;color:#cfd7e2;font:inherit;font-size:13px;font-weight:700;padding:6px 15px;border-radius:7px;cursor:pointer}
+.clipbig-switch button.on{background:#fff;color:#14181f}
+.clipbig-x{margin-left:auto;background:rgba(255,255,255,.14);border:none;color:#fff;width:36px;height:36px;border-radius:9px;font-size:16px;cursor:pointer}
+.clipbig-x:hover{background:rgba(255,255,255,.28)}
+.clipbig-body{flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center;overflow:auto}
+.clipbig-body #clipLeft{width:100%;display:flex;flex-direction:column;gap:12px}
+.clipbig-body .clip-vids{display:flex;flex-direction:row;gap:16px;width:100%;align-items:flex-start}
+.clipbig-body .clip-vcol{flex:1 1 50%;min-width:0;display:block}
+.clipbig-body .clip-colb{display:block!important}
+.clipbig-body .clip-videowrap video{width:100%;height:auto;max-height:76vh;background:#000;border-radius:10px;display:block}
+.clipbig-body .clip-sbsbar{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
+.clipbig-body #clipViz{width:100%;max-width:1150px;background:var(--card);border-radius:12px;padding:12px}
+.clipbig-body #clipViz svg{width:100%;height:auto}
+@media(max-width:760px){ .clipbig-body .clip-vids{flex-direction:column} }
 .clip-selb{width:100%;height:34px;box-sizing:border-box;margin-bottom:6px;font:inherit;font-size:12.5px;font-weight:700;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
 .clip-alabel{display:none}
 .clip-vids.sbs .clip-alabel{display:flex;align-items:center;height:34px;box-sizing:border-box;width:100%;margin-bottom:6px;padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:#f7f8fa;color:var(--ink);font-weight:700;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1438,7 +1459,7 @@ body.dark .empty{color:#9aa6b4}
           <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg>Side-by-Side</button>
         </div>
         <div class="clip-main">
-          <div class="clip-left">
+          <div class="clip-left" id="clipLeft">
             <div class="clip-vids" id="clipVids">
               <div class="clip-vcol" data-col="a">
                 <div class="clip-alabel" id="clipLabelA"></div>
@@ -1455,10 +1476,19 @@ body.dark .empty{color:#9aa6b4}
               <button id="clipSyncPlay" type="button">▶ Beide</button>
               <button id="clipSyncBtn" type="button">An diesem Tor synchronisieren</button>
               <button id="clipSyncOff" type="button">Lösen</button>
+              <button id="clipBigBtn" type="button" class="clip-bigbtn" title="Vergrössern (Vollbild)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>Vergrössern</button>
             </div>
           </div>
           <div id="clipViz" class="clip-viz"></div>
         </div>
+      </div>
+      <div id="clipBig" class="clipbig no-print" style="display:none">
+        <div class="clipbig-head">
+          <div class="clipbig-title">Vergrössert</div>
+          <div class="clipbig-switch"><button id="clipBigVideos" class="on" type="button">Videos</button><button id="clipBigGraph" type="button">Grafik</button></div>
+          <button id="clipBigClose" class="clipbig-x" type="button" title="Schliessen (Esc)">✕</button>
+        </div>
+        <div class="clipbig-body" id="clipBigBody"></div>
       </div>
     </div>
     <div id="anaVerlauf" style="display:none">
@@ -2245,7 +2275,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609030651';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609040846';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5977,6 +6007,29 @@ function cvRenderPanel(){
     if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS);
   });
 }
+/* ---- Vergrössern: Videos (Side-by-Side) oder Grafik im Vollbild-Pop-up ---- */
+// Live-Knoten (#clipLeft bzw. #clipViz) werden ins Pop-up verschoben und beim Schliessen
+// wieder an ihren Originalplatz gehängt -> Wiedergabe, Sync, Def-Balken bleiben erhalten.
+let CLIPBIG_HOME={};
+function clipBigStash(node){ return {node, parent:node.parentNode, next:node.nextSibling}; }
+function clipBigRestoreAll(){ Object.keys(CLIPBIG_HOME).forEach(k=>{ const h=CLIPBIG_HOME[k]; if(h&&h.node&&h.parent){ if(h.next&&h.next.parentNode===h.parent) h.parent.insertBefore(h.node,h.next); else h.parent.appendChild(h.node); } }); CLIPBIG_HOME={}; }
+function clipBigShow(mode){
+  const body=$('#clipBigBody'); if(!body) return;
+  clipBigRestoreAll();
+  if(mode==='graph'){ const g=$('#clipViz'); if(g){ CLIPBIG_HOME.viz=clipBigStash(g); body.appendChild(g); } }
+  else { const v=$('#clipLeft'); if(v){ CLIPBIG_HOME.left=clipBigStash(v); body.appendChild(v); } }
+  const vb=$('#clipBigVideos'), gb=$('#clipBigGraph');
+  if(vb) vb.classList.toggle('on', mode!=='graph'); if(gb) gb.classList.toggle('on', mode==='graph');
+}
+function clipBigOpen(){ const m=$('#clipBig'); if(!m) return; m.style.display='flex'; clipBigShow('videos'); }
+function clipBigClose(){ const m=$('#clipBig'); if(!m) return; clipBigRestoreAll(); m.style.display='none'; }
+function initClipBig(){
+  if($('#clipBigBtn')) $('#clipBigBtn').onclick=clipBigOpen;
+  if($('#clipBigClose')) $('#clipBigClose').onclick=clipBigClose;
+  if($('#clipBigVideos')) $('#clipBigVideos').onclick=()=>clipBigShow('videos');
+  if($('#clipBigGraph')) $('#clipBigGraph').onclick=()=>clipBigShow('graph');
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipBig'); if(m && m.style.display!=='none') clipBigClose(); } });
+}
 /* ---- Coach: Side-by-Side (zwei Videos nebeneinander, je mit Rückstands-Balken) ---- */
 let CVSBS=false;
 function cvColOptions(sel, chosen){ sel.innerHTML=(CVVIDS||[]).map(v=>`<option value="${encodeURIComponent(v.id)}"${v.name===chosen?' selected':''}>${v.name}</option>`).join(''); }
@@ -6490,6 +6543,7 @@ initProfil();
 initSbs();
 initCloud();
 initDatenbank();
+initClipBig();
 /* Sticky Filterleiste: stärkerer Schatten, sobald angeheftet (nur wenn sichtbar) */
 (function(){
   const onScroll=()=>{ document.querySelectorAll('.filters').forEach(f=>{ if(f.offsetParent===null){ f.classList.remove('stuck'); return; }
