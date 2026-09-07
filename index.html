@@ -326,20 +326,20 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 /* Filter bar */
 .filters{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;background:var(--card);padding:9px 12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px;position:sticky;top:62px;z-index:30}
 .filters.stuck{box-shadow:0 6px 16px rgba(20,24,31,.12)}
-.series-pick{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:11px 14px;margin:-4px 0 14px}
-.series-pick .sp-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
-.series-pick .sp-title{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.series-pick .sp-quick{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-.series-pick .sp-qbtn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:4px 10px;font:inherit;font-size:11px;font-weight:650;color:var(--muted);cursor:pointer}
+.series-pick{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px 12px;margin:-4px 0 12px}
+.series-pick .sp-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.series-pick .sp-title{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.series-pick .sp-quick{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+.series-pick .sp-qbtn{border:1.3px solid var(--line);background:#fff;border-radius:6px;padding:3px 9px;font:inherit;font-size:10.5px;font-weight:650;color:var(--muted);cursor:pointer}
 .series-pick .sp-qbtn:hover{border-color:#c3cad4;color:var(--ink2)}
-.series-pick .sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px 12px}
-.series-pick .sp-athrow{margin:0;min-width:0}
-.series-pick .sp-athname{font-size:11.5px;font-weight:750;color:var(--ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.series-pick .sp-laufs{display:flex;gap:6px;flex-wrap:wrap}
-.series-pick .sp-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:650;color:var(--ink2);cursor:pointer;transition:.12s}
+.series-pick .sp-grid{display:flex;flex-wrap:wrap;gap:6px 10px}
+.series-pick .sp-athrow{display:flex;align-items:center;gap:6px;min-width:0}
+.series-pick .sp-athname{font-size:11px;font-weight:750;color:var(--ink);white-space:nowrap}
+.series-pick .sp-laufs{display:flex;gap:4px;flex-wrap:wrap}
+.series-pick .sp-chip{display:inline-flex;align-items:center;gap:5px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:7px;padding:3px 8px;font-size:11.5px;font-weight:650;color:var(--ink2);cursor:pointer;transition:.12s}
 .series-pick .sp-chip:hover{border-color:#c3cad4}
 .series-pick .sp-chip.on{border-color:#5b6470;background:rgba(90,100,112,.10);color:var(--ink)}
-.series-pick .sp-chip input{width:14px;height:14px;accent-color:#5b6470;cursor:pointer;margin:0}
+.series-pick .sp-chip input{width:13px;height:13px;accent-color:#5b6470;cursor:pointer;margin:0}
 body.dark .series-pick{background:#252d39;border-color:#3a4452}
 body.dark .series-pick .sp-qbtn,body.dark .series-pick .sp-chip{background:#1f2732;border-color:#3a4452;color:#c2ccd8}
 body.dark .series-pick .sp-athname{color:#eef1f6}
@@ -2276,7 +2276,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609070709';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609070723';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2818,7 +2818,7 @@ function drawHero(){
     if(seg.length) segs.push(seg);
     const dpath=segs.map(sg=>smoothMono(sg)).join(' ');
     const isFocus = !!focusName && !s.isTop && s.name===focusName;
-    const w=s.isTop?2.6:2.2, dash='';
+    const w=s.isTop?2.2:2.2, dash = s.isTop?'stroke-dasharray="2 2.5"':'';   // Bestzeit: fein & dicht gestrichelt
     const lineCol = s.isTop ? '#C28E00' : col;   // Bestzeit: durchgezogen, minim dunkleres Gelb
     // Fokus-Füllung (nur gewählter Athlet): sanfter Farbverlauf zwischen Linie und Bestzeit — nicht im PDF
     if(isFocus){ segs.forEach(sg=>{ if(sg.length<2) return;
@@ -3073,7 +3073,10 @@ function drawBar(){
 function drawSector(){
   const T=chTheme();
   const c=S.comp; const secs=c.sectors; const sui=c.sui;
-  if(!secs.length){ $('#secShell').innerHTML=emptyBox('Keine Lap-Marker gesetzt – ohne Laps lassen sich keine Abschnitte bilden.','chart'); return; }
+  const card=$('#secCard');
+  // Ohne Laps gibt es nur einen einzigen «Ganzlauf»-Abschnitt -> Grafik ist sinnlos, ganze Karte ausblenden
+  if(!secs || secs.length<2){ if(card) card.style.display='none'; return; }
+  if(card) card.style.display='';
   const key=S.excludeAnom?'cleanDiff':'diff';
   const data = sui.map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
   const W=620,H=320, ml=42,mr=12,mt=20,mb=52, iw=W-ml-mr, ih=H-mt-mb;
