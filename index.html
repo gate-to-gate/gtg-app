@@ -332,13 +332,14 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .series-pick .sp-quick{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
 .series-pick .sp-qbtn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:4px 10px;font:inherit;font-size:11px;font-weight:650;color:var(--muted);cursor:pointer}
 .series-pick .sp-qbtn:hover{border-color:#c3cad4;color:var(--ink2)}
-.series-pick .sp-athrow{margin:0 0 8px}
-.series-pick .sp-athname{font-size:12px;font-weight:750;color:var(--ink);margin-bottom:4px}
-.series-pick .sp-laufs{display:flex;gap:7px;flex-wrap:wrap}
+.series-pick .sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:9px 12px}
+.series-pick .sp-athrow{margin:0;min-width:0}
+.series-pick .sp-athname{font-size:11.5px;font-weight:750;color:var(--ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.series-pick .sp-laufs{display:flex;gap:6px;flex-wrap:wrap}
 .series-pick .sp-chip{display:inline-flex;align-items:center;gap:6px;border:1.4px solid var(--line);background:#fbfcfe;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:650;color:var(--ink2);cursor:pointer;transition:.12s}
 .series-pick .sp-chip:hover{border-color:#c3cad4}
-.series-pick .sp-chip.on{border-color:var(--red);background:rgba(218,41,28,.06);color:var(--ink)}
-.series-pick .sp-chip input{width:14px;height:14px;accent-color:var(--red);cursor:pointer;margin:0}
+.series-pick .sp-chip.on{border-color:#5b6470;background:rgba(90,100,112,.10);color:var(--ink)}
+.series-pick .sp-chip input{width:14px;height:14px;accent-color:#5b6470;cursor:pointer;margin:0}
 body.dark .series-pick{background:#252d39;border-color:#3a4452}
 body.dark .series-pick .sp-qbtn,body.dark .series-pick .sp-chip{background:#1f2732;border-color:#3a4452;color:#c2ccd8}
 body.dark .series-pick .sp-athname{color:#eef1f6}
@@ -2275,7 +2276,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609040846';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609070709';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2427,14 +2428,15 @@ function renderSeriesPick(all, laufs){
   let h='<div class="sp-head"><span class="sp-title">Serien (Athlet · Lauf)</span>'
     +'<div class="sp-quick"><button class="sp-qbtn" data-q="all">Alle</button><button class="sp-qbtn" data-q="none">Keine</button>'
     + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">Nur Lauf ${l}</button>`).join('')
-    +'</div></div>';
+    +'</div></div><div class="sp-grid">';
   [...byAth.entries()].forEach(([name,runs])=>{
     const sur=String(name).split(' ')[0];
-    h+=`<div class="sp-athrow"><div class="sp-athname">${escHtml(sur)}</div><div class="sp-laufs">`;
+    h+=`<div class="sp-athrow"><div class="sp-athname" title="${escHtml(name)}">${escHtml(sur)}</div><div class="sp-laufs">`;
     runs.sort((a,b)=>a-b).forEach(r=>{ const k=seriesKey(name,r); const on=S.trainSel.picked.has(k);
       h+=`<label class="sp-chip${on?' on':''}"><input type="checkbox" data-k="${escHtml(k)}"${on?' checked':''}> L${r}</label>`; });
     h+='</div></div>';
   });
+  h+='</div>';
   sp.innerHTML=h;
   sp.querySelectorAll('input[type=checkbox]').forEach(cb=> cb.onchange=()=>{
     const k=cb.dataset.k; if(cb.checked) S.trainSel.picked.add(k); else S.trainSel.picked.delete(k);
@@ -2465,8 +2467,12 @@ function loadTrainEvent(all){
   recomputeEvent(ev);
   S.ev=ev; S.run=null; S.hidden=new Set();
   S.comp=compute(ev);
-  // eigene, stabile Farben je Serie (sonst wären alle nicht-schnellsten grau) – Top bleibt Gold
-  S.comp.skiers.forEach(s=>{ if(!s.isTop) s.color=palHash(s.name, ATH_PAL); });
+  // Farbe je Athlet: Läufe desselben Athleten teilen eine Farbe, unterschieden durch die
+  // Lauf-Nr. direkt an der Linie. Top (Bestzeit) bleibt Gold.
+  const baseCount={}; S.comp.skiers.forEach(s=>{ const b=String(s.name).split('·L')[0]; baseCount[b]=(baseCount[b]||0)+1; });
+  const baseCol={}; let _pi=0;
+  S.comp.skiers.forEach(s=>{ const p=String(s.name).split('·L'); const b=p[0]; s._lauf=p[1]||''; s._dup=baseCount[b]>1;
+    if(!s.isTop){ if(!(b in baseCol)){ baseCol[b]=ATH_PAL[_pi%ATH_PAL.length]; _pi++; } s.color=baseCol[b]; } });
   S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
   S.wfAth=S.perGate; S.heroFocus='';
   const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
@@ -2735,12 +2741,13 @@ function drawHero(){
   const W=980,H=(S.printMode?440:420), ml=74,mr=20,mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
-  const key = S.excludeAnom?'cumCleanDisp':'cumRawDisp';
+  const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
   let vals=[]; series.forEach(s=> s[key].forEach(v=> v!=null && vals.push(v)));
   vals.push(0);
   let vmax=Math.max(...vals,0.1), vmin=Math.min(...vals,0);
   const pad=(vmax-vmin)*0.08+0.02; vmax+=pad; vmin-=pad;
-  const x=g=> ml + (n<=1?0:(g-1)/(n-1))*iw;
+  const NP=n+1;                                 // Tor-Positionen 1..n+1: Tor 1 = Start (0 für alle), Tor t (>=2) = kumuliert bis dahin
+  const x=t=> ml + (NP<=1?0:(t-1)/(NP-1))*iw;    // x nach Tor-Nummer
   const y=v=> mt + (v-vmin)/(vmax-vmin)*ih;   // Bestzeit (0) oben, mehr Rückstand nach unten
   let svg = S.printMode ? `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` : svgEl(W,H);   // im PDF: Kurve füllt den ganzen Rahmen
   // Farbverlauf-Def für die Fokus-Füllung
@@ -2782,27 +2789,28 @@ function drawHero(){
     svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
   svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
   svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
-  // x axis ticks: jedes 5. Tor beschriften (plus erstes & letztes)
-  for(let g=1;g<=n;g++){ const show=(g===1)||(g%5===0)||(g===n);
+  // x axis ticks: bis 10 Tore jedes Tor, ab 10 jedes 5. (plus erstes & letztes)
+  for(let t=1;t<=NP;t++){ const show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
     if(!show) continue;
-    svg+=`<line x1="${x(g)}" x2="${x(g)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
-    svg+=`<text x="${x(g)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${g}</text>`; }
+    svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
+    svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${t}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${T.txt}">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
   const figByGate={}; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; (figByGate[f.gate]=figByGate[f.gate]||[]).push(f); });
-  Object.keys(figByGate).forEach(g=>{ const arr=figByGate[g], gx=x(+g), k=arr.length;
+  Object.keys(figByGate).forEach(g=>{ const arr=figByGate[g], gx=x(+g+1), k=arr.length;
     if(k===1){ svg+=`<line x1="${gx}" x2="${gx}" y1="${mt}" y2="${mt+ih}" stroke="${colOf(arr[0])}" stroke-width="1.4" stroke-dasharray="4 3" opacity=".5"/>`; }
     else { const dl=6; arr.forEach((f,i)=>{ svg+=`<line x1="${gx}" x2="${gx}" y1="${mt}" y2="${mt+ih}" stroke="${colOf(f)}" stroke-width="1.6" stroke-dasharray="${dl} ${dl*(k-1)}" stroke-dashoffset="${-i*dl}" opacity=".6"/>`; }); }
   });
   // Labels global von links nach rechts, ohne Überschneidung (auch bei nahen Toren)
-  const labs=[]; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; labs.push({cx:x(f.gate), w:Math.max(12,f.label.length*5.6+3), col:colOf(f), t:f.label}); });
+  const labs=[]; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; labs.push({cx:x(f.gate+1), w:Math.max(12,f.label.length*5.6+3), col:colOf(f), t:f.label}); });
   labs.sort((a,b)=>a.cx-b.cx); let lcur=-1e9; const lgap=2;
   labs.forEach(L=>{ let left=L.cx-L.w/2; if(left<lcur+lgap) left=lcur+lgap; lcur=left+L.w;
     svg+=`<text x="${left.toFixed(1)}" y="${mt-4}" text-anchor="start" font-size="9.5" font-weight="700" fill="${L.col}">${L.t}</text>`; });
   // lines (weich geglättet, monoton; weisser Halo; Fokus-Füllung; steile Tore kräftiger)
   const y0=y(0), hasPitch=Object.keys(pitchByGate).length>0;
-  const pvCache={}; const pv=s=> S.heroSmooth ? (pvCache[s.name]||(pvCache[s.name]=smoothCum(s[key]))) : s[key];   // Plot-Werte (evtl. geglättet)
+  // Plot-Werte: führende 0 (Tor 1 = Start), danach kumuliert – so starten alle Linien bei 0, Endwerte bleiben exakt
+  const pvCache={}; const pv=s=>{ if(pvCache[s.name]) return pvCache[s.name]; const base=S.heroSmooth?smoothCum(s[key]):s[key]; return (pvCache[s.name]=[0].concat(base)); };
   series.forEach(s=>{
     const col=s.color; const PVs=pv(s);
     const segs=[]; let seg=[];
@@ -2818,10 +2826,14 @@ function drawHero(){
       svg+=`<path class="hFocusFill" d="${area}" fill="url(#hFocusGrad)" stroke="none"/>`; }); }
     // farbige Linie
     svg+=`<path d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
-    // anomaly markers (Position auf der dargestellten Linie)
-    if(S.excludeAnom) s.anom.forEach((a,i)=>{ if(a && PVs[i]!=null){ const X=x(i+1),Y=y(PVs[i]); svg+=`<circle cx="${X}" cy="${Y}" r="3.4" fill="${T.halo}" stroke="var(--red)" stroke-width="1.8"/>`; } });
+    // Trainings-Serien: Lauf-Nr. an das Linienende (wenn derselbe Athlet mehrere Läufe hat)
+    if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
+      if(PVs[li]!=null){ const LX=x(li+1), LY=y(PVs[li]);
+        svg+=`<text x="${(LX-3).toFixed(1)}" y="${(LY-5).toFixed(1)}" text-anchor="end" font-size="10.5" font-weight="800" fill="${lineCol}" paint-order="stroke" stroke="${T.halo}" stroke-width="2.6">L${s._lauf}</text>`; } }
+    // anomaly markers (Position auf der dargestellten Linie; +1 wegen führendem Start-Punkt)
+    if(S.excludeAnom) s.anom.forEach((a,i)=>{ if(a && PVs[i+1]!=null){ const X=x(i+2),Y=y(PVs[i+1]); svg+=`<circle cx="${X}" cy="${Y}" r="3.4" fill="${T.halo}" stroke="var(--red)" stroke-width="1.8"/>`; } });
     // DNF / Ausfall: Endpunkt markieren
-    if(s.dnf && PVs[s.lastReal]!=null){ const X=x(s.lastReal+1),Y=y(PVs[s.lastReal]);
+    if(s.dnf && PVs[s.lastReal+1]!=null){ const X=x(s.lastReal+2),Y=y(PVs[s.lastReal+1]);
       svg+=`<circle cx="${X}" cy="${Y}" r="4.6" fill="${T.halo}" stroke="${col}" stroke-width="2.2"/>`;
       svg+=`<text x="${X+7}" y="${Y-7}" font-size="9.5" font-weight="800" fill="${col}">DNF</text>`; }
   });
@@ -2834,22 +2846,24 @@ function drawHero(){
   // interactivity
   const shell=$('#heroShell'), svgN=shell.querySelector('svg'), hg=shell.querySelector('#hg'), hov=shell.querySelector('#hov'), hgm=shell.querySelector('#hgm');
   hov.addEventListener('mousemove',ev=>{
-    const pt=localPt(svgN,ev); let g=Math.round(1+(pt.x-ml)/iw*(n-1)); g=Math.max(1,Math.min(n,g));
-    const px=x(g); hg.setAttribute('x1',px); hg.setAttribute('x2',px); hg.setAttribute('opacity','.55');
-    series.forEach((s,i)=>{ const dot=hgm.children[i]; const vp=pv(s)[g-1]; if(vp!=null){ dot.setAttribute('cx',px); dot.setAttribute('cy',y(vp)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); });
-    const rows=series.filter(s=>s[key][g-1]!=null).sort((a,b)=>a[key][g-1]-b[key][g-1]).map(s=>{
+    const pt=localPt(svgN,ev); let t=Math.round(1+(pt.x-ml)/iw*(NP-1)); t=Math.max(1,Math.min(NP,t));
+    const px=x(t); hg.setAttribute('x1',px); hg.setAttribute('x2',px); hg.setAttribute('opacity','.55');
+    series.forEach((s,i)=>{ const dot=hgm.children[i]; const vp=pv(s)[t-1]; if(vp!=null){ dot.setAttribute('cx',px); dot.setAttribute('cy',y(vp)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); });
+    const valAt=s=> t===1?0:s[key][t-2];
+    const rows=series.filter(s=>valAt(s)!=null).sort((a,b)=>valAt(a)-valAt(b)).map(s=>{
       const col=s.color;
-      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?' · Bestzeit':''}${s.anom[g-1]?' ⚠':''}</span><b>${fmt(s[key][g-1])}</b></div>`;}).join('');
-    const fg=c.figs.filter(f=>f.gate===g).map(f=>f.label).join(' · ');
-    const pit=pitchByGate[g];
-    tt.innerHTML=`<div class="tt-h">Tor ${g+1}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% Gefälle`:''}</div>${rows}`;
+      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?' · Bestzeit':''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
+    const fg=c.figs.filter(f=>f.gate===t-1).map(f=>f.label).join(' · ');
+    const pit=pitchByGate[t];
+    tt.innerHTML=`<div class="tt-h">Tor ${t}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% Gefälle`:''}</div>${rows}`;
     showTT(svgN,px,mt+10);
   });
   hov.addEventListener('mouseleave',()=>{ tt.style.opacity=0; hg.setAttribute('opacity','0'); [...hgm.children].forEach(dot=>dot.setAttribute('opacity','0')); });
   // Klick auf einen Punkt -> Video DIESES Athleten an dieser Stelle laden
-  hov.addEventListener('click',ev=>{ const pt=localPt(svgN,ev); let g=Math.round(1+(pt.x-ml)/iw*(n-1)); g=Math.max(1,Math.min(n,g));
+  hov.addEventListener('click',ev=>{ const pt=localPt(svgN,ev); let t=Math.round(1+(pt.x-ml)/iw*(NP-1)); t=Math.max(1,Math.min(NP,t));
     // nächstgelegene Athleten-Linie an der Klick-Höhe bestimmen (auf der dargestellten, evtl. geglätteten Linie)
-    let best=null,bd=1e9; series.forEach(s=>{ const v=pv(s)[g-1]; if(v==null) return; const dy=Math.abs(y(v)-pt.y); if(dy<bd){bd=dy;best=s;} });
+    let best=null,bd=1e9; series.forEach(s=>{ const v=pv(s)[t-1]; if(v==null) return; const dy=Math.abs(y(v)-pt.y); if(dy<bd){bd=dy;best=s;} });
+    const g=Math.max(1,t-1);   // Video-Ziel: Segment/Tor-Index wie bisher (Tor 1 = Start -> erstes Tor)
     if(typeof coachSelectAndSeek==='function' && best){ coachSelectAndSeek(best.name, g, 'chart'); }
     else if((CVVIDS&&CVVIDS.length) && typeof openClip==='function'){ openClip(null, g, 'chart'); }
     else if(typeof coachSeekGate==='function'){ coachSeekGate(g, true); } });
