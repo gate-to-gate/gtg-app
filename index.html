@@ -134,6 +134,10 @@ td.clip-hi{transition:outline-color .15s}
 .clipbig-body .clip-videowrap video{width:100%;height:auto;max-height:76vh;background:#000;border-radius:10px;display:block}
 .clipbig-body .clip-sbsbar{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
 .clipbig-body #clipViz{width:100%;max-width:1150px;background:var(--card);border-radius:12px;padding:12px}
+.clipbig.clipbig-full .clipbig-switch{display:none}
+.clipbig.clipbig-full #clipBigBtn{display:none}
+.clipbig-body #coachVid{width:100%;max-width:1200px;margin:0;max-height:none}
+.clipbig-body #coachVid .c-head .c-sub{display:none}
 .clipbig-body #clipViz svg{width:100%;height:auto}
 @media(max-width:760px){ .clipbig-body .clip-vids{flex-direction:column} }
 .clip-selb{width:100%;height:34px;box-sizing:border-box;margin-bottom:6px;font:inherit;font-size:12.5px;font-weight:700;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
@@ -2276,7 +2280,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609071352';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609101101';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6038,8 +6042,18 @@ function clipBigShow(mode){
   const vb=$('#clipBigVideos'), gb=$('#clipBigGraph');
   if(vb) vb.classList.toggle('on', mode!=='graph'); if(gb) gb.classList.toggle('on', mode==='graph');
 }
-function clipBigOpen(){ const m=$('#clipBig'); if(!m) return; m.style.display='flex'; clipBigShow('videos'); }
-function clipBigClose(){ const m=$('#clipBig'); if(!m) return; clipBigRestoreAll(); m.style.display='none'; }
+function clipBigOpen(){ const m=$('#clipBig'); if(!m) return; m.classList.remove('clipbig-full'); m.style.display='flex'; clipBigShow('videos'); }
+// Coach-Link: ganze Video-Karte (Chips, Grafik/Tabelle-Umschalter, Video, Side-by-Side) ins Pop-up
+function clipPopOpen(){
+  const m=$('#clipBig'), body=$('#clipBigBody'), cv=$('#coachVid'); if(!m||!body||!cv) return;
+  if(m.style.display!=='none' && CLIPBIG_HOME.cv) return;   // schon offen -> Inhalt wurde via clipLoad aktualisiert
+  clipBigRestoreAll();
+  cv.style.display='';
+  CLIPBIG_HOME.cv=clipBigStash(cv); body.appendChild(cv);
+  m.classList.add('clipbig-full');                          // blendet den Videos/Grafik-Schalter aus
+  m.style.display='flex';
+}
+function clipBigClose(){ const m=$('#clipBig'); if(!m) return; clipBigRestoreAll(); m.classList.remove('clipbig-full'); m.style.display='none'; }
 function initClipBig(){
   if($('#clipBigBtn')) $('#clipBigBtn').onclick=clipBigOpen;
   if($('#clipBigClose')) $('#clipBigClose').onclick=clipBigClose;
@@ -6179,7 +6193,8 @@ function openClip(name, g, source){
   const v=vids.find(x=>x.name===name)||vids[0];
   const host=$('#clipAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id));
   clipLoad(v, g);
-  try{ (panel||$('#clipViz')).scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+  if(COACH.on && typeof clipPopOpen==='function'){ clipPopOpen(); }   // Coach-Link: Pop-up mit allen Funktionen
+  else { try{ (panel||$('#clipViz')).scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
 }
 function cvVizSwitchUI(){ const cb=$('#cvVizChart'), tb=$('#cvVizTable'); if(cb) cb.classList.toggle('on',CV_SRC!=='table'); if(tb) tb.classList.toggle('on',CV_SRC==='table'); }
 function cvVizReload(){ const v=(CVVIDS||[]).find(x=>x.name===CLIPNAME)||(CVVIDS||[])[0]; if(v) clipLoad(v, CLIPGATE||0); }
