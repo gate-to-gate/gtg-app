@@ -2288,7 +2288,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609110627';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202609171420';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6031,8 +6031,14 @@ function cvRenderPanel(){
     const def = vids.find(v=>v.name===(CLIPNAME||S.perGate)) || vids[0];
     if(host){ const defBtn=[...host.querySelectorAll('.cv-chip')].find(b=>decodeURIComponent(b.dataset.id)===def.id); if(defBtn) defBtn.classList.add('on'); }
     CLIPSRC = CV_SRC; cvVizSwitchUI();
-    if(typeof clipSetSbs==='function') clipSetSbs(false);
+    const _wasSbs=CLIPSBS, _prevB=CLIPBNAME, _wasSync=(CLIPSYNC&&CLIPSYNC.on), _atG=CLIPGATE||0;
     clipLoad(def, CLIPGATE||0);
+    // Side-by-Side über Neu-Rendern hinweg erhalten (sonst «fliegt man raus»)
+    if(_wasSbs && (CVVIDS||[]).length>=1){
+      clipSetSbs(true);
+      if(_prevB && (CVVIDS||[]).some(v=>v.name===_prevB)){ clipFillSelB(_prevB); clipLoadB(_prevB); }
+      if(_wasSync){ const bv=$('#clipVideoB'); const doS=()=>clipSyncAtGate(_atG); if(bv&&bv.readyState>=1) doS(); else if(bv) bv.addEventListener('loadedmetadata', doS, {once:true}); }
+    } else if(typeof clipSetSbs==='function'){ clipSetSbs(false); }
     if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS);
   });
 }
@@ -6269,16 +6275,43 @@ function clipGoto(name, g){
   const host=$('#clipAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id));
   clipLoad(v, g);
 }
+function clipColorOf(nm){ const s=S.comp&&S.comp.skiers.find(x=>x.name===nm); return s?s.color:'#7a8694'; }
+function clipShort(nm){ nm=String(nm||''); const m=nm.match(/^(.+?)·L(\d+)/); if(m) return m[1].split(' ')[0]+'·L'+m[2]; return nm.split(' ').slice(-1)[0]||nm; }
 function clipTableViz(name, g){
   const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
   if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
-  el.innerHTML=`<div class="clip-vlab">Detail-Matrix · <b>${name.split(' ').slice(-1)[0]}</b> · Tor ${g+1}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
-  // Kopf kompakt: 2-Buchstaben-Kürzel (OD, ME, BR), ohne Flagge/Stern
-  el.querySelectorAll('.clip-tblwrap table.hm thead th:not(.gate-c)').forEach(th=>{ const natEl=th.querySelector('.nat'); const nat=natEl?natEl.textContent:''; let nm=''; th.childNodes.forEach(nd=>{ if(nd.nodeType===3) nm+=nd.textContent; }); nm=nm.replace(/[^A-Za-zÀ-ÿ]/g,''); const code=nm.slice(0,2).toUpperCase(); th.innerHTML=`${code}${nat?`<div class="nat">${nat}</div>`:''}`; });
+  // Kopfzeile: im SBS klar zeigen, welcher Lauf links (A) und welcher rechts (B) ist
+  let vlab;
+  if(CLIPSBS && CLIPBNAME){
+    const cA=clipColorOf(CLIPNAME), cB=clipColorOf(CLIPBNAME);
+    vlab=`<span><b style="color:${cA}">◧ ${clipShort(CLIPNAME)}</b> (links) &nbsp;·&nbsp; <b style="color:${cB}">◨ ${clipShort(CLIPBNAME)}</b> (rechts) · Tor ${g+1}</span>`
+        + `<span class="clip-hint">· Tor in der Tabelle: 1. Lauf, dann 2. Lauf anklicken = am Tor nebeneinander</span>`;
+  } else {
+    vlab=`Detail-Matrix · <b>${clipShort(name)}</b> · Tor ${g+1}`
+       + (CLIPSBS?` <span class="clip-hint">· Tor anklicken für 1. und 2. Lauf</span>`:'');
+  }
+  el.innerHTML=`<div class="clip-vlab">${vlab}</div><div class="clip-tblwrap">${src.innerHTML}</div>`;
+  // Kopf: Kürzel inkl. Lauf-Nr. (z. B. SC·L4); die zwei verglichenen Läufe farbig hervorheben
+  el.querySelectorAll('.clip-tblwrap table.hm thead th:not(.gate-c)').forEach(th=>{
+    const natEl=th.querySelector('.nat'); const nat=natEl?natEl.textContent:'';
+    let raw=''; th.childNodes.forEach(nd=>{ if(nd.nodeType===3) raw+=nd.textContent; }); raw=raw.trim();
+    const m=raw.match(/^(.+?)·L(\d+)/);
+    const code = m ? (m[1].replace(/[^A-Za-zÀ-ÿ]/g,'').slice(0,2).toUpperCase()+'·L'+m[2])
+                   : raw.replace(/[^A-Za-zÀ-ÿ]/g,'').slice(0,2).toUpperCase();
+    const isA = raw===CLIPNAME, isB = CLIPSBS && raw===CLIPBNAME;
+    const style = isA?` style="color:${clipColorOf(CLIPNAME)}"`:(isB?` style="color:${clipColorOf(CLIPBNAME)}"`:'');
+    th.innerHTML=`<span${style}>${code}${isA?' ◧':(isB?' ◨':'')}</span>${nat?`<div class="nat">${nat}</div>`:''}`;
+  });
   const enc=encodeURIComponent(name);
   let hit=null;
   el.querySelectorAll('td.hm-cell').forEach(td=>{ if(td.dataset.ath===enc && String(td.dataset.g)===String(g)){ td.classList.add('clip-hi'); hit=td; }
-    td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10); if(a && !isNaN(gg)) clipGoto(a, gg); }; });
+    td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10); if(!a || isNaN(gg)) return;
+      if(!CLIPSBS){ clipGoto(a, gg); return; }
+      // SBS: 1. Klick = Lauf A, 2. Klick (anderer Lauf) = Lauf B + am geklickten Tor synchronisieren
+      if(!CLIP_SBSPICK || a===CLIPNAME){ CLIP_SBSPICK={name:a,g:gg}; clipGoto(a, gg); gtgToast('1. Lauf: '+clipShort(a)+' — jetzt 2. Lauf am Tor anklicken'); }
+      else { clipFillSelB(a); clipLoadB(a); const bv=$('#clipVideoB'); const doS=()=>clipSyncAtGate(gg);
+             if(bv && bv.readyState>=1) doS(); else if(bv) bv.addEventListener('loadedmetadata', doS, {once:true}); CLIP_SBSPICK=null; }
+    }; });
   if(hit){ try{ hit.scrollIntoView({block:'center',inline:'center'}); }catch(e){} }
   CLIP_MOVEDOT=null;
   CLIP_MOVECELL=function(gInt){ const en=encodeURIComponent(CLIPNAME); el.querySelectorAll('td.clip-hi').forEach(td=>td.classList.remove('clip-hi'));
@@ -6286,7 +6319,7 @@ function clipTableViz(name, g){
     if(cell){ cell.classList.add('clip-hi'); try{ cell.scrollIntoView({block:'nearest',inline:'center'}); }catch(e){} } };
 }
 /* ---- Clip-Popup: Side-by-Side (zweites Video daneben, synchronisierbar) ---- */
-let CLIPSBS=false, CLIPBNAME=null, CLIPSYNC={on:false,delta:0};
+let CLIPSBS=false, CLIPBNAME=null, CLIPSYNC={on:false,delta:0}, CLIP_SBSPICK=null;
 function clipFillSelB(chosen){ const sel=$('#clipSelB'); if(!sel) return; const vids=CVVIDS||[];
   sel.innerHTML=vids.map(v=>`<option value="${encodeURIComponent(v.id)}"${v.name===chosen?' selected':''}>${v.name}</option>`).join('');
   sel.onchange=()=>{ const v=vids.find(x=>x.id===decodeURIComponent(sel.value)); if(v){ clipSyncOff(); clipLoadB(v.name); } }; }
@@ -6295,7 +6328,9 @@ function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===n
   cvBindMedia(vid, vid.closest('.clip-videowrap')); if(vid.src!==url){ vid.src=url; vid.load(); }
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,CLIPGATE)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
-  attachDefBar(vid, $('#clipDefbarB'), v.name); }
+  attachDefBar(vid, $('#clipDefbarB'), v.name);
+  if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE);   // Kopf/Hervorhebung (links/rechts) aktualisieren
+}
 function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
   if(vids) vids.classList.toggle('sbs', on);
   if(colB) colB.style.display=on?'':'none';
@@ -6303,7 +6338,7 @@ function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipCol
   if(btn) btn.classList.toggle('on', on);
   const main=document.querySelector('.clip-main'); if(main) main.classList.toggle('clip-sbs', on);
   const la=$('#clipLabelA'); if(la) la.textContent=CLIPNAME||'';
-  if(!on){ clipSyncOff(); const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } return; }
+  if(!on){ CLIP_SBSPICK=null; clipSyncOff(); const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE); return; }
   const list=CVVIDS||[]; if(list.length<2) gtgToast('Für diesen Lauf ist nur ein Video vorhanden.');
   const b=(list.find(v=>v.name!==CLIPNAME)||list[0]||{}).name; if(!b) return;
   clipFillSelB(b); clipLoadB(b); }
