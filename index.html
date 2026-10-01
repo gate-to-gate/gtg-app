@@ -1407,7 +1407,7 @@ body.dark .empty{color:#9aa6b4}
 <body>
 <header>
   <div class="head-in">
-    <div class="brand" id="brandHome" title="Zur Startseite / Landing Page" style="cursor:pointer">
+    <div class="brand" id="brandHome">
       <svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs><linearGradient id="lgBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7302A"/><stop offset="1" stop-color="#7C1F2D"/></linearGradient></defs>
         <rect width="64" height="64" rx="17" fill="url(#lgBg)"/>
@@ -2301,10 +2301,10 @@ const $ = s => document.querySelector(s);
 const tt = $('#tt');
 // Landing-Page-Ziel für den Logo-Klick (hier bei Bedarf die genaue URL eintragen)
 const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
-document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
+/* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610010722';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610010727';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
