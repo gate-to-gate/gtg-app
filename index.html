@@ -2304,7 +2304,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610010727';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610010735';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5374,9 +5374,11 @@ function checkForUpdate(){
   }).catch(()=>{});
 }
 function initUpdateCheck(){
-  setTimeout(checkForUpdate, 20000);                 // kurz nach dem Start
-  setInterval(checkForUpdate, 5*60*1000);            // alle 5 Minuten
+  setTimeout(checkForUpdate, 10000);                 // kurz nach dem Start
+  setInterval(checkForUpdate, 90*1000);              // alle 90 Sekunden
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkForUpdate(); });
+  window.addEventListener('focus', checkForUpdate);  // beim Zurückklicken ins Fenster
+  window.addEventListener('online', checkForUpdate);  // wenn wieder online
 }
 function initCloud(){
   migrateWorkerUrl();
