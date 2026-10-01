@@ -310,6 +310,18 @@ body.coach #appFooter{display:none}
 .cm-r2hint{font-weight:600;color:var(--muted);font-size:11.5px}
 #cmR2Box{display:flex;flex-direction:column;gap:11px;margin-bottom:6px}
 .cloud-btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.sys-box{margin:10px 0 4px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.sys-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sys-hint{font-size:11px;color:var(--muted)}
+.sys-out{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.sys-item{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.4}
+.sys-ic{flex:none;width:16px;text-align:center;font-weight:800}
+.sys-ok .sys-ic{color:#1f9d6b}.sys-warn .sys-ic{color:#c98a00}.sys-bad .sys-ic{color:var(--red)}.sys-run .sys-ic{color:var(--muted)}
+.sys-item b{color:var(--ink)}
+.sys-item .sys-tip{color:var(--muted);display:block;font-size:11px}
+.sys-sum{font-size:12.5px;font-weight:700;margin-top:4px}
+.ls-hint.ls-warn{color:var(--red);font-weight:600}
+body.dark .sys-box{background:#252d39;border-color:#3a4452}
 .cloud-adv{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
 .cloud-advhint{font-size:11px;color:var(--muted)}
 .cloud-btnrow .save-btn{flex:1;width:auto}
@@ -2085,6 +2097,10 @@ body.dark .empty{color:#9aa6b4}
     <div class="modal-head"><h2>Cloud · GitHub-Sync & Backup</h2><button class="modal-x" id="cloudClose">✕</button></div>
     <div class="modal-body cloud-body">
       <div class="cloud-intro">Analyse-Daten, Läufe, Kurse und Athleten online sichern & im Team synchronisieren — über ein GitHub-Repository. <b>Videos bleiben lokal</b> auf dem Gerät.</div>
+      <div class="sys-box">
+        <div class="sys-head"><button class="btn-mini solid" id="sysCheckBtn" type="button">🩺 Systemcheck starten</button><span class="sys-hint">Prüft diesen PC: Speicher, Datensicherheit, Cloud & Coach-Upload.</span></div>
+        <div id="sysCheckOut" class="sys-out" style="display:none"></div>
+      </div>
       <!-- Verbindung -->
       <div id="ghConnBox">
         <div class="cloud-quick">
@@ -2288,7 +2304,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 document.addEventListener('DOMContentLoaded',()=>{ const b=$('#brandHome'); if(b) b.onclick=()=>{ try{ location.href=GTG_LANDING; }catch(e){} }; });
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202609171420';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610010722';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4393,7 +4409,8 @@ function updateStorageMeter(all){
       const pb=$('#lsPersist');
       if(pb){ if(persisted){ pb.textContent='✓ Dauerhaft gesichert'; pb.disabled=true; pb.classList.remove('solid'); }
         else { pb.textContent='Speicher maximieren'; pb.disabled=false; pb.classList.add('solid'); } }
-      const pTxt = persisted? 'Dauerhaft gesichert' : 'nicht dauerhaft (kann vom Browser gelöscht werden)';
+      const pTxt = persisted? 'Dauerhaft gesichert' : '⚠ nicht dauerhaft (kann vom Browser gelöscht werden)';
+      if(hintEl) hintEl.classList.toggle('ls-warn', !persisted);
       if(navigator.storage && navigator.storage.estimate){
         navigator.storage.estimate().then(est=>{ const usage=est.usage||sum, quota=est.quota||0;
           const pct = quota? Math.min(100, usage/quota*100) : 0;
@@ -5269,9 +5286,13 @@ async function ghPull(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zu
 async function ghPush(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zuerst verbinden.',false); return; }
   if(GH.syncing){ return; } GH.syncing=true; ghStatusRender();
   try{ if(!silent) cloudMsg('Sichere in GitHub…');
-    const {json,sha}=await ghGet();           // erst Stand holen (Team-Merge, verhindert Überschreiben)
-    if(json) ghMergeIn(json);
-    await ghPut(ghLocalData(), sha, 'GtG Sync '+new Date().toISOString());
+    // Pull → Merge → Push, mit Retry bei gleichzeitigem Schreiben (sha-Konflikt 409/422)
+    let done=false, attempts=0;
+    while(!done){ attempts++;
+      const {json,sha}=await ghGet();          // aktuellen Stand holen (Team-Merge, verhindert Überschreiben)
+      if(json) ghMergeIn(json);
+      try{ await ghPut(ghLocalData(), sha, 'GtG Sync '+new Date().toISOString()); done=true; }
+      catch(err){ if(attempts<4 && /\b(409|422)\b/.test(String(err&&err.message))){ await new Promise(r=>setTimeout(r,350*attempts)); continue; } throw err; } }
     GH.lastSync=Date.now(); GH.pending=0; try{ LS.set('gtg_gh_last',GH.lastSync); LS.set('gtg_gh_pending',0); }catch(e){}
     if(!silent) cloudMsg(`✓ In GitHub gesichert: ${SAVED.length} Läufe, ${SAVED_TRAIN.length} Trainings, ${Object.keys(COURSES).length} Kurse.`,true);
   }catch(e){ if(!silent) cloudMsg('Fehler beim Sichern: '+e.message,false); }
@@ -5378,12 +5399,62 @@ function initCloud(){
   if($('#ghShareTok')) $('#ghShareTok').onchange=ghRefreshCode;
   if($('#ghCodeIn')) $('#ghCodeIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ghApplyCode(); } });
   if($('#tagCloudConnect')) $('#tagCloudConnect').onclick=cloudOpen;
+  if($('#sysCheckBtn')) $('#sysCheckBtn').onclick=runSystemCheck;
   ghRenderState();
   updateCloudHint();
   if(GH.connected) ghPull(true);   // beim Start still synchronisieren
   // Regelmäßiger Hintergrund-Abgleich, damit neue Team-Taggings ohne Neuladen erscheinen
   if(!window._ghPoll){ window._ghPoll=setInterval(()=>{ if(GH.connected && GH.auto && !GH.syncing && !GH.pulling && document.visibilityState!=='hidden') ghPull(true); }, 90000); }
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && GH.connected && GH.auto && !GH.syncing && !GH.pulling) ghPull(true); });
+}
+
+/* ---- Systemcheck: prüft diesen PC (Speicher, Datensicherheit, Cloud, Coach-Upload) ---- */
+function sysSet(el, cls, label, tip){ if(!el) return; el.className='sys-item '+cls;
+  const ic = cls==='sys-ok'?'✓':cls==='sys-warn'?'⚠':cls==='sys-bad'?'✕':'…';
+  el.innerHTML=`<span class="sys-ic">${ic}</span><span><b>${label}</b>${tip?`<span class="sys-tip">${tip}</span>`:''}</span>`; }
+async function runSystemCheck(){
+  const out=$('#sysCheckOut'); if(!out) return; out.style.display='flex'; out.innerHTML='';
+  const mk=t=>{ const d=document.createElement('div'); d.className='sys-item sys-run'; d.innerHTML=`<span class="sys-ic">…</span><span>${t} …</span>`; out.appendChild(d); return d; };
+  const rLocal=mk('Lokaler Speicher'), rPersist=mk('Datensicherheit'), rSpace=mk('Speicherplatz'),
+        rBackup=mk('Automatische Sicherungen'), rCloud=mk('Cloud-Verbindung'), rUpload=mk('Coach-Upload');
+  let bad=0, warn=0;
+  const dk=(typeof GD==='function')?GD():null;
+  // 1) Lokaler Speicher (localStorage + IndexedDB)
+  let lsOk=true; try{ localStorage.setItem('_gtgt','1'); localStorage.removeItem('_gtgt'); }catch(e){ lsOk=false; }
+  const idbOk=!(typeof VDB!=='undefined' && VDB.failed);
+  if(lsOk && idbOk) sysSet(rLocal,'sys-ok','Lokaler Speicher funktioniert','');
+  else { bad++; sysSet(rLocal,'sys-bad','Lokaler Speicher blockiert', lsOk?'Video-Datenbank nicht verfügbar — evtl. privater Modus. Im normalen Fenster arbeiten.':'Website-Daten gesperrt — privater Modus oder Cookies blockiert. Normales Fenster nutzen, Websitedaten zulassen.'); }
+  // 2) Datensicherheit (dauerhafter Speicher)
+  if(dk && dk.usage){ sysSet(rPersist,'sys-ok','Videos liegen auf der Festplatte (Desktop-App)',''); }
+  else { let persisted=false; try{ persisted = (navigator.storage&&navigator.storage.persisted)? await navigator.storage.persisted():false; }catch(e){}
+    if(persisted) sysSet(rPersist,'sys-ok','Dauerhaft gesichert — Daten bleiben erhalten','');
+    else { warn++; sysSet(rPersist,'sys-warn','Nicht dauerhaft gesichert','Der Browser könnte Daten/Videos löschen. In der Bibliothek «Speicher maximieren», Cloud verbinden und regelmässig «Backup sichern».'); } }
+  // 3) Speicherplatz
+  try{ if(navigator.storage&&navigator.storage.estimate){ const est=await navigator.storage.estimate(); const u=est.usage||0,q=est.quota||0; const pct=q?u/q*100:0;
+      if(q && pct>85){ warn++; sysSet(rSpace,'sys-warn',`Speicher fast voll (${pct.toFixed(0)} %)`,'Alte Videos aufräumen: Datenbank → Videos, «Grösste zuerst».'); }
+      else sysSet(rSpace,'sys-ok','Speicherplatz ok'+(q?` (${fmtBytes(u)} / ${fmtBytes(q)})`:''),''); }
+    else sysSet(rSpace,'sys-ok','Speicherplatz ok',''); }catch(e){ sysSet(rSpace,'sys-ok','Speicherplatz ok',''); }
+  // 4) Automatische Sicherungen
+  try{ const list=await new Promise(res=>{ try{ vdbAll('backups').then(res).catch(()=>res([])); }catch(_){ res([]); } });
+    if(list&&list.length) sysSet(rBackup,'sys-ok',`${list.length} lokale Sicherung(en) vorhanden`,'');
+    else { warn++; sysSet(rBackup,'sys-warn','Noch keine lokale Sicherung','Wird nach dem nächsten Speichern automatisch angelegt.'); } }catch(e){ sysSet(rBackup,'sys-warn','Sicherungen unklar',''); }
+  // 5) Cloud
+  if(typeof GH!=='undefined' && GH.connected){ try{ await ghGet(); sysSet(rCloud,'sys-ok','Cloud verbunden & erreichbar',''); }
+    catch(e){ bad++; sysSet(rCloud,'sys-bad','Cloud nicht erreichbar',(e&&e.message)?String(e.message).slice(0,120):'Token/Internet prüfen.'); } }
+  else { warn++; sysSet(rCloud,'sys-warn','Keine Cloud verbunden','Empfohlen als Sicherung & fürs Team — oben Team-Code einfügen oder manuell verbinden.'); }
+  // 6) Coach-Upload (echter POST-Weg, ohne zu schreiben: ohne Passwort -> 403 = erreichbar)
+  try{ const r2=LS.get('gtg_r2cfg',null);
+    if(r2 && r2.worker){ let reach=false;
+      try{ await fetch(r2.worker.replace(/\/+$/,'')+'/?path=__syscheck__&ct=text/plain',{method:'POST',headers:{'Content-Type':'text/plain'},body:'ping'}); reach=true; }catch(e){ reach=false; }
+      if(reach) sysSet(rUpload,'sys-ok','Coach-Upload erreichbar','');
+      else { bad++; sysSet(rUpload,'sys-bad','Coach-Upload blockiert','Sicherheitssoftware (z. B. ESET) oder Firewall sperrt *.workers.dev. Freigeben lassen (IT) oder im Dialog den GitHub-Upload nutzen.'); } }
+    else sysSet(rUpload,'sys-warn','Coach-Upload nicht eingerichtet','Nur nötig, wenn du Coach-Links mit Videos teilst.'); }
+  catch(e){ sysSet(rUpload,'sys-warn','Coach-Upload unklar',''); }
+  // Zusammenfassung
+  const sum=document.createElement('div'); sum.className='sys-sum';
+  sum.textContent = bad? `✕ ${bad} Problem(e) gefunden — bitte beheben.` : warn? `⚠ ${warn} Hinweis(e) — läuft, aber beachten.` : '✓ Alles bereit für die Saison.';
+  sum.style.color = bad?'var(--red)':(warn?'#c98a00':'#1f9d6b');
+  out.appendChild(sum);
 }
 
 /* ===================== DATENBANK (Events / Taggings / Videos) ===================== */
