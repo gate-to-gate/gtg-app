@@ -807,6 +807,17 @@ body.coach .coach-run{display:inline-flex!important}
 .coach-run .cr-count{font-size:11px;font-weight:800;color:#fff;background:var(--red);border-radius:20px;padding:2px 9px;margin-left:2px;white-space:nowrap}
 body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättungs-Schalter im Coach-Link ausblenden (bleiben im Hintergrund aktiv) */
 .coach-badge{display:none;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--red);letter-spacing:.03em}
+.tg-method{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
+.tg-method-hint{font-size:11px;color:var(--muted)}
+.auto-panel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;background:var(--bg)}
+.auto-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.auto-lab{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);font-weight:600}
+.auto-status{font-size:11.5px;color:var(--muted)}
+.auto-prog{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:8px}
+.auto-progfill{height:100%;width:0;background:var(--red);transition:width .1s}
+.auto-result{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;font-weight:600;color:var(--ink)}
+.auto-note{font-size:10.5px;line-height:1.5;color:var(--muted);margin-top:8px}
+body.dark .auto-panel{background:#252d39;border-color:#3a4452}
 .tg-mode-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .tg-mode-bar .seg-toggle{padding:2.5px;border-radius:8px}
 .tg-mode-bar .seg-btn{padding:6px 14px;font-size:12.5px}
@@ -1673,6 +1684,25 @@ body.dark .empty{color:#9aa6b4}
           </div>
         </div>
         </div><!-- /c-head -->
+        <div class="tg-method">
+          <div id="tgMethodSeg" class="seg-toggle seg-sm"></div>
+          <span class="tg-method-hint" id="tgMethodHint">Manuell: wie gewohnt — bei jedem Tor Enter.</span>
+        </div>
+        <div id="autoPanel" class="auto-panel" style="display:none">
+          <div class="auto-row">
+            <button class="btn-mini solid" id="autoRun" type="button">▶ Video analysieren</button>
+            <label class="auto-lab">Erwartete Tore <input type="number" id="autoGates" min="0" step="1" placeholder="auto" style="width:60px"></label>
+            <label class="auto-lab">Empfindlichkeit <input type="range" id="autoSens" min="1" max="9" value="5" style="width:110px"></label>
+            <span id="autoStatus" class="auto-status"></span>
+          </div>
+          <div class="auto-prog" id="autoProgWrap" style="display:none"><div class="auto-progfill" id="autoProg"></div></div>
+          <div id="autoResult" class="auto-result" style="display:none">
+            <span id="autoResTxt"></span>
+            <button class="btn-mini solid" id="autoApply" type="button">Vorschläge übernehmen</button>
+            <button class="btn-mini" id="autoCancel" type="button">Verwerfen</button>
+          </div>
+          <div class="auto-note"><b>Beta:</b> erkennt die Kurven-/Tor-Rhythmik aus der Bewegung und schlägt Tags vor. Immer prüfen und mit <kbd>x</kbd>/<kbd>y</kbd> feinjustieren. Funktioniert am besten mit ruhiger Kamera (Stativ/Drohne). Die Analyse läuft lokal auf deinem Gerät.</div>
+        </div>
         <div id="tgEmpty" class="tg-empty">
           <div class="tge-step"><span class="tge-n">1</span><div class="tge-tx"><b>Video laden</b><span>Datei links reinziehen oder «Datei wählen». Bleibt lokal auf deinem Gerät.</span></div></div>
           <div class="tge-step"><span class="tge-n">2</span><div class="tge-tx"><b>Tore taggen</b><span>Video abspielen (<kbd>Leertaste</kbd>), bei jedem Tor <kbd>Enter</kbd>. Feineinstellung: <kbd>x</kbd>/<kbd>y</kbd> = 1 Frame.</span></div></div>
@@ -2304,7 +2334,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610010735';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610021533';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3357,7 +3387,7 @@ function switchView(v){ S.view=v; savePrefs();
   if(v==='sbs') sbsFillPickers();
   $('#viewAnalyse').style.display = v==='analyse'?'':'none';
   $('#viewTagging').style.display = v==='tagging'?'':'none';
-  if(v==='tagging'){ setTimeout(syncDataHeight,60); if(typeof checkTagDraft==='function') checkTagDraft(); }
+  if(v==='tagging'){ setTimeout(syncDataHeight,60); if(typeof checkTagDraft==='function') checkTagDraft(); if(typeof setTagMethod==='function') setTagMethod('manual'); }
   if(typeof updateCloudHint==='function') updateCloudHint();
   if($('#viewDatenbank')) $('#viewDatenbank').style.display = v==='datenbank'?'':'none';
   if(v==='datenbank') renderDatenbank();
@@ -3941,6 +3971,94 @@ function addTag(){ const v=$('#vid'); if(!v.src) return;
   const fps=curFps(); const f=(TG.frame!=null)?TG.frame:Math.round(v.currentTime*fps); const t=Math.round((f/fps)*1000)/1000;
   if(TG.tags.some(x=>Math.abs(x.t-t)<1e-6)) return;     // kein Doppel-Tag im selben Frame
   TG.tags.push({t, fig:null, unsure:false}); TG.lastTagT=t; renderTags(); flashTag(); tgPush();   // fig=null -> wird ggf. aus Kurssetzung-Vorlage gefüllt
+}
+/* ================= Halbautomatisches Tagging (Beta) =================
+   Erkennt die Kurven-/Tor-Rhythmik aus der Bewegung im Video (lateraler
+   Bewegungs-Schwerpunkt) und schlägt Kandidaten-Tags vor. Rein lokal,
+   keine Modelle/Netzwerk. Manueller Modus bleibt unverändert der Default. */
+let TG_METHOD='manual';
+let AUTO={running:false, cancel:false, cands:[]};
+function initTagMethod(){
+  if(!$('#tgMethodSeg')) return;
+  if(typeof segFill==='function') segFill('#tgMethodSeg',['manual','auto'], m=> m==='manual'?'Manuell':'Halbautomatisch', TG_METHOD, setTagMethod);
+  if($('#autoRun')) $('#autoRun').onclick=autoAnalyzeVideo;
+  if($('#autoApply')) $('#autoApply').onclick=autoApplyCands;
+  if($('#autoCancel')) $('#autoCancel').onclick=()=>{ AUTO.cands=[]; const r=$('#autoResult'); if(r) r.style.display='none'; setAutoStatus('Verworfen.'); };
+}
+function setTagMethod(m){ TG_METHOD = (m==='auto')?'auto':'manual';
+  const seg=$('#tgMethodSeg'); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===TG_METHOD));
+  const p=$('#autoPanel'); if(p) p.style.display = TG_METHOD==='auto'?'':'none';
+  const h=$('#tgMethodHint'); if(h) h.textContent = TG_METHOD==='auto'
+    ? 'Halbautomatisch (Beta): Video analysieren → Vorschläge prüfen & übernehmen.'
+    : 'Manuell: wie gewohnt — bei jedem Tor Enter.';
+}
+function setAutoStatus(t){ const el=$('#autoStatus'); if(el) el.textContent=t||''; }
+function smooth1d(a, r){ const n=a.length, out=new Array(n); for(let i=0;i<n;i++){ let s=0,c=0; for(let j=i-r;j<=i+r;j++){ if(j>=0&&j<n){ s+=a[j]; c++; } } out[i]=c?s/c:a[i]; } return out; }
+function autoAnalyzeVideo(){
+  const v=$('#vid'); if(!v||!v.src){ setAutoStatus('Zuerst ein Video laden.'); return; }
+  if(AUTO.running){ AUTO.cancel=true; return; }
+  const dur=(isFinite(v.duration)&&v.duration)||TG.dur||0; if(!dur){ setAutoStatus('Videodauer unbekannt — kurz abspielen und erneut.'); return; }
+  AUTO.running=true; AUTO.cancel=false; AUTO.cands=[];
+  const btn=$('#autoRun'); if(btn) btn.textContent='■ Abbrechen';
+  const pw=$('#autoProgWrap'); if(pw) pw.style.display=''; const rr=$('#autoResult'); if(rr) rr.style.display='none';
+  setAutoStatus('Analysiere Video …');
+  const W=96,H=54; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d',{willReadFrequently:true});
+  const fps=10; const N=Math.min(1600, Math.max(8, Math.floor(dur*fps))); const dt=dur/N;
+  const wasTime=v.currentTime, wasMuted=v.muted, wasPaused=v.paused; try{v.pause();}catch(e){} v.muted=true;
+  const times=[], motX=[], motE=[]; let prev=null;
+  const seekTo=(t)=> new Promise(res=>{ let done=false; const on=()=>{ if(done)return; done=true; v.removeEventListener('seeked',on); res(); };
+    v.addEventListener('seeked',on); try{ v.currentTime=Math.max(0,Math.min(dur-1e-3,t)); }catch(e){ done=true; res(); } setTimeout(()=>{ if(!done){ done=true; v.removeEventListener('seeked',on); res(); } }, 400); });
+  (async()=>{
+    for(let i=0;i<N;i++){
+      if(AUTO.cancel) break;
+      await seekTo(i*dt);
+      let d; try{ ctx.drawImage(v,0,0,W,H); d=ctx.getImageData(0,0,W,H).data; }catch(e){ break; }
+      const g=new Float32Array(W*H); for(let p=0,q=0;p<d.length;p+=4,q++){ g[q]=d[p]*0.299+d[p+1]*0.587+d[p+2]*0.114; }
+      if(prev){ let sx=0,sw=0,se=0; for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ const q=y*W+x; const df=Math.abs(g[q]-prev[q]); if(df>16){ sx+=x*df; sw+=df; se+=df; } } }
+        times.push(i*dt); motX.push(sw>0? sx/sw : (motX.length?motX[motX.length-1]:W/2)); motE.push(se); }
+      prev=g;
+      if(i%5===0){ const pf=$('#autoProg'); if(pf) pf.style.width=(i/N*100).toFixed(0)+'%'; await new Promise(r=>setTimeout(r,0)); }
+    }
+    try{ v.currentTime=wasTime; }catch(e){} v.muted=wasMuted; if(wasPaused){ try{v.pause();}catch(e){} }
+    if(pw) pw.style.display='none'; AUTO.running=false; if(btn) btn.textContent='▶ Video analysieren';
+    if(AUTO.cancel){ setAutoStatus('Abgebrochen.'); return; }
+    const cands=detectTurns(times, motX, motE);
+    AUTO.cands=cands;
+    if(!cands.length){ setAutoStatus('Keine klare Rhythmik erkannt — Empfindlichkeit erhöhen oder manuell taggen.'); return; }
+    setAutoStatus('');
+    if(rr) rr.style.display='flex'; const rt=$('#autoResTxt'); if(rt) rt.textContent=`${cands.length} Tor-Vorschläge erkannt.`;
+  })();
+}
+function detectTurns(times, x, e){
+  const n=x.length; if(n<6) return [];
+  const eMax=Math.max.apply(null,e)||1; const eThr=eMax*0.12;
+  const xs=smooth1d(x,3);
+  const mn=Math.min.apply(null,xs), mx=Math.max.apply(null,xs); const rng=(mx-mn)||1;
+  const sens=+((($('#autoSens')||{}).value)||5);               // 1..9
+  const minProm = rng * (0.14 - sens*0.012);                   // höher sens -> kleinere Prominenz nötig
+  const minGapS = 0.22;                                        // Refraktärzeit
+  const ext=[];
+  for(let i=2;i<n-2;i++){ if(e[i]<eThr) continue;
+    const loNb=Math.min(xs[i-2],xs[i+2]), hiNb=Math.max(xs[i-2],xs[i+2]);
+    const isPeak = xs[i]>=xs[i-1] && xs[i]>=xs[i+1] && (xs[i]-loNb)>minProm;
+    const isTrough = xs[i]<=xs[i-1] && xs[i]<=xs[i+1] && (hiNb-xs[i])>minProm;
+    if(isPeak) ext.push({t:times[i], p:xs[i]-loNb});
+    else if(isTrough) ext.push({t:times[i], p:hiNb-xs[i]}); }
+  ext.sort((a,b)=>a.t-b.t);
+  let out=[]; let last=-1e9; ext.forEach(o=>{ if(o.t-last>=minGapS){ out.push(o); last=o.t; } });
+  const want=parseInt((($('#autoGates')||{}).value),10);
+  if(want>0 && out.length>want){ out=[...out].sort((a,b)=>b.p-a.p).slice(0,want).sort((a,b)=>a.t-b.t); }
+  return out.map(o=>Math.round(o.t*1000)/1000);
+}
+function autoApplyCands(){
+  if(!AUTO.cands||!AUTO.cands.length) return;
+  const apply=()=>{ TG.tags = AUTO.cands.slice().sort((a,b)=>a-b).map(t=>({t, fig:null, unsure:true}));
+    if(typeof renderTags==='function') renderTags(); if(typeof tgPush==='function') tgPush();
+    const r=$('#autoResult'); if(r) r.style.display='none';
+    setAutoStatus(TG.tags.length+' Tags übernommen — bitte prüfen (⚑) und mit x/y feinjustieren.'); };
+  if(TG.tags && TG.tags.length && typeof gtgConfirm==='function'){
+    gtgConfirm({title:'Vorschläge übernehmen', okLabel:'Ersetzen', msg:`Die aktuellen ${TG.tags.length} Tags werden durch ${AUTO.cands.length} Vorschläge ersetzt.`}).then(ok=>{ if(ok) apply(); });
+  } else apply();
 }
 /* ---- Undo/Redo: Verlauf der Tag-Liste ---- */
 let TGHIST={stack:[], idx:-1};
@@ -5058,6 +5176,7 @@ function initTagging(){
   $('#inpFps').onchange=()=>{ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='#9aa3af'; } renderTags(); updateOSD(); };
   $('#scrub').oninput=e=>{ setTime(parseFloat(e.target.value)); updateOSD(); };
   $('#btnTag').onclick=addTag; $('#btnClearTags').onclick=clearTags;
+  if(typeof initTagMethod==='function') initTagMethod();
   if($('#btnSyncStart')) $('#btnSyncStart').onclick=()=>{ const v=$('#vid');
     if(!v||!v.src||!(TG.tags&&TG.tags.length)){ gtgToast('Erst Video laden und einen Frame wählen.','warn'); return; }
     const off=Math.round((v.currentTime-TG.tags[0].t)*1000)/1000;
