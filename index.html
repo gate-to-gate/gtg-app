@@ -228,6 +228,10 @@ body.coach .af-dl{display:none}
 .db-store.warn{background:#fdecea;border:1px solid #f5c6c0;color:#b23b30}
 .db-store.ok{background:var(--bg);border:1px solid var(--line);color:var(--ink2)}
 .db-dup{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fff4d6;color:#9a6b00;border:1px solid #f0dca0;border-radius:5px;padding:1px 5px;margin-left:5px}
+.db-anomb{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fdecea;color:#b03a2e;border:1px solid #e79a92;border-radius:5px;padding:1px 6px;margin-left:5px;white-space:nowrap}
+.db-table tbody tr.dbt-rowanom td{background:rgba(224,65,58,.05)}
+.db-table tbody tr.dbt-rowanom td:first-child{box-shadow:inset 3px 0 0 #e0413a}
+body.dark .db-anomb{background:#3a2422;color:#f0a89f;border-color:#6a3a34}
 tr.dbt-selected td,tr.dbv-selected td{background:#eaf2ff!important}
 .tut-btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7C1F2D,#D7302A);color:#fff;border:none;border-radius:11px;padding:9px 17px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(124,31,45,.28);transition:.15s}
 .tut-btn:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(124,31,45,.42)}
@@ -374,6 +378,11 @@ body.dark .series-pick .sp-athname{color:#eef1f6}
 .dba-form #dbaFis{flex:0 0 130px}
 .dba-msg{font-size:12px;font-weight:600;color:var(--muted)}
 .dba-msg.err{color:var(--red)}
+.dba-colc{white-space:nowrap}
+.dba-col{width:30px;height:22px;padding:0;border:1.4px solid var(--line);border-radius:6px;background:none;cursor:pointer;vertical-align:middle}
+.dba-col::-webkit-color-swatch-wrapper{padding:2px}
+.dba-col::-webkit-color-swatch{border:none;border-radius:4px}
+.dba-colrst{padding:3px 7px;font-size:11px;vertical-align:middle}
 .dba-msg.ok{color:var(--good)}
 body.dark .dba-form{background:#252d39;border-color:#3a4452}
 body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;color:#eef1f6}
@@ -893,8 +902,8 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .dbtg-cell .dbt-gedit:focus{outline:none;border-color:var(--red)}
 .dbtg-cell.dbt-anom{background:#fdecea}
 .dbtg-cell.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
-.dbt-gate b{color:var(--ink)}
-.dbt-gate .fig{font-weight:800;color:#5b6cff}
+.dbt-gate b{color:var(--ink);min-width:18px;display:inline-block;text-align:right}
+.dbt-fig b{text-decoration:underline;text-underline-offset:2px}
 .dbt-actions{display:flex;gap:8px;margin-top:10px}
 .db-badge.vid{background:#e9f6ef;color:#1a8f5a}
 .db-badge.novid{background:#f1f4f7;color:#8b95a3}
@@ -1891,7 +1900,7 @@ body.dark .empty{color:#9aa6b4}
           <span id="dbaMsg" class="dba-msg"></span>
         </div>
         <div class="db-wrap"><table class="db-table"><thead>
-          <tr><th>Name</th><th>Nation</th><th>FIS-Code</th><th class="num">Taggings</th><th></th></tr>
+          <tr><th>Name</th><th>Nation</th><th>FIS-Code</th><th>Farbe</th><th class="num">Taggings</th><th></th></tr>
         </thead><tbody id="dbaBody"></tbody></table></div>
       </div>
     </div>
@@ -2312,7 +2321,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610051525';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610051553';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2321,11 +2330,12 @@ const ATH_FIXED = {
   'FUX Giuliano':'#8d5524','JANUTIN Fadri':'#5d6d7e','VON ALLMEN Franjo':'#af601a',
   'HOLDENER Wendy':'#2f6fd0','RAST Camille':'#2c3e50','KASPER Vanessa':'#00a3c4',
   'MEILLARD Melanie':'#8e44ad','GISIN Michelle':'#e84393','GUT-BEHRAMI Lara':'#e67e22',
-  'DANIOTH Aline':'#8d5524','GRENAT Anuk':'#5d6d7e'
+  'DANIOTH Aline':'#8d5524','GRENAT Anuk':'#5d6d7e','CHRISTEN Eliane':'#16a085'
 };
-// Reserve-Palette für übrige Athleten – ebenfalls ohne klares Rot/Grün
-const ATH_PAL = ['#34618e','#6c3483','#b9770e','#7f8c8d','#c0399a','#1f6fb2',
-  '#4a5b7a','#985a1e','#5b3a8e','#0e7c99','#8d6e63','#495a6b','#a15c9a','#3d5a80'];
+// Reserve-Palette für übrige Athleten – hell & klar unterscheidbar, ohne dunkles Navy/Slate
+// (Navy ist für RAST/ODERMATT reserviert → deshalb hier bewusst keine navy-/slateblauen Töne)
+const ATH_PAL = ['#c0399a','#16a085','#6c5ce7','#d35400','#1f9bd1','#a569bd',
+  '#117a8b','#b9770e','#e056a0','#5dade2','#7f8c8d','#9b59b6'];
 const ATH_COLOR = (function(){
   const names=[...new Set(DATA.flatMap(e=>e.skiers.map(s=>s.name)))].sort();
   const fixedVals=new Set(Object.values(ATH_FIXED));
@@ -2335,7 +2345,9 @@ const ATH_COLOR = (function(){
   names.forEach(n=>{ if(!map[n]){ map[n]=freePal[pi%freePal.length]; pi++; } });
   return map;
 })();
-const athColor = (name,isTop)=> isTop ? GOLD : (ATH_COLOR[name]||'#7a8694');
+// benutzerdefinierte Farbe pro Athlet:in (in der Datenbank → Athlet:innen einstellbar)
+function athCustomColor(name){ try{ const a=ATHLETES.find(x=>x.name===name); return a&&a.color?a.color:null; }catch(e){ return null; } }
+const athColor = (name,isTop)=> isTop ? GOLD : (athCustomColor(name) || ATH_COLOR[name] || '#7a8694');
 function palHash(str, pal){ let h=0; str=String(str); for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return pal[h%pal.length]; }
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
 const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
@@ -2867,8 +2879,9 @@ function drawHero(){
     if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
       if(PVs[li]!=null){ const LX=x(li+1), LY=y(PVs[li]);
         svg+=`<text x="${(LX-3).toFixed(1)}" y="${(LY-5).toFixed(1)}" text-anchor="end" font-size="10.5" font-weight="800" fill="${lineCol}" paint-order="stroke" stroke="${T.halo}" stroke-width="2.6">L${s._lauf}</text>`; } }
-    // anomaly markers (Position auf der dargestellten Linie; +1 wegen führendem Start-Punkt)
-    if(S.excludeAnom) s.anom.forEach((a,i)=>{ if(a && PVs[i+1]!=null){ const X=x(i+2),Y=y(PVs[i+1]); svg+=`<circle cx="${X}" cy="${Y}" r="3.4" fill="${T.halo}" stroke="var(--red)" stroke-width="1.8"/>`; } });
+    // Anomalie-Marker in der Grafik bewusst NICHT mehr zeichnen (Auffälligkeiten werden
+    // stattdessen in der Datenbank bei den Taggings markiert). Die Anomalie-Erkennung
+    // (s.anom) bleibt für die bereinigte Kurve & KPI-Berechnung erhalten.
     // DNF / Ausfall: Endpunkt markieren
     if(s.dnf && PVs[s.lastReal+1]!=null){ const X=x(s.lastReal+2),Y=y(PVs[s.lastReal+1]);
       svg+=`<circle cx="${X}" cy="${Y}" r="4.6" fill="${T.halo}" stroke="${col}" stroke-width="2.2"/>`;
@@ -3318,7 +3331,7 @@ function formRun(){ const disc=$('#mDisc')?$('#mDisc').value:'GS'; return needsR
 function seedAthletes(){
   const map = new Map();
   DATA.forEach(e=> e.skiers.forEach(s=> { if(!map.has(s.name)) map.set(s.name,{name:s.name,nation:s.nation}); }));
-  LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); map.set(nm,{name:nm,nation:a.nation||'',fis:a.fis}); } });
+  LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); const e={name:nm,nation:a.nation||'',fis:a.fis}; if(a.color) e.color=a.color; map.set(nm,e); } });
   ATHLETES = [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 function persistAthletes(){ const seed=new Set(); DATA.forEach(e=>e.skiers.forEach(s=>seed.add(s.name)));
@@ -5253,7 +5266,7 @@ async function ghPut(obj, sha, msg){
 }
 function ghLocalData(){ return {athletes:ATHLETES, runs:SAVED, trainRuns:SAVED_TRAIN, courses:Object.values(COURSES), savedAt:Date.now()}; }
 function ghMergeIn(o){ if(!o) return; let changed=false;
-  if(Array.isArray(o.athletes)) o.athletes.forEach(a=>{ if(a&&a.name){ const ex=ATHLETES.find(x=>x.name===a.name); if(ex){ if(a.nation)ex.nation=a.nation; if(a.fis)ex.fis=a.fis; } else { ATHLETES.push({name:a.name,nation:a.nation,fis:a.fis}); changed=true; } } });
+  if(Array.isArray(o.athletes)) o.athletes.forEach(a=>{ if(a&&a.name){ const ex=ATHLETES.find(x=>x.name===a.name); if(ex){ if(a.nation)ex.nation=a.nation; if(a.fis)ex.fis=a.fis; if(a.color)ex.color=a.color; } else { const e={name:a.name,nation:a.nation,fis:a.fis}; if(a.color)e.color=a.color; ATHLETES.push(e); changed=true; } } });
   ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); persistAthletes(); fillAthleteSelect();
   if(Array.isArray(o.runs)) o.runs.forEach(rec=>{ const rc={...rec,mode:'comp'}; const id=runId(rc); if(!SAVED.some(x=>runId({...x,mode:'comp'})===id)){ SAVED.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   if(Array.isArray(o.trainRuns)) o.trainRuns.forEach(rec=>{ const rc={...rec,mode:'train'}; const id=runId(rc); if(!SAVED_TRAIN.some(x=>runId({...x,mode:'train'})===id)){ SAVED_TRAIN.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
@@ -5654,7 +5667,10 @@ function cssEsc(s){ return String(s).replace(/["\\]/g,'\\$&'); }
 function dbtGatesHtml(r, enc, anom){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
   if(!gates.length) return '<div class="empty">Keine Tore.</div>';
   const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi]; const bad=anom&&anom[i];
-    return `<span class="dbt-gate${bad?' dbt-anom':''}"${bad?' title="Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt"':''}><b>${gi}</b>${f?`<span class="fig">${f}</span>`:''}<input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
+    const ft=f?figType(f):''; const fc=(ft&&FIG[ft])?FIG[ft].c:''; const fname=(ft&&FIG[ft])?FIG[ft].n:'';
+    const tip = bad ? ' title="Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt"' : (f?` title="${fname} (${f})"`:'');
+    const numStyle = fc?` style="color:${fc};font-weight:800"`:'';
+    return `<span class="dbt-gate${bad?' dbt-anom':''}${f?' dbt-fig':''}"${tip}><b${numStyle}>${gi}</b><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
   const nBad=anom?anom.filter(Boolean).length:0;
   return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
 let GATE_UNDO=[], GATE_REDO=[];
@@ -5714,21 +5730,23 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     const sigCnt={}; all.forEach(r=>{ const s=sigOf(r); sigCnt[s]=(sigCnt[s]||0)+1; });
     const isDup=r=>(sigCnt[sigOf(r)]||0)>1;
     if(!list.length){ body.innerHTML=dbEmpty(all.length?'Keine Taggings für diesen Filter.':'Noch keine Taggings gespeichert. Tagge einen Lauf und speichere ihn.', 11, all.length?'search':'tag'); if($('#dbtBulk'))$('#dbtBulk').style.display='none'; return; }
-    body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id);
-      const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
-      const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
-      const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
-      const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
-      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
-      return `<tr class="dbt-row" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
-    }).join('');
-    const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
-    // pro Event+Tor Median/MAD über alle Athleten -> Ausreisser (Sync-/Schnittfehler) markieren
+    // pro Event+Tor Median über alle Athleten -> Ausreisser (Sync-/Schnittfehler) markieren
     const medK=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`;
     const _median=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
     const _stats={}; all.forEach(r=>{ const k=medK(r), st=_stats[k]||(_stats[k]={}); (r.gates||[]).forEach((g,i)=>{ if(g==null) return; (st[i]=st[i]||[]).push(+g); }); });
     const _evMed={}; Object.keys(_stats).forEach(k=>{ const per=_stats[k], out={}; Object.keys(per).forEach(i=>{ const vals=per[i]; if(vals.length<3) return; const md=_median(vals); const mad=_median(vals.map(v=>Math.abs(v-md)))||0; out[i]={md,mad}; }); _evMed[k]=out; });
     const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g - s.md) >= 0.25; }); };   // ≥ 0,25 s Abweichung zum Median
+    body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id);
+      const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
+      const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
+      const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
+      const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
+      const nA=anomFor(r).filter(Boolean).length;
+      const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
+      const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
+      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+    }).join('');
+    const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
     const wireDetail=inner=>{ if(!inner || inner.dataset.built==='1') return; const encId=inner.dataset.id, id=decodeURIComponent(encId), r=byId[id]; inner.dataset.built='1'; if(!r) return;
       const hasV=VIDS.has(id); const delBtn=r._databank?'':`<button class="btn-mini del" data-deltag="${encId}">Tagging löschen</button>`;
       inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`;
@@ -5936,14 +5954,27 @@ function renderDbAthletes(){
   if($('#dbaCount')) $('#dbaCount').textContent = `${list.length} / ${ATHLETES.length}`;
   body.innerHTML = list.length? list.map(a=>{
     const cnt=athTagCount(a.name); const sur=a.name.split(' ')[0], rest=a.name.split(' ').slice(1).join(' ');
+    const col=athColor(a.name,false); const custom=!!a.color;
     return `<tr><td><b>${escHtml(sur)}</b>${rest?' '+escHtml(rest):''}</td>`
       +`<td>${a.nation?`<span class="gsex">${escHtml(a.nation)}</span>`:'—'}</td>`
       +`<td>${a.fis?escHtml(a.fis):'<span style="color:var(--muted)">—</span>'}</td>`
+      +`<td class="dba-colc"><input type="color" class="dba-col" data-col="${escHtml(a.name)}" value="${col}" title="Farbe für die Diagramme wählen">`
+        +(custom?` <button class="btn-mini dba-colrst" data-colrst="${escHtml(a.name)}" title="Auf Standardfarbe zurücksetzen">↺</button>`:'')+`</td>`
       +`<td class="num">${cnt||'<span style="color:var(--muted)">–</span>'}</td>`
       +`<td class="db-actions" style="white-space:nowrap;text-align:right"><button class="btn-mini" data-edit="${escHtml(a.name)}">Bearbeiten</button> <button class="btn-mini danger" data-del="${escHtml(a.name)}">Löschen</button></td></tr>`;
-  }).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:22px">Keine Athlet:innen gefunden. Oben «＋ Neue:r Athlet:in» hinzufügen.</td></tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">Keine Athlet:innen gefunden. Oben «＋ Neue:r Athlet:in» hinzufügen.</td></tr>`;
   body.querySelectorAll('[data-edit]').forEach(b=> b.onclick=()=>dbaOpenForm(b.dataset.edit));
   body.querySelectorAll('[data-del]').forEach(b=> b.onclick=()=>dbaDelete(b.dataset.del));
+  body.querySelectorAll('[data-col]').forEach(inp=> inp.onchange=()=>dbaSetColor(inp.dataset.col, inp.value));
+  body.querySelectorAll('[data-colrst]').forEach(b=> b.onclick=()=>dbaSetColor(b.dataset.colrst, null));
+}
+function dbaSetColor(name,hex){
+  const a=ATHLETES.find(x=>x.name===name); if(!a) return;
+  if(hex) a.color=hex; else delete a.color;
+  persistAthletes();
+  try{ if(typeof ghAutoSync==='function') ghAutoSync(); }catch(_){}
+  try{ if(typeof buildFilters==='function') buildFilters(); }catch(_){}
+  renderDbAthletes();
 }
 function dbaOpenForm(name){
   DBA_EDIT=name||null;
@@ -6953,7 +6984,22 @@ const I18N_SUB=[
  [/↶ Rückgängig:/g,'↶ Undo:'],
  [/↷ Wiederholt:/g,'↷ Redone:'],
  [/Speicher fast voll/g,'Storage almost full'],
- [/Videos liegen auf der Festplatte/g,'Videos are stored on disk']
+ [/Videos liegen auf der Festplatte/g,'Videos are stored on disk'],
+ [/\b(\d+) auffällig\b/g,'$1 flagged'],
+ [/Lap \/ Zwischenzeit/g,'Lap / split'],
+ [/Hairpin \/ Wende/g,'Hairpin / turn'],
+ [/Kuppe \(Schlüsselstelle\)/g,'Crest (key section)'],
+ [/\bBanane\b/g,'Banana'],
+ [/Flush \(3er\)/g,'Flush (3)'],
+ [/\b(\d+) Tore\b/g,'$1 gates'],
+ [/Referenz 0\.00/g,'Reference 0.00'],
+ [/\b(\d+) markierte Figuren\b/g,'$1 marked figures'],
+ [/Rückstand ([+\-−]?[\d.,]+) s\b/g,'Deficit $1 s'],
+ [/s\/Tor/g,'s/gate'],
+ [/ist am schnellsten \(/g,'is fastest ('],
+ [/am langsamsten \(/g,'is slowest ('],
+ [/negativ = schneller\. Figuren = Hairpin \+ V\.Comb\./g,'negative = faster. Figures = Hairpin + V.Comb.'],
+ [/Tor\(e\) weichen stark vom Feld ab – evtl\. Tagging-Fehler oder nicht synchroner Videoschnitt\. Details öffnen zum Prüfen\./g,'gate(s) deviate strongly from the field – possibly a tagging error or a non-synced video cut. Open details to check.']
 ];
 Object.assign(I18N_EN,{
  "Lauf.mp4":"Run.mp4","Kurssetzung.pdf":"Course.pdf","bitte prüfen.":"please check.","nicht dauerhaft":"not persistent",
@@ -6965,6 +7011,26 @@ Object.assign(I18N_EN,{
  ". Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.":". Terrain lines (Steep/Flat/Turning/Direct) appear where a course setting is stored.",
  "bei allen Athleten dieses Laufs löschen? Die folgenden Tore rücken auf.":"for all athletes in this run? The following gates shift up.",
  "Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.":"Terrain lines (Steep/Flat/Turning/Direct) appear where a course setting is stored."
+});
+Object.assign(I18N_EN,{
+ "Bestzeit (Top)":"Best time (top)","Ø Zeit / Tor":"Ø time / gate","Bestzeit, gefiltert":"Best time, filtered","im Lauf erfasst":"recorded in run",
+ "Kumulierter Rückstand auf":"Cumulative deficit to","(= 0). Tiefer = langsamer.":"(= 0). Lower = slower.",
+ "Kumulierter Rückstand pro Tor auf die Bestzeit —":"Cumulative deficit per gate to the best time —","tiefer = langsamer":"lower = slower",
+ ". Alle Linien starten bei 0; fällt eine Linie ab, wird Zeit verloren.":". All lines start at 0; when a line drops, time is being lost.",
+ "Gold = Bestzeit (Referenz)":"Gold = best time (reference)",
+ "Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.":"Deficit per section (between two laps) to the best time. Up = losing, down = gaining.",
+ "Rückstand je Abschnitt zwischen zwei Laps —":"Deficit per section between two laps —","Balken nach oben = Zeit verloren":"bar up = time lost",", nach unten = gewonnen.":", down = gained.",
+ "Farbe = Athlet (gleich wie in der Hauptgrafik).":"Color = athlete (same as in the main chart).",
+ "Differenz zur Bestzeit pro Tor (Δ) und kumuliert (Σ). Rot = langsamer, grün = schneller.":"Difference to the best time per gate (Δ) and cumulative (Σ). Red = slower, green = faster.",
+ "Δ pro Tor":"Δ per gate","Σ kumuliert":"Σ cumulative",
+ "Steilheit":"Steepness","Charakter":"Character",
+ "Flach (<25%)":"Flat (<25%)","Mittel (25–38%)":"Medium (25–38%)","Steil (>38%)":"Steep (>38%)",
+ "Direkt (<2m)":"Direct (<2m)","Mittel (2–3m)":"Medium (2–3m)","Drehend (>3m)":"Turning (>3m)",
+ "Detail nach Filter":"Detail by filter",
+ "Gemessen wird der":"Measured is the","Ø Gate-to-Gate-Rückstand pro Tor":"Ø gate-to-gate deficit per gate","auf die Laufbestzeit (kleiner = schneller).":"to the run's best time (smaller = faster).",
+ "Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.":"Positive = on average slower than the run's best time, negative = faster.",
+ "Farbe":"Color","Farbe für die Diagramme wählen":"Choose a color for the charts","Auf Standardfarbe zurücksetzen":"Reset to default color",
+ "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section."
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
