@@ -344,6 +344,7 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .pdf-btn{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;border:none;font:inherit;font-size:12px;font-weight:700;
   padding:0 12px;height:31px;border-radius:8px;cursor:pointer;transition:.15s;box-shadow:0 2px 10px rgba(218,41,28,.35)}
 .pdf-btn svg{width:14px;height:14px}
+.hdr-lang{font-weight:800;font-size:12px;letter-spacing:.03em;width:auto;min-width:34px;padding:0 10px}
 .pdf-btn:hover{background:#ef3326;transform:translateY(-1px)}
 .pdf-btn:active{transform:translateY(0)}
 
@@ -1115,6 +1116,12 @@ table.hmp .g b{font-size:6.5px}
   #heroShell{height:100%}
   #heroShell svg.chart{width:100%;height:100%;max-height:100%}
   #heroShell path{stroke-width:2.6px}
+  .note{display:none!important}   /* Figuren-Note unten weg -> keine 3. Seite (steht oben im Hero-Kopf) */
+  #heroCard .fig-leg-print{font-size:8.3px;color:var(--muted);margin:1px 0 0;line-height:1.3}
+  #heroCard .hero-readhelp{flex:0 0 auto;display:flex!important;flex-wrap:wrap;align-items:center;gap:3px 10px;font-size:8.3px;line-height:1.35;color:var(--ink2);margin-top:4px;border-top:1px solid var(--line);padding-top:3px}
+  #heroCard .hero-readhelp .si-h{color:var(--red);font-weight:800}
+  #heroCard .hero-readhelp .si-row{display:inline-flex;align-items:center;gap:5px}
+  #heroCard .hero-readhelp .si-dot{width:12px;height:5px;border-radius:2px;display:inline-block;flex:0 0 auto}
   #barCard{display:none!important}
   /* «Zeitverlust nach Abschnitt»: unten am Rand; Chart mittig (Verhältnis 1:2), Legende links & rechts */
   #secCard{flex:0 0 auto;padding:5px 10px 6px}
@@ -1435,6 +1442,7 @@ body.dark .empty{color:#9aa6b4}
     <button id="sbsBtn" class="hdr-ico" title="Side by Side — zwei Läufe synchron vergleichen">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/><path d="M6.5 9.5l2.5 2.5-2.5 2.5" fill="none"/><path d="M17.5 9.5L15 12l2.5 2.5" fill="none"/></svg>
     </button>
+    <button id="langBtn" class="hdr-ico hdr-lang" type="button" title="Sprache / Language">EN</button>
     <button id="darkBtn" class="hdr-ico" title="Dunkelmodus umschalten (Videoanalyse am Abend)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
@@ -2304,7 +2312,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610021546';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610051525';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2651,7 +2659,8 @@ function render(){
       <div class="card" id="heroCard">
         <div class="c-head">
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
-            <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div></div>
+            <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div>
+            <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.</div></div>
           <div class="hero-ctrls no-print">
             <label class="toggle" title="Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.">
               <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
@@ -2665,17 +2674,17 @@ function render(){
         <div class="chart-shell" id="heroShell"></div>
         <div id="heroBand" class="hero-band"></div>
         <div id="figstrip" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div class="print-only hero-readhelp">
+          <span class="si-h">Hauptgrafik lesen:</span>
+          <span>Kumulierter Rückstand pro Tor auf die Bestzeit — <b>tiefer = langsamer</b>. Alle Linien starten bei 0; fällt eine Linie ab, wird Zeit verloren.</span>
+          <span class="si-row"><span class="si-dot" style="background:#D9A400"></span> Gold = Bestzeit (Referenz)</span>
+        </div>
       </div>
 
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
           <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div></div></div>
         <div id="secRow">
-          <div class="print-only sec-info sec-info-l">
-            <div class="si-h">Hauptgrafik lesen</div>
-            <div>Kumulierter Rückstand pro Tor auf die Bestzeit — <b>tiefer = langsamer</b>. Alle Linien starten bei 0; fällt eine Linie ab, wird Zeit verloren.</div>
-            <div class="si-row"><span class="si-dot" style="background:#D9A400"></span> Gold = Bestzeit (Referenz)</div>
-          </div>
           <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
           <div class="print-only sec-info sec-info-r">
             <div class="si-h">Abschnitte lesen</div>
@@ -6685,6 +6694,297 @@ S.view=startView;
   ec.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${d}`; } })();
 initTagging();
 initKurs();
+/* ================= Sprache: Deutsch (Default) <-> Englisch =================
+   Übersetzt die Oberfläche per Wörterbuch; dynamisch erzeugte Inhalte werden
+   über einen MutationObserver automatisch mitübersetzt. Beim Umschalten wird
+   neu geladen. Echte Daten (Namen, Orte) bleiben unberührt (nur exakte Treffer). */
+let LANG=(function(){ try{ return LS.get('gtg_lang','de'); }catch(e){ return 'de'; } })();
+const I18N_EN={
+ // Navigation / Bereiche
+ "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
+ "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
+ "Tagging Tor für Tor":"Tagging gate by gate","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
+ "Swiss-Ski · Gate-to-Gate Analyse":"Swiss-Ski · Gate-to-Gate Analysis","Gate-to-Gate · Rückstand":"Gate-to-Gate · deficit",
+ // Filter / Labels
+ "Art":"Type","Disziplin":"Discipline","Geschlecht":"Gender","Männer":"Men","Frauen":"Women",
+ "Alle":"All","Alle Disziplinen":"All disciplines","Alle Athleten":"All athletes","Alle Orte":"All locations",
+ "Alle Nationen":"All nations","Alle Quellen":"All sources","Alle Läufe":"All runs","Neueste zuerst":"Newest first",
+ "Athlet A–Z":"Athlete A–Z","Grösste zuerst":"Largest first","Zurücksetzen":"Reset",
+ "Wettkampf + Training":"Competition + Training","Mit + ohne Video":"With + without video","Nur mit Video":"Only with video",
+ "Nur ohne Video":"Only without video","Nur getaggt":"Only tagged","Nur aktiv":"Only active","Nur archiviert":"Only archived",
+ "Aktiv + Archiviert":"Active + Archived","Nur Databank":"Database only","Nur DNF (wenig Tore)":"Only DNF (few gates)",
+ "Nur vollständige":"Only complete","Nur mit Auffälligkeiten ⚠":"Only with anomalies ⚠","Event/Datum":"Event/Date",
+ "Quelle":"Source","Suche Ort …":"Search location …","Suche Athlet oder Ort …":"Search athlete or location …",
+ "Suche Ort oder Athlet …":"Search location or athlete …","Suche Name oder FIS-Code …":"Search name or FIS code …",
+ "Disz.":"Disc.","Gesch.":"Gender","Athl.":"Ath.","Rennen":"Races","Saison":"Season","Speicher":"Storage","Rückstand":"Deficit",
+ // Tagging
+ "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here",
+ "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (T oder Enter)":"Tag gate (T or Enter)",
+ "Noch keine Tags.":"No tags yet.","Tor":"Gate","Tore":"Gates","Zeit":"Time","Figur":"Figure","Löschen":"Delete",
+ "✓ Speichern":"✓ Save","Speichern":"Save","Lauf-Angaben":"Run details","Lauf-Angaben bearbeiten":"Edit run details",
+ "FIS-Zeit":"FIS time","Ohne FIS-Zeit":"No FIS time","Laufbestzeit":"Fastest-run time","Laufbester":"Fastest run",
+ "Datei":"File","Datum":"Date","Ort":"Location","FIS-Code":"FIS code","Endrückstand":"Final deficit",
+ "＋ Neu":"＋ New","＋ Neues Video":"＋ New video","＋ Neue:r Athlet:in":"＋ New athlete","＋ Neue Kurssetzung":"＋ New course setting",
+ "Neuer Ort":"New location","Neuen Athleten erfassen":"Add new athlete","Athlet":"Athlete","Athlet startet":"Athlete starts",
+ "Lauf":"Run","Grafik":"Chart","Tabelle":"Table","Wettkampf":"Competition","Training":"Training",
+ "▶ Video abspielen (":"▶ Play video (","Video abspielen (":"Play video (",") und bei jedem Tor":") and at each gate",
+ "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
+ "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
+ "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","letzter Tag":"last tag",
+ "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
+ "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
+ "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
+ "Datei links reinziehen oder «Datei wählen». Bleibt lokal auf deinem Gerät.":"Drag the file in on the left or «Choose file». Stays local on your device.",
+ "FIS-Zeit-Modus wählen, dann «✓ Save» — der Lauf landet in Datenbank & Analyse.":"Choose the FIS-time mode, then «✓ Save» — the run goes to Database & Analysis.",
+ "Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.":"Import gate times from a matching CSV. Tags start at the current video position — scrub to the start marker first.",
+ "Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten).":"Don't use a FIS time – the final deficit comes directly from the tagged times (relative to the fastest tagged athlete).",
+ "Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).":"Set the video to the frame where gate 1 is passed — then click here. All tags are shifted so gate 1 sits exactly on this frame (gate spacings stay the same).",
+ "Bilder pro Sekunde – wird beim Laden automatisch erkannt":"Frames per second – detected automatically on load",
+ // Buttons / allgemein
+ "Abbrechen":"Cancel","Bestätigen":"Confirm","Schliessen":"Close","schliessen":"close","Verbinden":"Connect","Trennen":"Disconnect",
+ "Weiter":"Next","Zurück":"Back","← Zurück":"← Back","Übernehmen":"Apply","✓ Übernehmen":"✓ Apply","Kopieren":"Copy","📋 Kopieren":"📋 Copy",
+ "Vergrössern":"Enlarge","Vergrössert":"Enlarged","Vergrössern (Vollbild)":"Enlarge (fullscreen)","Lösen":"Release","▶ Beide":"▶ Both",
+ "Zweiter Athlet":"Second athlete","Sync-Tor":"Sync gate","Am Tor synchronisieren":"Sync at gate","An diesem Tor synchronisieren":"Sync at this gate",
+ "Wähle zwei Videos.":"Choose two videos.","Side by Side — zwei Läufe synchron vergleichen":"Side by Side — compare two runs in sync",
+ "Zwei Läufe nebeneinander vergleichen":"Compare two runs side by side","Workflow ansehen — vom Start bis zum Coach":"See the workflow — from start to coach",
+ "Als PDF speichern / drucken":"Save as PDF / print","Sprache / Language":"Sprache / Language","Schliessen (Esc)":"Close (Esc)",
+ "Dunkelmodus umschalten (Videoanalyse am Abend)":"Toggle dark mode (video analysis in the evening)",
+ // Coach-Link / Cloud / Systemcheck / Backup
+ "Coach-Link erstellen":"Create coach link","Teilbarer Link":"Shareable link","Videos hochladen & Link erstellen":"Upload videos & create link",
+ "Videos zu Cloudflare R2 hochladen":"Upload videos to Cloudflare R2","Ohne Worker: direkte S3-Schlüssel":"Without worker: direct S3 keys",
+ "Öffentliche Basis-URL (r2.dev)":"Public base URL (r2.dev)","Upload-Worker-URL":"Upload worker URL","Upload-Passwort":"Upload password",
+ "GitHub-Ziel (Repo & Pages) – meist automatisch":"GitHub target (repo & pages) – usually automatic",
+ "✓ Setup vorhanden — du kannst den Coach-Link direkt erstellen.":"✓ Setup ready — you can create the coach link directly.",
+ "Cloud · GitHub-Sync & Backup":"Cloud · GitHub sync & backup","Cloud — Online-Sync & Backup":"Cloud — online sync & backup",
+ "Analyse-Daten, Läufe, Kurse und Athleten online sichern & im Team synchronisieren — über ein GitHub-Repository.":"Back up analysis data, runs, courses and athletes online & sync across the team — via a GitHub repository.",
+ "Schnell verbinden — Code von einem Kollegen":"Quick connect — code from a colleague","…oder manuell verbinden (einmalig)":"…or connect manually (one-time)",
+ "Repository (Owner/Name)":"Repository (owner/name)","GitHub Access Token":"GitHub access token","Verbinden & prüfen":"Connect & verify",
+ "nur auf dieses Repo. Der Token bleibt lokal in deinem Browser.":"only for this repo. The token stays local in your browser.",
+ "Verbunden mit":"Connected to","Nach dem Speichern automatisch in GitHub sichern":"Auto-save to GitHub after saving","⋯ Manuell":"⋯ Manual",
+ "▲ Jetzt sichern":"▲ Save now","▼ Neu laden":"▼ Reload","Nur bei Bedarf — normalerweise läuft alles automatisch.":"Only if needed — normally everything runs automatically.",
+ "Manuelle Sicherung/Laden anzeigen (im Normalfall nicht nötig — Auto-Sync erledigt das)":"Show manual save/load (usually not needed — auto-sync handles it)",
+ "Kollegen verbinden":"Connect colleagues","Code erscheint hier":"Code appears here","Verbindungscode einfügen (GTG1-…)":"Paste connection code (GTG1-…)",
+ "Kollege öffnet Cloud → Code oben einfügen → fertig. Ohne Token muss er nur noch seinen eigenen Token eintragen.":"Colleague opens Cloud → paste code above → done. Without a token they just enter their own token.",
+ "Enthält der Code den Token, wird direkt verbunden. Sonst nur noch deinen Token unten eintragen.":"If the code contains the token, it connects directly. Otherwise just enter your token below.",
+ "🩺 Systemcheck starten":"🩺 Run system check","Prüft diesen PC: Speicher, Datensicherheit, Cloud & Coach-Upload.":"Checks this PC: storage, data safety, cloud & coach upload.",
+ "Speicher maximieren":"Maximize storage","Backup sichern":"Export backup","Backup laden":"Import backup","Komplettes Backup (alle Daten)":"Full backup (all data)",
+ "Komplettes Backup (alle Läufe, Athleten, Kurssetzungen) als JSON sichern":"Save a full backup (all runs, athletes, course settings) as JSON",
+ "Einzelner Lauf als CSV":"Single run as CSV","Diesen getaggten Lauf als CSV-Datei speichern":"Save this tagged run as a CSV file",
+ "Alte Videos löschen":"Delete old videos","Rennen älter als 30 Tage":"Races older than 30 days","Videos bleiben lokal":"Videos stay local",
+ "Gespeicherte Videos inkl. Tags. Klick auf „Laden“ öffnet Video + Tag-Liste wieder zum Anschauen oder Anpassen.":"Saved videos incl. tags. Click «Load» to reopen the video + tag list for viewing or editing.",
+ // Datenbank
+ "Event bearbeiten":"Edit event","Ausgewählte löschen":"Delete selected","Neuen Athleten erfassen":"Add new athlete",
+ // Willkommen
+ "Willkommen — wie möchtest du starten?":"Welcome — how would you like to start?","Ohne Cloud":"Without cloud","Mit Cloud (Team)":"With cloud (team)",
+ "Später entscheiden":"Decide later","Überspringen":"Skip","Team-Code einfügen":"Paste team code",
+ "Alles bleibt lokal auf diesem Gerät. Sofort loslegen — keine Eingabe nötig.":"Everything stays local on this device. Start right away — no input needed.",
+ "Taggings, Athlet:innen & Kurse mit dem Team synchronisieren. Einmalig den Team-Code einfügen.":"Sync taggings, athletes & courses with the team. Paste the team code once.",
+ // Analyse-Grafik / SVG
+ "Zeitrückstand auf die Bestzeit — kumuliert":"Cumulative time deficit to the best time","Zeitverlust nach Abschnitt":"Time loss by section",
+ "Detail-Matrix · alle Tore":"Detail matrix · all gates","Klick auf ein Tor":"Click a gate",
+ "Tor-Nr.":"Gate no.","BESTZEIT":"BEST TIME","HÖHENPROFIL":"ELEVATION","Rückstand kumuliert (s) — langsamer ↓":"Cumulative deficit (s) — slower ↓",
+ "Bester SUI":"Best SUI","SUI Athleten":"SUI athletes","Grösster Verlust":"Biggest loss",
+ "Kurve glätten":"Smooth curve","Terrain":"Terrain",
+ "Hauptgrafik lesen:":"Reading the main chart:","Abschnitte lesen":"Reading the sections",
+ "Figuren:":"Figures:"
+};
+// --- Durchgang 2: dynamische Texte (Meldungen, Analyse, Systemcheck, Tooltips) ---
+Object.assign(I18N_EN,{
+ "Läufe":"Runs","Später":"Later","löschen":"delete","Änderung":"Change","gelöscht.":"deleted.","ausgewählt":"selected",
+ "(mit Video)":"(with video)","Athlet:innen":"Athletes","Frame zurück":"Frame back","Video löschen":"Delete video",
+ "Video-Fehler:":"Video error:","unvollständig":"incomplete","Videos löschen":"Delete videos","= FIS-Rückstand":"= FIS deficit",
+ "Event gelöscht.":"Event deleted.","Rückstandskurve":"Deficit curve","Tagging löschen":"Delete tagging","nicht gesichert":"not saved",
+ "— bitte prüfen.":"— please check.","Kopplung gelöst.":"Sync released.","Lokaler Speicher":"Local storage","Neue:r Athlet:in":"New athlete",
+ "Taggings löschen":"Delete taggings","Endgültig löschen":"Delete permanently","Installer öffnet…":"Opening installer…",
+ "Prüfe Verbindung…":"Checking connection…","Tor-Spalte löschen":"Delete gate column","Kurssetzung löschen":"Delete course setting",
+ "Bitte Athlet wählen.":"Please choose an athlete.","Installer geöffnet ✓":"Installer opened ✓","Kein Athlet gewählt.":"No athlete selected.",
+ "Kein Code verfügbar.":"No code available.","Zeitrückstand-Grafik":"Deficit chart","Cloud nicht erreichbar":"Cloud not reachable",
+ "Datum und Ort angeben.":"Enter date and location.","Kein Event ausgewählt.":"No event selected.","Token/Internet prüfen.":"Check token/internet.",
+ "CSV leer oder ungültig.":"CSV empty or invalid.","Kein Athlet ausgewählt.":"No athlete selected.","Kuppe (Schlüsselstelle)":"Crest (key section)",
+ "Nichts zum Wiederholen.":"Nothing to redo.","· Video wird gesichert…":"· saving video…","Event dauerhaft löschen?":"Delete event permanently?",
+ ". Wechsle in die Analyse.":". Switch to Analysis.","Angaben fehlen — «Ändern»":"Details missing — «Edit»","Aus Dateiname übernommen:":"Taken from filename:",
+ "IndexedDB nicht verfügbar":"IndexedDB not available","Lokaler Speicher blockiert":"Local storage blocked","Ungültiger Einladungscode.":"Invalid invite code.",
+ "Noch keine lokale Sicherung":"No local backup yet","Video-Pop-up & Side-by-Side":"Video pop-up & side-by-side","desselben Laufs übernommen.":"applied from the same run.",
+ "Bitte Datum und Ort angeben.":"Please enter date and location.","Bitte einen Athleten wählen.":"Please choose an athlete.","Datum, Ort und Lauf angeben.":"Enter date, location and run.",
+ "Nichts zum Rückgängigmachen.":"Nothing to undo.","Bitte den Team-Code einfügen.":"Please paste the team code.","Ein oder mehrere PDFs wählen.":"Choose one or more PDFs.",
+ "Lokaler Speicher funktioniert":"Local storage works","Bitte Einladungscode einfügen.":"Please paste the invite code.","Kein Event mit Daten gefunden.":"No event with data found.",
+ "Keine Daten für diese Auswahl.":"No data for this selection.","Keine Kurse für diesen Filter.":"No courses for this filter.","✓ Alles bereit für die Saison.":"✓ All set for the season.",
+ "(inkl. Videos auf diesem Gerät)":"(incl. videos on this device)","Coach-Upload nicht eingerichtet":"Coach upload not set up","Keine Events für diesen Filter.":"No events for this filter.",
+ "Keine Videos für diesen Filter.":"No videos for this filter.","Bitte Angaben manuell auswählen.":"Please select the details manually.","CSV konnte nicht gelesen werden.":"Could not read the CSV.",
+ "PDF konnte nicht geladen werden.":"Could not load the PDF.","PDF konnte nicht gelesen werden:":"Could not read the PDF:","— jetzt 2. Lauf am Tor anklicken":"— now click the 2nd run at the gate",
+ "JSON konnte nicht gelesen werden.":"Could not read the JSON.","Keine Events mit Auffälligkeiten.":"No events with anomalies.","Keine Taggings für diesen Filter.":"No taggings for this filter.",
+ "· Video in Bibliothek gespeichert.":"· video saved to library.","Grafik konnte nicht erzeugt werden.":"Could not generate the chart.","Video-Datei nicht gefunden (lokal):":"Video file not found (local):",
+ "Diese:r Athlet:in existiert bereits.":"This athlete already exists.","Keine Kurssetzung für diesen Filter.":"No course setting for this filter.","Keine gültige Zeile im CSV gefunden.":"No valid row found in the CSV.",
+ "· ohne FIS-Zeit (keine Kalibrierung)":"· no FIS time (no calibration)","Pages-URL muss mit https:// beginnen.":"Pages URL must start with https://.","Als unsicher markieren (später prüfen)":"Mark as unsure (check later)",
+ "Keine gültigen Zeilen im CSV gefunden.":"No valid rows found in the CSV.","Worker-URL muss mit https:// beginnen.":"Worker URL must start with https://.","Öffentliche Basis-URL (r2.dev) angeben.":"Enter the public base URL (r2.dev).",
+ "✓ Verbunden. Team-Daten werden geladen…":"✓ Connected. Loading team data…","Erst Video laden und einen Frame wählen.":"Load a video first and choose a frame.","Mindestens 2 Tags (Start + 1 Tor) nötig.":"At least 2 tags (start + 1 gate) required.",
+ "R2-Basis-URL muss mit https:// beginnen.":"R2 base URL must start with https://.","Speicher voll – Video nicht gespeichert.":"Storage full – video not saved.","Cloud nicht verbunden — lokal gespeichert":"Cloud not connected — saved locally",
+ "Teilbaren Coach-Link mit Videos erstellen":"Create a shareable coach link with videos","Wähle oben einen Athleten für das Profil.":"Choose an athlete above for the profile.","Noch keine Daten. Tagge zuerst einen Lauf.":"No data yet. Tag a run first.",
+ ". Bitte das Video erneut laden & speichern.":". Please reload & save the video.","Diese Tor-Spalte bei allen Athleten löschen":"Delete this gate column for all athletes","Vergessenes Tor am Ende hinzufügen (Spalte)":"Add a forgotten gate at the end (column)",
+ "· ohne FIS-Zeit · Endrückstand aus Taggings":"· no FIS time · final deficit from taggings","Für diesen Lauf ist nur ein Video vorhanden.":"Only one video is available for this run.","Keine Schweizer Athlet:innen in diesem Lauf.":"No Swiss athletes in this run.",
+ "Video konnte nicht geladen werden (Format?).":"Could not load the video (format?).","Noch keine Trainings-Läufe in dieser Sektion.":"No training runs in this section yet.","Dieses Tor ist nicht in beiden Videos getaggt.":"This gate isn't tagged in both videos.",
+ "Entwurf konnte nicht wiederhergestellt werden.":"Could not restore the draft.","Videos liegen auf der Festplatte (Desktop-App)":"Videos are stored on disk (desktop app)","Event-Parameter bearbeiten (Datum, Ort, Lauf …)":"Edit event parameters (date, location, run …)",
+ "Videos liegen auf der Festplatte (Desktop-App).":"Videos are stored on disk (desktop app).","Diese Kurssetzung (Daten + PDF) wirklich löschen?":"Really delete this course setting (data + PDF)?","Nur nötig, wenn du Coach-Links mit Videos teilst.":"Only needed if you share coach links with videos.",
+ "Dieser Browser unterstützt keinen dauerhaften Speicher.":"This browser doesn't support persistent storage.","Video angehängt — Tags & Angaben bleiben. Jetzt «Save».":"Video attached — tags & details stay. Now «Save».",
+ "Alte Videos aufräumen: Datenbank → Videos, «Grösste zuerst».":"Clean up old videos: Database → Videos, «Largest first».","Keine Daten für diese Auswahl. Wähle einen anderen Event/Lauf.":"No data for this selection. Choose a different event/run.",
+ "Coach-Link konnte nicht geladen werden — bitte den Link prüfen.":"Could not load the coach link — please check the link.","Wettkampf: mit FIS-Zeit-Kalibrierung. Laufnummer nur bei GS/SL.":"Competition: with FIS-time calibration. Run number only for GS/SL.",
+ "Ungültiger Team-Code. Bitte den ganzen Code kopieren und einfügen.":"Invalid team code. Please copy and paste the whole code.","Noch keine Taggings gespeichert. Tagge einen Lauf und speichere ihn.":"No taggings saved yet. Tag a run and save it.",
+ "Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.":"No series selected — tick at least one athlete·run series above.","Im Repo ist noch keine Datei — sichere zuerst mit «In GitHub sichern».":"No file in the repo yet — save first with «Save to GitHub».",
+ "Tagging-Entwurf wiederhergestellt. Bitte das passende Video neu laden.":"Tagging draft restored. Please reload the matching video.","Noch keine Videos in der Bibliothek — tagge und speichere zuerst Läufe.":"No videos in the library yet — tag and save runs first.",
+ "Öffne zuerst die Analyse mit einem Lauf, dann kannst du die Grafik teilen.":"Open Analysis with a run first, then you can share the chart.","Training: Laufnummer (frei, z.B. Lauf 7), ohne FIS-Zeit, eigene Bibliothek.":"Training: run number (free, e.g. run 7), no FIS time, own library.",
+ "Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)":"A background task failed. (Details in the browser console)","Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind.":"Number of Swiss athletes (SUI) tagged/recorded in this run.",
+ "Dieser Code enthält keinen Zugang. Bitte den vollständigen Team-Code verwenden.":"This code contains no access. Please use the full team code.","Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).":"No tagged videos exist for this event (only shareable with video).",
+ "Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).":"No videos on this device. Videos stay local (see Tagging → Library).","✓ Code kopiert (ohne Token) — der Kollege trägt nur noch seinen eigenen Token ein.":"✓ Code copied (without token) — the colleague just enters their own token.",
+ "✓ Verbunden & synchronisiert. Neue Taggings gehen ab jetzt automatisch hin und her.":"✓ Connected & synced. New taggings now flow automatically both ways.","Keine Tore für diese Filter-Kombination — erweitere die Steilheit-/Charakter-Filter.":"No gates for this filter combination — widen the steepness/character filters.",
+ "Empfohlen als Sicherung & fürs Team — oben Team-Code einfügen oder manuell verbinden.":"Recommended as a backup & for the team — paste the team code above or connect manually.","Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Sichern «Save».":"Video attached to the loaded tagging — details & tags stay. Press «Save» to store.",
+ "Video-Datenbank nicht verfügbar — evtl. privater Modus. Im normalen Fenster arbeiten.":"Video database not available — possibly private mode. Work in a normal window.","Verbindung fehlgeschlagen — Code prüfen, oder später übers Cloud-Symbol oben verbinden.":"Connection failed — check the code, or connect later via the cloud icon at the top.",
+ "Code übernommen — jetzt nur noch deinen Access Token eintragen und «Verbinden & prüfen».":"Code applied — now just enter your access token and «Connect & verify».","Keine Kursdaten – hinterlege eine Kurssetzung für diesen Lauf (Datenbank → Kurssetzung).":"No course data – add a course setting for this run (Database → Course setting).",
+ "Automatische Erkennung in diesem Browser nicht verfügbar – fps bei Bedarf manuell setzen.":"Automatic detection not available in this browser – set fps manually if needed.","Entweder Worker-URL angeben – oder Endpoint/Bucket/Key/Secret für den direkten S3-Upload.":"Either provide a worker URL – or endpoint/bucket/key/secret for the direct S3 upload.",
+ "Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.":"Visual smoothing of the curve (moving average over 3 gates). Values stay unchanged.","Zu wenig Athleten für den Positionsverlauf – wähle einen Lauf mit mehreren getaggten Athleten.":"Too few athletes for the position chart – choose a run with several tagged athletes.",
+ "Blendet unter der Kurve ein Farbband ein: Steilheit und Charakter pro Tor (aus der Kurssetzung).":"Shows a color band under the curve: steepness and character per gate (from the course setting).","Keine Rennen für diesen Athleten in dieser Auswahl.":"No races for this athlete in this selection.",
+ "Keine Videos, die älter als die gewählte Grenze sind.":"No videos older than the chosen limit.","⚠ nicht dauerhaft (kann vom Browser gelöscht werden)":"⚠ not persistent (can be deleted by the browser)","Wird nach dem nächsten Speichern automatisch angelegt.":"Will be created automatically after the next save.",
+ "Keine Terrain-Werte — dafür müssen zu den Rennen Kurssetzungen hinterlegt sein (Datenbank → Kurssetzung).":"No terrain values — course settings must be stored for the races (Database → Course setting).","Für diesen Eintrag ist auf diesem Gerät kein Video vorhanden (Videos bleiben lokal). Lade das Video hier neu.":"No video for this entry on this device (videos stay local). Reload the video here.",
+ "Website-Daten gesperrt — privater Modus oder Cookies blockiert. Normales Fenster nutzen, Websitedaten zulassen.":"Website data blocked — private mode or cookies blocked. Use a normal window, allow site data.","Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen. (Details in der Browser-Konsole)":"An error occurred – the last action may not have completed. (Details in the browser console)",
+ "Geländetyp mit dem grössten durchschnittlichen Rückstand pro Tor – hier liegt das grösste Verbesserungspotenzial.":"Terrain type with the largest average deficit per gate – the biggest improvement potential is here.","Keine Rennen für diesen Athleten in dieser Auswahl. Wähle eine andere Disziplin/Geschlecht oder einen anderen Athleten.":"No races for this athlete in this selection. Choose a different discipline/gender or another athlete.",
+ "Geländetyp (Steil/Flach/Drehend/Direkt), in dem der Athlet im Schnitt am wenigsten Rückstand pro Tor hat – seine Stärke.":"Terrain type (Steep/Flat/Turning/Direct) where the athlete has the least deficit per gate on average – their strength.","Für die gewählten Kategorien gibt es keine Werte. Aktiviere «Gesamt» oder hinterlege Kurssetzungen für die Terrain-Linien.":"No values for the chosen categories. Enable «Total» or add course settings for the terrain lines.",
+ "Dauerhafter Speicher aktiviert — die Videos bleiben erhalten und der Browser stellt deutlich mehr Platz bereit (meist mehrere GB).":"Persistent storage enabled — videos are kept and the browser provides much more space (usually several GB).","Der Browser könnte Daten/Videos löschen. In der Bibliothek «Speicher maximieren», Cloud verbinden und regelmässig «Backup sichern».":"The browser could delete data/videos. In the library «Maximize storage», connect the cloud and regularly «Export backup».",
+ "Sicherheitssoftware (z. B. ESET) oder Firewall sperrt *.workers.dev. Freigeben lassen (IT) oder im Dialog den GitHub-Upload nutzen.":"Security software (e.g. ESET) or a firewall blocks *.workers.dev. Have it allowed (IT) or use the GitHub upload in the dialog.","✓ Einladungscode (mit Token) kopiert — an Kollegen senden. Er fügt ihn oben unter «Schnell verbinden» ein und ist sofort verbunden.":"✓ Invite code (with token) copied — send it to a colleague. They paste it above under «Quick connect» and are connected instantly.",
+ "Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit-Nähe» = Läufe, in denen er sehr nah an der Bestzeit war.":"Number of analyzed runs for the athlete in the chosen season. «Close to best» = runs where they were very close to the best time.","Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps).":"Number of tagged gates in this run. «Marked figures» = key sections stored in the course (offset, rhythm change, laps).",
+ "PDF-Modul nicht geladen — für den Kurssetzungs-Import ist einmalig eine Internetverbindung nötig (danach cachet der Browser die Bibliothek).":"PDF module not loaded — a one-time internet connection is needed for the course-setting import (after that the browser caches the library).","Grösster Einzel-Zeitverlust eines Schweizers an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr.":"Biggest single time loss of a Swiss athlete at a single gate vs. the best time (excluding tagging anomalies). Shows athlete and gate no.",
+ "Für diese Auswahl gibt es keinen Kurs mit passenden Tagging-Daten. Tagge den Lauf (Tab «Tagging») und lade die Kurssetzung mit gleichem Datum/Ort/Lauf.":"There's no course with matching tagging data for this selection. Tag the run (tab «Tagging») and load the course setting with the same date/location/run.","Bester Schweizer Athlet in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor).":"Best Swiss athlete in this run – measured by the smallest final deficit to the best time (for non-finishers, the fairest average deficit per tagged gate).",
+ "Bestzeit":"Best time","möglich doppelt":"possibly duplicate","keine Terrain-Werte":"no terrain values","kein Video":"no video","✓ Video":"✓ video","Neu laden":"Reload",
+ "Video konnte nicht geladen werden.":"Could not load the video.","Kein Vergleich — oben hinzufügen (mehrere möglich)":"No comparison — add above (multiple possible)","＋ Vergleich hinzufügen …":"＋ Add comparison …",
+ "Serien (Athlet · Lauf)":"Series (athlete · run)","Rennen der Auswahl":"Races in the selection","Lauf-Nr.":"Run no.","Ø s/Tor":"Ø s/gate","1. Lauf:":"1st run:",
+ "Frauen":"Women","Männer":"Men","Datensicherheit":"Data safety","Speicherplatz":"Storage space","Cloud-Verbindung":"Cloud connection","Coach-Upload":"Coach upload",
+ "Automatische Sicherungen":"Automatic backups","Dauerhaft gesichert — Daten bleiben erhalten":"Persistent — data is kept","Speicherplatz ok":"Storage OK",
+ "Nicht dauerhaft gesichert":"Not persistent","Coach-Upload erreichbar":"Coach upload reachable","Coach-Upload blockiert":"Coach upload blocked","Keine Cloud verbunden":"No cloud connected",
+ "Cloud verbunden & erreichbar":"Cloud connected & reachable"
+});
+// --- Durchgang 3: Rest (Fragmente, Tour/Workflow, lange Tooltips, Dialoge) ---
+Object.assign(I18N_EN,{
+ "und":"and","von":"from","von ~":"of ~","Lädt…":"Loading…","noch nie":"never","getaggt":"tagged","drücken.":"press.",
+ "An Tor":"At gate","Nur Lauf":"Only run","Stand vom":"State from","alle Tore":"all gates","Δ pro Tor":"Δ per gate","Keine Tore.":"No gates.",
+ "s/Tor.":"s/gate.","Tore).":"gates).","Läufe,":"runs,","Kurse.":"courses.","Grösse":"Size","Video(s)":"video(s)","ausgewählt ·":"selected ·",
+ "bei jedem Tor":"at each gate","und bei jedem Tor":"and at each gate","(rechts) · Tor":"(right) · Gate","Athlet:innen ·":"Athletes ·",
+ "Kumulierter Rückstand ·":"Cumulative deficit ·","Video von «":"Video of «","Tagging von «":"Tagging of «","Speicher ist":"Storage is",
+ "Tore erkannt":"gates detected","Tore erkannt (":"gates detected (","Figuren auf":"Figures on","Lauf/Läufe.":"run(s).","keine Kurssetzung":"no course setting",
+ "Ort wählen":"Choose location","Lade Video":"Loading video","Lade aus GitHub…":"Loading from GitHub…","Lade Analyse-Daten…":"Loading analysis data…",
+ "Sammle Videos…":"Collecting videos…","Video wird gesichert…":"saving video…","Zuerst PDF laden.":"Load a PDF first.","Bitte zuerst verbinden.":"Please connect first.",
+ "Fehler beim Laden:":"Error loading:","Fehler beim Sichern:":"Error saving:","Fehler beim Anzeigen der Taggings:":"Error displaying the taggings:",
+ "Bitte melde diese Meldung.":"Please report this message.","Sicherung wiederherstellen":"Restore backup","Sicherung wiederhergestellt.":"Backup restored.",
+ "Willkommen bei Gate-to-Gate":"Welcome to Gate-to-Gate","lokale Sicherung(en) vorhanden":"local backup(s) available","Video in Bibliothek gespeichert.":"video saved to library.",
+ "Fertig — vom Start bis zum Coach.":"Done — from start to coach.","Laufbestzeit — schnellster Athlet":"Fastest-run time — fastest athlete",
+ "Hinweis(e) — läuft, aber beachten.":"note(s) — works, but take note.","Problem(e) gefunden — bitte beheben.":"problem(s) found — please fix.",
+ "Kurssetzung hinzufügen":"Add course setting","✎ Im Tagging öffnen":"✎ Open in Tagging","✎ Ändern":"✎ Edit","FIS-Zeit & Training":"FIS time & training",
+ "prüfen & speichern.":"check & save.","Lauf/Läufe importiert":"run(s) imported","Lauf/Läufe hinzugefügt.":"run(s) added.","Läufe als CSV exportiert.":"runs exported as CSV.",
+ "Video-Einträge als CSV exportiert.":"video entries exported as CSV.","Synchronisiert an Tor":"Synced at gate","Datenbank → Kurssetzung":"Database → Course setting",
+ "Wechsle in die Analyse.":"Switch to Analysis.","Für diesen Lauf ist noch":"For this run there is still","(kein Video – nur Zeiten).":"(no video – times only).",
+ "Alle Tore auf einen Blick:":"All gates at a glance:","1 · Tagging – das Fundament":"1 · Tagging – the foundation","Tore · bei Bedarf anpassen.":"gates · adjust if needed.",
+ "bewegen zwischen den Zellen,":"move between the cells,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
+ "Tor anklicken für 1. und 2. Lauf":"click a gate for the 1st and 2nd run","Bester Rückstand":"Best deficit","grösster Verlust":"biggest loss","grösster Zeitverlust":"biggest time loss",
+ "Sektor-Rückstand":"Sector deficit","Rückstand s":"Deficit s","Bestes Rennen":"Best race","Schwächstes Rennen":"Weakest race","FIS-Rückstand":"FIS deficit",
+ "Alle auswählen":"Select all","An die Coaches":"To the coaches","auf dem Gerät.":"on the device.","erstellen, mit":"create, with","Video wählen —":"Choose video —",
+ "Athlet wählen —":"Choose athlete —","keine Daten —":"no data —","älter als 1 Jahr":"older than 1 year","älter als 6 Monate":"older than 6 months","älter als 90 Tage":"older than 90 days",
+ "Video(s) löschen und ~":"Delete video(s) and ~","verfügbar — du nutzt v":"available — you're using v","heruntergeladen — bereit zur Installation.":"downloaded — ready to install.",
+ "für die Tour — oder klicke dich mit":"for the tour — or click through with","Play drücken für die animierte Tour":"Press play for the animated tour",
+ "– eine solche Datei wieder einlesen.":"– read such a file back in.","filtern, suchen, öffnen, bearbeiten.":"filter, search, open, edit.",
+ "Komplettes Backup (JSON) wieder laden":"Load a full backup (JSON) again","macht rückgängig (Shift+Z wiederholt).":"undoes it (Shift+Z redoes).",
+ "Ø Rückstand pro Tor auf den Laufbesten":"Ø deficit per gate to the fastest run","Ø Rückstand s/Tor · tiefer = schneller":"Ø deficit s/gate · lower = faster",
+ "✨ Update vorhanden – bitte aktualisieren":"✨ Update available – please refresh","der Browser könnte deine Videos löschen.":"the browser could delete your videos.",
+ "Bitte das Video erneut laden & speichern.":"Please reload & save the video.","Aktuelles Video schliessen und neues laden":"Close the current video and load a new one",
+ "Detail nach Filter · Kurssetzung × Tagging":"Detail by filter · course setting × tagging","(0 = Start), dann «Am Tor synchronisieren».":"(0 = start), then «Sync at gate».",
+ "weiter aussen = schneller als der Laufbeste":"further out = faster than the fastest run","– nur dieser Lauf als Tabelle (z. B. für Excel).":"– only this run as a table (e.g. for Excel).",
+ "» löschen? Das Tagging (Zeiten) bleibt erhalten.":"»? The tagging (times) is kept.","Bereiche: Events · Taggings · Videos · Kurssetzung":"Sections: Events · Taggings · Videos · Course setting",
+ "Hinweis: Das Video konnte nicht gespeichert werden.":"Note: the video could not be saved.","Event dauerhaft löschen – inkl. aller getaggten Läufe":"Delete event permanently – incl. all tagged runs",
+ "Zu wenig Rennen für eine Trend-Aussage (mind. 2 nötig).":"Too few races for a trend (min. 2 needed).","Grösste/alte Videos löschen (nach «Grösste zuerst» sortieren)":"Delete largest/old videos (sort by «Largest first»)",
+ "Vom Start bis zum Coach — so entsteht die Gate-to-Gate Analyse":"From start to coach — this is how the Gate-to-Gate analysis is created","mit gleichem Datum/Ort/Lauf — danach erscheint die Analyse hier.":"with the same date/location/run — then the analysis appears here.",
+ "Ein Klick sichert sie dauerhaft und gibt meist deutlich mehr Platz:":"One click makes it persistent and usually gives much more space:","Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit":"Possible duplicate: same athlete, date, gate count and ~total time",
+ "– alle Daten (Läufe, Athleten, Kurssetzungen) in eine Datei speichern.":"– save all data (runs, athletes, course settings) into one file.","Videos liegen auf der Festplatte (Desktop-App) · praktisch unbegrenzt.":"Videos are stored on disk (desktop app) · practically unlimited.",
+ "Noch keine Kurse gespeichert. Importiere ein Kurssetzungs-PDF («＋ Neu»).":"No courses saved yet. Import a course-setting PDF («＋ New»).","Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten — Rennen für Rennen.":"Ø gate-to-gate deficit per gate to the fastest run — race by race.",
+ "⚙ Einstellungen (Token, Repo, Video-Speicher) — meist nur beim ersten Mal":"⚙ Settings (token, repo, video storage) — usually only the first time","Tor in der Tabelle: 1. Lauf, dann 2. Lauf anklicken = am Tor nebeneinander":"Gate in the table: click 1st run, then 2nd run = side by side at the gate",
+ "Noch keine Sicherung — wird nach dem nächsten Speichern automatisch angelegt.":"No backup yet — created automatically after the next save.","Auf diesem Gerät gespeichert. Stellt versehentlich gelöschte Läufe/Kurse wieder her.":"Stored on this device. Restores accidentally deleted runs/courses.",
+ "Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt":"Large deviation from the field at this gate – possibly an error or a non-synced video cut",
+ "in der Grafik oben (oder in der Detail-Tabelle) springt hier im Video an genau die Stelle.":"in the chart above (or in the detail table) jumps to exactly that spot in the video here.",
+ "klicke ein Tor in der Grafik oben oder einen Strich in der Leiste, um im Video zu springen.":"click a gate in the chart above or a mark in the bar to jump in the video.",
+ "laden? Fehlende Läufe, Trainings und Kurse werden wieder hinzugefügt (nichts wird gelöscht).":"load? Missing runs, trainings and courses are re-added (nothing is deleted).",
+ "Mehrfach-Upload möglich · Datum/Ort/Lauf werden – wenn möglich – aus dem Dateinamen erkannt.":"Multiple uploads possible · date/location/run are detected – if possible – from the filename.",
+ "Browser um dauerhaften, grösseren Speicher bitten – Videos werden dann nicht mehr automatisch gelöscht":"Ask the browser for persistent, larger storage – videos then won't be deleted automatically",
+ "farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.":"color-coded (red = slower, green = faster). Click a cell to open the video at the matching gate.",
+ "Editierbar. Figuren: H/F/B automatisch aus Tor-Typ — Laps ergänzen. Werden beim Tagging automatisch übernommen.":"Editable. Figures: H/F/B automatic from gate type — add laps. Applied automatically during tagging.",
+ "Fertig getaggte Läufe aus CSV-Datei(en) importieren (mehrere möglich) — ohne Video, direkt in Datenbank & Analyse.":"Import fully tagged runs from CSV file(s) (multiple possible) — without video, directly into Database & Analysis.",
+ "von deinem Team (z. B. per Chat). Du fügst ihn nur einmal ein — danach bleibt die Verbindung dauerhaft auf diesem Gerät.":"from your team (e.g. via chat). You paste it just once — then the connection stays permanent on this device.",
+ "Der Lauf wird aus dem Live-Feed mitgeschnitten und lokal als Video gesichert — komplett offline, nichts wird hochgeladen.":"The run is recorded from the live feed and saved locally as a video — fully offline, nothing is uploaded.",
+ "Kein Kurs hinterlegt — Terrain nicht verfügbar. Lade die Kurssetzung (Datenbank → Kurssetzung) mit gleichem Datum/Ort/Lauf.":"No course stored — terrain not available. Load the course setting (Database → Course setting) with the same date/location/run.",
+ "Wo sind die Schweizer:innen schnell/langsam — nach Steilheit und Lauf-Charakter. Ø Rückstand pro Tor (negativ = schneller).":"Where the Swiss are fast/slow — by steepness and run character. Ø deficit per gate (negative = faster).",
+ "Cloud nicht verbunden — deine Taggings bleiben nur auf diesem Gerät. Verbinden, damit alle sie in Datenbank & Analyse sehen.":"Cloud not connected — your taggings stay only on this device. Connect so everyone sees them in Database & Analysis.",
+ "Das fertige PDF geht direkt in den WhatsApp-Chat der Trainer — die Analyse ist beim Team, noch bevor der nächste Lauf startet.":"The finished PDF goes straight into the coaches' WhatsApp chat — the analysis is with the team before the next run starts.",
+ "Gate-Zeiten aus CSV übernommen. Start liegt bei der aktuellen Videoposition — bei Bedarf zuerst zum Startbalken scrubben und erneut laden.":"Gate times imported from CSV. Start is at the current video position — if needed, scrub to the start marker first and reload.",
+ "Aus dem Starthaus durch die Riesenslalom-Tore: der Schweizer Athlet und der Laufbeste fahren ihren Lauf — die Uhr läuft, der TV-Feed ist live.":"From the start gate through the giant-slalom gates: the Swiss athlete and the fastest run ski their run — the clock runs, the TV feed is live.",
+ "Aus den Zeiten wächst die Gate-to-Gate Analyse: Rückstand pro Tor, kumulierte Kurve, Sektoren und Rhythmus — sofort sichtbar, wo Zeit liegen bleibt.":"From the times the Gate-to-Gate analysis grows: deficit per gate, cumulative curve, sectors and rhythm — instantly showing where time is lost.",
+ "Jeder Schweizer Athlet und der Laufbeste werden frame-genau an jedem Tor markiert. Aus den Bild-Zeiten entstehen die Tor-zu-Tor-Zeiten — Tor um Tor.":"Each Swiss athlete and the fastest run are marked frame-accurately at every gate. From the frame times the gate-to-gate times are created — gate by gate.",
+ "Zugangs-Token & Coach-Link-Setup mitgeben (Ein-Klick — Kollegen können sofort verbinden und Coach-Links erstellen; nur an vertrauenswürdige Kollegen)":"Include access token & coach-link setup (one click — colleagues can connect and create coach links instantly; only to trusted colleagues)",
+ "Fünf Schritte, ein Ziel: jeder Schweizer Athlet wird mit dem Laufbesten verglichen, damit die Trainer sehen, wo Zeit gewonnen und verloren wird. Drücke":"Five steps, one goal: each Swiss athlete is compared to the fastest run so coaches see where time is gained and lost. Press",
+ "Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.":"Deviation from the field median at this gate — possible mistags or a non-synced video cut. Only when ≥ 3 athletes tagged this gate.",
+ "Zwei Läufe aus der Bibliothek nebeneinander — an einem gewählten Tor synchronisiert abspielbar. Ideal für den direkten Vergleich SUI-Athlet ↔ Laufbester.":"Two runs from the library side by side — playable synced at a chosen gate. Ideal for a direct comparison SUI athlete ↔ fastest run.",
+ "Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen.":"Average gate-to-gate time of the fastest skier, filtered to plausible values (approx. 0.9–1.8 s) so start/finish outliers don't skew the mean.",
+ "Direktes Teilen wird auf diesem Gerät/Browser nicht unterstützt — das Bild wurde heruntergeladen und kann manuell in WhatsApp geteilt werden. (Am zuverlässigsten auf dem Handy/Tablet.)":"Direct sharing isn't supported on this device/browser — the image was downloaded and can be shared manually in WhatsApp. (Most reliable on phone/tablet.)",
+ "Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Athleten berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit.":"Fastest run = reference (0.00). All deficits are computed relative to this athlete. In competitions from the FIS time, in training from the fastest tagged total time.",
+ "Für diese Kurssetzung ist keine PDF gespeichert. Nur die 88 Saison-Kurssetzungen haben eine hinterlegte PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.":"No PDF is stored for this course setting. Only the 88 season course settings have a stored PDF; self-imported PDFs stay only on the device where you loaded them.",
+ "Stärken & Schwächen auf einen Blick: Kennzahlen, Terrain-Profil (Steil/Flach/Drehend/Direkt) und beste/schwächste Rennen der Auswahl. Basis: Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten.":"Strengths & weaknesses at a glance: metrics, terrain profile (Steep/Flat/Turning/Direct) and best/weakest races of the selection. Basis: Ø gate-to-gate deficit per gate to the fastest run.",
+ "Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.":"Difference from the web link: in the desktop app the videos are stored directly on your disk (practically unlimited, works offline). With the web link the videos stay in the limited browser storage. The analysis data (runs, courses) is the same for both.",
+ "Terrain pro Tor — Steilheit & Charakter (aus der Kurssetzung)":"Terrain per gate — steepness & character (from the course setting)",
+ "» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).":"»? Removes the athlete from the analysis and deletes the video (if present).",
+ "Tagging(s) löschen? Entfernt die Athleten aus der Analyse und löscht zugehörige Videos.":"Delete tagging(s)? Removes the athletes from the analysis and deletes associated videos.",
+ "Tagging(s) werden übernommen. Bereits hochgeladene Videos können am alten Namen bleiben.":"Tagging(s) will be carried over. Already uploaded videos may keep the old name.",
+ "Mac: nach dem Download öffnen, App in „Programme":"Mac: open after download, app to „Applications","Windows: Datei ausführen. Bei „Windows hat den PC geschützt":"Windows: run the file. If „Windows protected your PC",
+ "Desktop-App v1.7.0 – Videos auf der Festplatte statt im Browser:":"Desktop app – videos on disk instead of in the browser:","Ein oder mehrere Kurssetzungs-PDFs hierher ziehen oder":"Drag one or more course-setting PDFs here or",
+ "Start gesetzt: Tor 1 auf aktuellem Frame (alle Tags um":"Start set: gate 1 on the current frame (all tags by","Alle getaggten Läufe werden hier gegen die":"All tagged runs are evaluated here against the",
+ "ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten und Höhenprofil.":"— with main chart, detail table, sections and elevation profile.","» ist in diesem Lauf schon vergeben.":"» is already taken in this run."
+});
+// Teil-Muster für zusammengesetzte Texte (z. B. «… · Lauf 3 · 50 Tags …»)
+const I18N_SUB=[
+ [/\bTor (\d+)\b/g,'Gate $1'],
+ [/\bLauf (\d+)\b/g,'Run $1'],
+ [/\b(\d+) Läufe\b/g,'$1 runs'],
+ [/\b(\d+) Lauf\b/g,'$1 run'],
+ [/\b(\d+) Tags\b/g,'$1 tags'],
+ [/\b(\d+) ausgewählt\b/g,'$1 selected'],
+ [/↶ Rückgängig:/g,'↶ Undo:'],
+ [/↷ Wiederholt:/g,'↷ Redone:'],
+ [/Speicher fast voll/g,'Storage almost full'],
+ [/Videos liegen auf der Festplatte/g,'Videos are stored on disk']
+];
+Object.assign(I18N_EN,{
+ "Lauf.mp4":"Run.mp4","Kurssetzung.pdf":"Course.pdf","bitte prüfen.":"please check.","nicht dauerhaft":"not persistent",
+ "eine solche Datei wieder einlesen.":"read such a file back in.","ohne FIS-Zeit (keine Kalibrierung)":"no FIS time (no calibration)",
+ "ohne FIS-Zeit · Endrückstand aus Taggings":"no FIS time · final deficit from taggings",
+ "hochgeladen. Lade das Kurssetzungs-PDF in der":"uploaded. Load the course-setting PDF in the",
+ "nur dieser Lauf als Tabelle (z. B. für Excel).":"only this run as a table (e.g. for Excel).",
+ "alle Daten (Läufe, Athleten, Kurssetzungen) in eine Datei speichern.":"save all data (runs, athletes, course settings) into one file.",
+ ". Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.":". Terrain lines (Steep/Flat/Turning/Direct) appear where a course setting is stored.",
+ "bei allen Athleten dieses Laufs löschen? Die folgenden Tore rücken auf.":"for all athletes in this run? The following gates shift up.",
+ "Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.":"Terrain lines (Steep/Flat/Turning/Direct) appear where a course setting is stored."
+});
+function trStr(s){ if(LANG!=='en'||s==null) return s; const k=String(s).trim(); if(!k) return s;
+ if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
+ let out=String(s); for(const r of I18N_SUB) out=out.replace(r[0], r[1]);
+ return out; }
+function trNode(node){ if(!node) return;
+ if(node.nodeType===3){ const v=node.nodeValue; const t=trStr(v); if(t!==v) node.nodeValue=t; return; }
+ if(node.nodeType!==1) return;
+ const tag=node.tagName; if(tag==='SCRIPT'||tag==='STYLE'||tag==='NOSCRIPT') return;
+ if(node.hasAttribute){ ['title','placeholder','aria-label'].forEach(a=>{ if(node.hasAttribute(a)){ const v=node.getAttribute(a); const t=trStr(v); if(t!==v) node.setAttribute(a,t); } }); }
+ const ch=node.childNodes; if(ch) for(let i=0;i<ch.length;i++) trNode(ch[i]);
+}
+function initI18n(){
+ try{ document.documentElement.lang=LANG; }catch(e){}
+ const b=$('#langBtn'); if(b){ b.textContent = LANG==='en'?'DE':'EN'; b.onclick=()=>{ try{ LS.set('gtg_lang', LANG==='en'?'de':'en'); }catch(e){} try{ location.reload(); }catch(e){} }; }
+ if(LANG!=='en') return;
+ try{ trNode(document.body); }catch(e){}
+ try{ const obs=new MutationObserver(ms=>{ for(const m of ms){ if(m.type==='childList'){ m.addedNodes.forEach(trNode); } else if(m.type==='characterData'){ trNode(m.target); } else if(m.type==='attributes'){ trNode(m.target); } } });
+   obs.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label']}); }catch(e){}
+}
 initWorkflow();
 initVerlauf();
 initProfil();
@@ -6763,6 +7063,7 @@ initClip();
 initTour();
 initWelcome();
 initUpdateCheck();
+initI18n();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
