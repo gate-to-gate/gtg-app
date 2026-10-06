@@ -974,6 +974,11 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .db-venue{font-weight:700;color:var(--ink)}
 .db-by{font-weight:500;font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
 body.dark .db-by{color:#8a93a0}
+.db-vflex{display:flex;align-items:flex-start;gap:7px}
+.db-vflex .db-chev{flex:none;width:11px;padding-top:2px}
+.db-vcol{display:flex;flex-direction:column;min-width:0}
+.db-vname{font-weight:700;color:var(--ink);line-height:1.25}
+.db-table tr.db-arch .db-vname{text-decoration:line-through;text-decoration-color:#c3cad4}
 .db-act{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}
 .db-table tr.db-grp{cursor:pointer}
 .db-table tr.db-grp:hover{background:var(--bg)}
@@ -2606,11 +2611,16 @@ function canEditEvent(ev){ if(!ME) return false; if(ME.r==='admin') return true;
 /* Event überhaupt sichtbar? (mind. eine sichtbare Athlet:in) */
 function evVisible(e){ if(!ME||ME.r==='admin') return true; return !!(e&&e.skiers&&e.skiers.some(s=>canSeeBy(s.by))); }
 /* Ersteller:in(nen) eines oder mehrerer Events – Vor-/Nachname aus der Nutzerliste (dezent) */
-function creatorLabel(evs){ const list=Array.isArray(evs)?evs:[evs]; const set=new Set();
+function creatorLabel(evs, mode){ const list=Array.isArray(evs)?evs:[evs]; const set=new Set();
   list.forEach(ev=> visSkiers(ev).forEach(s=>{ if(s&&s.by){ const u=gtgUser(s.by); set.add(u?u.n:String(s.by).split('@')[0]); } }));
   const arr=[...set];
-  if(!arr.length){ const d=(list[0]&&list[0].date)||''; return (d && d<='2026-04-30') ? 'Command Center' : ''; }   // historische Events ohne Stempel -> Command Center
-  return arr.length<=2 ? arr.join(', ') : (arr.slice(0,2).join(', ')+' +'+(arr.length-2)); }
+  if(arr.length) return arr.length<=2 ? arr.join(', ') : (arr.slice(0,2).join(', ')+' +'+(arr.length-2));
+  // Events ohne gespeicherten Ersteller (vor den persönlichen Logins):
+  const d=(list[0]&&list[0].date)||''; if(!d) return '';
+  if(d<='2026-04-30') return 'Command Center';                              // historische Events bis Ende April 2026
+  const isTrain=(mode||(list[0]&&list[0].mode))==='train';
+  return isTrain ? 'Jonas Mayer' : 'Command Center';                        // laufende Saison: Trainings = Jonas Mayer, Wettkämpfe = Command Center
+}
 const GTG_QUOTES=["Zwischen Sieg und Platz zwei liegen Hundertstel – wir finden sie Tor für Tor.","Das Rennen wird nicht im Ziel entschieden, sondern an jedem einzelnen Tor.","Wer die Linie kennt, gewinnt die Zeit.","Jede Schwungphase zählt. Jedes Tor erzählt.","Daten sehen, was das Auge übersieht.","Schnell sein ist gut. Wissen warum ist besser.","Marginal gains, maximaler Vorsprung.","Vom Gefühl zur Gewissheit – Tor für Tor.","Der Schnee vergisst nichts. Die Analyse auch nicht.","Perfektion ist die Summe vieler kleiner Vorsprünge.","Zeit gewinnt man im Tor, nicht auf der Geraden.","Analysiere wie ein Champion, fahre wie einer.","Hundertstel sind kein Zufall.","Jeder Lauf ist eine Lektion – wenn man genau hinschaut.","Die beste Linie ist die, die man gemessen hat.","Gate to Gate: wo Rennen wirklich entschieden werden.","Kleine Fehler, grosse Wirkung – finde sie, bevor es der Gegner tut.","Präzision schlägt Kraft. Immer."];
 function gtgShowLogin(){ const gate=$('#gateLogin'); if(!gate) return;
   try{ const now=new Date(), start=new Date(now.getFullYear(),0,0); const doy=Math.floor((now-start)/86400000); const q=$('#glQuote'); if(q) q.textContent=GTG_QUOTES[((doy%GTG_QUOTES.length)+GTG_QUOTES.length)%GTG_QUOTES.length]; }catch(e){}
@@ -2655,7 +2665,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061444';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061453';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5931,9 +5941,6 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
      let g=gmap.get(gk); if(!g){ g={rows:[]}; gmap.set(gk,g); groups.push(g); } g.rows.push(r); });
    let gid=0, html='';
    groups.forEach(g=>{ const e=g.rows[0].e;
-    if(g.rows.length===1){ const r=g.rows[0]; const cl=creatorLabel(e);
-      html+=`<tr class="${r.archived?'db-arch':''}"><td>${dmy(e.date)}</td><td class="db-venue">${e.venue}${cl?`<div class="db-by" title="Erstellt von ${escHtml(cl)}">${escHtml(cl)}</div>`:''}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td>${runCells(r)}</tr>`;
-      return; }
     gid++; const id='g'+gid; const nRuns=g.rows.length;
     const names=new Set(); g.rows.forEach(r=> visSkiers(r.e).forEach(s=> s&&s.name&&names.add(s.name)));
     const art=g.rows[0].mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
@@ -5943,9 +5950,9 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
     html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}" data-grp="${id}">`
-      +`<td>${dmy(e.date)}</td><td class="db-venue"><span class="db-chev">▸</span> ${e.venue}${gcl?`<div class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</div>`:''}</td>`
+      +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${e.venue}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
-      +`<td><span class="db-grpcount">${nRuns} Läufe</span></td>`
+      +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
       +`<td><span class="db-dash">—</span></td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
     g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
