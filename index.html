@@ -2665,7 +2665,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061515';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061529';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2692,6 +2692,112 @@ const ATH_COLOR = (function(){
 // benutzerdefinierte Farbe pro Athlet:in (in der Datenbank → Athlet:innen einstellbar)
 function athCustomColor(name){ try{ const a=ATHLETES.find(x=>x.name===name); return a&&a.color?a.color:null; }catch(e){ return null; } }
 const athColor = (name,isTop)=> isTop ? GOLD : (athCustomColor(name) || ATH_COLOR[name] || '#7a8694');
+/* FIS-Codes (Quelle: offizielle FIS-Datenbank, Alpine). Schlüssel = normalisierter Name.
+   Füllt fehlende Codes automatisch und hält bekannte Athlet:innen korrekt. */
+const ATH_FIS = {
+  "AERNI LUCA":"511983",
+  "AICHER EMMA":"507168",
+  "ALLENBACH DANIA":"516895",
+  "AMIEZ STEVEN":"6190558",
+  "ASTNER NINA":"56517",
+  "BASSINO MARTA":"299276",
+  "BRAATHEN LUCAS":"422729",
+  "BRAENDLI ANUK":"516722",
+  "BRENNSTEINER STEFAN":"54027",
+  "BRIGNONE FEDERICA":"297601",
+  "BRUNNER STEPHANIE":"56217",
+  "CAVIEZEL GINO":"511852",
+  "CHRISTEN ELIANE":"516553",
+  "COLTURI LARA":"805009",
+  "DANIOTH ALINE":"516504",
+  "DE ALIPRANDINI LUCA":"990116",
+  "DELLA MEA LARA":"6295075",
+  "DUBOVSKA MARTINA":"155728",
+  "DUERR LENA":"206355",
+  "DVORNIK NEJA":"565491",
+  "ELEZI CANNAFERINA ALBAN":"6191334",
+  "FELLER MANUEL":"54063",
+  "FEURSTEIN LUKAS":"54628",
+  "FUX GIULIANO":"512678",
+  "GINNIS AJ":"6531063",
+  "GISIN MICHELLE":"516284",
+  "GOOD NICOLE":"516530",
+  "GRAMMEL ANTON":"202883",
+  "GRATZ FABIAN":"202829",
+  "GRENIER VALERIE":"107613",
+  "GROB STEFANIE":"516753",
+  "GSTREIN FABIO":"54444",
+  "GUT BEHRAMI LARA":"516138",
+  "HAASER RAPHAEL":"54445",
+  "HAECHLER LENZ":"512588",
+  "HALLBERG EDUARD":"180919",
+  "HANSIEN KATIE":"6536171",
+  "HAUGAN TIMON":"422507",
+  "HECTOR SARA":"506399",
+  "HOEPLI ALINE":"516619",
+  "HOLDENER WENDY":"516280",
+  "HOLTMANN MINA":"426100",
+  "HURT AJ":"6536392",
+  "ITEN MATTHIAS":"512353",
+  "JAKOBSEN KRISTOFFER":"502015",
+  "JANUTIN FADRI":"512424",
+  "KASPER VANESSA":"516407",
+  "KASTLUNGER TOBIAS":"6293252",
+  "KRISTOFFERSEN HENRIK":"422304",
+  "LIENSBERGER KATHARINA":"56388",
+  "LJUTIC ZRINKA":"385116",
+  "LOEVBLOM HILMA":"507011",
+  "MAECHLER JANINE":"516783",
+  "MCGRATH ATLE LIE":"422732",
+  "MCGRATH ATLELIE":"422732",
+  "MEILLARD LOIC":"512182",
+  "MEILLARD MELANIE":"516528",
+  "MOLTZAN PAULA":"539909",
+  "MONNEY ALEXIS":"512408",
+  "MUFFAT VICTOR":"193967",
+  "MURISIER JUSTIN":"511896",
+  "NEF TANGUY":"512203",
+  "NOEL CLEMENT":"6190403",
+  "OBRIEN NINA":"6535773",
+  "ODERMATT MARCO":"512269",
+  "OEHLUND CORNELIA":"507325",
+  "PILLER SUE":"516813",
+  "POGNEAUX CHIARA":"198215",
+  "POPOV ALBERT":"92720",
+  "POPOVIC LEONA":"385096",
+  "RADAMUS RIVER":"6532084",
+  "RASCHNER DOMINIK":"54252",
+  "RASSAT PACO":"6190543",
+  "RAST CAMILLE":"516562",
+  "ROBINSON ALICE":"415232",
+  "ROCHAT MARC":"511899",
+  "ROSSETTI MARTA":"6295165",
+  "RYDING DAVE":"220689",
+  "SCHEIB JULIA":"56416",
+  "SCHWARZ MARCO":"54320",
+  "SHIFFRIN MIKAELA":"6535237",
+  "SIMONET LIVIO":"512301",
+  "SLOKAR ANDREJA":"565463",
+  "STEEN OLSEN ALEXANDER":"422766",
+  "STJERNESUND THEA LOUISE":"426193",
+  "STOFFEL ELENA":"516426",
+  "STRASSER LINUS":"202451",
+  "SWENN LARSSON ANNA":"506146",
+  "TAYLOR LAURIE":"221236",
+  "TROCKER ANNA":"6297347",
+  "TUMLER THOMAS":"511638",
+  "VERDU JOAN":"20398",
+  "VINATZER ALEX":"6293171",
+  "VLHOVA PETRA":"705423",
+  "VONGRUENIGEN NOEL":"512120",
+  "WILD SIMONE":"516268",
+  "YULE DANIEL":"511996",
+  "ZENHAEUSERN RAMON":"511902",
+  "ZUBCIC FILIP":"380335"
+};
+function fisNorm(s){ return String(s==null?'':s).toUpperCase().replace(/\u00C4/g,'AE').replace(/\u00D6/g,'OE').replace(/\u00DC/g,'UE').replace(/\u00DF/g,'SS').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z ]/g,' ').replace(/\s+/g,' ').trim(); }
+function fisFor(name){ return ATH_FIS[fisNorm(name)]||''; }
+
 function palHash(str, pal){ let h=0; str=String(str); for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return pal[h%pal.length]; }
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
 const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
@@ -3703,12 +3809,14 @@ function seedAthletes(){
   const map = new Map();
   DATA.forEach(e=> e.skiers.forEach(s=> { if(!map.has(s.name)) map.set(s.name,{name:s.name,nation:s.nation}); }));
   LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); const e={name:nm,nation:a.nation||'',fis:a.fis}; if(a.color) e.color=a.color; map.set(nm,e); } });
+  // FIS-Codes aus der hinterlegten Tabelle einsetzen (füllt fehlende + korrigiert bekannte Athlet:innen)
+  map.forEach(e=>{ const f=fisFor(e.name); if(f) e.fis=f; });
   ATHLETES = [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 function persistAthletes(){ const seed=new Set(); DATA.forEach(e=>e.skiers.forEach(s=>seed.add(s.name)));
   LS.set('gtg_athletes', ATHLETES.filter(a=>!seed.has(a.name)||true)); }
 function natOf(name){ const a=ATHLETES.find(x=>x.name===name); return a?a.nation:''; }
-function fisOf(name){ const a=ATHLETES.find(x=>x.name===name); return a&&a.fis?a.fis:''; }
+function fisOf(name){ const f=fisFor(name); if(f) return f; const a=ATHLETES.find(x=>x.name===name); return a&&a.fis?a.fis:''; }
 
 function fillAthleteSelect(){
   const sel=$('#mAth'); const cur=sel.value; sel.innerHTML='<option value="">— Athlet wählen —</option>';
