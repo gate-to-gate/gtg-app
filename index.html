@@ -701,6 +701,8 @@ body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 .gl-btn:active{transform:translateY(0)}
 .gl-err{min-height:16px;margin-top:10px;font-size:12.5px;font-weight:600;color:#ff8f86;opacity:0;transition:.15s}
 .gl-err.show{opacity:1}
+.gl-remember{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;color:#aeb9c8;cursor:pointer;user-select:none}
+.gl-remember input{width:15px;height:15px;accent-color:#e4352b;cursor:pointer;flex:none}
 .gl-foot{margin-top:14px;font-size:11px;color:#6b7c93;display:flex;align-items:center;justify-content:center;gap:6px}
 .gl-foot b{color:#9aa7b7;font-weight:700}
 .gl-shake{animation:glshake .4s}
@@ -2446,6 +2448,7 @@ body.dark .empty{color:#9aa6b4}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         <input id="glPw" class="gl-input" type="password" placeholder="Passwort" autocomplete="current-password" spellcheck="false" aria-label="Passwort">
       </div>
+      <label class="gl-remember"><input type="checkbox" id="glRemember" checked> Angemeldet bleiben</label>
       <button class="gl-btn" type="submit">Anmelden</button>
       <div id="glErr" class="gl-err">E-Mail oder Passwort stimmt nicht.</div>
     </form>
@@ -2455,7 +2458,7 @@ body.dark .empty{color:#9aa6b4}
 <script>
 /* Flash-Schutz: wenn (noch) nicht angemeldet, Login-Overlay sofort zeigen.
    Die eigentliche Anmeldung (E-Mail+Passwort gegen die Nutzerliste) macht app.js. */
-(function(){ try{ if(!localStorage.getItem('gtg_user')){ var g=document.getElementById('gateLogin'); if(g){ g.style.display='flex'; document.documentElement.style.overflow='hidden'; } } }catch(e){} })();
+(function(){ try{ var has=localStorage.getItem('gtg_user')||sessionStorage.getItem('gtg_user'); if(!has){ var g=document.getElementById('gateLogin'); if(g){ g.style.display='flex'; document.documentElement.style.overflow='hidden'; } } }catch(e){} })();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -2642,8 +2645,8 @@ function gtgSha256(ascii){ ascii=unescape(encodeURIComponent(ascii));
 }
 function gtgHashPw(email,pw){ let x=GTG_SALT+':'+String(email).toLowerCase()+':'+pw; for(let i=0;i<GTG_HN;i++){ x=gtgSha256(x); } return x; }
 let ME=null;
-function gtgLoadSession(){ try{ const s=JSON.parse(localStorage.getItem('gtg_user')||'null'); if(s&&s.e){ const u=GTG_UBYMAIL[String(s.e).toLowerCase()]; if(u) return {e:u.e,r:u.r,g:u.g||[],n:u.n}; } }catch(e){} return null; }
-function gtgLogout(){ try{ localStorage.removeItem('gtg_user'); }catch(e){} try{ location.reload(); }catch(e){} }
+function gtgLoadSession(){ try{ const raw=localStorage.getItem('gtg_user')||sessionStorage.getItem('gtg_user')||'null'; const s=JSON.parse(raw); if(s&&s.e){ const u=GTG_UBYMAIL[String(s.e).toLowerCase()]; if(u) return {e:u.e,r:u.r,g:u.g||[],n:u.n}; } }catch(e){} return null; }
+function gtgLogout(){ try{ localStorage.removeItem('gtg_user'); }catch(e){} try{ sessionStorage.removeItem('gtg_user'); }catch(e){} try{ location.reload(); }catch(e){} }
 /* Sichtbarkeit / Bearbeitung einer Tagging-Zeile anhand des Erstellers (by = E-Mail) */
 function gtgShareTeam(a,b){ if(!a||!b) return false; const bg=new Set(b.g||[]); return (a.g||[]).some(x=>bg.has(x)); }
 function canSeeBy(by){ if(!ME) return true; if(ME.r==='admin') return true; if(!by) return true; /* Legacy/Wettkampf -> alle */
@@ -2677,7 +2680,9 @@ function gtgShowLogin(){ const gate=$('#gateLogin'); if(!gate) return;
     const email=String(em&&em.value||'').trim().toLowerCase(); const u=GTG_UBYMAIL[email]; const btn=form.querySelector('.gl-btn');
     if(err) err.classList.remove('show'); if(btn){ btn.disabled=true; btn.dataset.t=btn.textContent; btn.textContent='Prüfe…'; }
     setTimeout(()=>{ let ok=false; try{ ok = !!u && gtgHashPw(email, (pw&&pw.value)||'')===u.h; }catch(_){ ok=false; }
-      if(ok){ try{ localStorage.setItem('gtg_user', JSON.stringify({e:u.e})); localStorage.setItem('gtg_lastmail', u.e); }catch(_){}
+      if(ok){ const rem=!($('#glRemember')&&$('#glRemember').checked===false);   // Standard: angemeldet bleiben
+        try{ localStorage.removeItem('gtg_user'); sessionStorage.removeItem('gtg_user'); }catch(_){}
+        try{ (rem?localStorage:sessionStorage).setItem('gtg_user', JSON.stringify({e:u.e})); localStorage.setItem('gtg_lastmail', u.e); }catch(_){}
         try{ document.documentElement.style.overflow=''; }catch(_){} try{ location.reload(); }catch(_){} }
       else { if(btn){ btn.disabled=false; btn.textContent=btn.dataset.t||'Anmelden'; } if(err) err.classList.add('show');
         if(card){ card.classList.remove('gl-shake'); void card.offsetWidth; card.classList.add('gl-shake'); } if(pw){ pw.value=''; try{pw.focus();}catch(_){} } }
@@ -2710,7 +2715,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061613';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061623';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7852,7 +7857,8 @@ Object.assign(I18N_EN,{
  "aufklappen":"expand","zuklappen":"collapse",
  "Alle":"All",
  "Keine Daten für diese Auswahl. Wähle eine andere Disziplin bzw. ein anderes Geschlecht – oder ein anderes Event.":"No data for this selection. Choose a different discipline or gender – or another event.",
- "Kein Event/Lauf ausgewählt. Wähle oben ein Event.":"No event/run selected. Choose an event above."
+ "Kein Event/Lauf ausgewählt. Wähle oben ein Event.":"No event/run selected. Choose an event above.",
+ "Angemeldet bleiben":"Stay signed in"
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
