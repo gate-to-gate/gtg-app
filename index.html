@@ -644,6 +644,37 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .wc-hint{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:10px}
 .wc-skip{display:block;margin:16px auto 0;background:none;border:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
 body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+/* Login-/Passwort-Gate */
+.gl-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden;animation:fadein .2s ease;
+  background:radial-gradient(1200px 700px at 80% -12%, #3c2130 0%, rgba(60,33,48,0) 55%),
+             radial-gradient(1000px 820px at 6% 112%, #0f2740 0%, rgba(15,39,64,0) 55%),
+             linear-gradient(160deg,#0b1017 0%,#121a26 48%,#0a0e15 100%)}
+.gl-bg{position:absolute;inset:0;pointer-events:none}
+.gl-card{position:relative;width:100%;max-width:412px;border-radius:22px;padding:34px 30px 24px;text-align:center;color:#eef1f6;
+  background:rgba(22,27,36,.74);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 90px -24px rgba(0,0,0,.78)}
+.gl-logo{width:62px;height:62px;border-radius:17px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#e4352b,#b01d16);color:#fff;font-weight:900;font-size:21px;letter-spacing:-.5px;box-shadow:0 14px 30px -10px rgba(218,41,28,.72)}
+.gl-title{font-size:23px;font-weight:800;letter-spacing:-.3px}
+.gl-kicker{font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#8ea0b6;margin-top:6px}
+.gl-quote{margin:22px 0 22px;padding:15px 16px 15px 17px;border-left:3px solid #e4352b;border-radius:10px;background:rgba(255,255,255,.045);
+  font-size:14.5px;line-height:1.5;font-style:italic;color:#dce4ef;text-align:left}
+.gl-quote .gl-qm{color:#e4352b;font-weight:900;font-style:normal;margin-right:3px;font-size:17px}
+.gl-field{position:relative;margin-top:4px}
+.gl-field svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#7d8ea6}
+.gl-input{width:100%;box-sizing:border-box;padding:14px 14px 14px 42px;border-radius:13px;border:1.5px solid rgba(255,255,255,.12);
+  background:rgba(12,16,22,.6);color:#fff;font:inherit;font-size:15px;letter-spacing:.04em;transition:.15s}
+.gl-input::placeholder{color:#64748b}
+.gl-input:focus{outline:none;border-color:#e4352b;box-shadow:0 0 0 4px rgba(228,53,43,.18)}
+.gl-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:13px;cursor:pointer;font:inherit;font-weight:800;font-size:15px;color:#fff;
+  background:linear-gradient(145deg,#e4352b,#b01d16);box-shadow:0 12px 26px -10px rgba(218,41,28,.7);transition:.15s}
+.gl-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.gl-btn:active{transform:translateY(0)}
+.gl-err{min-height:16px;margin-top:10px;font-size:12.5px;font-weight:600;color:#ff8f86;opacity:0;transition:.15s}
+.gl-err.show{opacity:1}
+.gl-foot{margin-top:15px;font-size:11px;color:#6b7c93}
+.gl-shake{animation:glshake .4s}
+@keyframes glshake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}}
 /* Auto-Update-Banner */
 .upd-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:12px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);font-size:13px;font-weight:600;animation:updIn .25s ease}
 @keyframes updIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -2282,7 +2313,107 @@ body.dark .empty{color:#9aa6b4}
   </div>
 </div>
 
-<div class="tt" id="tt"></div>
+<div id="gateLogin" class="gl-overlay" style="display:none">
+  <svg class="gl-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path d="M0 650 L360 380 L560 540 L820 300 L1080 560 L1440 360 L1440 900 L0 900 Z" fill="rgba(255,255,255,.035)"/>
+    <path d="M0 730 L300 520 L520 660 L760 470 L1040 680 L1440 500 L1440 900 L0 900 Z" fill="rgba(255,255,255,.05)"/>
+    <g stroke-width="5" stroke-linecap="round" opacity=".55">
+      <line x1="300" y1="702" x2="300" y2="772" stroke="#e4352b"/>
+      <line x1="620" y1="640" x2="620" y2="710" stroke="#2f6fd0"/>
+      <line x1="940" y1="702" x2="940" y2="772" stroke="#e4352b"/>
+      <line x1="1185" y1="648" x2="1185" y2="718" stroke="#2f6fd0"/>
+    </g>
+  </svg>
+  <div class="gl-card">
+    <div class="gl-logo">G2G</div>
+    <div class="gl-title">Gate-to-Gate</div>
+    <div class="gl-kicker">Race Analysis</div>
+    <div class="gl-quote"><span class="gl-qm">“</span><span id="glQuote">…</span></div>
+    <form id="glForm" autocomplete="off">
+      <div class="gl-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input id="glPw" class="gl-input" type="password" placeholder="Passwort" autocomplete="current-password" spellcheck="false" aria-label="Passwort">
+      </div>
+      <button class="gl-btn" type="submit">Eintreten</button>
+      <div id="glErr" class="gl-err">Falsches Passwort – bitte nochmals versuchen.</div>
+    </form>
+    <div class="gl-foot">Nur für Team &amp; Coaches</div>
+  </div>
+</div>
+<script>
+(function(){
+  var HASH='0d783eca2a244142e32ea4abcebdbb8c79957947fae7471ba410d7db8064e386';
+  var KEY='gtg_auth';
+  function sha256(ascii){
+    ascii=unescape(encodeURIComponent(ascii));
+    function rr(v,a){return (v>>>a)|(v<<(32-a));}
+    var mp=Math.pow, mw=mp(2,32), result='', words=[], bitLen=ascii.length*8;
+    var hash=sha256.h=sha256.h||[], k=sha256.k=sha256.k||[], pc=k.length, comp={};
+    for(var cand=2;pc<64;cand++){ if(!comp[cand]){ for(var i=0;i<313;i+=cand){comp[i]=cand;} hash[pc]=(mp(cand,.5)*mw)|0; k[pc++]=(mp(cand,1/3)*mw)|0; } }
+    ascii+='\x80'; while(ascii.length%64-56)ascii+='\x00';
+    for(var i=0;i<ascii.length;i++){ var j=ascii.charCodeAt(i); if(j>>8)return; words[i>>2]|=j<<((3-i)%4)*8; }
+    words[words.length]=((bitLen/mw)|0); words[words.length]=(bitLen);
+    for(var j=0;j<words.length;){
+      var w=words.slice(j,j+=16), oldHash=hash; hash=hash.slice(0,8);
+      for(var i=0;i<64;i++){
+        var w15=w[i-15], w2=w[i-2], a=hash[0], e=hash[4];
+        var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=i<16?(w[i]|0):(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+        var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+        hash=[(t1+t2)|0].concat(hash); hash[4]=(hash[4]+t1)|0;
+      }
+      for(var i=0;i<8;i++){hash[i]=(hash[i]+oldHash[i])|0;}
+    }
+    for(var i=0;i<8;i++){ for(var j=3;j+1;j--){ var b=(hash[i]>>(j*8))&255; result+=((b<16)?0:'')+b.toString(16); } }
+    return result;
+  }
+  var quotes=[
+    "Zwischen Sieg und Platz zwei liegen Hundertstel – wir finden sie Tor für Tor.",
+    "Das Rennen wird nicht im Ziel entschieden, sondern an jedem einzelnen Tor.",
+    "Wer die Linie kennt, gewinnt die Zeit.",
+    "Jede Schwungphase zählt. Jedes Tor erzählt.",
+    "Daten sehen, was das Auge übersieht.",
+    "Schnell sein ist gut. Wissen warum ist besser.",
+    "Marginal gains, maximaler Vorsprung.",
+    "Vom Gefühl zur Gewissheit – Tor für Tor.",
+    "Der Schnee vergisst nichts. Die Analyse auch nicht.",
+    "Perfektion ist die Summe vieler kleiner Vorsprünge.",
+    "Zeit gewinnt man im Tor, nicht auf der Geraden.",
+    "Analysiere wie ein Champion, fahre wie einer.",
+    "Hundertstel sind kein Zufall.",
+    "Jeder Lauf ist eine Lektion – wenn man genau hinschaut.",
+    "Die beste Linie ist die, die man gemessen hat.",
+    "Gate to Gate: wo Rennen wirklich entschieden werden.",
+    "Kleine Fehler, grosse Wirkung – finde sie, bevor es der Gegner tut.",
+    "Präzision schlägt Kraft. Immer."
+  ];
+  try{
+    var now=new Date(), start=new Date(now.getFullYear(),0,0);
+    var doy=Math.floor((now-start)/86400000);
+    var q=document.getElementById('glQuote'); if(q) q.textContent=quotes[((doy%quotes.length)+quotes.length)%quotes.length];
+  }catch(e){ var q2=document.getElementById('glQuote'); if(q2) q2.textContent=quotes[0]; }
+  var gate=document.getElementById('gateLogin');
+  function authed(){ try{return localStorage.getItem(KEY)==='1';}catch(e){return false;} }
+  if(authed()){ if(gate) gate.style.display='none'; return; }
+  if(!gate) return;
+  gate.style.display='flex';
+  try{ document.documentElement.style.overflow='hidden'; }catch(e){}
+  var pw=document.getElementById('glPw'), err=document.getElementById('glErr'), card=gate.querySelector('.gl-card'), form=document.getElementById('glForm');
+  setTimeout(function(){ try{pw.focus();}catch(e){} },80);
+  if(form) form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(sha256(pw.value||'')===HASH){
+      try{localStorage.setItem(KEY,'1');}catch(e){}
+      gate.style.transition='opacity .25s ease'; gate.style.opacity='0';
+      try{ document.documentElement.style.overflow=''; }catch(e){}
+      setTimeout(function(){ gate.style.display='none'; },260);
+    }else{
+      err.classList.add('show');
+      card.classList.remove('gl-shake'); void card.offsetWidth; card.classList.add('gl-shake');
+      pw.value=''; try{pw.focus();}catch(e){}
+    }
+  });
+})();
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -2321,7 +2452,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610051553';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061258';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
