@@ -645,35 +645,56 @@ table.hm tbody tr:hover .gate-c{background:#f0f2f6}
 .wc-skip{display:block;margin:16px auto 0;background:none;border:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
 body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 /* Login-/Passwort-Gate */
-.gl-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden;animation:fadein .2s ease;
-  background:radial-gradient(1200px 700px at 80% -12%, #3c2130 0%, rgba(60,33,48,0) 55%),
-             radial-gradient(1000px 820px at 6% 112%, #0f2740 0%, rgba(15,39,64,0) 55%),
-             linear-gradient(160deg,#0b1017 0%,#121a26 48%,#0a0e15 100%)}
-.gl-bg{position:absolute;inset:0;pointer-events:none}
-.gl-card{position:relative;width:100%;max-width:412px;border-radius:22px;padding:34px 30px 24px;text-align:center;color:#eef1f6;
-  background:rgba(22,27,36,.74);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 90px -24px rgba(0,0,0,.78)}
-.gl-logo{width:62px;height:62px;border-radius:17px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(145deg,#e4352b,#b01d16);color:#fff;font-weight:900;font-size:21px;letter-spacing:-.5px;box-shadow:0 14px 30px -10px rgba(218,41,28,.72)}
-.gl-title{font-size:23px;font-weight:800;letter-spacing:-.3px}
-.gl-kicker{font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#8ea0b6;margin-top:6px}
-.gl-quote{margin:22px 0 22px;padding:15px 16px 15px 17px;border-left:3px solid #e4352b;border-radius:10px;background:rgba(255,255,255,.045);
-  font-size:14.5px;line-height:1.5;font-style:italic;color:#dce4ef;text-align:left}
+.gl-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden;animation:fadein .25s ease;
+  background:radial-gradient(1100px 680px at 82% -14%, #46232f 0%, rgba(70,35,47,0) 56%),
+             radial-gradient(1000px 820px at 2% 118%, #0e2a46 0%, rgba(14,42,70,0) 55%),
+             linear-gradient(158deg,#0b1017 0%,#111a27 46%,#090d14 100%)}
+.gl-bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gl-grid line{stroke:rgba(255,255,255,.05)}
+.gl-best{stroke:#D9A400;stroke-width:2;stroke-dasharray:2 7;opacity:.55}
+.gl-curve{fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.gl-cr{stroke:#e4352b;opacity:.5;filter:drop-shadow(0 0 7px rgba(228,53,43,.55));stroke-dasharray:2200;stroke-dashoffset:2200;animation:gldraw 2.8s .25s cubic-bezier(.4,0,.1,1) forwards}
+.gl-cb{stroke:#2f6fd0;opacity:.55;filter:drop-shadow(0 0 7px rgba(47,111,208,.5));stroke-dasharray:2400;stroke-dashoffset:2400;animation:gldraw 3.1s .45s cubic-bezier(.4,0,.1,1) forwards}
+.gl-dot{animation:glpulse 2.4s ease-in-out infinite}
+@keyframes gldraw{to{stroke-dashoffset:0}}
+@keyframes glpulse{0%,100%{opacity:.35}50%{opacity:.9}}
+.gl-orb{position:absolute;border-radius:50%;filter:blur(64px);opacity:.42;pointer-events:none}
+.gl-orb.o1{width:340px;height:340px;background:#e4352b;top:-120px;right:-90px}
+.gl-orb.o2{width:300px;height:300px;background:#2f6fd0;bottom:-120px;left:-80px}
+.gl-snow{position:absolute;top:-12px;border-radius:50%;background:rgba(255,255,255,.55);animation:glfall linear infinite}
+@keyframes glfall{0%{transform:translateY(-12px) translateX(0);opacity:0}12%{opacity:.75}100%{transform:translateY(106vh) translateX(32px);opacity:0}}
+.gl-card{position:relative;width:100%;max-width:430px;border-radius:24px;padding:30px 30px 22px;text-align:center;color:#eef1f6;
+  background:linear-gradient(180deg,rgba(28,34,45,.82),rgba(16,21,29,.86));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.1);box-shadow:0 36px 104px -28px rgba(0,0,0,.84), inset 0 1px 0 rgba(255,255,255,.07)}
+.gl-logo{width:64px;height:64px;margin:0 auto 12px;filter:drop-shadow(0 14px 28px rgba(218,41,28,.6));animation:glfloat 5s ease-in-out infinite}
+.gl-logo svg{width:100%;height:100%;display:block}
+@keyframes glfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.gl-word{height:19px;width:auto;margin:2px auto 0;display:block}
+.gl-kicker{font-size:10px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:#93a4ba;margin-top:9px}
+.gl-spark{display:block;margin:15px auto 2px}
+.gl-feats{display:flex;justify-content:center;gap:7px;margin-top:15px;flex-wrap:wrap}
+.gl-feat{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:#aeb9c8;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 10px}
+.gl-feat svg{width:12px;height:12px;color:#e4352b;flex:none}
+.gl-quote{margin:18px 0 20px;padding:14px 15px 14px 16px;border-left:3px solid #e4352b;border-radius:10px;background:rgba(255,255,255,.05);
+  font-size:14px;line-height:1.5;font-style:italic;color:#dce4ef;text-align:left}
 .gl-quote .gl-qm{color:#e4352b;font-weight:900;font-style:normal;margin-right:3px;font-size:17px}
 .gl-field{position:relative;margin-top:4px}
-.gl-field svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#7d8ea6}
+.gl-field>svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#7d8ea6}
 .gl-input{width:100%;box-sizing:border-box;padding:14px 14px 14px 42px;border-radius:13px;border:1.5px solid rgba(255,255,255,.12);
-  background:rgba(12,16,22,.6);color:#fff;font:inherit;font-size:15px;letter-spacing:.04em;transition:.15s}
+  background:rgba(12,16,22,.62);color:#fff;font:inherit;font-size:15px;letter-spacing:.04em;transition:.15s}
 .gl-input::placeholder{color:#64748b}
 .gl-input:focus{outline:none;border-color:#e4352b;box-shadow:0 0 0 4px rgba(228,53,43,.18)}
-.gl-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:13px;cursor:pointer;font:inherit;font-weight:800;font-size:15px;color:#fff;
+.gl-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:13px;cursor:pointer;font:inherit;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em;
   background:linear-gradient(145deg,#e4352b,#b01d16);box-shadow:0 12px 26px -10px rgba(218,41,28,.7);transition:.15s}
-.gl-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.gl-btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
 .gl-btn:active{transform:translateY(0)}
 .gl-err{min-height:16px;margin-top:10px;font-size:12.5px;font-weight:600;color:#ff8f86;opacity:0;transition:.15s}
 .gl-err.show{opacity:1}
-.gl-foot{margin-top:15px;font-size:11px;color:#6b7c93}
+.gl-foot{margin-top:14px;font-size:11px;color:#6b7c93;display:flex;align-items:center;justify-content:center;gap:6px}
+.gl-foot b{color:#9aa7b7;font-weight:700}
 .gl-shake{animation:glshake .4s}
+@media (max-height:720px){.gl-spark,.gl-feats{display:none}.gl-logo{width:54px;height:54px;margin-bottom:8px}.gl-quote{margin:14px 0 16px}}
 @keyframes glshake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}}
 /* Auto-Update-Banner */
 .upd-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:12px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);font-size:13px;font-weight:600;animation:updIn .25s ease}
@@ -2314,20 +2335,51 @@ body.dark .empty{color:#9aa6b4}
 </div>
 
 <div id="gateLogin" class="gl-overlay" style="display:none">
-  <svg class="gl-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-    <path d="M0 650 L360 380 L560 540 L820 300 L1080 560 L1440 360 L1440 900 L0 900 Z" fill="rgba(255,255,255,.035)"/>
-    <path d="M0 730 L300 520 L520 660 L760 470 L1040 680 L1440 500 L1440 900 L0 900 Z" fill="rgba(255,255,255,.05)"/>
-    <g stroke-width="5" stroke-linecap="round" opacity=".55">
-      <line x1="300" y1="702" x2="300" y2="772" stroke="#e4352b"/>
-      <line x1="620" y1="640" x2="620" y2="710" stroke="#2f6fd0"/>
-      <line x1="940" y1="702" x2="940" y2="772" stroke="#e4352b"/>
-      <line x1="1185" y1="648" x2="1185" y2="718" stroke="#2f6fd0"/>
+  <div class="gl-orb o1"></div><div class="gl-orb o2"></div>
+  <svg class="gl-bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M0 655 L360 388 L560 548 L820 312 L1080 566 L1440 372 L1440 900 L0 900 Z" fill="rgba(255,255,255,.028)"/>
+    <path d="M0 735 L300 528 L520 668 L760 480 L1040 688 L1440 512 L1440 900 L0 900 Z" fill="rgba(255,255,255,.045)"/>
+    <g class="gl-grid"><line x1="0" y1="170" x2="1440" y2="170"/><line x1="0" y1="300" x2="1440" y2="300"/><line x1="0" y1="430" x2="1440" y2="430"/><line x1="0" y1="560" x2="1440" y2="560"/><line x1="0" y1="690" x2="1440" y2="690"/></g>
+    <line class="gl-best" x1="0" y1="430" x2="1440" y2="430"/>
+    <path class="gl-curve gl-cr" d="M-20,438 C140,420 280,410 400,430 C500,446 540,388 620,372 C690,358 712,470 760,650 C792,772 836,800 882,792"/>
+    <path class="gl-curve gl-cb" d="M-20,452 C150,470 250,516 360,534 C470,552 560,486 690,476 C840,464 1010,512 1150,566 C1290,620 1380,612 1460,620"/>
+    <circle class="gl-dot" cx="1150" cy="566" r="7" fill="#2f6fd0"/>
+    <g stroke-width="5" stroke-linecap="round" opacity=".5">
+      <line x1="300" y1="700" x2="300" y2="762" stroke="#e4352b"/><line x1="620" y1="636" x2="620" y2="698" stroke="#2f6fd0"/>
+      <line x1="940" y1="700" x2="940" y2="762" stroke="#e4352b"/><line x1="1185" y1="648" x2="1185" y2="710" stroke="#2f6fd0"/>
     </g>
   </svg>
+  <span class="gl-snow" style="left:8%;width:5px;height:5px;animation-duration:11s;animation-delay:0s"></span>
+  <span class="gl-snow" style="left:20%;width:7px;height:7px;animation-duration:14s;animation-delay:2s"></span>
+  <span class="gl-snow" style="left:33%;width:4px;height:4px;animation-duration:9s;animation-delay:1s"></span>
+  <span class="gl-snow" style="left:47%;width:6px;height:6px;animation-duration:13s;animation-delay:4s"></span>
+  <span class="gl-snow" style="left:58%;width:5px;height:5px;animation-duration:10s;animation-delay:6s"></span>
+  <span class="gl-snow" style="left:69%;width:7px;height:7px;animation-duration:15s;animation-delay:3s"></span>
+  <span class="gl-snow" style="left:80%;width:4px;height:4px;animation-duration:12s;animation-delay:7s"></span>
+  <span class="gl-snow" style="left:90%;width:6px;height:6px;animation-duration:16s;animation-delay:1.5s"></span>
+  <span class="gl-snow" style="left:26%;width:3px;height:3px;animation-duration:8s;animation-delay:5s"></span>
+  <span class="gl-snow" style="left:63%;width:3px;height:3px;animation-duration:9.5s;animation-delay:8s"></span>
   <div class="gl-card">
-    <div class="gl-logo">G2G</div>
-    <div class="gl-title">Gate-to-Gate</div>
-    <div class="gl-kicker">Race Analysis</div>
+    <div class="gl-logo">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="glLgBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7302A"/><stop offset="1" stop-color="#7C1F2D"/></linearGradient></defs>
+        <rect width="64" height="64" rx="17" fill="url(#glLgBg)"/>
+        <g fill="#fff"><rect x="17" y="16" width="4" height="32" rx="2"/><rect x="43" y="16" width="4" height="32" rx="2"/><path d="M17 20 Q32 27 47 20 L47 30 Q32 37 17 30 Z"/></g>
+        <circle cx="32" cy="25" r="2.2" fill="#B4232A"/>
+      </svg>
+    </div>
+    <svg class="gl-word" viewBox="-0.9 -0.9 136.7 31.7" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Swiss-Ski"><g fill="#e3001b" fill-rule="nonzero"><path d="M 45.167373,4.5035962 44.854261,4.3440205 44.541148,4.2644718 44.306373,4.0253475 44.071676,3.7863028 43.915237,3.4673906 43.758563,3.1484785 l 0,-0.3984609 0.07834,-0.4782488 0.07834,-0.5579568 0.234775,-0.4782487 0.313034,-0.39870004 0.391215,-0.31867306 0.469551,-0.23912436 0.469551,-0.15957566 0.547809,-0.0795487 0.313112,0 0.391215,0.0795487 0.313112,0.15957566 0.234775,0.23912436 0.234776,0.23912436 0.15636,0.31891214 0.07841,0.3186731 0,0.3189122 0,0.5579568 -0.156751,0.5580366 -0.234698,0.4782487 -0.312877,0.3984609 -0.391449,0.3188325 -0.391214,0.2391243 -0.54781,0.1593366 -0.469551,0.079788 -0.391214,0 z"/><path d="m 38.515322,29.531786 4.304139,-20.5645355 3.443374,0 -4.304139,20.5645355 -3.443374,0 z"/><path d="m 28.106824,29.531786 -0.782428,-13.390884 -0.156674,-2.311616 0,-1.753578 -0.782585,1.833366 -1.095541,2.311615 -6.495534,13.311097 -2.347676,0 -0.313112,-20.5645355 2.347911,0 -0.07834,12.8328475 -0.07834,4.463655 0.860922,-1.992703 1.173878,-2.391164 6.260601,-12.9126355 2.504272,0 0.704327,12.9126355 0.07834,2.470952 0.07834,1.833366 0.704326,-1.833366 1.017361,-2.55074 5.477938,-12.8328475 2.347912,0 -8.999885,20.5645355 -2.426013,0 z"/><path d="m 5.4119377,29.850699 -0.7826633,0 L 3.8469242,29.770911 3.1423629,29.611575 2.4381147,29.37245 1.7337882,28.974069 1.1077985,28.575369 0.5599107,28.017333 0.0903597,27.379747 0.0121012,27.22049 l 1.0956973,-1.036285 0.1564387,0.239125 0.3131123,0.558036 0.3912142,0.478169 0.469551,0.318673 0.5478095,0.318912 0.5478878,0.239125 0.6259897,0.07979 0.5478095,0.07979 0.7043265,0.07955 0.8609218,-0.07955 0.8607652,-0.239363 0.8609218,-0.318673 0.7043265,-0.558037 0.5476529,-0.557957 0.3131123,-0.39846 0.1565953,-0.3987 0.1564387,-0.398461 0.1565168,-0.398382 0.07826,-0.478248 0,-0.558037 -0.07826,-0.797081 L 9.8726722,22.677048 9.5596382,22.039224 9.168424,21.481506 8.6205362,20.923469 7.9945465,20.365433 6.6640737,19.329227 5.3336009,18.292942 4.785948,17.655357 4.2380602,17.0974 3.7685875,16.380027 3.3771384,15.662654 3.2206997,14.865572 3.064261,13.909075 3.142363,13.351118 3.2207,12.793321 3.3771387,12.235284 3.6119142,11.677248 3.8469245,11.199079 4.159802,10.800618 4.5511728,10.401918 4.942387,10.003457 5.3336012,9.6845446 5.803387,9.3657122 6.2728598,9.1265878 6.7424108,8.9672513 7.8379515,8.6483391 l 1.0956973,-0.079788 0.7042482,0 0.704326,0.079788 0.62599,0.1595756 0.704483,0.2391244 0.62599,0.3186731 0.547887,0.3987 0.469551,0.5577178 0.469473,0.558036 0.07834,0.159576 -1.095697,0.956418 -0.07834,-0.239045 -0.312878,-0.478249 -0.39137,-0.3987 -0.469551,-0.318912 -0.469551,-0.318673 -0.469551,-0.159575 -0.54781,-0.159337 -0.5478873,-0.079788 -0.5476529,0 -0.8609218,0.079788 -0.7826633,0.159337 -0.7824284,0.318912 -0.6261463,0.478248 -0.5478878,0.558037 -0.3912142,0.717293 -0.2347755,0.717373 -0.078337,0.478249 0,0.478169 0,0.637825 0.1566736,0.637585 0.2347755,0.557957 0.3912142,0.478248 0.391449,0.478249 0.547653,0.478249 1.1737992,1.036205 1.4869115,1.116073 0.7044831,0.637506 0.6259894,0.717373 0.547888,0.717373 0.391214,0.797081 0.156674,0.478249 0.15636,0.478249 0.07834,0.478169 0,0.558036 -0.07834,0.637825 -0.07826,0.637505 -0.156439,0.558037 -0.234776,0.558036 -0.313112,0.557798 -0.313112,0.478169 -0.391214,0.3987 -0.3912144,0.398461 -0.4697076,0.318912 -0.469551,0.318912 -0.5476529,0.318593 -0.5478878,0.159576 -0.5478095,0.239124 -0.5478878,0.07955 -0.6259897,0.07979 -0.5478095,0 z"/><path d="m 52.366999,29.850699 -1.64335,0 -1.565249,-0.239124 -0.782428,-0.239125 -0.782663,-0.239044 -0.704248,-0.239125 -0.704327,-0.398461 1.799789,-3.905857 0.939102,0.558037 1.01736,0.398381 1.095698,0.318912 0.625989,0.07979 0.547888,0 0.547888,0 0.547653,-0.07979 0.469473,-0.159337 0.469786,-0.239044 0.391214,-0.239125 0.313034,-0.3987 0.156438,-0.478248 0.07834,-0.558037 0,-0.398381 -0.156595,-0.318912 -0.156517,-0.398461 -0.313034,-0.318912 -0.312877,-0.398461 -0.469786,-0.3987 -1.251901,-0.796842 -1.252215,-0.956737 -0.626146,-0.557718 -0.547653,-0.558036 -0.469707,-0.637824 -0.391293,-0.796843 -0.234776,-0.876948 -0.07826,-0.956418 0,-0.717373 0.156674,-0.717373 0.15636,-0.717294 0.234775,-0.637824 0.234776,-0.558036 0.391449,-0.637506 0.391214,-0.478249 0.469473,-0.478248 0.469551,-0.3987 0.626225,-0.3984614 0.625989,-0.3188324 0.704249,-0.3186731 0.704326,-0.2391244 0.782585,-0.1595756 0.861,-0.079788 0.860765,0 1.565249,0.079788 1.408574,0.2391243 0.704327,0.1595757 0.625989,0.2391244 0.704484,0.2391243 0.625989,0.3185934 -1.721687,3.7462818 -0.860765,-0.478169 -0.939259,-0.398461 -1.09554,-0.239124 -1.095698,-0.07979 -0.704326,0.07979 -0.62599,0.07955 -0.469472,0.239364 -0.39145,0.239124 -0.234775,0.318673 -0.234776,0.318833 -0.07834,0.318912 -0.0781,0.398461 0.0781,0.478248 0.23501,0.3987 0.234776,0.398382 0.312877,0.398461 0.860922,0.637824 0.782663,0.558036 1.408575,0.956418 0.704326,0.558037 0.54781,0.637585 0.547731,0.717293 0.391371,0.797161 0.156438,0.398461 0.156674,0.478169 0.0781,0.558037 0,0.558036 0,0.797081 -0.156439,0.797161 -0.234775,0.717373 -0.313112,0.637506 -0.313035,0.637824 -0.469551,0.557798 -0.46955,0.557957 -0.469552,0.478248 -0.625989,0.3987 -0.626147,0.398461 -0.625989,0.318912 -0.704327,0.239045 -0.626146,0.159337 -0.782663,0.159336 -0.704249,0.07979 -0.704326,0 z"/><path d="m 68.175372,29.850699 -1.643585,0 -1.64335,-0.239124 -0.860766,-0.159337 -0.782585,-0.159576 -0.782663,-0.239044 -0.704326,-0.318673 1.878125,-5.021692 0.861,0.478249 1.017361,0.398461 1.017204,0.318912 1.01736,0.07979 0.547888,-0.07979 0.469551,0 0.469551,-0.159336 0.313034,-0.159576 0.313112,-0.159336 0.234776,-0.318913 0.156439,-0.318912 0,-0.398381 0,-0.239124 -0.07834,-0.318913 -0.234776,-0.239124 -0.234775,-0.239124 -0.704248,-0.558037 -1.095541,-0.717293 -1.174034,-0.87671 -0.62599,-0.558036 -0.469551,-0.557957 -0.469472,-0.637585 -0.39145,-0.717374 -0.234775,-0.797081 -0.0781,-0.956497 0.0781,-0.876869 0.07834,-0.797161 0.234775,-0.796842 0.234776,-0.717373 0.391136,-0.637825 0.391449,-0.637505 0.469551,-0.558037 0.547887,-0.478248 0.547575,-0.478249 0.704561,-0.3987002 0.704327,-0.3185933 0.704248,-0.2391244 0.782663,-0.2391244 0.860766,-0.1595756 0.860921,-0.079788 0.860766,0 1.721687,0.079788 1.565248,0.1595756 1.565013,0.3984609 1.486912,0.478169 -1.878126,4.8621154 -0.860765,-0.478248 -0.939259,-0.398461 -1.095462,-0.318833 -1.095776,-0.07955 -0.547809,0.07955 -0.469551,0.07979 -0.391214,0.159257 -0.313113,0.159575 -0.156438,0.239125 -0.234697,0.239124 -0.07834,0.239125 0,0.239124 0.07834,0.398461 0.07826,0.318912 0.234775,0.239045 0.312878,0.318912 0.782663,0.557797 0.860922,0.558037 1.330316,0.876869 0.626146,0.558036 0.547653,0.637586 0.469708,0.637505 0.391292,0.797161 0.234776,0.876949 0.07826,0.478169 0.0781,0.478249 -0.0781,0.956497 -0.156595,0.87663 -0.234775,0.797161 -0.312956,0.797081 -0.391371,0.637824 -0.547888,0.637586 -0.469472,0.557956 -0.62599,0.478249 -0.626225,0.398461 -0.704248,0.3987 -0.782663,0.239124 -0.704327,0.239045 -0.782585,0.239124 -0.860765,0.07955 -0.782585,0.07979 -0.860765,0 z"/><path d="m 112.70442,29.531786 -2.66079,-7.332988 -1.1738,1.673791 0,5.659197 -8.37374,0 0,-28.6949232 8.37374,0 0,14.9055782 3.99103,-7.1738906 9.93898,0 -6.02606,8.5288486 6.1825,12.434387 -10.25186,0 z"/><path d="m 87.505182,29.850699 -1.721687,0 -1.721687,-0.159337 -1.721687,-0.239124 -1.64335,-0.39862 1.017125,-5.659197 1.017361,0.398381 1.174112,0.239125 1.095463,0.239124 1.173877,0.07979 0.469473,-0.07979 0.391449,0 0.312877,-0.159337 0.313113,-0.159336 0.234775,-0.159576 0.156674,-0.159336 0.0781,-0.239045 0.07834,-0.318912 -0.07834,-0.318673 -0.0781,-0.239125 -0.156674,-0.239363 -0.234775,-0.159337 -0.547888,-0.318912 -0.547575,-0.159336 -1.486989,-0.478169 -0.782585,-0.318913 -0.782664,-0.39846 -0.782663,-0.558037 -0.625912,-0.637506 -0.547887,-0.717373 -0.391214,-0.876948 -0.156674,-0.478169 -0.156439,-0.478249 -0.07834,-0.558037 0,-0.558036 0,-0.796842 0.156752,-0.717612 0.156361,-0.717294 0.313112,-0.717373 0.312877,-0.637585 0.469786,-0.637745 0.469551,-0.557797 0.547575,-0.558037 0.704561,-0.4781688 0.704327,-0.3987 0.78235,-0.3186731 0.861,-0.3189122 0.939024,-0.2391244 0.939102,-0.1595756 1.095697,-0.1593365 1.095541,0 1.565248,0.079788 1.64335,0.1593365 1.64335,0.2391244 1.721687,0.3189122 -0.939023,5.2607355 -1.095541,-0.318912 -1.173799,-0.239124 -1.095776,-0.159257 -1.252136,-0.07979 -0.704326,0.07979 -0.313034,0.159257 -0.234776,0.07979 -0.156439,0.159337 -0.156438,0.239124 0,0.159337 -0.07834,0.239124 0.07834,0.239364 0.0781,0.239124 0.234775,0.318673 0.469473,0.239045 0.469551,0.239124 1.330551,0.3987 1.017361,0.398461 1.017438,0.3987 0.860687,0.557718 0.782663,0.558036 0.391136,0.3987 0.313113,0.318673 0.234775,0.478249 0.234776,0.39862 0.156673,0.478249 0.156439,0.558037 0.07834,0.557797 0,0.637745 0,0.956497 -0.156674,0.87663 -0.234775,0.876949 -0.313113,0.717293 -0.469551,0.717373 -0.469472,0.637825 -0.547653,0.637505 -0.626225,0.478249 -0.704248,0.478249 -0.782663,0.3987 -0.860687,0.398461 -0.861,0.239044 -0.939102,0.239125 -1.017361,0.159336 -1.017439,0.07979 -1.095462,0 z"/><path d="m 129.1387,7.2136723 -0.93902,-0.2391244 -0.78267,-0.2391243 -0.70425,-0.4782487 -0.54788,-0.4781691 -0.39145,-0.6378243 -0.23478,-0.7173731 -0.0781,-0.7172934 0,-0.7173731 0.23478,-0.6378243 0.39121,-0.6375056 0.46955,-0.5580365 0.70425,-0.47824875 0.78266,-0.31891219 1.01736,-0.23912436 1.09578,-0.0795487 1.09546,0.0795487 0.9391,0.15957566 0.78259,0.31867306 0.70432,0.47848788 0.46956,0.4782487 0.39144,0.6375055 0.23478,0.7173731 0.078,0.7971609 -0.078,0.7970812 -0.23478,0.7173731 -0.39144,0.5580365 -0.54789,0.5577178 -0.70433,0.3987 -0.78235,0.3189122 -0.93934,0.1593365 -1.01712,0.079788 -1.01744,-0.079788 z"/><path d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-20.9687503 z"/><path d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-7 -1.09375,0 0,2.6875 -2.34375,0 0,-2.6875 -2.65625,0 0,-2.3125 2.65625,0 0,-2.71875 2.34375,0 0,2.71875 1.09375,0 0,-11.6562503 -9.0625,0 z"/></g></svg>
+    <div class="gl-kicker">Gate-to-Gate · Race Analysis</div>
+    <svg class="gl-spark" width="220" height="40" viewBox="0 0 220 40" aria-hidden="true">
+      <line x1="0" y1="20" x2="220" y2="20" stroke="#D9A400" stroke-width="1.4" stroke-dasharray="2 5" opacity=".7"/>
+      <path d="M2,22 C24,18 40,16 58,21 C74,25 82,10 100,9 C118,8 126,28 150,30 C176,32 198,24 218,26" fill="none" stroke="#e4352b" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M2,24 C26,27 44,30 66,28 C92,25.5 120,16 150,17 C178,18 200,22 218,21" fill="none" stroke="#2f6fd0" stroke-width="2.3" stroke-linecap="round"/>
+    </svg>
+    <div class="gl-feats">
+      <span class="gl-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 4-6"/></svg>Tor-für-Tor</span>
+      <span class="gl-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4V8z"/></svg>Video-Sync</span>
+      <span class="gl-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg>Team-Cloud</span>
+    </div>
     <div class="gl-quote"><span class="gl-qm">“</span><span id="glQuote">…</span></div>
     <form id="glForm" autocomplete="off">
       <div class="gl-field">
@@ -2337,7 +2389,7 @@ body.dark .empty{color:#9aa6b4}
       <button class="gl-btn" type="submit">Eintreten</button>
       <div id="glErr" class="gl-err">Falsches Passwort – bitte nochmals versuchen.</div>
     </form>
-    <div class="gl-foot">Nur für Team &amp; Coaches</div>
+    <div class="gl-foot">🔒 Nur für <b>Team &amp; Coaches</b></div>
   </div>
 </div>
 <script>
@@ -2428,7 +2480,19 @@ function gtgToast(msg, kind){ try{ let b=document.getElementById('gtgToast'); if
     b.style.background = kind==='ok'?'#1a6b45':'#3a1420'; b.style.border='1px solid '+(kind==='ok'?'#2a9c66':'#7C1F2D');
     b.textContent=msg; b.style.display='block'; clearTimeout(b._t); b._t=setTimeout(()=>{ b.style.display='none'; }, kind==='ok'?3200:8000);
   }catch(_){} }
-window.addEventListener('error', ()=> gtgToast('Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen. (Details in der Browser-Konsole)'));
+/* nur ECHTE Fehler aus unserem eigenen Code melden – nicht die harmlosen «Script error.»
+   von Browser-Erweiterungen, ResizeObserver-Schleifen-Hinweise o. Ä. (sonst erscheint der
+   Hinweis beim Coach, obwohl die Analyse einwandfrei dargestellt wird). */
+function _gtgBenignError(e){
+  try{ if(!e) return true;
+    const msg=((e.message!=null?e.message:'')+'');
+    if(!msg || msg==='Script error.') return true;              // cross-origin / Erweiterung
+    if(/ResizeObserver loop/i.test(msg)) return true;           // harmloser Browser-Hinweis
+    const f=((e.filename!=null?e.filename:'')+'');
+    if(f && !/^(https?:|file:)/i.test(f)) return true;          // chrome-extension:// usw.
+    return false;
+  }catch(_){ return true; } }
+window.addEventListener('error', (e)=>{ if(_gtgBenignError(e)) return; gtgToast('Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen. (Details in der Browser-Konsole)'); });
 window.addEventListener('unhandledrejection', ()=> gtgToast('Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)'));
 /* ---- einheitliches Bestätigungs-Modal (statt window.confirm) ---- */
 let _cfResolve=null;
@@ -2452,7 +2516,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061258';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061311';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7163,10 +7227,10 @@ Object.assign(I18N_EN,{
  "Farbe":"Color","Farbe für die Diagramme wählen":"Choose a color for the charts","Auf Standardfarbe zurücksetzen":"Reset to default color",
  "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section."
 });
-function trStr(s){ if(LANG!=='en'||s==null) return s; const k=String(s).trim(); if(!k) return s;
+function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
  let out=String(s); for(const r of I18N_SUB) out=out.replace(r[0], r[1]);
- return out; }
+ return out; }catch(_){ return s; } }
 function trNode(node){ if(!node) return;
  if(node.nodeType===3){ const v=node.nodeValue; const t=trStr(v); if(t!==v) node.nodeValue=t; return; }
  if(node.nodeType!==1) return;
@@ -7179,7 +7243,7 @@ function initI18n(){
  const b=$('#langBtn'); if(b){ b.textContent = LANG==='en'?'DE':'EN'; b.onclick=()=>{ try{ LS.set('gtg_lang', LANG==='en'?'de':'en'); }catch(e){} try{ location.reload(); }catch(e){} }; }
  if(LANG!=='en') return;
  try{ trNode(document.body); }catch(e){}
- try{ const obs=new MutationObserver(ms=>{ for(const m of ms){ if(m.type==='childList'){ m.addedNodes.forEach(trNode); } else if(m.type==='characterData'){ trNode(m.target); } else if(m.type==='attributes'){ trNode(m.target); } } });
+ try{ const obs=new MutationObserver(ms=>{ try{ for(const m of ms){ if(m.type==='childList'){ m.addedNodes.forEach(trNode); } else if(m.type==='characterData'){ trNode(m.target); } else if(m.type==='attributes'){ trNode(m.target); } } }catch(_){} });
    obs.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label']}); }catch(e){}
 }
 initWorkflow();
