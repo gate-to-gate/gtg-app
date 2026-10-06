@@ -969,6 +969,16 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .db-table tr.db-arch .db-venue{text-decoration:line-through;text-decoration-color:#c3cad4}
 .db-venue{font-weight:700;color:var(--ink)}
 .db-act{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}
+.db-table tr.db-grp{cursor:pointer}
+.db-table tr.db-grp:hover{background:var(--bg)}
+.db-chev{display:inline-block;color:var(--muted);font-size:10px;transition:transform .15s;width:10px}
+.db-table tr.db-grp.open .db-chev{transform:rotate(90deg)}
+.db-grpcount{display:inline-block;font-weight:800;font-size:10.5px;color:var(--ink2);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.db-grphint{font-size:10.5px;color:var(--muted);font-style:italic}
+.db-table tr.db-sub>td{background:var(--bg)}
+.db-table tr.db-sub>td:first-child{border-left:3px solid var(--line)}
+.db-subv{color:var(--muted);text-align:center;font-size:12px}
+body.dark .db-table tr.db-grp:hover,body.dark .db-table tr.db-sub>td{background:#262d38}
 .db-empty{text-align:center;color:var(--muted);padding:30px 20px!important}
 .db-empty .dbe{display:inline-flex;align-items:center;gap:9px}
 .db-empty svg{width:22px;height:22px;stroke:#c3cad4;stroke-width:1.5;fill:none}
@@ -2492,7 +2502,9 @@ function _gtgBenignError(e){
     if(f && !/^(https?:|file:)/i.test(f)) return true;          // chrome-extension:// usw.
     return false;
   }catch(_){ return true; } }
-window.addEventListener('error', (e)=>{ if(_gtgBenignError(e)) return; gtgToast('Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen. (Details in der Browser-Konsole)'); });
+window.addEventListener('error', (e)=>{ if(_gtgBenignError(e)) return;
+  let d=''; try{ const m=((e&&e.message)||'')+''; const ln=(e&&e.lineno)?(' @'+e.lineno):''; d=(m?(' ['+m.slice(0,140)+ln+']'):''); }catch(_){}
+  gtgToast('Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen.'+d+' (Details in der Browser-Konsole)'); });
 window.addEventListener('unhandledrejection', ()=> gtgToast('Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)'));
 /* ---- einheitliches Bestätigungs-Modal (statt window.confirm) ---- */
 let _cfResolve=null;
@@ -2516,7 +2528,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061311';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061320';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2921,10 +2933,12 @@ function render(){
   S.perGate = (S.perGate && c.skiers.some(s=>!s.isTop && s.name===S.perGate)) ? S.perGate : (bestSui()?.name || c.skiers.find(s=>!s.isTop)?.name || '');
   $('#hmMode').querySelectorAll('button').forEach(b=> b.onclick=()=>{ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); drawHeatmap(b.dataset.m); });
 
-  buildLegend(); drawHero(); drawSector(); drawHeatmap(COACH.on?'cum':'diff'); figStrip();
+  const _safe=(fn,label)=>{ try{ fn(); }catch(err){ try{ console.error('[GtG render] '+label, err); }catch(_){} } };
+  _safe(buildLegend,'buildLegend'); _safe(drawHero,'drawHero'); _safe(drawSector,'drawSector');
+  _safe(()=>drawHeatmap(COACH.on?'cum':'diff'),'drawHeatmap'); _safe(figStrip,'figStrip');
   if(COACH.on && $('#hmMode')){ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.m==='cum')); }
-  drawCourseViz();
-  cvRenderPanel();
+  _safe(drawCourseViz,'drawCourseViz');
+  _safe(cvRenderPanel,'cvRenderPanel');
 }
 
 /* ---------- KPIs ---------- */
@@ -5756,7 +5770,8 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
   vdbAll().then(vlist=>{
    // Events (nach Ort/Datum/Geschlecht), für die lokal mind. ein Video vorliegt -> nur dann Coach-Link möglich
    const vidEvt=new Set((vlist||[]).map(v=>`${v.date}|${v.venue}|${v.gen}`));
-   body.innerHTML=list.map(r=>{ const e=r.e, runLbl=runShort(r.mode, e.discipline, e.run);
+   // Zellen RUN … Aktionen (für Einzel- und Unterzeilen identisch)
+   const runCells=(r)=>{ const e=r.e, runLbl=runShort(r.mode, e.discipline, e.run);
     const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
     const src=r.tagged?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
     const status=r.archived?'<span class="db-badge ar">archiviert</span>':'<span class="db-badge ok">aktiv</span>';
@@ -5767,11 +5782,37 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
-    return `<tr class="${r.archived?'db-arch':''}">
-      <td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td><td>${runLbl}</td>
-      <td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td>
-      <td>${clBtn}</td>
-      <td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button></td></tr>`; }).join('');
+    return `<td>${runLbl}</td><td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td><td>${clBtn}</td>`
+      +`<td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button></td>`; };
+   // Gruppieren: ein Eintrag pro Datum + Ort + Disziplin + Geschlecht + Modus; Läufe darunter aufklappbar
+   const groups=[]; const gmap=new Map();
+   list.forEach(r=>{ const gk=`${r.e.date}|${r.e.venue}|${r.e.discipline}|${r.e.gender}|${r.mode}`;
+     let g=gmap.get(gk); if(!g){ g={rows:[]}; gmap.set(gk,g); groups.push(g); } g.rows.push(r); });
+   let gid=0, html='';
+   groups.forEach(g=>{ const e=g.rows[0].e;
+    if(g.rows.length===1){ const r=g.rows[0];
+      html+=`<tr class="${r.archived?'db-arch':''}"><td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td>${runCells(r)}</tr>`;
+      return; }
+    gid++; const id='g'+gid; const nRuns=g.rows.length;
+    const names=new Set(); g.rows.forEach(r=> (r.e.skiers||[]).forEach(s=> s&&s.name&&names.add(s.name)));
+    const art=g.rows[0].mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
+    const allTag=g.rows.every(r=>r.tagged); const anyTag=g.rows.some(r=>r.tagged);
+    const src=(allTag||anyTag)?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
+    const nArch=g.rows.filter(r=>r.archived).length;
+    const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
+    html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}" data-grp="${id}">`
+      +`<td>${dmy(e.date)}</td><td class="db-venue"><span class="db-chev">▸</span> ${e.venue}</td>`
+      +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
+      +`<td><span class="db-grpcount">${nRuns} Läufe</span></td>`
+      +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
+      +`<td><span class="db-dash">—</span></td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
+    g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
+   });
+   body.innerHTML=html;
+   body.querySelectorAll('tr.db-grp').forEach(tr=> tr.addEventListener('click', ev=>{ if(ev.target.closest('button')) return;
+     const id=tr.dataset.grp; const open=tr.classList.toggle('open');
+     const hint=tr.querySelector('.db-grphint'); if(hint) hint.textContent= open?'zuklappen':'aufklappen';
+     body.querySelectorAll(`tr.db-sub[data-pgrp="${id}"]`).forEach(s=> s.style.display= open?'':'none'); }));
    body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
    body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
    body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
@@ -7225,7 +7266,8 @@ Object.assign(I18N_EN,{
  "Gemessen wird der":"Measured is the","Ø Gate-to-Gate-Rückstand pro Tor":"Ø gate-to-gate deficit per gate","auf die Laufbestzeit (kleiner = schneller).":"to the run's best time (smaller = faster).",
  "Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.":"Positive = on average slower than the run's best time, negative = faster.",
  "Farbe":"Color","Farbe für die Diagramme wählen":"Choose a color for the charts","Auf Standardfarbe zurücksetzen":"Reset to default color",
- "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section."
+ "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section.",
+ "aufklappen":"expand","zuklappen":"collapse"
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
