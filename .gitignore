@@ -25,3 +25,7 @@ desktop/package-lock.json
 # Roh-Ordner mit den Kurssetzungs-PDFs (liegt lokal); ins Repo geht nur der aufbereitete kurs/-Ordner
 Kurssetzungsdokumente*/
 GtG_tagging_backup.json
+
+# Login-Liste mit Klartext-Passwoertern - NIE committen!
+logins.csv
+gtg_logins.csv

@@ -924,6 +924,11 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .btn-mini.coach:hover{background:#195e97;border-color:#154e7e}
 .db-dash{color:#c3cad4}
 .db-ro{font-size:11px;font-weight:700;color:#8a93a0;background:#f1f3f6;border:1px solid var(--line);border-radius:6px;padding:3px 9px;white-space:nowrap}
+.lg-note{font-size:12px;color:var(--muted);background:#fbf4e6;border:1px solid #f0dca8;border-radius:10px;padding:9px 12px;margin-bottom:10px;line-height:1.45}
+body.dark .lg-note{background:#2f2a1e;border-color:#5a4e2e;color:#d9ceb0}
+.lg-pw{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f1f3f6;padding:2px 7px;border-radius:5px;color:var(--ink)}
+body.dark .lg-pw{background:#2a323d;color:#eef1f6}
+.lg-grp{font-size:11.5px;color:var(--muted);max-width:320px}
 body.dark .db-ro{background:#2a323d;color:#aeb8c4;border-color:#3a4450}
 .gsex{font-weight:700}
 .gsex.w{color:#e5389a}
@@ -1991,6 +1996,19 @@ body.dark .empty{color:#9aa6b4}
           <tr><th>Name</th><th>Nation</th><th>FIS-Code</th><th>Farbe</th><th class="num">Taggings</th><th></th></tr>
         </thead><tbody id="dbaBody"></tbody></table></div>
       </div>
+
+      <div id="dbSecLogins" style="display:none">
+        <div class="lg-note">🔒 Nur für Admins. Übersicht aller Logins – Datengrundlage ist die Excel-Liste. Lade sie als <b>CSV</b> (in Excel: «Speichern unter» → CSV). Die Daten bleiben <b>nur auf diesem Gerät</b> (nichts wird hochgeladen) und sind hier nur zur Ansicht.</div>
+        <div class="db-filters">
+          <input type="text" id="dbLoginsSearch" class="lib-search" placeholder="Suche Name, E-Mail, Team …">
+          <label class="btn-mini solid" style="cursor:pointer">CSV laden<input type="file" id="dbLoginsFile" accept=".csv,text/csv,.txt" hidden></label>
+          <button class="btn-mini" id="dbLoginsClear" title="Geladene Liste von diesem Gerät entfernen">Leeren</button>
+          <span id="dbLoginsInfo" class="lib-count"></span>
+        </div>
+        <div class="db-wrap"><table class="db-table"><thead>
+          <tr><th>Name</th><th>E-Mail</th><th>Passwort</th><th>Rolle</th><th>Team / Gruppen</th></tr>
+        </thead><tbody id="dbLoginsBody"></tbody></table></div>
+      </div>
     </div>
   </div>
 
@@ -2692,7 +2710,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061559';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061613';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2718,7 +2736,8 @@ const ATH_COLOR = (function(){
 })();
 // benutzerdefinierte Farbe pro Athlet:in (in der Datenbank → Athlet:innen einstellbar)
 function athCustomColor(name){ try{ const a=ATHLETES.find(x=>x.name===name); return a&&a.color?a.color:null; }catch(e){ return null; } }
-const athColor = (name,isTop)=> isTop ? GOLD : (athCustomColor(name) || ATH_COLOR[name] || '#7a8694');
+// stabile Farbe je Athlet:in: eigene Farbe > Fixfarbe/Palette (Wettkampf) > Namens-Hash (Training/übrige)
+const athColor = (name,isTop)=> isTop ? GOLD : (athCustomColor(name) || ATH_COLOR[name] || (name?palHash(name, ATH_PAL):'#7a8694'));
 /* FIS-Codes (Quelle: offizielle FIS-Datenbank, Alpine). Schlüssel = normalisierter Name.
    Füllt fehlende Codes automatisch und hält bekannte Athlet:innen korrekt. */
 const ATH_FIS = {
@@ -3028,7 +3047,9 @@ const ATH_CID = {
   "6536171":"202350",
   "6536392":"210951"
 };
-function fisBioUrl(name){ const c=fisFor(name); const id=ATH_CID[c]; return id?('https://www.fis-ski.com/DB/general/athlete-biography.html?sectorcode=AL&competitorid='+id+'&type=st'):''; }
+function fisBioUrl(name, code){ const c=code||fisFor(name); if(!c) return ''; const id=ATH_CID[c];
+  return id ? ('https://www.fis-ski.com/DB/general/athlete-biography.html?sectorcode=AL&competitorid='+id+'&type=st')
+            : ('https://www.fis-ski.com/DB/alpine-skiing/biographies.html?fiscode='+encodeURIComponent(c)+'&sectorcode=AL&search=true'); }
 /* bekannte Athlet:innen in den geladenen Events auf die korrekte FIS-Nation setzen (einmal beim Start) */
 try{ (typeof DATA!=='undefined'?DATA:[]).forEach(e=> ((e&&e.skiers)||[]).forEach(s=>{ const n=natFor(s.name); if(n) s.nation=n; })); }catch(e){}
 
@@ -3215,9 +3236,10 @@ function loadTrainEvent(all){
   // Farbe je Athlet: Läufe desselben Athleten teilen eine Farbe, unterschieden durch die
   // Lauf-Nr. direkt an der Linie. Top (Bestzeit) bleibt Gold.
   const baseCount={}; S.comp.skiers.forEach(s=>{ const b=String(s.name).split('·L')[0]; baseCount[b]=(baseCount[b]||0)+1; });
-  const baseCol={}; let _pi=0;
+  // Kürzel (z. B. "BLANC") -> voller Name (z. B. "BLANC Malorie"), damit die Farbe mit Datenbank/Wettkampf übereinstimmt
+  const baseFull={}; skiers.forEach(x=>{ baseFull[String(x.name).split('·L')[0]] = x._base; });
   S.comp.skiers.forEach(s=>{ const p=String(s.name).split('·L'); const b=p[0]; s._lauf=p[1]||''; s._dup=baseCount[b]>1;
-    if(!s.isTop){ if(!(b in baseCol)){ baseCol[b]=ATH_PAL[_pi%ATH_PAL.length]; _pi++; } s.color=baseCol[b]; } });
+    if(!s.isTop){ s.color = athColor(baseFull[b]||b, false); } });
   S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
   S.wfAth=S.perGate; S.heroFocus='';
   const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
@@ -6206,11 +6228,51 @@ function renderDatenbank(){
   if($('#dbSecVideos')) $('#dbSecVideos').style.display = DBSUB==='videos'?'':'none';
   if($('#dbSecKurs')) $('#dbSecKurs').style.display = DBSUB==='kurssetzung'?'':'none';
   if($('#dbSecAthletes')) $('#dbSecAthletes').style.display = DBSUB==='athletes'?'':'none';
+  if($('#dbSecLogins')) $('#dbSecLogins').style.display = (DBSUB==='logins' && ME && ME.r==='admin')?'':'none';
   if(DBSUB==='taggings') renderDbTaggings();
   else if(DBSUB==='videos') renderDbVideos();
   else if(DBSUB==='kurssetzung') renderDbKurs();
   else if(DBSUB==='athletes') renderDbAthletes();
+  else if(DBSUB==='logins'){ if(ME&&ME.r==='admin') renderDbLogins(); }
   else renderDbEvents();
+}
+/* ---- Admin-only: Logins-Übersicht (Datengrundlage = Excel, nur Ansicht) ---- */
+function parseCsvLogins(txt){
+  // einfacher CSV-Parser (Komma, mit Anführungszeichen)
+  const rows=[]; let i=0, f='', row=[], q=false; txt=String(txt).replace(/\r\n?/g,'\n');
+  while(i<txt.length){ const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else { if(c==='"') q=true; else if(c===','){ row.push(f); f=''; } else if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; } else f+=c; }
+    i++; }
+  if(f.length||row.length){ row.push(f); rows.push(row); }
+  if(!rows.length) return [];
+  const head=rows[0].map(h=>String(h||'').trim().toLowerCase());
+  const col=(...names)=>{ for(const n of names){ const idx=head.findIndex(h=>h.includes(n)); if(idx>=0) return idx; } return -1; };
+  const iV=col('vorname'), iN=col('nachname'), iMail=col('mail'), iRole=col('rolle','role'), iPw=col('passwort','password'), iGrp=col('gruppe','team'), iList=col('liste');
+  const out=[];
+  for(let r=1;r<rows.length;r++){ const x=rows[r]; if(!x||!x.length) continue;
+    const mail=(iMail>=0?x[iMail]:'').trim(); if(!mail) continue;
+    out.push({ name:((iV>=0?x[iV]:'')+' '+(iN>=0?x[iN]:'')).trim(), mail, role:(iRole>=0?x[iRole]:'').trim(), pw:(iPw>=0?x[iPw]:'').trim(), grp:(iGrp>=0?x[iGrp]:'').trim(), list:(iList>=0?x[iList]:'').trim() }); }
+  return out;
+}
+function renderDbLogins(){
+  const box=$('#dbLoginsBody'); if(!box) return;
+  let data=[]; try{ data=LS.get('gtg_logins_cache',[])||[]; }catch(e){ data=[]; }
+  const info=$('#dbLoginsInfo'); if(info) info.textContent = data.length? `${data.length} Logins geladen (nur auf diesem Gerät gespeichert)` : 'Noch keine Datei geladen.';
+  const q=($('#dbLoginsSearch')&&$('#dbLoginsSearch').value||'').trim().toLowerCase();
+  let list=data;
+  if(q) list=list.filter(r=> (r.name+' '+r.mail+' '+r.grp+' '+r.role).toLowerCase().includes(q));
+  if(!data.length){ box.innerHTML=`<tr><td colspan="5">${dbEmpty('Lade die Login-Liste als CSV (aus der Excel exportiert). Die Daten bleiben nur auf diesem Gerät – nichts wird hochgeladen.', 5, 'file')}</td></tr>`; return; }
+  if(!list.length){ box.innerHTML=`<tr><td colspan="5">${dbEmpty('Keine Treffer für die Suche.', 5, 'search')}</td></tr>`; return; }
+  box.innerHTML=list.map(r=>{ const admin=/direktor|admin/i.test(r.role);
+    return `<tr><td><b>${escHtml(r.name)}</b></td><td>${escHtml(r.mail)}</td><td><code class="lg-pw">${escHtml(r.pw||'—')}</code></td>`
+      +`<td>${admin?'<span class="db-badge wk">Admin</span>':'<span class="db-badge tr">Coach</span>'}</td><td class="lg-grp">${escHtml(r.grp||'—')}</td></tr>`; }).join('');
+}
+function initDbLogins(){
+  const fi=$('#dbLoginsFile'); if(fi) fi.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+    const rd=new FileReader(); rd.onload=()=>{ try{ const data=parseCsvLogins(String(rd.result)); LS.set('gtg_logins_cache', data); gtgToast(`${data.length} Logins geladen.`, 'ok'); }catch(err){ gtgToast('Datei konnte nicht gelesen werden.'); } renderDbLogins(); }; rd.readAsText(f,'utf-8'); fi.value=''; };
+  const cl=$('#dbLoginsClear'); if(cl) cl.onclick=()=>{ LS.set('gtg_logins_cache', []); renderDbLogins(); };
+  const se=$('#dbLoginsSearch'); if(se) se.oninput=()=>renderDbLogins();
 }
 function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
   const q=($('#dbkSearch')&&$('#dbkSearch').value||'').trim().toLowerCase();
@@ -6710,7 +6772,7 @@ function renderDbAthletes(){
     const col=athColor(a.name,false); const custom=!!a.color;
     return `<tr><td><b>${escHtml(sur)}</b>${rest?' '+escHtml(rest):''}</td>`
       +`<td>${a.nation?`<span class="gsex">${escHtml(a.nation)}</span>`:'—'}</td>`
-      +`<td>${a.fis?(fisBioUrl(a.name)?`<a class="fis-link" href="${fisBioUrl(a.name)}" target="_blank" rel="noopener" title="FIS-Profil öffnen">${escHtml(a.fis)}</a>`:escHtml(a.fis)):'<span style="color:var(--muted)">—</span>'}</td>`
+      +`<td>${a.fis?`<a class="fis-link" href="${fisBioUrl(a.name,a.fis)}" target="_blank" rel="noopener" title="FIS-Profil öffnen">${escHtml(a.fis)}</a>`:'<span style="color:var(--muted)">—</span>'}</td>`
       +`<td class="dba-colc"><input type="color" class="dba-col" data-col="${escHtml(a.name)}" value="${col}" title="Farbe für die Diagramme wählen">`
         +(custom?` <button class="btn-mini dba-colrst" data-colrst="${escHtml(a.name)}" title="Auf Standardfarbe zurücksetzen">↺</button>`:'')+`</td>`
       +`<td class="num">${cnt||'<span style="color:var(--muted)">–</span>'}</td>`
@@ -6777,12 +6839,15 @@ function dbaDelete(name){
 }
 
 function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[])); DELETED=new Set(LS.get('gtg_deleted',[]));
-  if($('#dbSub')) segFill('#dbSub',['events','taggings','videos','kurssetzung','athletes'], s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':s==='kurssetzung'?'Kurssetzung':'Athlet:innen', DBSUB, v=>{ DBSUB=v; renderDatenbank(); });
+  if($('#dbSub')){ const subs=['events','taggings','videos','kurssetzung','athletes']; if(ME&&ME.r==='admin') subs.push('logins');
+    if(DBSUB==='logins' && !(ME&&ME.r==='admin')) DBSUB='events';
+    segFill('#dbSub', subs, s=> s==='events'?'Events':s==='taggings'?'Taggings':s==='videos'?'Videos':s==='kurssetzung'?'Kurssetzung':s==='athletes'?'Athlet:innen':'Logins', DBSUB, v=>{ DBSUB=v; renderDatenbank(); }); }
   ['#dbkDisc','#dbkGen'].forEach(id=>{ const el=$(id); if(el) el.onchange=renderDatenbank; });
   if($('#dbkSearch')) $('#dbkSearch').oninput=renderDatenbank;
   // Athlet:innen-Seite
   if($('#dbaSearch')) $('#dbaSearch').oninput=renderDbAthletes;
   if($('#dbaNat')) $('#dbaNat').onchange=renderDbAthletes;
+  try{ initDbLogins(); }catch(e){}
   if($('#dbaNewBtn')) $('#dbaNewBtn').onclick=()=>dbaOpenForm(null);
   if($('#dbaSave')) $('#dbaSave').onclick=dbaSave;
   if($('#dbaCancel')) $('#dbaCancel').onclick=dbaCloseForm;
