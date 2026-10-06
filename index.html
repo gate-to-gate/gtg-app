@@ -986,6 +986,9 @@ body.dark .db-by{color:#8a93a0}
 .db-table tr.db-grp.open .db-chev{transform:rotate(90deg)}
 .db-grpcount{display:inline-block;font-weight:800;font-size:10.5px;color:var(--ink2);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
 .db-grphint{font-size:10.5px;color:var(--muted);font-style:italic}
+#dbSecEvents .db-act{justify-content:flex-start}
+.db-clind{color:#1f6fb2;font-weight:800;font-size:11px;white-space:nowrap}
+body.dark .db-clind{color:#6ea8e6}
 .db-table tr.db-sub>td{background:var(--bg)}
 .db-table tr.db-sub>td:first-child{border-left:3px solid var(--line)}
 .db-subv{color:var(--muted);text-align:center;font-size:12px}
@@ -2665,7 +2668,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061529';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061536';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6072,12 +6075,13 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     const nArch=g.rows.filter(r=>r.archived).length;
     const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
+    const anyCL=g.rows.some(r=> r.mode==='comp' && r.tagged && vidEvt.has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
     html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}" data-grp="${id}">`
       +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${e.venue}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
       +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
-      +`<td><span class="db-dash">—</span></td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
+      +`<td>${anyCL?'<span class="db-clind" title="Coach-Link in diesem Event verfügbar – zum Erstellen aufklappen">↗ Coach-Link</span>':'<span class="db-dash">—</span>'}</td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
     g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
    });
    body.innerHTML=html;
