@@ -1,0 +1,981 @@
+{
+ "_info": "Login-Liste fuer Gate-to-Gate. Aendern + pushen = sofort aktiv (ohne neuen Build). Passwort-Hash mit hashgen.html erzeugen.",
+ "salt": "g2g_v1_7Kx9",
+ "hn": 30000,
+ "users": [
+  {
+   "e": "jose-luis.alejo-hervas@swiss-ski.ch",
+   "h": "4a7baefd8563ffcaf5529aa0e353a43cbce5aa3b8440136ef127e192f5220da7",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC GS"
+   ],
+   "n": "Jose Alejo Hervas"
+  },
+  {
+   "e": "artclaudealain@gmail.com",
+   "h": "62ad3afa4bb28c07b655852e6fed0e2b0d446ad1fab5c330b25d0ae39e2d55bf",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 3"
+   ],
+   "n": "Claude-Alain Art"
+  },
+  {
+   "e": "fabio.becchimanzi@swiss-ski.ch",
+   "h": "2bf7eb7df7ddb85166b970424ca1b4d64c616314f140f24d68b97a192a58d282",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 4"
+   ],
+   "n": "Fabio Becchimanzi"
+  },
+  {
+   "e": "emilie.benz@swiss-ski.ch",
+   "h": "52d9a7d7c2b1b90266cd309c8948052ec1af2076fea890ddd81c9dd7524e15de",
+   "r": "admin",
+   "g": [],
+   "n": "Emilie Benz"
+  },
+  {
+   "e": "philippe.bestak@swiss-ski.ch",
+   "h": "fc2d28d1d4e30a53b572b8acfa832a5e53e396c9e154fe07f8270d7a30778bdb",
+   "r": "coach",
+   "g": [
+    "Männer Elite Nachwuchs 2"
+   ],
+   "n": "Philippe Bestak"
+  },
+  {
+   "e": "ebcool@live.com",
+   "h": "9dbc4af2786ac0ad449103bdbf8ca361d7a255362270a688f1671db5a940f468",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC Speed"
+   ],
+   "n": "Eero Blomqvist"
+  },
+  {
+   "e": "nicola.boehm@swiss-ski.ch",
+   "h": "aa2578d0840fd392cf79e8c2c54a270409d92e6e2436f50a9e650d0069d017a3",
+   "r": "coach",
+   "g": [
+    "Männer Elite Nachwuchs 2"
+   ],
+   "n": "Nicola Boehm"
+  },
+  {
+   "e": "christian.brill@swiss-ski.ch",
+   "h": "07b0c10e3a30c8d12baa36f23af96ec2b63524ef5ce2ec463b86d0bf033d8608",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 3"
+   ],
+   "n": "Christian Brill"
+  },
+  {
+   "e": "bjoern.bruhin@swiss-ski.ch",
+   "h": "31fa6378322375af240966e3dc69fcfcfd69daa8852d418cf1f0af713fdf4cb2",
+   "r": "admin",
+   "g": [],
+   "n": "Björn Bruhin"
+  },
+  {
+   "e": "bruegger.matthias@bluewin.ch",
+   "h": "c905b84d11ec1baba46609f038968f0ff60fccb089991a71944c1d9d427e43fb",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 1"
+   ],
+   "n": "Matthias Brügger"
+  },
+  {
+   "e": "stefan.bruegger@swiss-ski.ch",
+   "h": "4867b8ab9ad1db4dca49b396f8282b0fdb0c2529c2d148be9bb8c30c7d51fd4c",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Test Gruppe 1"
+   ],
+   "n": "Stefan Brügger"
+  },
+  {
+   "e": "paola.cavalli@swiss-ski.ch",
+   "h": "e43a130eb5e6c461795aee0b1c5d49ff4cb3b25807efe301568a73ea02f36c75",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 2"
+   ],
+   "n": "Paola Cavalli"
+  },
+  {
+   "e": "johannes_conrad@hotmail.com",
+   "h": "855b68cac39edef55624085387829b2c8354ef557f55d12d499f17312d1730f8",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 3"
+   ],
+   "n": "Johannes Conrad"
+  },
+  {
+   "e": "valentin.crettaz@swiss-ski.ch",
+   "h": "b35751c8e379399d69d2c82c5e108b6a108cf0381cd32c8a0aa36c69e6a7da7a",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Test Gruppe 1"
+   ],
+   "n": "Valentin Crettaz"
+  },
+  {
+   "e": "flav.digio@gmail.com",
+   "h": "ca667f5b77306348de06196e8e7bc8a64dfcdd25bfdfcd39ce6ac3ccf0ee67ff",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Flavio Di Giorgio"
+  },
+  {
+   "e": "eichbergerconsulting.peter@gmail.com",
+   "h": "4f3c62014e1dbebda19c6600a752258ca449b739b1ccc5122937d52370f5f327",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 2"
+   ],
+   "n": "Peter Eichberger"
+  },
+  {
+   "e": "silvan.epp@swiss-ski.ch",
+   "h": "d88941920322be826e5909ed7cb2308a30681f8d549e13c9ff9883f9a3a28bb0",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Silvan Epp"
+  },
+  {
+   "e": "demian.franzen@swiss-ski.ch",
+   "h": "eb67d3ea23f0e5c0dea0a1bc043ea571843be5e135ebd1edcdf59718150f36cd",
+   "r": "admin",
+   "g": [],
+   "n": "Demian Franzen"
+  },
+  {
+   "e": "manuelgamper@gmx.net",
+   "h": "84c5666fb0cfc2d83d20fedd5a57f21e478806c3595e03f440862860aeb379dc",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 2"
+   ],
+   "n": "Manuel Gamper"
+  },
+  {
+   "e": "gerhard.greber@swiss-ski.ch",
+   "h": "b141f1639296c95e9116b2ee285b50e58cef29c153db0f5bbd7f41744ef62e5d",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC GS",
+    "Männer Elite EC GS"
+   ],
+   "n": "Gerhard Greber"
+  },
+  {
+   "e": "gabor.gruber@swiss-ski.ch",
+   "h": "0abb5d7e2142e73e01f00f7c2e88eaeb2ad70c18888abbdc35da3d29d86c6301",
+   "r": "coach",
+   "g": [
+    "Männer Elite EC Speed"
+   ],
+   "n": "Gabor Gruber"
+  },
+  {
+   "e": "michael.gufler@swiss-ski.ch",
+   "h": "6037e8fd67d38cce7d55216ba86ceb13654407759410ecaeadde8ba54a759490",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Test Gruppe 1"
+   ],
+   "n": "Michael Gufler"
+  },
+  {
+   "e": "tim@gagygnole.ch",
+   "h": "b21de102a527b740abf392db6a00b1bd978f008d109abf84de5a06e9f3e2cf8d",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Test Gruppe 1"
+   ],
+   "n": "Tim Gyger"
+  },
+  {
+   "e": "marc.guerber@swiss-ski.ch",
+   "h": "dcd8cb0b2d4286f75a673a62caad02b26ba069674178056a687f9685a0ed9264",
+   "r": "admin",
+   "g": [],
+   "n": "Marc Gürber"
+  },
+  {
+   "e": "johannes.hassler@swiss-ski.ch",
+   "h": "c4b18d1255730dc367bc5af440947be9d30ea9f735be2a7a193f8b35337c2324",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC GS"
+   ],
+   "n": "Johannes Hassler"
+  },
+  {
+   "e": "franz.heinzer@swiss-ski.ch",
+   "h": "32d0f86d41d8c12978113f68df362dfceeb7b98f608cf26c75fbbf7ad37cb683",
+   "r": "coach",
+   "g": [
+    "Männer Elite EC Speed"
+   ],
+   "n": "Franz Heinzer"
+  },
+  {
+   "e": "retohuber@gmx.net",
+   "h": "4b91d024e2a36ada4c75491a8e6b66a60164103ccfdf583c41d269e2db796f96",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC Speed"
+   ],
+   "n": "Reto Huber"
+  },
+  {
+   "e": "matteo.joris@swiss-ski.ch",
+   "h": "a340e03e31d9baeae4a3a2890ee3734e447f263a3febcdb184ef7853935a671e",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC SL"
+   ],
+   "n": "Matteo Joris"
+  },
+  {
+   "e": "philipp.karbon@swiss-ski.ch",
+   "h": "3e345c53b559e6b5893dd6886853ff32ebd2881422f410d9775caabbb1eecb50",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 3"
+   ],
+   "n": "Philipp Karbon"
+  },
+  {
+   "e": "christoph.kienzl@swiss-ski.ch",
+   "h": "d4db21bc3ec549f8aeb1576d770c5a279294812c602747fb9143b0da5acdffc3",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 2"
+   ],
+   "n": "Christoph Kienzl"
+  },
+  {
+   "e": "thomas.krautschneider@swiss-ski.ch",
+   "h": "bda217f2844103f2af98b19d17ec4fe7d2dfedbdfb88a363f54c9e3f6b8456c3",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC SL"
+   ],
+   "n": "Thomas Krautschneider"
+  },
+  {
+   "e": "helmuth.krug@swiss-ski.ch",
+   "h": "824104f6c4e1c8f651493a4958a12709c6b4a3ac284f23830c7dfc80ba9f3646",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC GS"
+   ],
+   "n": "Helmuth Krug"
+  },
+  {
+   "e": "martinkurath@hotmail.com",
+   "h": "05db3382e4ebba428a564591484eec8d4558d274d39fc84ef39e44092defbce8",
+   "r": "coach",
+   "g": [
+    "Männer Elite Nachwuchs 1"
+   ],
+   "n": "Martin Kurath"
+  },
+  {
+   "e": "matheo.kaech@swiss-ski.ch",
+   "h": "990530d91b56fe065fdf9d46f4678a1d1c7ba2558f72556b667349e312d2feb6",
+   "r": "admin",
+   "g": [],
+   "n": "Matheo Käch"
+  },
+  {
+   "e": "mirena.kueng@swiss-ski.ch",
+   "h": "7ced115504df867ddc0e8eb82a31e49ab9c724d67169d88ed06863d50480682a",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 4"
+   ],
+   "n": "Mirena Küng"
+  },
+  {
+   "e": "anita.landolt@swiss-ski.ch",
+   "h": "86a5e07d82353a87dba8b7c309a825882996966737313e84708d01280c0086c0",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 1"
+   ],
+   "n": "Anita Landolt"
+  },
+  {
+   "e": "mario.lazzeri@swiss-ski.ch",
+   "h": "5d741d65fa74b16111628bba5b2f5566bf4d1c4c06f3b85b621cd68a1cfb60aa",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC SL"
+   ],
+   "n": "Mario Lazzeri"
+  },
+  {
+   "e": "vitus.luond@swiss-ski.ch",
+   "h": "e63edb64d0f7fe6dbe08cdd38fdd2daed8420dfb2c78cdbe596650d40a44e20d",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC Speed"
+   ],
+   "n": "Vitus Lüönd"
+  },
+  {
+   "e": "yves.maret@swiss-ski.ch",
+   "h": "129ffee478ed2fdda0c2b72ae6a5cea74c2e0dd5f7dd7a136b9b3e34ddf44e5b",
+   "r": "coach",
+   "g": [
+    "Männer Elite Nachwuchs 2"
+   ],
+   "n": "Yves Maret"
+  },
+  {
+   "e": "nicolas.margreth@swiss-ski.ch",
+   "h": "67c0f6949af5ed35dfc0d98a0388443dd2d78f8c4680d0c1eae7b2c30ab38966",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC Speed"
+   ],
+   "n": "Nicolas Margreth"
+  },
+  {
+   "e": "jonas.mayer99@outlook.com",
+   "h": "94e0941d14d97c635b5b432bcd4e76506c9eda9d2c2d8a74f2d4c8a57b0caa86",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Jonas Mayer"
+  },
+  {
+   "e": "thierry.meynet@swiss-ski.ch",
+   "h": "a3b79d8d6624b6520bc762c81046361794476126919cc8e3c8ddfdc757e03ce0",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC SL"
+   ],
+   "n": "Thierry Meynet"
+  },
+  {
+   "e": "karen.metrailler@hotmail.com",
+   "h": "33ecd297cb61e7f6b4afac2e1bd64defa921cbaab200125934584a658c0a0145",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 3"
+   ],
+   "n": "Karen Métrailler"
+  },
+  {
+   "e": "reto.nydegger@swiss-ski.ch",
+   "h": "d45862bf5893d17c03cb3ffc1123dad96480985a065b021d9e749f740ebe99f3",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Test Gruppe 1"
+   ],
+   "n": "Reto Nydegger"
+  },
+  {
+   "e": "marine.oberson@swiss-ski.ch",
+   "h": "3d479e650c86b3517ddb741bd127bf5c41e3b8e6d8982ac06a0d1782e77b693f",
+   "r": "admin",
+   "g": [],
+   "n": "Marine Oberson"
+  },
+  {
+   "e": "heini.pfitscher@swiss-ski.ch",
+   "h": "ae31f68d6745934987241c241e6597d24d136cf27920debee1d4c0c09660efce",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 3"
+   ],
+   "n": "Heini Pfitscher"
+  },
+  {
+   "e": "roland.platzer@swiss-ski.ch",
+   "h": "80d8598c58818db82dca6c1fb9063def0dfb251aac17c199d8ad7bfc7ca6125b",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 1"
+   ],
+   "n": "Roland Platzer"
+  },
+  {
+   "e": "michael.pleus@swiss-ski.ch",
+   "h": "7dac4086b6213598c61030e7403767ec73f8befee23d83b4013abcffab44cd77",
+   "r": "admin",
+   "g": [],
+   "n": "Michael Pleus"
+  },
+  {
+   "e": "laurentpraz87@gmail.com",
+   "h": "7e66198435c7a3c7378bc5c78a10cee0992afb7af4a85d3b737f0e3b9e18ed56",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Laurent Praz"
+  },
+  {
+   "e": "alois.prenn@swiss-ski.ch",
+   "h": "dab43f136f7c4d7484713b2c3e3d252bb2ce3026dbd00f58c34174b6d286c81e",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 2"
+   ],
+   "n": "Alois Prenn"
+  },
+  {
+   "e": "simon.rothenbuehler@swiss-ski.ch",
+   "h": "1212a976a6c8225d81e825741762ab759c95507e5826951b10bef58dff04f943",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Simon Rothenbuehler"
+  },
+  {
+   "e": "uli.seitz@mailbox.org",
+   "h": "1ccd4439c6c8fc07a4ab49d51c89b1c4634c86f3c0ca0b7569cc18be2f571f74",
+   "r": "coach",
+   "g": [
+    "Männer Elite EC Speed"
+   ],
+   "n": "Uli Seitz"
+  },
+  {
+   "e": "simone.sperinde@gmail.com",
+   "h": "3cfd040d1b5dfc7d965aca8d415f759997818829747c43d9f488d9bf5ed8cc87",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 3"
+   ],
+   "n": "Simone Sperindè"
+  },
+  {
+   "e": "silvano.stadler@swiss-ski.ch",
+   "h": "0f27c2e2d8495bf1520e46b933ffa120c4f229eb53b3acfe4b861ad277d0e9ca",
+   "r": "coach",
+   "g": [
+    "Frauen Elite EC 3"
+   ],
+   "n": "Silvano Stadler"
+  },
+  {
+   "e": "thomas.stauffer@swiss-ski.ch",
+   "h": "7d0259b7ca354a7ced0647a14a153f5c3d9a1d12f46472e166b62d75b7fda03c",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC Speed",
+    "Männer Mastery WC GS",
+    "Männer Mastery WC SL",
+    "Männer Elite WC Speed",
+    "Männer Elite WC GS",
+    "Männer Elite WC SL",
+    "Männer Elite EC Speed",
+    "Männer Elite EC GS",
+    "Männer Elite Nachwuchs 1",
+    "Männer Elite Nachwuchs 2"
+   ],
+   "n": "Thomas Stauffer"
+  },
+  {
+   "e": "niko.stricker@swiss-ski.ch",
+   "h": "b8578ddfcb3d0cbb0f1d12497e28e85e3dc0d9b3bf260737ce43bd2793ece153",
+   "r": "coach",
+   "g": [
+    "Männer Elite EC GS"
+   ],
+   "n": "Niko Stricker"
+  },
+  {
+   "e": "marcello.tavola@swiss-ski.ch",
+   "h": "2ecc4e2f9daaa9be866a5384b642260a09458d1d87938cb66fe023da851120ee",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Test Gruppe 2"
+   ],
+   "n": "Marcello Tavola"
+  },
+  {
+   "e": "beat.tschuor@swiss-ski.ch",
+   "h": "0e230c0dea0358212e4d57655fe490b23be93b55780d9243b068cd206bf2e719",
+   "r": "coach",
+   "g": [
+    "Frauen Mastery WC 1",
+    "Frauen Mastery WC 2",
+    "Frauen Mastery WC 3",
+    "Frauen Elite EC 1",
+    "Frauen Elite EC 2",
+    "Frauen Elite EC 3",
+    "Frauen Elite EC 4",
+    "Frauen Elite Nachwuchs"
+   ],
+   "n": "Beat Tschuor"
+  },
+  {
+   "e": "renzo.valsecchi@swiss-ski.ch",
+   "h": "f6fb6b16958f1b9af1d5552a82fad0c8a70dad7256ff914b915da1e5825f3cc3",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC GS",
+    "Männer Elite WC GS"
+   ],
+   "n": "Renzo Valsecchi"
+  },
+  {
+   "e": "martin.veith@swiss-ski.ch",
+   "h": "119896560ca3cceade0f744b5c539201692a506dec865498d0213b7a80aa6946",
+   "r": "coach",
+   "g": [
+    "Männer Elite WC SL"
+   ],
+   "n": "Martin Veith"
+  },
+  {
+   "e": "andrea.viano@swiss-ski.ch",
+   "h": "6a08b6d4c8283e75efd81f2bc54128686986331cc5c550371c97ae023ad607eb",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC SL"
+   ],
+   "n": "Andrea Viano"
+  },
+  {
+   "e": "old.viletta.sandro@bluewin.ch",
+   "h": "2f17af5f86e719c302898b0e5e364c44ca1ef855b5443c6ea7255b4fb89ff1cd",
+   "r": "coach",
+   "g": [
+    "Männer Elite EC Speed"
+   ],
+   "n": "Sandro Viletta"
+  },
+  {
+   "e": "joachim.vollmer@swiss-ski.ch",
+   "h": "22805baeda822260eeae313a6fa96e112c4ff92a692f86565f3160ee94c3e4a7",
+   "r": "coach",
+   "g": [
+    "Frauen Elite Nachwuchs"
+   ],
+   "n": "Joachim Vollmer"
+  },
+  {
+   "e": "julien.vuignier@swiss-ski.ch",
+   "h": "48adcc42613aca53d89cac033997bd47a0b783521543456285c911415d39f6ca",
+   "r": "coach",
+   "g": [
+    "Männer Mastery WC SL"
+   ],
+   "n": "Julien Vuignier"
+  },
+  {
+   "e": "reto.weisskopf@outlook.com",
+   "h": "a8ef6e964ac04adebce799646f8afa4d04089b51a1ee1d1becbd281d5f51374f",
+   "r": "coach",
+   "g": [
+    "Männer Elite Nachwuchs 1"
+   ],
+   "n": "Reto Weisskopf"
+  },
+  {
+   "e": "cyril.wyss@swiss-ski.ch",
+   "h": "9fc4f1e5517d0b05843ff5193c1e1aac1a78c42a5d0b6812a25f7c677db76c25",
+   "r": "admin",
+   "g": [],
+   "n": "Cyril Wyss"
+  },
+  {
+   "e": "luca.vonsiebenthal@swiss-ski.ch",
+   "h": "662bb24495607cd4f629cbd70da0294680c7fb66b6a4f8e4007952eaad861b57",
+   "r": "admin",
+   "g": [],
+   "n": "Luca von Siebenthal"
+  },
+  {
+   "e": "walter.alber@swiss-ski.ch",
+   "h": "65373278bf4e35302d6f43dae8b5ff44f51df45f57344a0a74cf02b42cb67915",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Walter Alber"
+  },
+  {
+   "e": "balmettimauro@gmail.com",
+   "h": "8b354eeba473c5cbbbf3a6a482af445378f6756dfb5c6d08a9189b783562f31c",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Mauro Balmetti"
+  },
+  {
+   "e": "thomas.baumann@swiss-ski.ch",
+   "h": "187efcc46d09e19b38cadf2c5243ec59c1d8e32959a6dae332ae0d79d184d022",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Thomas Baumann"
+  },
+  {
+   "e": "bombac.rok@gmail.com",
+   "h": "13e555b396f16c6725744647489506029037031c34006e6797f38cccc7bb3f7d",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Rok Bombac"
+  },
+  {
+   "e": "lorenzo.canavesio@swiss-ski.ch",
+   "h": "20cf114696d6a7568189455f6c7d4258526bdc4e0cd11506754152781c422f58",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Lorenzo Canavesio"
+  },
+  {
+   "e": "jean-fred.chapuis@swiss-ski.ch",
+   "h": "5a59f5ed4872908dcb49a87c94923078ee5392991250f315032d4e460cd3ff7b",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Jean-Frederic Chapuis"
+  },
+  {
+   "e": "antonia_dominioni@hotmail.com",
+   "h": "dd521f488fffa19266c006fc5303a45c18eba7c15286486ae7080daf97d2b6de",
+   "r": "coach",
+   "g": [
+    "SBX EC"
+   ],
+   "n": "Antonia Dominioni"
+  },
+  {
+   "e": "nathan96ski@gmail.com",
+   "h": "5404d9f55375a592c4d6c2d822f483dbe56502850ac80d9436b422c4efe1ce7e",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Nathan Dugast"
+  },
+  {
+   "e": "micha.eder@swiss-ski.ch",
+   "h": "865ad59dde6848560429f01f5ad9191d2cdadc15ab022c54d6890a5662d22ad2",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Micha Eder"
+  },
+  {
+   "e": "info@top-run1.ch",
+   "h": "cd95329a9ac676582a42ef328e1c41faeddc406bfc8847b17ab232693e464541",
+   "r": "coach",
+   "g": [
+    "SBX EC"
+   ],
+   "n": "Stefan Eisenegger"
+  },
+  {
+   "e": "andreas.fischle@swiss-ski.ch",
+   "h": "62a1544a11d1cad866d85b54bbe1acde5dbf056cbe6191f4b4c39776563b78ee",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Andreas Fischle"
+  },
+  {
+   "e": "patrick.gasser@swiss-ski.ch",
+   "h": "ab5737c73fa74111faf43aa083a0e8a4680f4ef88a118f4578462668e846c625",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Patrick Gasser"
+  },
+  {
+   "e": "michellegertsch@gmx.net",
+   "h": "13ebffff7ba921e86cb355c3ea66677e87318254e3e14e0f32dccb921abfd4f1",
+   "r": "coach",
+   "g": [
+    "SBX WC",
+    "SBX EC"
+   ],
+   "n": "Michelle Gertsch"
+  },
+  {
+   "e": "fabrizio.grange@swiss-ski.ch",
+   "h": "d253f246b8f3913809a026d358f95485076a362c8be9a9b7a607347a6ed6effe",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Fabrizio Grange"
+  },
+  {
+   "e": "giacomo.gueci@gmail.com",
+   "h": "09b823a0e681c827d70ff1d2d3b50a649d0b904d2354d0ceedbf4d0d3d7dd9c4",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Giacomo Gueci"
+  },
+  {
+   "e": "korbinian.harder@swiss-ski.ch",
+   "h": "c0185983b61c3755ae03217692131c2012e87d56e053e4e4c58d9e35bdcf55b7",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Korbinian Harder"
+  },
+  {
+   "e": "ueliheller@hotmail.com",
+   "h": "9a1bdf013548810088bed1f07d24442c6a94136225ba19d8346d1e8fedc086ae",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Ueli Heller"
+  },
+  {
+   "e": "jaka.jovan@gmail.com",
+   "h": "3b5dbe1396b2cc0b20c60eb3e6b6f630e3f546ea9e56d443d9cd125ed1271aa4",
+   "r": "coach",
+   "g": [
+    "SB Alpin WC"
+   ],
+   "n": "Jakob Jovan"
+  },
+  {
+   "e": "b.86.koenig@gmail.com",
+   "h": "e26803262cd751b7c32cda2bd329818d10831652e8c268c8e2bdca3266141710",
+   "r": "coach",
+   "g": [
+    "SB Alpin EC"
+   ],
+   "n": "Benjamin König"
+  },
+  {
+   "e": "janik.leuzinger@swiss-ski.ch",
+   "h": "2e55e285c4cbef432ecaa6dee3f5ea596efd2e6a1e2e048d3695374990d3316c",
+   "r": "coach",
+   "g": [
+    "SBX EC"
+   ],
+   "n": "Janik Leuzinger"
+  },
+  {
+   "e": "karin.luchsinger@swiss-ski.ch",
+   "h": "e21f097f1329c2e51e281c9514c98c3bafc0508ebb697bd49e66abafbd9cd2e6",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Karin Luchsinger"
+  },
+  {
+   "e": "jordan.martignoli@gmail.com",
+   "h": "46604e22d6d5fb05cd1a2b6554f5ae087b983fbd58b6814ba7a0dae8e5ca0410",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Jordan Martignoli"
+  },
+  {
+   "e": "simon.meier@swiss-ski.ch",
+   "h": "6e849ea52cc3f417136924153b78f7bbf0c4a60e8706113b55e179b6b8ad1c68",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Simon Meier"
+  },
+  {
+   "e": "alexsatz72@gmail.com",
+   "h": "c66350a8331b57f9359371840780849e91d9b2a55fb2b478b744a3dcdde34d8c",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Alex Oberhofer"
+  },
+  {
+   "e": "roposki@yahoo.com",
+   "h": "f5651ec51d5318998d1ed36eba1be3f431ae1108e77d426de56246f359767058",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Robert Polesel"
+  },
+  {
+   "e": "dominik.raab@swiss-ski.ch",
+   "h": "20ff56940763a270098b1fef9ba6314d377a93bd5c2ea596335ebecec095b631",
+   "r": "coach",
+   "g": [
+    "SB Alpin EC"
+   ],
+   "n": "Dominik Raab"
+  },
+  {
+   "e": "spurlos@gmx.at",
+   "h": "2c946948cc2a791a5467d42b724c176f59a9d7d2326fba82772729aa920ca85c",
+   "r": "coach",
+   "g": [
+    "SB Alpin WC"
+   ],
+   "n": "Mario Rantschl"
+  },
+  {
+   "e": "nilsroelli@gmx.ch",
+   "h": "a6458accd921b41cfc051b2d54918b51ea45384141282b2a56ac7ca393e848cc",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Nils Rölli"
+  },
+  {
+   "e": "sarah.schwaighofer13@gmail.com",
+   "h": "9624dddce170886c11d9521b394616643128f5ff84d971537b37f0a29153b8af",
+   "r": "coach",
+   "g": [
+    "Skicross EC"
+   ],
+   "n": "Sarah Schweighofer"
+  },
+  {
+   "e": "fabia.silvestri@swiss-ski.ch",
+   "h": "e8355c740cff49b51ca6c8cfdaa17613580b0049ecece4d3b2459fd2af65f908",
+   "r": "coach",
+   "g": [
+    "Skicross EC",
+    "SBX EC",
+    "SB Alpin EC"
+   ],
+   "n": "Fabia Silvestri"
+  },
+  {
+   "e": "simon.stampfli@swiss-ski.ch",
+   "h": "61f2766642393ac3695dbcc4be700b2980b1f1a7f37a86a25cf36e99d4762788",
+   "r": "coach",
+   "g": [
+    "SBX WC"
+   ],
+   "n": "Simon Stampfli"
+  },
+  {
+   "e": "danielstucki@sunrise.ch",
+   "h": "e3fad2bbbd551125cdb4099b891de29b1ed4009588ea677d867cc8d97e56eef8",
+   "r": "coach",
+   "g": [
+    "SB Alpin WC"
+   ],
+   "n": "Daniel Stucki"
+  },
+  {
+   "e": "stefan.thanei@swiss-ski.ch",
+   "h": "e688da9e6562b95d52217617d0c1edb51d77d07ba1d4f13528a1a95e5fef6fc2",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Stefan Thanei"
+  },
+  {
+   "e": "daniel.weis@swiss-ski.ch",
+   "h": "053a170974322883dd2b980cd7d8ba3d202b8a54832bb1c9dbd605022dfdbc7c",
+   "r": "coach",
+   "g": [
+    "SB Alpin WC"
+   ],
+   "n": "Daniel Weis"
+  },
+  {
+   "e": "josh.wiltz@swiss-ski.ch",
+   "h": "ece180368132648b803ddb75927b8f28f2d0d5c1b90312ae295ee2457b4fa8cf",
+   "r": "coach",
+   "g": [
+    "Skicross WC"
+   ],
+   "n": "Josh Wiltz"
+  },
+  {
+   "e": "nicolas.morath@swiss-ski.ch",
+   "h": "bf0574ea4a26e7831125a34dcd027febdc285d984b632024cbe7d41d984be3e0",
+   "r": "coach",
+   "g": [],
+   "n": "Nicolas Morath"
+  },
+  {
+   "e": "lionel.yersin@innove.ch",
+   "h": "4f3ddf8c9f49c6f22703488fc01237b60e2f8dfcd0fec6074b1b244c3eb362f8",
+   "r": "coach",
+   "g": [],
+   "n": "Lionel Yersin"
+  },
+  {
+   "e": "walter.reusser@swiss-ski.ch",
+   "h": "93c2e199fe5f806ed075b203817516ce4b703378d43c43bd515e1f5e0adccec8",
+   "r": "coach",
+   "g": [],
+   "n": "Walter Reusser"
+  },
+  {
+   "e": "commandcenter1@swiss-ski.ch",
+   "h": "fa57442c75270cc1bb1155f535109ee3c345f5682130eff6487e57d6e8ea774e",
+   "r": "admin",
+   "g": [],
+   "n": "Command Center 1"
+  },
+  {
+   "e": "commandcenter2@swiss-ski.ch",
+   "h": "e74a93523deb5801d6c8b84b747ba079c586bd8446de175351f29bdd9191c46b",
+   "r": "admin",
+   "g": [],
+   "n": "Command Center 2"
+  },
+  {
+   "e": "commandcenter3@swiss-ski.ch",
+   "h": "46347718869d3d0cd4e3d6a7b1ae19dd76517b99eb6dfada9c168d8ac2aa5297",
+   "r": "admin",
+   "g": [],
+   "n": "Command Center 3"
+  }
+ ]
+}

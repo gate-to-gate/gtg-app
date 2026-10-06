@@ -385,6 +385,9 @@ body.dark .series-pick .sp-athname{color:#eef1f6}
 .dba-col::-webkit-color-swatch-wrapper{padding:2px}
 .dba-col::-webkit-color-swatch{border:none;border-radius:4px}
 .dba-colrst{padding:3px 7px;font-size:11px;vertical-align:middle}
+.fis-link{color:#1f6fb2;text-decoration:none;font-variant-numeric:tabular-nums;border-bottom:1px dotted #9cc0e6}
+.fis-link:hover{color:var(--red);border-bottom-color:var(--red)}
+body.dark .fis-link{color:#6ea8e6}
 .dba-msg.ok{color:var(--good)}
 body.dark .dba-form{background:#252d39;border-color:#3a4452}
 body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;color:#eef1f6}
@@ -470,6 +473,11 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
   .hero-ctrls{justify-content:flex-start;width:100%}
   .db-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .db-table{min-width:680px}
+  .db-table thead th,.db-table tbody td{padding:7px 8px}
+  /* Events-Übersicht auf kleinen Bildschirmen aufräumen: ART + QUELLE ausblenden */
+  #dbSecEvents .db-table th:nth-child(6),#dbSecEvents .db-table td:nth-child(6),
+  #dbSecEvents .db-table th:nth-child(7),#dbSecEvents .db-table td:nth-child(7){display:none}
+  #dbSecEvents .db-table{min-width:560px}
   .db-filters .lib-search{min-width:140px}
   .lib-grid{grid-template-columns:1fr}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -2463,8 +2471,8 @@ window.addEventListener('error', (e)=>{ if(_gtgBenignError(e)) return;
 window.addEventListener('unhandledrejection', ()=> gtgToast('Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)'));
 
 /* ===== Persönliche Logins (E-Mail + Passwort) – ersetzt das frühere General-Passwort ===== */
-const GTG_SALT='g2g_v1_7Kx9';
-const GTG_HN=30000;
+let GTG_SALT='g2g_v1_7Kx9';
+let GTG_HN=30000;
 const GTG_USERS=[
  {e:"jose-luis.alejo-hervas@swiss-ski.ch",h:"4a7baefd8563ffcaf5529aa0e353a43cbce5aa3b8440136ef127e192f5220da7",r:"coach",g:["Männer Mastery WC GS"],n:"Jose Alejo Hervas"},
  {e:"artclaudealain@gmail.com",h:"62ad3afa4bb28c07b655852e6fed0e2b0d446ad1fab5c330b25d0ae39e2d55bf",r:"coach",g:["Frauen Mastery WC 3"],n:"Claude-Alain Art"},
@@ -2575,8 +2583,24 @@ const GTG_USERS=[
  {e:"commandcenter2@swiss-ski.ch",h:"e74a93523deb5801d6c8b84b747ba079c586bd8446de175351f29bdd9191c46b",r:"admin",g:[],n:"Command Center 2"},
  {e:"commandcenter3@swiss-ski.ch",h:"46347718869d3d0cd4e3d6a7b1ae19dd76517b99eb6dfada9c168d8ac2aa5297",r:"admin",g:[],n:"Command Center 3"},
 ];
-const GTG_UBYMAIL=(function(){ const m={}; GTG_USERS.forEach(u=>{ m[String(u.e).toLowerCase()]=u; }); return m; })();
+let GTG_UBYMAIL=(function(){ const m={}; GTG_USERS.forEach(u=>{ m[String(u.e).toLowerCase()]=u; }); return m; })();
 function gtgUser(email){ return email? (GTG_UBYMAIL[String(email).toLowerCase()]||null) : null; }
+/* Nutzerliste zur Laufzeit aus der öffentlichen users.json nachladen (Logins ändern ohne neuen Build).
+   Fällt auf die eingebaute Liste zurück, wenn offline/nicht erreichbar. */
+async function gtgLoadUsers(){
+  const url='https://gate-to-gate.github.io/gtg-app/users.json?t='+Date.now();
+  try{
+    let txt=null; const dk=(typeof GD==='function')?GD():null;
+    if(dk && dk.fetchText){ txt=await Promise.resolve(dk.fetchText(url)).catch(()=>null); }
+    if(txt==null){ const r=await fetch(url,{cache:'no-store'}); if(r.ok) txt=await r.text(); }
+    if(!txt) return false;
+    const j=JSON.parse(txt); if(!j||!Array.isArray(j.users)||!j.users.length) return false;
+    if(j.salt) GTG_SALT=j.salt; if(j.hn) GTG_HN=(+j.hn)||GTG_HN;
+    const m={}; j.users.forEach(x=>{ if(x&&x.e&&x.h){ m[String(x.e).toLowerCase()]={e:String(x.e).toLowerCase(),h:String(x.h),r:(x.r==='admin'?'admin':'coach'),g:Array.isArray(x.g)?x.g:[],n:x.n||''}; } });
+    if(Object.keys(m).length){ GTG_UBYMAIL=m; }
+    return true;
+  }catch(e){ return false; }
+}
 function gtgSha256(ascii){ ascii=unescape(encodeURIComponent(ascii));
   function rr(v,a){return (v>>>a)|(v<<(32-a));}
   var mp=Math.pow, mw=mp(2,32), result='', words=[], bitLen=ascii.length*8;
@@ -2668,7 +2692,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061536';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061559';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2800,6 +2824,214 @@ const ATH_FIS = {
 };
 function fisNorm(s){ return String(s==null?'':s).toUpperCase().replace(/\u00C4/g,'AE').replace(/\u00D6/g,'OE').replace(/\u00DC/g,'UE').replace(/\u00DF/g,'SS').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z ]/g,' ').replace(/\s+/g,' ').trim(); }
 function fisFor(name){ return ATH_FIS[fisNorm(name)]||''; }
+/* FIS-Nationen (offizielle FIS-Datenbank) – korrigiert falsch erfasste Nationen. */
+const ATH_NAT = {
+  "AERNI LUCA":"SUI",
+  "AICHER EMMA":"GER",
+  "ALLENBACH DANIA":"SUI",
+  "AMIEZ STEVEN":"FRA",
+  "ASTNER NINA":"AUT",
+  "BASSINO MARTA":"ITA",
+  "BRAATHEN LUCAS":"BRA",
+  "BRAENDLI ANUK":"SUI",
+  "BRENNSTEINER STEFAN":"AUT",
+  "BRIGNONE FEDERICA":"ITA",
+  "BRUNNER STEPHANIE":"AUT",
+  "CAVIEZEL GINO":"SUI",
+  "CHRISTEN ELIANE":"SUI",
+  "COLTURI LARA":"ALB",
+  "DANIOTH ALINE":"SUI",
+  "DE ALIPRANDINI LUCA":"ITA",
+  "DELLA MEA LARA":"ITA",
+  "DUBOVSKA MARTINA":"CZE",
+  "DUERR LENA":"GER",
+  "DVORNIK NEJA":"SLO",
+  "ELEZI CANNAFERINA ALBAN":"FRA",
+  "FELLER MANUEL":"AUT",
+  "FEURSTEIN LUKAS":"AUT",
+  "FUX GIULIANO":"SUI",
+  "GINNIS AJ":"GRE",
+  "GISIN MICHELLE":"SUI",
+  "GOOD NICOLE":"SUI",
+  "GRAMMEL ANTON":"GER",
+  "GRATZ FABIAN":"GER",
+  "GRENIER VALERIE":"CAN",
+  "GROB STEFANIE":"SUI",
+  "GSTREIN FABIO":"AUT",
+  "GUT BEHRAMI LARA":"SUI",
+  "HAASER RAPHAEL":"AUT",
+  "HAECHLER LENZ":"SUI",
+  "HALLBERG EDUARD":"FIN",
+  "HANSIEN KATIE":"USA",
+  "HAUGAN TIMON":"NOR",
+  "HECTOR SARA":"SWE",
+  "HOEPLI ALINE":"SUI",
+  "HOLDENER WENDY":"SUI",
+  "HOLTMANN MINA":"NOR",
+  "HURT AJ":"USA",
+  "ITEN MATTHIAS":"SUI",
+  "JAKOBSEN KRISTOFFER":"SWE",
+  "JANUTIN FADRI":"SUI",
+  "KASPER VANESSA":"SUI",
+  "KASTLUNGER TOBIAS":"ITA",
+  "KRISTOFFERSEN HENRIK":"NOR",
+  "LIENSBERGER KATHARINA":"AUT",
+  "LJUTIC ZRINKA":"CRO",
+  "LOEVBLOM HILMA":"SWE",
+  "MAECHLER JANINE":"SUI",
+  "MCGRATH ATLE LIE":"NOR",
+  "MCGRATH ATLELIE":"NOR",
+  "MEILLARD LOIC":"SUI",
+  "MEILLARD MELANIE":"SUI",
+  "MOLTZAN PAULA":"USA",
+  "MONNEY ALEXIS":"SUI",
+  "MUFFAT VICTOR":"FRA",
+  "MURISIER JUSTIN":"SUI",
+  "NEF TANGUY":"SUI",
+  "NOEL CLEMENT":"FRA",
+  "OBRIEN NINA":"USA",
+  "ODERMATT MARCO":"SUI",
+  "OEHLUND CORNELIA":"SWE",
+  "PILLER SUE":"SUI",
+  "POGNEAUX CHIARA":"FRA",
+  "POPOV ALBERT":"BUL",
+  "POPOVIC LEONA":"CRO",
+  "RADAMUS RIVER":"USA",
+  "RASCHNER DOMINIK":"AUT",
+  "RASSAT PACO":"FRA",
+  "RAST CAMILLE":"SUI",
+  "ROBINSON ALICE":"NZL",
+  "ROCHAT MARC":"SUI",
+  "ROSSETTI MARTA":"ITA",
+  "RYDING DAVE":"GBR",
+  "SCHEIB JULIA":"AUT",
+  "SCHWARZ MARCO":"AUT",
+  "SHIFFRIN MIKAELA":"USA",
+  "SIMONET LIVIO":"SUI",
+  "SLOKAR ANDREJA":"SLO",
+  "STEEN OLSEN ALEXANDER":"NOR",
+  "STJERNESUND THEA LOUISE":"NOR",
+  "STOFFEL ELENA":"SUI",
+  "STRASSER LINUS":"GER",
+  "SWENN LARSSON ANNA":"SWE",
+  "TAYLOR LAURIE":"GBR",
+  "TROCKER ANNA":"ITA",
+  "TUMLER THOMAS":"SUI",
+  "VERDU JOAN":"AND",
+  "VINATZER ALEX":"ITA",
+  "VLHOVA PETRA":"SVK",
+  "VONGRUENIGEN NOEL":"SUI",
+  "WILD SIMONE":"SUI",
+  "YULE DANIEL":"SUI",
+  "ZENHAEUSERN RAMON":"SUI",
+  "ZUBCIC FILIP":"CRO"
+};
+function natFor(name){ return ATH_NAT[fisNorm(name)]||''; }
+/* FIS competitor-id je Code -> Link auf das FIS-Profil */
+const ATH_CID = {
+  "20398":"166175",
+  "54027":"128892",
+  "54063":"137557",
+  "54252":"159978",
+  "54320":"169280",
+  "54444":"191304",
+  "54445":"191305",
+  "54628":"219777",
+  "56217":"158888",
+  "56388":"190907",
+  "56416":"196713",
+  "56517":"213392",
+  "92720":"190120",
+  "107613":"175637",
+  "155728":"145630",
+  "180919":"246186",
+  "193967":"108784",
+  "198215":"228581",
+  "202451":"137475",
+  "202829":"187951",
+  "202883":"195408",
+  "206355":"126526",
+  "220689":"77191",
+  "221236":"175928",
+  "297601":"118379",
+  "299276":"173830",
+  "380335":"146641",
+  "385096":"187064",
+  "385116":"252519",
+  "415232":"221779",
+  "422304":"154950",
+  "422507":"174450",
+  "422729":"213820",
+  "422732":"213823",
+  "422766":"222507",
+  "426100":"165800",
+  "426193":"174491",
+  "502015":"160443",
+  "506146":"127270",
+  "506399":"140095",
+  "507011":"211099",
+  "507168":"237841",
+  "507325":"260652",
+  "511638":"105040",
+  "511852":"138512",
+  "511896":"138572",
+  "511899":"138575",
+  "511902":"138578",
+  "511983":"148274",
+  "511996":"148287",
+  "512120":"166519",
+  "512182":"174158",
+  "512203":"175449",
+  "512269":"190231",
+  "512301":"195791",
+  "512353":"203779",
+  "512408":"212375",
+  "512424":"212495",
+  "512588":"240101",
+  "512678":"261696",
+  "516138":"125871",
+  "516268":"148146",
+  "516280":"148331",
+  "516284":"149811",
+  "516407":"173470",
+  "516426":"174170",
+  "516504":"195740",
+  "516528":"196292",
+  "516530":"196595",
+  "516553":"203777",
+  "516562":"203812",
+  "516619":"220457",
+  "516722":"238534",
+  "516753":"252204",
+  "516783":"252846",
+  "516813":"261318",
+  "516895":"277597",
+  "539909":"155859",
+  "565463":"188441",
+  "565491":"221143",
+  "705423":"168809",
+  "805009":"269077",
+  "990116":"118704",
+  "6190403":"187117",
+  "6190543":"194724",
+  "6190558":"194749",
+  "6191334":"239148",
+  "6293171":"204319",
+  "6293252":"205709",
+  "6295075":"203427",
+  "6295165":"205642",
+  "6297347":"285299",
+  "6531063":"161182",
+  "6532084":"194503",
+  "6535237":"164835",
+  "6535773":"187620",
+  "6536171":"202350",
+  "6536392":"210951"
+};
+function fisBioUrl(name){ const c=fisFor(name); const id=ATH_CID[c]; return id?('https://www.fis-ski.com/DB/general/athlete-biography.html?sectorcode=AL&competitorid='+id+'&type=st'):''; }
+/* bekannte Athlet:innen in den geladenen Events auf die korrekte FIS-Nation setzen (einmal beim Start) */
+try{ (typeof DATA!=='undefined'?DATA:[]).forEach(e=> ((e&&e.skiers)||[]).forEach(s=>{ const n=natFor(s.name); if(n) s.nation=n; })); }catch(e){}
+
 
 function palHash(str, pal){ let h=0; str=String(str); for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return pal[h%pal.length]; }
 const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
@@ -3812,13 +4044,13 @@ function seedAthletes(){
   const map = new Map();
   DATA.forEach(e=> e.skiers.forEach(s=> { if(!map.has(s.name)) map.set(s.name,{name:s.name,nation:s.nation}); }));
   LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); const e={name:nm,nation:a.nation||'',fis:a.fis}; if(a.color) e.color=a.color; map.set(nm,e); } });
-  // FIS-Codes aus der hinterlegten Tabelle einsetzen (füllt fehlende + korrigiert bekannte Athlet:innen)
-  map.forEach(e=>{ const f=fisFor(e.name); if(f) e.fis=f; });
+  // FIS-Codes & -Nationen aus der hinterlegten Tabelle einsetzen (füllt fehlende + korrigiert bekannte)
+  map.forEach(e=>{ const f=fisFor(e.name); if(f) e.fis=f; const n=natFor(e.name); if(n) e.nation=n; });
   ATHLETES = [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 function persistAthletes(){ const seed=new Set(); DATA.forEach(e=>e.skiers.forEach(s=>seed.add(s.name)));
   LS.set('gtg_athletes', ATHLETES.filter(a=>!seed.has(a.name)||true)); }
-function natOf(name){ const a=ATHLETES.find(x=>x.name===name); return a?a.nation:''; }
+function natOf(name){ const n=natFor(name); if(n) return n; const a=ATHLETES.find(x=>x.name===name); return a?a.nation:''; }
 function fisOf(name){ const f=fisFor(name); if(f) return f; const a=ATHLETES.find(x=>x.name===name); return a&&a.fis?a.fis:''; }
 
 function fillAthleteSelect(){
@@ -4639,7 +4871,7 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   let ev = target.find(e=>e.date===rec.date&&e.venue===rec.venue&&e.discipline===rec.disc&&e.gender===rec.gen&&String(e.run)===String(rec.run));
   if(!ev){ ev={date:rec.date,venue:rec.venue,discipline:rec.disc,gender:rec.gen,run:rec.run,mode:rec.mode||'comp',nGates:0,figures:[],skiers:[],hasSUI:false,hasTop:false}; target.push(ev); }
   ev.skiers = ev.skiers.filter(s=>s.name!==rec.name);
-  ev.skiers.push({name:rec.name, nation:rec.nation, fastest:false, gates:rec.gates.slice(),
+  ev.skiers.push({name:rec.name, nation:(natFor(rec.name)||rec.nation), fastest:false, gates:rec.gates.slice(),
     officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
   // figures zusammenführen (nach Tor-Nr.)
   const fmap=new Map(ev.figures.map(f=>[f.gate,f.label])); (rec.figures||[]).forEach(f=>fmap.set(f.gate,f.label));
@@ -6478,7 +6710,7 @@ function renderDbAthletes(){
     const col=athColor(a.name,false); const custom=!!a.color;
     return `<tr><td><b>${escHtml(sur)}</b>${rest?' '+escHtml(rest):''}</td>`
       +`<td>${a.nation?`<span class="gsex">${escHtml(a.nation)}</span>`:'—'}</td>`
-      +`<td>${a.fis?escHtml(a.fis):'<span style="color:var(--muted)">—</span>'}</td>`
+      +`<td>${a.fis?(fisBioUrl(a.name)?`<a class="fis-link" href="${fisBioUrl(a.name)}" target="_blank" rel="noopener" title="FIS-Profil öffnen">${escHtml(a.fis)}</a>`:escHtml(a.fis)):'<span style="color:var(--muted)">—</span>'}</td>`
       +`<td class="dba-colc"><input type="color" class="dba-col" data-col="${escHtml(a.name)}" value="${col}" title="Farbe für die Diagramme wählen">`
         +(custom?` <button class="btn-mini dba-colrst" data-colrst="${escHtml(a.name)}" title="Auf Standardfarbe zurücksetzen">↺</button>`:'')+`</td>`
       +`<td class="num">${cnt||'<span style="color:var(--muted)">–</span>'}</td>`
@@ -7656,8 +7888,11 @@ initTour();
 initWelcome();
 initUpdateCheck();
 initI18n();
-/* Login-Gate: nicht angemeldet -> Login-Overlay; angemeldet -> Logout-Button/Badge verdrahten */
-if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
+/* Login-Gate: zuerst die aktuelle Nutzerliste (users.json) laden, dann anmelden/gate. */
+(async()=>{ try{ await gtgLoadUsers(); }catch(e){}
+  try{ const m2=gtgLoadSession(); if(m2) ME=m2; }catch(e){}
+  if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
+})();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
