@@ -419,7 +419,8 @@ body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;col
 /* KPI cards */
 .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
 .kpi{background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.kpi .k-lab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi .k-lab{display:flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.kpi .k-ico{width:12px;height:12px;flex:none;opacity:.85}
 .kpi .k-val{font-size:20px;font-weight:760;letter-spacing:-.02em;line-height:1}
 .kpi .k-val small{font-size:11px;font-weight:600;color:var(--muted)}
 .kpi .k-sub{font-size:10.5px;color:var(--muted);margin-top:3px}
@@ -978,6 +979,15 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .dbtg-cell.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
 .dbt-gate b{color:var(--ink);min-width:18px;display:inline-block;text-align:right}
 .dbt-fig b{text-decoration:underline;text-underline-offset:2px}
+/* Tabellen-Politur: mitlaufende Kopfzeile, Zebra-Streifen, klarere Hover-Zeile */
+.db-table thead th{position:sticky;top:52px;z-index:20}
+body.dark .db-table thead th{background:#222a34}
+#dbSecAthletes .db-table tbody tr:nth-child(even) td,#dbSecLogins .db-table tbody tr:nth-child(even) td,#dbSecVideos .db-table tbody tr:nth-child(even) td,#dbSecKurs .db-table tbody tr:nth-child(even) td{background:#fafbfd}
+body.dark #dbSecAthletes .db-table tbody tr:nth-child(even) td,body.dark #dbSecLogins .db-table tbody tr:nth-child(even) td,body.dark #dbSecVideos .db-table tbody tr:nth-child(even) td,body.dark #dbSecKurs .db-table tbody tr:nth-child(even) td{background:#20272f}
+#dbSecAthletes .db-table tbody tr:hover td,#dbSecLogins .db-table tbody tr:hover td,#dbSecVideos .db-table tbody tr:hover td,#dbSecKurs .db-table tbody tr:hover td{background:#eef4fb}
+body.dark #dbSecAthletes .db-table tbody tr:hover td,body.dark #dbSecLogins .db-table tbody tr:hover td,body.dark #dbSecVideos .db-table tbody tr:hover td,body.dark #dbSecKurs .db-table tbody tr:hover td{background:#2b333e}
+#dbSecEvents .db-table tbody tr.db-grp:hover td{background:#eef4fb}
+body.dark #dbSecEvents .db-table tbody tr.db-grp:hover td{background:#2b333e}
 .dbt-actions{display:flex;gap:8px;margin-top:10px}
 .db-badge.vid{background:#e9f6ef;color:#1a8f5a}
 .db-badge.novid{background:#f1f4f7;color:#8b95a3}
@@ -1011,9 +1021,12 @@ body.dark .db-clind{color:#6ea8e6}
 .db-table tr.db-sub>td:first-child{border-left:3px solid var(--line)}
 .db-subv{color:var(--muted);text-align:center;font-size:12px}
 body.dark .db-table tr.db-grp:hover,body.dark .db-table tr.db-sub>td{background:#262d38}
-.db-empty{text-align:center;color:var(--muted);padding:30px 20px!important}
-.db-empty .dbe{display:inline-flex;align-items:center;gap:9px}
-.db-empty svg{width:22px;height:22px;stroke:#c3cad4;stroke-width:1.5;fill:none}
+.db-empty{text-align:center;color:var(--muted);padding:36px 20px!important}
+.db-empty .dbe{display:inline-flex;flex-direction:column;align-items:center;gap:11px;max-width:440px;line-height:1.5}
+.db-empty svg{width:34px;height:34px;stroke:#c3cad4;stroke-width:1.4;fill:none}
+body.dark .db-empty svg{stroke:#49525e}
+/* Einheitliche Tastatur-Fokus-Stile (nur bei Tastatur sichtbar) */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,.tab:focus-visible,.btn-mini:focus-visible,.hdr-ico:focus-visible,.seg-toggle button:focus-visible,label.toggle:focus-within{outline:2px solid var(--red);outline-offset:2px;border-radius:7px}
 .db-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:800;letter-spacing:.01em;white-space:nowrap}
 .db-badge.wk{background:#eaf2fb;color:#1f6fb2}
 .db-badge.tr{background:#f0ecf9;color:#7a3fb5}
@@ -1566,13 +1579,11 @@ body.dark .empty{color:#9aa6b4}
     <!-- Print-Header (nur im PDF) -->
     <div id="printHead" class="print-only">
       <div class="ph-left">
-        <svg class="ph-logo" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="phBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EA2A20"/><stop offset="1" stop-color="#A8190F"/></linearGradient></defs>
-          <rect width="44" height="44" rx="11" fill="url(#phBg)"/>
-          <line x1="14.5" y1="8" x2="14.5" y2="20.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
-          <path d="M14.5 8.6 L24.5 11.8 L14.5 15.4 Z" fill="#F4C20A"/>
-          <line x1="29.5" y1="23.5" x2="29.5" y2="36" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
-          <path d="M29.5 25 L19.5 28.2 L29.5 31.8 Z" fill="#fff"/>
+        <svg class="ph-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="phBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7302A"/><stop offset="1" stop-color="#7C1F2D"/></linearGradient></defs>
+          <rect width="64" height="64" rx="17" fill="url(#phBg)"/>
+          <g fill="#fff"><rect x="17" y="16" width="4" height="32" rx="2"/><rect x="43" y="16" width="4" height="32" rx="2"/><path d="M17 20 Q32 27 47 20 L47 30 Q32 37 17 30 Z"/></g>
+          <circle cx="32" cy="25" r="2.2" fill="#B4232A"/>
         </svg>
         <div><div class="ph-title">Gate-to-Gate Analyse</div><div class="ph-meta" id="printHeadMeta">—</div></div>
       </div>
@@ -2720,7 +2731,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061930';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061955';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3482,13 +3493,20 @@ function kpiHTML(){
   // biggest single time loss among SUI
   let bigLoss={v:-9}; c.sui.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
   const nFig = c.figs.length;
+  const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
+  const icClock='<circle cx="8" cy="8" r="6.2"/><path d="M8 4.6V8l2.3 1.4"/>';
+  const icFlag='<path d="M4 14.2V2"/><path d="M4 2.7c3-1.4 5 1 8-.2V8c-3 1.2-5-1.2-8 .2z"/>';
+  const icMedal='<circle cx="8" cy="10.2" r="3.8"/><path d="M6 6.6 4.2 1.6M10 6.6l1.8-5"/>';
+  const icPeople='<circle cx="6" cy="6" r="2.2"/><path d="M2.4 13.4c0-2 1.7-3.2 3.6-3.2s3.6 1.2 3.6 3.2"/><path d="M11 5.6a2.1 2.1 0 0 1 .2 4.2M13.6 13.4c0-1.6-.9-2.6-2.2-3"/>';
+  const icDown='<path d="M1.6 4.8l4.8 4.8 2.8-2.8 4.8 4.8"/><path d="M14.4 11.6v-3.8h-3.8"/>';
   return `<div class="kpis">
-    <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Athleten berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${top.name}</div><div class="k-sub">${top.nation} · Referenz 0.00</div></div>
-    <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
-    <div class="kpi" title="Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps)."><div class="k-lab">Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
-    <div class="kpi" title="Bester Schweizer Athlet in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
-    <div class="kpi" title="Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind."><div class="k-lab">SUI Athleten</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
-    <div class="kpi" title="Grösster Einzel-Zeitverlust eines Schweizers an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
+    <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Athleten berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">${I(icStar)}Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${top.name}</div><div class="k-sub">${top.nation} · Referenz 0.00</div></div>
+    <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">${I(icClock)}Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
+    <div class="kpi" title="Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps)."><div class="k-lab">${I(icFlag)}Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
+    <div class="kpi" title="Bester Schweizer Athlet in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">${I(icMedal)}Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
+    <div class="kpi" title="Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind."><div class="k-lab">${I(icPeople)}SUI Athleten</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
+    <div class="kpi" title="Grösster Einzel-Zeitverlust eines Schweizers an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">${I(icDown)}Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
   </div>`;
 }
 
@@ -3514,8 +3532,8 @@ function figStrip(){
 function svgEl(w,h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`; }
 
 function chTheme(){ const d=document.body.classList.contains('dark');
-  return d ? { dark:true, bg:'transparent', halo:'#252d39', grid:'#39424f', grid2:'#2c343f', axis:'#556170', zero:'#7d8896', txt:'#cfd6e0', txt2:'#8f99a6', prof:'#6f7b8a', gold:'#d8b24a' }
-           : { dark:false, bg:'#ffffff', halo:'#ffffff', grid:'#e6eaef', grid2:'#f1f4f7', axis:'#c3cad4', zero:'#c3cad4', txt:'#6b7785', txt2:'#9aa3af', prof:'#8b95a3', gold:'#a9801a' }; }
+  return d ? { dark:true, bg:'transparent', halo:'#252d39', grid:'#333b46', grid2:'#272e38', axis:'#556170', zero:'#9aa6b4', txt:'#cfd6e0', txt2:'#8f99a6', prof:'#6f7b8a', gold:'#d8b24a' }
+           : { dark:false, bg:'#ffffff', halo:'#ffffff', grid:'#eaedf2', grid2:'#f5f7fa', axis:'#c3cad4', zero:'#b0b8c4', txt:'#6b7785', txt2:'#9aa3af', prof:'#8b95a3', gold:'#a9801a' }; }
 
 /* optische Glättung der kumulierten Kurve: gleitender Mittelwert (±1 Tor), Endpunkte exakt */
 function smoothCum(arr){
@@ -3578,14 +3596,16 @@ function drawHero(){
   const tStep=0.25, kStart=Math.ceil(vmin/tStep), kEnd=Math.floor(vmax/tStep);
   for(let k=kStart;k<=kEnd;k++){ const t=Math.round(k*tStep*100)/100;
     const isZero=Math.abs(t)<1e-9, major=Math.abs(t*2-Math.round(t*2))<1e-9; // Vielfaches von 0.5
-    if(!isZero) svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${major?T.grid:T.grid2}" stroke-width="1"/>`;
+    if(!isZero) svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${major?T.grid:T.grid2}" stroke-width="1" opacity="${major?.9:.55}"/>`;
     svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
+  // klare 0-/Bestzeit-Linie (Referenz) – ruhig, aber deutlich; die goldene Bestzeit-Linie liegt darüber
+  svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(0)}" y2="${y(0)}" stroke="${T.zero}" stroke-width="1.4" opacity=".9"/>`;
   svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
   svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
   // x axis ticks: bis 10 Tore jedes Tor, ab 10 jedes 5. (plus erstes & letztes)
   for(let t=1;t<=NP;t++){ const show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
     if(!show) continue;
-    svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}"/>`;
+    svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}" opacity=".5"/>`;
     svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${t}</text>`; }
   svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${T.txt}">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
