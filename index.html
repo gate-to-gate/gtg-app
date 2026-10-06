@@ -2665,7 +2665,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061453';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061515';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2730,6 +2730,8 @@ function evKey(e){ return `${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.
 function genHtml(g){ g=g||''; return `<span class="gsex ${g==='W'?'w':(g==='M'?'m':'')}">${g}</span>`; }   // W pink, M dunkelblau
 function isArchived(e){ return ARCHIVED.has(evKey(e)); }
 function isDeleted(e){ return DELETED.has(evKey(e)); }
+/* Disziplin-Filter: «Alle» (S.discAll) zeigt alle Disziplinen; S.disc bleibt immer eine echte Disziplin. */
+function discMatch(e){ return S.discAll || (e&&e.discipline===S.disc); }
 
 /* ---------- filter cascade ---------- */
 function evLabel(e){ return `${dmy(e.date)} · ${e.venue}`; }
@@ -2757,19 +2759,27 @@ function buildFilters(){
   }
   const discs = DISCS.filter(d=> D.some(e=>e.discipline===d && evVisible(e)));
   if(!discs.includes(S.disc)) S.disc=discs[0];
-  segFill('#selDisc', discs, d=> d, S.disc, v=>{ S.disc=v; savePrefs(); refreshGen(); });
+  if(discs.length<=1) S.discAll=false;   // «Alle» nur sinnvoll bei mehreren Disziplinen
+  const discVals = discs.length>1 ? ['*', ...discs] : discs;
+  segFill('#selDisc', discVals, d=> d==='*'?'Alle':d, S.discAll?'*':S.disc,
+    v=>{ if(v==='*'){ S.discAll=true; } else { S.discAll=false; S.disc=v; } savePrefs(); refreshGen(); });
   refreshGen();
 }
 function refreshGen(){
-  const gens = uniq(DS().filter(e=>e.discipline===S.disc && evVisible(e)).map(e=>e.gender)).sort();
+  const gens = uniq(DS().filter(e=> discMatch(e) && evVisible(e)).map(e=>e.gender)).sort();
   if(!gens.includes(S.gen)) S.gen=gens[0];
   segFill('#selGen', gens, g=> g==='M'?'Männer':'Frauen', S.gen, v=>{ S.gen=v; savePrefs(); refreshEvt(); });
   refreshEvt();
 }
 function refreshEvt(){
-  const evs = DS().filter(e=>e.discipline===S.disc && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e) && evVisible(e))
+  const evs = DS().filter(e=> discMatch(e) && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e) && evVisible(e))
     .sort((a,b)=> a.date<b.date?1:-1 || a.venue.localeCompare(b.venue));
   const keys = uniq(evs.map(e=> e.date+'|'+e.venue));
+  if(!keys.length){   // keine (sichtbaren) Events für diese Auswahl -> nichts anzeigen, Hinweis
+    if($('#selEvt')) $('#selEvt').innerHTML=''; if($('#selRun')) $('#selRun').innerHTML=''; S.evtKey=''; S.comp=null; S.ev=null;
+    if($('#main')) $('#main').innerHTML=`<div class="card">${emptyBox('Keine Daten für diese Auswahl. Wähle eine andere Disziplin bzw. ein anderes Geschlecht – oder ein anderes Event.', 'search')}</div>`;
+    return;
+  }
   fill($('#selEvt'), keys, k=>{ const e=evs.find(x=> x.date+'|'+x.venue===k); return evLabel(e); },
       keys.includes(S.evtKey)?S.evtKey:keys[0]);
   refreshRun();
@@ -2780,8 +2790,9 @@ function refreshRun(){
   const rf=$('#selRunField'); if(rf) rf.style.display='';
   const sp=$('#seriesPick'); if(sp) sp.style.display='none';
   const [date,venue]=S.evtKey.split('|');
-  const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e)&&evVisible(e))
+  let runs = DS().filter(e=> discMatch(e)&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e)&&evVisible(e))
     .map(e=>e.run);
+  runs=[...new Set(runs)];   // «Alle»: gleiche Lauf-Nr. über mehrere Disziplinen nicht doppelt
   runs.sort((a,b)=>(+a)-(+b));
   fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), runs.includes(S.run)?S.run:runs[0], true);
   loadEvent();
@@ -2802,6 +2813,7 @@ function refreshTrainSeries(){
   if(rf) rf.style.display='none';   // im Training kein Einzel-Lauf-Dropdown
   if(!S.evtKey){ if(sp) sp.style.display='none'; return; }
   const [date,venue]=S.evtKey.split('|');
+  if(S.discAll){ const te=TRAIN.find(e=> e.gender===S.gen && e.date===date && e.venue===venue && !isDeleted(e) && evVisible(e)); if(te) S.disc=te.discipline; }   // «Alle»: reale Disziplin dieses Ortes/Datums
   const all=trainSectionSeries(date,venue);
   const secKey=[S.disc,S.gen,S.evtKey].join('|');
   if(!S.trainSel || S.trainSel.sectionKey!==secKey){
@@ -2883,12 +2895,15 @@ function fill(sel, vals, lab, cur, isNum){
 
 function loadEvent(){
   if(isTrain()){ return loadTrainEvent(); }
-  if(!$('#selRun')||$('#selRun').value===''){ return; }
+  if(!$('#selRun')||$('#selRun').value===''){ S.comp=null; S.ev=null;
+    if(!(typeof COACH!=='undefined'&&COACH&&COACH.on) && $('#main')) $('#main').innerHTML=`<div class="card">${emptyBox('Kein Event/Lauf ausgewählt. Wähle oben ein Event.', 'chart')}</div>`;
+    return; }
   S.run = Number($('#selRun').value);
   const [date,venue]=S.evtKey.split('|');
-  S.ev = DS().find(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&String(e.run)===String(S.run));
+  S.ev = DS().find(e=> discMatch(e)&&e.gender===S.gen&&e.date===date&&e.venue===venue&&String(e.run)===String(S.run));
   S.hidden = new Set();
   if(!S.ev){ $('#main').innerHTML='<div class="card">'+emptyBox('Keine Daten für diese Auswahl. Wähle einen anderen Event/Lauf.', 'chart')+'</div>'; return; }
+  if(S.discAll) S.disc=S.ev.discipline;   // reale Disziplin des gewählten Events übernehmen (Labels/Videos/Grenzen stimmen)
   S.comp = compute(S.ev);
   S.perGate = bestSui()?.name || S.comp.sui.find(s=>s.complete>=0.85)?.name || S.comp.sui[0]?.name || S.comp.skiers.find(s=>!s.isTop)?.name;
   S.wfAth = S.perGate; S.heroFocus='';   // Hervorheben startet ohne Auswahl
@@ -3712,7 +3727,7 @@ function getVenue(){ const nw=$('#mVenueNew'); if(nw && nw.style.display!=='none
   const s=$('#mVenueSel'); return (s && s.value && s.value!=='__new__') ? normVenue(s.value) : ''; }
 
 /* ---- view switching ---- */
-function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain}); }catch(e){} }
+function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,discAll:!!S.discAll,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain}); }catch(e){} }
 function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
   const b=$('#darkBtn'); if(b) b.classList.toggle('on', !!on); }
 function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e){} setDark(on);
@@ -4581,7 +4596,7 @@ function saveRun(){
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
   if(nProp && typeof gtgToast==='function') gtgToast('Figuren auf '+nProp+' weitere getaggte Video'+(nProp>1?'s':'')+' desselben Laufs übernommen.','ok');
   // Analyse-Kontext auf den gespeicherten Lauf setzen
-  S.mode=mode; S.disc=disc; S.gen=gen; S.evtKey=date+'|'+venue; S.run=run;
+  S.mode=mode; S.disc=disc; S.discAll=false; S.gen=gen; S.evtKey=date+'|'+venue; S.run=run;
   buildFilters(); fillVenueSelect(); const vs2=$('#mVenueSel'); if(vs2){ vs2.value=venue; $('#mVenueNew').style.display='none'; }
   const runTxt = runLong(mode,disc,run);
   const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Gates)${fisTxt}`;
@@ -6111,8 +6126,9 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     if($('#dbtListBox')) $('#dbtListBox').style.display = DBTVIEW==='grid'?'none':'';
     if($('#dbtGridBox')) $('#dbtGridBox').style.display = DBTVIEW==='grid'?'':'none';
     if(DBTVIEW==='grid'){ if($('#dbtBulk')) $('#dbtBulk').style.display='none'; renderDbtGrid(list); return; }
-    // Duplikat-Erkennung (gleicher Athlet, Datum, Disz/Gesch, Torzahl, ~Gesamtzeit)
-    const sigOf=r=>{ const tot=(r.gates||[]).reduce((s,x)=>s+(+x||0),0); return `${r.name}|${r.date}|${r.disc}|${r.gen}|${(r.gates||[]).length}|${Math.round(tot*20)}`; };
+    // Duplikat-Erkennung (gleicher Athlet, Datum, Disz/Gesch, SELBER Lauf, Torzahl, ~Gesamtzeit)
+    // Lauf-Nr. gehört dazu: dieselbe Athletin in L2 und L3 ist KEIN Duplikat, sondern zwei Läufe.
+    const sigOf=r=>{ const tot=(r.gates||[]).reduce((s,x)=>s+(+x||0),0); return `${r.name}|${r.date}|${r.disc}|${r.gen}|${r.run}|${(r.gates||[]).length}|${Math.round(tot*20)}`; };
     const sigCnt={}; all.forEach(r=>{ const s=sigOf(r); sigCnt[s]=(sigCnt[s]||0)+1; });
     const isDup=r=>(sigCnt[sigOf(r)]||0)>1;
     if(!list.length){ body.innerHTML=dbEmpty(all.length?'Keine Taggings für diesen Filter.':'Noch keine Taggings gespeichert. Tagge einen Lauf und speichere ihn.', 11, all.length?'search':'tag'); if($('#dbtBulk'))$('#dbtBulk').style.display='none'; return; }
@@ -6918,7 +6934,7 @@ function enterCoach(bundle){
   COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
   const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode='comp'; DATA.push(r.ev); } });
   const first=runs[0]; if(!first||!first.ev) return;
-  S.mode='comp'; S.disc=first.ev.discipline; S.gen=first.ev.gender;
+  S.mode='comp'; S.discAll=false; S.disc=first.ev.discipline; S.gen=first.ev.gender;
   const ev0=first.ev, evSel=$('#selEvt'), runSel=$('#selRun');
   if(evSel){ evSel.innerHTML=`<option value="${ev0.date}|${ev0.venue}">${ev0.venue} · ${dmy(ev0.date)}</option>`; evSel.value=`${ev0.date}|${ev0.venue}`; }
   S.evtKey=`${ev0.date}|${ev0.venue}`;
@@ -7106,7 +7122,7 @@ function initCoachLink(){
 /* ---------- boot ---------- */
 $('#selEvt').onchange=refreshRun; $('#selRun').onchange=loadEvent;
 // gespeicherte Auswahl (Disziplin/Geschlecht/Ansicht) wiederherstellen
-const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.gen) S.gen=PREFS.gen; if(PREFS.mode==='train'||PREFS.mode==='comp') S.mode=PREFS.mode;
+const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.discAll) S.discAll=true; if(PREFS.gen) S.gen=PREFS.gen; if(PREFS.mode==='train'||PREFS.mode==='comp') S.mode=PREFS.mode;
 if(PREFS.anaSub==='verlauf') S.anaSub='verlauf';
 if(typeof PREFS.excludeAnom==='boolean') S.excludeAnom=PREFS.excludeAnom;
 if(typeof PREFS.heroSmooth==='boolean') S.heroSmooth=PREFS.heroSmooth;
@@ -7424,7 +7440,10 @@ Object.assign(I18N_EN,{
  "Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.":"Positive = on average slower than the run's best time, negative = faster.",
  "Farbe":"Color","Farbe für die Diagramme wählen":"Choose a color for the charts","Auf Standardfarbe zurücksetzen":"Reset to default color",
  "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section.",
- "aufklappen":"expand","zuklappen":"collapse"
+ "aufklappen":"expand","zuklappen":"collapse",
+ "Alle":"All",
+ "Keine Daten für diese Auswahl. Wähle eine andere Disziplin bzw. ein anderes Geschlecht – oder ein anderes Event.":"No data for this selection. Choose a different discipline or gender – or another event.",
+ "Kein Event/Lauf ausgewählt. Wähle oben ein Event.":"No event/run selected. Choose an event above."
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
