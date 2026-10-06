@@ -47,6 +47,8 @@ header{background:#fff;color:var(--ink);padding:9px 0;margin-bottom:16px;positio
 .hdr-ico svg{width:15px;height:15px}
 .hdr-ico:hover{background:#eef1f5;color:var(--ink);transform:translateY(-1px)}
 .hdr-ico.on{background:var(--red);border-color:var(--red);color:#fff}
+.hdr-me{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:var(--ink2);background:#f1f4f8;border:1px solid var(--line);border-radius:999px;padding:4px 11px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+body.dark .hdr-me{background:#2a323d;color:#e6ebf2;border-color:#3a4450}
 .hdr-ico{position:relative}
 .hdr-sep{align-self:stretch;width:1px;background:var(--line);margin:6px 5px}
 .cloud-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#8b98a6;border:1.5px solid #fff}
@@ -913,6 +915,8 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .btn-mini.coach{background:#1f6fb2;color:#fff;border-color:#1a5f9a}
 .btn-mini.coach:hover{background:#195e97;border-color:#154e7e}
 .db-dash{color:#c3cad4}
+.db-ro{font-size:11px;font-weight:700;color:#8a93a0;background:#f1f3f6;border:1px solid var(--line);border-radius:6px;padding:3px 9px;white-space:nowrap}
+body.dark .db-ro{background:#2a323d;color:#aeb8c4;border-color:#3a4450}
 .gsex{font-weight:700}
 .gsex.w{color:#e5389a}
 .gsex.m{color:#1f4e9c}
@@ -1516,6 +1520,10 @@ body.dark .empty{color:#9aa6b4}
     <button id="langBtn" class="hdr-ico hdr-lang" type="button" title="Sprache / Language">EN</button>
     <button id="darkBtn" class="hdr-ico" title="Dunkelmodus umschalten (Videoanalyse am Abend)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <span id="meBadge" class="hdr-me no-print" style="display:none"></span>
+    <button id="logoutBtn" class="hdr-ico no-print" type="button" title="Abmelden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
     </button>
     <span class="hdr-sep" aria-hidden="true"></span>
     <button id="pdfBtn" class="pdf-btn" onclick="window.print()" title="Als PDF speichern / drucken">
@@ -2393,90 +2401,25 @@ body.dark .empty{color:#9aa6b4}
       <span class="gl-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.98A6 6 0 0 0 6.2 9.2 4 4 0 0 0 6.5 19z"/></svg>Team-Cloud</span>
     </div>
     <div class="gl-quote"><span class="gl-qm">“</span><span id="glQuote">…</span></div>
-    <form id="glForm" autocomplete="off">
+    <form id="glForm" autocomplete="on">
       <div class="gl-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <input id="glEmail" class="gl-input" type="email" placeholder="E-Mail" autocomplete="username" spellcheck="false" aria-label="E-Mail">
+      </div>
+      <div class="gl-field" style="margin-top:9px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         <input id="glPw" class="gl-input" type="password" placeholder="Passwort" autocomplete="current-password" spellcheck="false" aria-label="Passwort">
       </div>
-      <button class="gl-btn" type="submit">Eintreten</button>
-      <div id="glErr" class="gl-err">Falsches Passwort – bitte nochmals versuchen.</div>
+      <button class="gl-btn" type="submit">Anmelden</button>
+      <div id="glErr" class="gl-err">E-Mail oder Passwort stimmt nicht.</div>
     </form>
-    <div class="gl-foot">🔒 Nur für <b>Team &amp; Coaches</b></div>
+    <div class="gl-foot">🔒 Persönlicher Zugang · <b>Swiss-Ski</b></div>
   </div>
 </div>
 <script>
-(function(){
-  var HASH='0d783eca2a244142e32ea4abcebdbb8c79957947fae7471ba410d7db8064e386';
-  var KEY='gtg_auth';
-  function sha256(ascii){
-    ascii=unescape(encodeURIComponent(ascii));
-    function rr(v,a){return (v>>>a)|(v<<(32-a));}
-    var mp=Math.pow, mw=mp(2,32), result='', words=[], bitLen=ascii.length*8;
-    var hash=sha256.h=sha256.h||[], k=sha256.k=sha256.k||[], pc=k.length, comp={};
-    for(var cand=2;pc<64;cand++){ if(!comp[cand]){ for(var i=0;i<313;i+=cand){comp[i]=cand;} hash[pc]=(mp(cand,.5)*mw)|0; k[pc++]=(mp(cand,1/3)*mw)|0; } }
-    ascii+='\x80'; while(ascii.length%64-56)ascii+='\x00';
-    for(var i=0;i<ascii.length;i++){ var j=ascii.charCodeAt(i); if(j>>8)return; words[i>>2]|=j<<((3-i)%4)*8; }
-    words[words.length]=((bitLen/mw)|0); words[words.length]=(bitLen);
-    for(var j=0;j<words.length;){
-      var w=words.slice(j,j+=16), oldHash=hash; hash=hash.slice(0,8);
-      for(var i=0;i<64;i++){
-        var w15=w[i-15], w2=w[i-2], a=hash[0], e=hash[4];
-        var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=i<16?(w[i]|0):(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
-        var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
-        hash=[(t1+t2)|0].concat(hash); hash[4]=(hash[4]+t1)|0;
-      }
-      for(var i=0;i<8;i++){hash[i]=(hash[i]+oldHash[i])|0;}
-    }
-    for(var i=0;i<8;i++){ for(var j=3;j+1;j--){ var b=(hash[i]>>(j*8))&255; result+=((b<16)?0:'')+b.toString(16); } }
-    return result;
-  }
-  var quotes=[
-    "Zwischen Sieg und Platz zwei liegen Hundertstel – wir finden sie Tor für Tor.",
-    "Das Rennen wird nicht im Ziel entschieden, sondern an jedem einzelnen Tor.",
-    "Wer die Linie kennt, gewinnt die Zeit.",
-    "Jede Schwungphase zählt. Jedes Tor erzählt.",
-    "Daten sehen, was das Auge übersieht.",
-    "Schnell sein ist gut. Wissen warum ist besser.",
-    "Marginal gains, maximaler Vorsprung.",
-    "Vom Gefühl zur Gewissheit – Tor für Tor.",
-    "Der Schnee vergisst nichts. Die Analyse auch nicht.",
-    "Perfektion ist die Summe vieler kleiner Vorsprünge.",
-    "Zeit gewinnt man im Tor, nicht auf der Geraden.",
-    "Analysiere wie ein Champion, fahre wie einer.",
-    "Hundertstel sind kein Zufall.",
-    "Jeder Lauf ist eine Lektion – wenn man genau hinschaut.",
-    "Die beste Linie ist die, die man gemessen hat.",
-    "Gate to Gate: wo Rennen wirklich entschieden werden.",
-    "Kleine Fehler, grosse Wirkung – finde sie, bevor es der Gegner tut.",
-    "Präzision schlägt Kraft. Immer."
-  ];
-  try{
-    var now=new Date(), start=new Date(now.getFullYear(),0,0);
-    var doy=Math.floor((now-start)/86400000);
-    var q=document.getElementById('glQuote'); if(q) q.textContent=quotes[((doy%quotes.length)+quotes.length)%quotes.length];
-  }catch(e){ var q2=document.getElementById('glQuote'); if(q2) q2.textContent=quotes[0]; }
-  var gate=document.getElementById('gateLogin');
-  function authed(){ try{return localStorage.getItem(KEY)==='1';}catch(e){return false;} }
-  if(authed()){ if(gate) gate.style.display='none'; return; }
-  if(!gate) return;
-  gate.style.display='flex';
-  try{ document.documentElement.style.overflow='hidden'; }catch(e){}
-  var pw=document.getElementById('glPw'), err=document.getElementById('glErr'), card=gate.querySelector('.gl-card'), form=document.getElementById('glForm');
-  setTimeout(function(){ try{pw.focus();}catch(e){} },80);
-  if(form) form.addEventListener('submit',function(e){
-    e.preventDefault();
-    if(sha256(pw.value||'')===HASH){
-      try{localStorage.setItem(KEY,'1');}catch(e){}
-      gate.style.transition='opacity .25s ease'; gate.style.opacity='0';
-      try{ document.documentElement.style.overflow=''; }catch(e){}
-      setTimeout(function(){ gate.style.display='none'; },260);
-    }else{
-      err.classList.add('show');
-      card.classList.remove('gl-shake'); void card.offsetWidth; card.classList.add('gl-shake');
-      pw.value=''; try{pw.focus();}catch(e){}
-    }
-  });
-})();
+/* Flash-Schutz: wenn (noch) nicht angemeldet, Login-Overlay sofort zeigen.
+   Die eigentliche Anmeldung (E-Mail+Passwort gegen die Nutzerliste) macht app.js. */
+(function(){ try{ if(!localStorage.getItem('gtg_user')){ var g=document.getElementById('gateLogin'); if(g){ g.style.display='flex'; document.documentElement.style.overflow='hidden'; } } }catch(e){} })();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -2508,6 +2451,180 @@ window.addEventListener('error', (e)=>{ if(_gtgBenignError(e)) return;
   let d=''; try{ const m=((e&&e.message)||'')+''; const ln=(e&&e.lineno)?(' @'+e.lineno):''; d=(m?(' ['+m.slice(0,140)+ln+']'):''); }catch(_){}
   gtgToast('Ein Fehler ist aufgetreten – die letzte Aktion wurde evtl. nicht abgeschlossen.'+d+' (Details in der Browser-Konsole)'); });
 window.addEventListener('unhandledrejection', ()=> gtgToast('Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)'));
+
+/* ===== Persönliche Logins (E-Mail + Passwort) – ersetzt das frühere General-Passwort ===== */
+const GTG_SALT='g2g_v1_7Kx9';
+const GTG_HN=30000;
+const GTG_USERS=[
+ {e:"jose-luis.alejo-hervas@swiss-ski.ch",h:"4a7baefd8563ffcaf5529aa0e353a43cbce5aa3b8440136ef127e192f5220da7",r:"coach",g:["Männer Mastery WC GS"],n:"Jose Alejo Hervas"},
+ {e:"artclaudealain@gmail.com",h:"62ad3afa4bb28c07b655852e6fed0e2b0d446ad1fab5c330b25d0ae39e2d55bf",r:"coach",g:["Frauen Mastery WC 3"],n:"Claude-Alain Art"},
+ {e:"fabio.becchimanzi@swiss-ski.ch",h:"2bf7eb7df7ddb85166b970424ca1b4d64c616314f140f24d68b97a192a58d282",r:"coach",g:["Frauen Elite EC 4"],n:"Fabio Becchimanzi"},
+ {e:"emilie.benz@swiss-ski.ch",h:"52d9a7d7c2b1b90266cd309c8948052ec1af2076fea890ddd81c9dd7524e15de",r:"admin",g:[],n:"Emilie Benz"},
+ {e:"philippe.bestak@swiss-ski.ch",h:"fc2d28d1d4e30a53b572b8acfa832a5e53e396c9e154fe07f8270d7a30778bdb",r:"coach",g:["Männer Elite Nachwuchs 2"],n:"Philippe Bestak"},
+ {e:"ebcool@live.com",h:"9dbc4af2786ac0ad449103bdbf8ca361d7a255362270a688f1671db5a940f468",r:"coach",g:["Männer Elite WC Speed"],n:"Eero Blomqvist"},
+ {e:"nicola.boehm@swiss-ski.ch",h:"aa2578d0840fd392cf79e8c2c54a270409d92e6e2436f50a9e650d0069d017a3",r:"coach",g:["Männer Elite Nachwuchs 2"],n:"Nicola Boehm"},
+ {e:"christian.brill@swiss-ski.ch",h:"07b0c10e3a30c8d12baa36f23af96ec2b63524ef5ce2ec463b86d0bf033d8608",r:"coach",g:["Frauen Mastery WC 3"],n:"Christian Brill"},
+ {e:"bjoern.bruhin@swiss-ski.ch",h:"31fa6378322375af240966e3dc69fcfcfd69daa8852d418cf1f0af713fdf4cb2",r:"admin",g:[],n:"Björn Bruhin"},
+ {e:"bruegger.matthias@bluewin.ch",h:"c905b84d11ec1baba46609f038968f0ff60fccb089991a71944c1d9d427e43fb",r:"coach",g:["Frauen Elite EC 1"],n:"Matthias Brügger"},
+ {e:"stefan.bruegger@swiss-ski.ch",h:"4867b8ab9ad1db4dca49b396f8282b0fdb0c2529c2d148be9bb8c30c7d51fd4c",r:"coach",g:["Männer Mastery WC Speed", "Test Gruppe 1"],n:"Stefan Brügger"},
+ {e:"paola.cavalli@swiss-ski.ch",h:"e43a130eb5e6c461795aee0b1c5d49ff4cb3b25807efe301568a73ea02f36c75",r:"coach",g:["Frauen Mastery WC 2"],n:"Paola Cavalli"},
+ {e:"johannes_conrad@hotmail.com",h:"855b68cac39edef55624085387829b2c8354ef557f55d12d499f17312d1730f8",r:"coach",g:["Frauen Mastery WC 3"],n:"Johannes Conrad"},
+ {e:"valentin.crettaz@swiss-ski.ch",h:"b35751c8e379399d69d2c82c5e108b6a108cf0381cd32c8a0aa36c69e6a7da7a",r:"coach",g:["Männer Mastery WC Speed", "Test Gruppe 1"],n:"Valentin Crettaz"},
+ {e:"flav.digio@gmail.com",h:"ca667f5b77306348de06196e8e7bc8a64dfcdd25bfdfcd39ce6ac3ccf0ee67ff",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Flavio Di Giorgio"},
+ {e:"eichbergerconsulting.peter@gmail.com",h:"4f3c62014e1dbebda19c6600a752258ca449b739b1ccc5122937d52370f5f327",r:"coach",g:["Frauen Elite EC 2"],n:"Peter Eichberger"},
+ {e:"silvan.epp@swiss-ski.ch",h:"d88941920322be826e5909ed7cb2308a30681f8d549e13c9ff9883f9a3a28bb0",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Silvan Epp"},
+ {e:"demian.franzen@swiss-ski.ch",h:"eb67d3ea23f0e5c0dea0a1bc043ea571843be5e135ebd1edcdf59718150f36cd",r:"admin",g:[],n:"Demian Franzen"},
+ {e:"manuelgamper@gmx.net",h:"84c5666fb0cfc2d83d20fedd5a57f21e478806c3595e03f440862860aeb379dc",r:"coach",g:["Frauen Elite EC 2"],n:"Manuel Gamper"},
+ {e:"gerhard.greber@swiss-ski.ch",h:"b141f1639296c95e9116b2ee285b50e58cef29c153db0f5bbd7f41744ef62e5d",r:"coach",g:["Männer Elite WC GS", "Männer Elite EC GS"],n:"Gerhard Greber"},
+ {e:"gabor.gruber@swiss-ski.ch",h:"0abb5d7e2142e73e01f00f7c2e88eaeb2ad70c18888abbdc35da3d29d86c6301",r:"coach",g:["Männer Elite EC Speed"],n:"Gabor Gruber"},
+ {e:"michael.gufler@swiss-ski.ch",h:"6037e8fd67d38cce7d55216ba86ceb13654407759410ecaeadde8ba54a759490",r:"coach",g:["Männer Mastery WC Speed", "Test Gruppe 1"],n:"Michael Gufler"},
+ {e:"tim@gagygnole.ch",h:"b21de102a527b740abf392db6a00b1bd978f008d109abf84de5a06e9f3e2cf8d",r:"coach",g:["Männer Mastery WC Speed", "Test Gruppe 1"],n:"Tim Gyger"},
+ {e:"marc.guerber@swiss-ski.ch",h:"dcd8cb0b2d4286f75a673a62caad02b26ba069674178056a687f9685a0ed9264",r:"admin",g:[],n:"Marc Gürber"},
+ {e:"johannes.hassler@swiss-ski.ch",h:"c4b18d1255730dc367bc5af440947be9d30ea9f735be2a7a193f8b35337c2324",r:"coach",g:["Männer Mastery WC GS"],n:"Johannes Hassler"},
+ {e:"franz.heinzer@swiss-ski.ch",h:"32d0f86d41d8c12978113f68df362dfceeb7b98f608cf26c75fbbf7ad37cb683",r:"coach",g:["Männer Elite EC Speed"],n:"Franz Heinzer"},
+ {e:"retohuber@gmx.net",h:"4b91d024e2a36ada4c75491a8e6b66a60164103ccfdf583c41d269e2db796f96",r:"coach",g:["Männer Elite WC Speed"],n:"Reto Huber"},
+ {e:"matteo.joris@swiss-ski.ch",h:"a340e03e31d9baeae4a3a2890ee3734e447f263a3febcdb184ef7853935a671e",r:"coach",g:["Männer Mastery WC SL"],n:"Matteo Joris"},
+ {e:"philipp.karbon@swiss-ski.ch",h:"3e345c53b559e6b5893dd6886853ff32ebd2881422f410d9775caabbb1eecb50",r:"coach",g:["Frauen Elite EC 3"],n:"Philipp Karbon"},
+ {e:"christoph.kienzl@swiss-ski.ch",h:"d4db21bc3ec549f8aeb1576d770c5a279294812c602747fb9143b0da5acdffc3",r:"coach",g:["Frauen Mastery WC 2"],n:"Christoph Kienzl"},
+ {e:"thomas.krautschneider@swiss-ski.ch",h:"bda217f2844103f2af98b19d17ec4fe7d2dfedbdfb88a363f54c9e3f6b8456c3",r:"coach",g:["Männer Mastery WC SL"],n:"Thomas Krautschneider"},
+ {e:"helmuth.krug@swiss-ski.ch",h:"824104f6c4e1c8f651493a4958a12709c6b4a3ac284f23830c7dfc80ba9f3646",r:"coach",g:["Männer Mastery WC GS"],n:"Helmuth Krug"},
+ {e:"martinkurath@hotmail.com",h:"05db3382e4ebba428a564591484eec8d4558d274d39fc84ef39e44092defbce8",r:"coach",g:["Männer Elite Nachwuchs 1"],n:"Martin Kurath"},
+ {e:"matheo.kaech@swiss-ski.ch",h:"990530d91b56fe065fdf9d46f4678a1d1c7ba2558f72556b667349e312d2feb6",r:"admin",g:[],n:"Matheo Käch"},
+ {e:"mirena.kueng@swiss-ski.ch",h:"7ced115504df867ddc0e8eb82a31e49ab9c724d67169d88ed06863d50480682a",r:"coach",g:["Frauen Elite EC 4"],n:"Mirena Küng"},
+ {e:"anita.landolt@swiss-ski.ch",h:"86a5e07d82353a87dba8b7c309a825882996966737313e84708d01280c0086c0",r:"coach",g:["Frauen Elite EC 1"],n:"Anita Landolt"},
+ {e:"mario.lazzeri@swiss-ski.ch",h:"5d741d65fa74b16111628bba5b2f5566bf4d1c4c06f3b85b621cd68a1cfb60aa",r:"coach",g:["Männer Elite WC SL"],n:"Mario Lazzeri"},
+ {e:"vitus.luond@swiss-ski.ch",h:"e63edb64d0f7fe6dbe08cdd38fdd2daed8420dfb2c78cdbe596650d40a44e20d",r:"coach",g:["Männer Elite WC Speed"],n:"Vitus Lüönd"},
+ {e:"yves.maret@swiss-ski.ch",h:"129ffee478ed2fdda0c2b72ae6a5cea74c2e0dd5f7dd7a136b9b3e34ddf44e5b",r:"coach",g:["Männer Elite Nachwuchs 2"],n:"Yves Maret"},
+ {e:"nicolas.margreth@swiss-ski.ch",h:"67c0f6949af5ed35dfc0d98a0388443dd2d78f8c4680d0c1eae7b2c30ab38966",r:"coach",g:["Männer Elite WC Speed"],n:"Nicolas Margreth"},
+ {e:"jonas.mayer99@outlook.com",h:"94e0941d14d97c635b5b432bcd4e76506c9eda9d2c2d8a74f2d4c8a57b0caa86",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Jonas Mayer"},
+ {e:"thierry.meynet@swiss-ski.ch",h:"a3b79d8d6624b6520bc762c81046361794476126919cc8e3c8ddfdc757e03ce0",r:"coach",g:["Männer Mastery WC SL"],n:"Thierry Meynet"},
+ {e:"karen.metrailler@hotmail.com",h:"33ecd297cb61e7f6b4afac2e1bd64defa921cbaab200125934584a658c0a0145",r:"coach",g:["Frauen Elite EC 3"],n:"Karen Métrailler"},
+ {e:"reto.nydegger@swiss-ski.ch",h:"d45862bf5893d17c03cb3ffc1123dad96480985a065b021d9e749f740ebe99f3",r:"coach",g:["Männer Mastery WC Speed", "Test Gruppe 1"],n:"Reto Nydegger"},
+ {e:"marine.oberson@swiss-ski.ch",h:"3d479e650c86b3517ddb741bd127bf5c41e3b8e6d8982ac06a0d1782e77b693f",r:"admin",g:[],n:"Marine Oberson"},
+ {e:"heini.pfitscher@swiss-ski.ch",h:"ae31f68d6745934987241c241e6597d24d136cf27920debee1d4c0c09660efce",r:"coach",g:["Frauen Mastery WC 3"],n:"Heini Pfitscher"},
+ {e:"roland.platzer@swiss-ski.ch",h:"80d8598c58818db82dca6c1fb9063def0dfb251aac17c199d8ad7bfc7ca6125b",r:"coach",g:["Frauen Elite EC 1"],n:"Roland Platzer"},
+ {e:"michael.pleus@swiss-ski.ch",h:"7dac4086b6213598c61030e7403767ec73f8befee23d83b4013abcffab44cd77",r:"admin",g:[],n:"Michael Pleus"},
+ {e:"laurentpraz87@gmail.com",h:"7e66198435c7a3c7378bc5c78a10cee0992afb7af4a85d3b737f0e3b9e18ed56",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Laurent Praz"},
+ {e:"alois.prenn@swiss-ski.ch",h:"dab43f136f7c4d7484713b2c3e3d252bb2ce3026dbd00f58c34174b6d286c81e",r:"coach",g:["Frauen Mastery WC 2"],n:"Alois Prenn"},
+ {e:"simon.rothenbuehler@swiss-ski.ch",h:"1212a976a6c8225d81e825741762ab759c95507e5826951b10bef58dff04f943",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Simon Rothenbuehler"},
+ {e:"uli.seitz@mailbox.org",h:"1ccd4439c6c8fc07a4ab49d51c89b1c4634c86f3c0ca0b7569cc18be2f571f74",r:"coach",g:["Männer Elite EC Speed"],n:"Uli Seitz"},
+ {e:"simone.sperinde@gmail.com",h:"3cfd040d1b5dfc7d965aca8d415f759997818829747c43d9f488d9bf5ed8cc87",r:"coach",g:["Frauen Mastery WC 3"],n:"Simone Sperindè"},
+ {e:"silvano.stadler@swiss-ski.ch",h:"0f27c2e2d8495bf1520e46b933ffa120c4f229eb53b3acfe4b861ad277d0e9ca",r:"coach",g:["Frauen Elite EC 3"],n:"Silvano Stadler"},
+ {e:"thomas.stauffer@swiss-ski.ch",h:"7d0259b7ca354a7ced0647a14a153f5c3d9a1d12f46472e166b62d75b7fda03c",r:"coach",g:["Männer Mastery WC Speed", "Männer Mastery WC GS", "Männer Mastery WC SL", "Männer Elite WC Speed", "Männer Elite WC GS", "Männer Elite WC SL", "Männer Elite EC Speed", "Männer Elite EC GS", "Männer Elite Nachwuchs 1", "Männer Elite Nachwuchs 2"],n:"Thomas Stauffer"},
+ {e:"niko.stricker@swiss-ski.ch",h:"b8578ddfcb3d0cbb0f1d12497e28e85e3dc0d9b3bf260737ce43bd2793ece153",r:"coach",g:["Männer Elite EC GS"],n:"Niko Stricker"},
+ {e:"marcello.tavola@swiss-ski.ch",h:"2ecc4e2f9daaa9be866a5384b642260a09458d1d87938cb66fe023da851120ee",r:"coach",g:["Frauen Mastery WC 1", "Test Gruppe 2"],n:"Marcello Tavola"},
+ {e:"beat.tschuor@swiss-ski.ch",h:"0e230c0dea0358212e4d57655fe490b23be93b55780d9243b068cd206bf2e719",r:"coach",g:["Frauen Mastery WC 1", "Frauen Mastery WC 2", "Frauen Mastery WC 3", "Frauen Elite EC 1", "Frauen Elite EC 2", "Frauen Elite EC 3", "Frauen Elite EC 4", "Frauen Elite Nachwuchs"],n:"Beat Tschuor"},
+ {e:"renzo.valsecchi@swiss-ski.ch",h:"f6fb6b16958f1b9af1d5552a82fad0c8a70dad7256ff914b915da1e5825f3cc3",r:"coach",g:["Männer Mastery WC GS", "Männer Elite WC GS"],n:"Renzo Valsecchi"},
+ {e:"martin.veith@swiss-ski.ch",h:"119896560ca3cceade0f744b5c539201692a506dec865498d0213b7a80aa6946",r:"coach",g:["Männer Elite WC SL"],n:"Martin Veith"},
+ {e:"andrea.viano@swiss-ski.ch",h:"6a08b6d4c8283e75efd81f2bc54128686986331cc5c550371c97ae023ad607eb",r:"coach",g:["Männer Mastery WC SL"],n:"Andrea Viano"},
+ {e:"old.viletta.sandro@bluewin.ch",h:"2f17af5f86e719c302898b0e5e364c44ca1ef855b5443c6ea7255b4fb89ff1cd",r:"coach",g:["Männer Elite EC Speed"],n:"Sandro Viletta"},
+ {e:"joachim.vollmer@swiss-ski.ch",h:"22805baeda822260eeae313a6fa96e112c4ff92a692f86565f3160ee94c3e4a7",r:"coach",g:["Frauen Elite Nachwuchs"],n:"Joachim Vollmer"},
+ {e:"julien.vuignier@swiss-ski.ch",h:"48adcc42613aca53d89cac033997bd47a0b783521543456285c911415d39f6ca",r:"coach",g:["Männer Mastery WC SL"],n:"Julien Vuignier"},
+ {e:"reto.weisskopf@outlook.com",h:"a8ef6e964ac04adebce799646f8afa4d04089b51a1ee1d1becbd281d5f51374f",r:"coach",g:["Männer Elite Nachwuchs 1"],n:"Reto Weisskopf"},
+ {e:"cyril.wyss@swiss-ski.ch",h:"9fc4f1e5517d0b05843ff5193c1e1aac1a78c42a5d0b6812a25f7c677db76c25",r:"admin",g:[],n:"Cyril Wyss"},
+ {e:"luca.vonsiebenthal@swiss-ski.ch",h:"662bb24495607cd4f629cbd70da0294680c7fb66b6a4f8e4007952eaad861b57",r:"admin",g:[],n:"Luca von Siebenthal"},
+ {e:"walter.alber@swiss-ski.ch",h:"65373278bf4e35302d6f43dae8b5ff44f51df45f57344a0a74cf02b42cb67915",r:"coach",g:["Skicross EC"],n:"Walter Alber"},
+ {e:"balmettimauro@gmail.com",h:"8b354eeba473c5cbbbf3a6a482af445378f6756dfb5c6d08a9189b783562f31c",r:"coach",g:["SBX WC"],n:"Mauro Balmetti"},
+ {e:"thomas.baumann@swiss-ski.ch",h:"187efcc46d09e19b38cadf2c5243ec59c1d8e32959a6dae332ae0d79d184d022",r:"coach",g:["Skicross EC"],n:"Thomas Baumann"},
+ {e:"bombac.rok@gmail.com",h:"13e555b396f16c6725744647489506029037031c34006e6797f38cccc7bb3f7d",r:"coach",g:["SBX WC"],n:"Rok Bombac"},
+ {e:"lorenzo.canavesio@swiss-ski.ch",h:"20cf114696d6a7568189455f6c7d4258526bdc4e0cd11506754152781c422f58",r:"coach",g:["SBX WC"],n:"Lorenzo Canavesio"},
+ {e:"jean-fred.chapuis@swiss-ski.ch",h:"5a59f5ed4872908dcb49a87c94923078ee5392991250f315032d4e460cd3ff7b",r:"coach",g:["Skicross WC"],n:"Jean-Frederic Chapuis"},
+ {e:"antonia_dominioni@hotmail.com",h:"dd521f488fffa19266c006fc5303a45c18eba7c15286486ae7080daf97d2b6de",r:"coach",g:["SBX EC"],n:"Antonia Dominioni"},
+ {e:"nathan96ski@gmail.com",h:"5404d9f55375a592c4d6c2d822f483dbe56502850ac80d9436b422c4efe1ce7e",r:"coach",g:["Skicross EC"],n:"Nathan Dugast"},
+ {e:"micha.eder@swiss-ski.ch",h:"865ad59dde6848560429f01f5ad9191d2cdadc15ab022c54d6890a5662d22ad2",r:"coach",g:["Skicross WC"],n:"Micha Eder"},
+ {e:"info@top-run1.ch",h:"cd95329a9ac676582a42ef328e1c41faeddc406bfc8847b17ab232693e464541",r:"coach",g:["SBX EC"],n:"Stefan Eisenegger"},
+ {e:"andreas.fischle@swiss-ski.ch",h:"62a1544a11d1cad866d85b54bbe1acde5dbf056cbe6191f4b4c39776563b78ee",r:"coach",g:["SBX WC"],n:"Andreas Fischle"},
+ {e:"patrick.gasser@swiss-ski.ch",h:"ab5737c73fa74111faf43aa083a0e8a4680f4ef88a118f4578462668e846c625",r:"coach",g:["Skicross WC"],n:"Patrick Gasser"},
+ {e:"michellegertsch@gmx.net",h:"13ebffff7ba921e86cb355c3ea66677e87318254e3e14e0f32dccb921abfd4f1",r:"coach",g:["SBX WC", "SBX EC"],n:"Michelle Gertsch"},
+ {e:"fabrizio.grange@swiss-ski.ch",h:"d253f246b8f3913809a026d358f95485076a362c8be9a9b7a607347a6ed6effe",r:"coach",g:["Skicross WC"],n:"Fabrizio Grange"},
+ {e:"giacomo.gueci@gmail.com",h:"09b823a0e681c827d70ff1d2d3b50a649d0b904d2354d0ceedbf4d0d3d7dd9c4",r:"coach",g:["Skicross EC"],n:"Giacomo Gueci"},
+ {e:"korbinian.harder@swiss-ski.ch",h:"c0185983b61c3755ae03217692131c2012e87d56e053e4e4c58d9e35bdcf55b7",r:"coach",g:["SBX WC"],n:"Korbinian Harder"},
+ {e:"ueliheller@hotmail.com",h:"9a1bdf013548810088bed1f07d24442c6a94136225ba19d8346d1e8fedc086ae",r:"coach",g:["SBX WC"],n:"Ueli Heller"},
+ {e:"jaka.jovan@gmail.com",h:"3b5dbe1396b2cc0b20c60eb3e6b6f630e3f546ea9e56d443d9cd125ed1271aa4",r:"coach",g:["SB Alpin WC"],n:"Jakob Jovan"},
+ {e:"b.86.koenig@gmail.com",h:"e26803262cd751b7c32cda2bd329818d10831652e8c268c8e2bdca3266141710",r:"coach",g:["SB Alpin EC"],n:"Benjamin König"},
+ {e:"janik.leuzinger@swiss-ski.ch",h:"2e55e285c4cbef432ecaa6dee3f5ea596efd2e6a1e2e048d3695374990d3316c",r:"coach",g:["SBX EC"],n:"Janik Leuzinger"},
+ {e:"karin.luchsinger@swiss-ski.ch",h:"e21f097f1329c2e51e281c9514c98c3bafc0508ebb697bd49e66abafbd9cd2e6",r:"coach",g:["SBX WC"],n:"Karin Luchsinger"},
+ {e:"jordan.martignoli@gmail.com",h:"46604e22d6d5fb05cd1a2b6554f5ae087b983fbd58b6814ba7a0dae8e5ca0410",r:"coach",g:["Skicross WC"],n:"Jordan Martignoli"},
+ {e:"simon.meier@swiss-ski.ch",h:"6e849ea52cc3f417136924153b78f7bbf0c4a60e8706113b55e179b6b8ad1c68",r:"coach",g:["Skicross WC"],n:"Simon Meier"},
+ {e:"alexsatz72@gmail.com",h:"c66350a8331b57f9359371840780849e91d9b2a55fb2b478b744a3dcdde34d8c",r:"coach",g:["Skicross EC"],n:"Alex Oberhofer"},
+ {e:"roposki@yahoo.com",h:"f5651ec51d5318998d1ed36eba1be3f431ae1108e77d426de56246f359767058",r:"coach",g:["Skicross WC"],n:"Robert Polesel"},
+ {e:"dominik.raab@swiss-ski.ch",h:"20ff56940763a270098b1fef9ba6314d377a93bd5c2ea596335ebecec095b631",r:"coach",g:["SB Alpin EC"],n:"Dominik Raab"},
+ {e:"spurlos@gmx.at",h:"2c946948cc2a791a5467d42b724c176f59a9d7d2326fba82772729aa920ca85c",r:"coach",g:["SB Alpin WC"],n:"Mario Rantschl"},
+ {e:"nilsroelli@gmx.ch",h:"a6458accd921b41cfc051b2d54918b51ea45384141282b2a56ac7ca393e848cc",r:"coach",g:["Skicross WC"],n:"Nils Rölli"},
+ {e:"sarah.schwaighofer13@gmail.com",h:"9624dddce170886c11d9521b394616643128f5ff84d971537b37f0a29153b8af",r:"coach",g:["Skicross EC"],n:"Sarah Schweighofer"},
+ {e:"fabia.silvestri@swiss-ski.ch",h:"e8355c740cff49b51ca6c8cfdaa17613580b0049ecece4d3b2459fd2af65f908",r:"coach",g:["Skicross EC", "SBX EC", "SB Alpin EC"],n:"Fabia Silvestri"},
+ {e:"simon.stampfli@swiss-ski.ch",h:"61f2766642393ac3695dbcc4be700b2980b1f1a7f37a86a25cf36e99d4762788",r:"coach",g:["SBX WC"],n:"Simon Stampfli"},
+ {e:"danielstucki@sunrise.ch",h:"e3fad2bbbd551125cdb4099b891de29b1ed4009588ea677d867cc8d97e56eef8",r:"coach",g:["SB Alpin WC"],n:"Daniel Stucki"},
+ {e:"stefan.thanei@swiss-ski.ch",h:"e688da9e6562b95d52217617d0c1edb51d77d07ba1d4f13528a1a95e5fef6fc2",r:"coach",g:["Skicross WC"],n:"Stefan Thanei"},
+ {e:"daniel.weis@swiss-ski.ch",h:"053a170974322883dd2b980cd7d8ba3d202b8a54832bb1c9dbd605022dfdbc7c",r:"coach",g:["SB Alpin WC"],n:"Daniel Weis"},
+ {e:"josh.wiltz@swiss-ski.ch",h:"ece180368132648b803ddb75927b8f28f2d0d5c1b90312ae295ee2457b4fa8cf",r:"coach",g:["Skicross WC"],n:"Josh Wiltz"},
+ {e:"nicolas.morath@swiss-ski.ch",h:"bf0574ea4a26e7831125a34dcd027febdc285d984b632024cbe7d41d984be3e0",r:"coach",g:[],n:"Nicolas Morath"},
+ {e:"lionel.yersin@innove.ch",h:"4f3ddf8c9f49c6f22703488fc01237b60e2f8dfcd0fec6074b1b244c3eb362f8",r:"coach",g:[],n:"Lionel Yersin"},
+ {e:"walter.reusser@swiss-ski.ch",h:"93c2e199fe5f806ed075b203817516ce4b703378d43c43bd515e1f5e0adccec8",r:"coach",g:[],n:"Walter Reusser"},
+ {e:"commandcenter1@swiss-ski.ch",h:"fa57442c75270cc1bb1155f535109ee3c345f5682130eff6487e57d6e8ea774e",r:"admin",g:[],n:"Command Center 1"},
+ {e:"commandcenter2@swiss-ski.ch",h:"e74a93523deb5801d6c8b84b747ba079c586bd8446de175351f29bdd9191c46b",r:"admin",g:[],n:"Command Center 2"},
+ {e:"commandcenter3@swiss-ski.ch",h:"46347718869d3d0cd4e3d6a7b1ae19dd76517b99eb6dfada9c168d8ac2aa5297",r:"admin",g:[],n:"Command Center 3"},
+];
+const GTG_UBYMAIL=(function(){ const m={}; GTG_USERS.forEach(u=>{ m[String(u.e).toLowerCase()]=u; }); return m; })();
+function gtgUser(email){ return email? (GTG_UBYMAIL[String(email).toLowerCase()]||null) : null; }
+function gtgSha256(ascii){ ascii=unescape(encodeURIComponent(ascii));
+  function rr(v,a){return (v>>>a)|(v<<(32-a));}
+  var mp=Math.pow, mw=mp(2,32), result='', words=[], bitLen=ascii.length*8;
+  var hash=gtgSha256.h=gtgSha256.h||[], k=gtgSha256.k=gtgSha256.k||[], pc=k.length, comp={};
+  for(var cand=2;pc<64;cand++){ if(!comp[cand]){ for(var i=0;i<313;i+=cand){comp[i]=cand;} hash[pc]=(mp(cand,.5)*mw)|0; k[pc++]=(mp(cand,1/3)*mw)|0; } }
+  ascii+='\x80'; while(ascii.length%64-56)ascii+='\x00';
+  for(var i=0;i<ascii.length;i++){ var j=ascii.charCodeAt(i); if(j>>8)return; words[i>>2]|=j<<((3-i)%4)*8; }
+  words[words.length]=((bitLen/mw)|0); words[words.length]=(bitLen);
+  for(var j=0;j<words.length;){
+    var w=words.slice(j,j+=16), oldHash=hash; hash=hash.slice(0,8);
+    for(var i=0;i<64;i++){
+      var w15=w[i-15], w2=w[i-2], a=hash[0], e=hash[4];
+      var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=i<16?(w[i]|0):(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(t1+t2)|0].concat(hash); hash[4]=(hash[4]+t1)|0;
+    }
+    for(var i=0;i<8;i++){hash[i]=(hash[i]+oldHash[i])|0;}
+  }
+  for(var i=0;i<8;i++){ for(var j=3;j+1;j--){ var b=(hash[i]>>(j*8))&255; result+=((b<16)?0:'')+b.toString(16); } }
+  return result;
+}
+function gtgHashPw(email,pw){ let x=GTG_SALT+':'+String(email).toLowerCase()+':'+pw; for(let i=0;i<GTG_HN;i++){ x=gtgSha256(x); } return x; }
+let ME=null;
+function gtgLoadSession(){ try{ const s=JSON.parse(localStorage.getItem('gtg_user')||'null'); if(s&&s.e){ const u=GTG_UBYMAIL[String(s.e).toLowerCase()]; if(u) return {e:u.e,r:u.r,g:u.g||[],n:u.n}; } }catch(e){} return null; }
+function gtgLogout(){ try{ localStorage.removeItem('gtg_user'); }catch(e){} try{ location.reload(); }catch(e){} }
+/* Sichtbarkeit / Bearbeitung einer Tagging-Zeile anhand des Erstellers (by = E-Mail) */
+function gtgShareTeam(a,b){ if(!a||!b) return false; const bg=new Set(b.g||[]); return (a.g||[]).some(x=>bg.has(x)); }
+function canSeeBy(by){ if(!ME) return true; if(ME.r==='admin') return true; if(!by) return true; /* Legacy/Wettkampf -> alle */
+  const u=gtgUser(by); if(!u) return true; if(u.r==='admin') return true; if(String(u.e).toLowerCase()===ME.e) return true; return gtgShareTeam(ME,u); }
+function canEditBy(by){ if(!ME) return false; if(ME.r==='admin') return true; if(!by) return false; return String(by).toLowerCase()===String(ME.e).toLowerCase(); }
+/* alle Skier eines Events, die der/die Angemeldete sehen darf */
+function visSkiers(ev){ if(!ev||!ev.skiers) return []; if(ME&&ME.r==='admin') return ev.skiers; return ev.skiers.filter(s=>canSeeBy(s.by)); }
+/* Event vom/der Angemeldeten vollständig bearbeitbar? (Coach nur eigene; Admin alles) */
+function canEditEvent(ev){ if(!ME) return false; if(ME.r==='admin') return true; if(!ev||!ev.skiers||!ev.skiers.length) return false; return ev.skiers.every(s=> s.by && String(s.by).toLowerCase()===String(ME.e).toLowerCase()); }
+/* Event überhaupt sichtbar? (mind. eine sichtbare Athlet:in) */
+function evVisible(e){ if(!ME||ME.r==='admin') return true; return !!(e&&e.skiers&&e.skiers.some(s=>canSeeBy(s.by))); }
+const GTG_QUOTES=["Zwischen Sieg und Platz zwei liegen Hundertstel – wir finden sie Tor für Tor.","Das Rennen wird nicht im Ziel entschieden, sondern an jedem einzelnen Tor.","Wer die Linie kennt, gewinnt die Zeit.","Jede Schwungphase zählt. Jedes Tor erzählt.","Daten sehen, was das Auge übersieht.","Schnell sein ist gut. Wissen warum ist besser.","Marginal gains, maximaler Vorsprung.","Vom Gefühl zur Gewissheit – Tor für Tor.","Der Schnee vergisst nichts. Die Analyse auch nicht.","Perfektion ist die Summe vieler kleiner Vorsprünge.","Zeit gewinnt man im Tor, nicht auf der Geraden.","Analysiere wie ein Champion, fahre wie einer.","Hundertstel sind kein Zufall.","Jeder Lauf ist eine Lektion – wenn man genau hinschaut.","Die beste Linie ist die, die man gemessen hat.","Gate to Gate: wo Rennen wirklich entschieden werden.","Kleine Fehler, grosse Wirkung – finde sie, bevor es der Gegner tut.","Präzision schlägt Kraft. Immer."];
+function gtgShowLogin(){ const gate=$('#gateLogin'); if(!gate) return;
+  try{ const now=new Date(), start=new Date(now.getFullYear(),0,0); const doy=Math.floor((now-start)/86400000); const q=$('#glQuote'); if(q) q.textContent=GTG_QUOTES[((doy%GTG_QUOTES.length)+GTG_QUOTES.length)%GTG_QUOTES.length]; }catch(e){}
+  gate.style.display='flex'; try{ document.documentElement.style.overflow='hidden'; }catch(e){}
+  const em=$('#glEmail'), pw=$('#glPw'), err=$('#glErr'), card=gate.querySelector('.gl-card'), form=$('#glForm');
+  try{ const le=localStorage.getItem('gtg_lastmail'); if(le&&em&&!em.value) em.value=le; }catch(e){}
+  setTimeout(()=>{ try{ (em&&!em.value?em:pw).focus(); }catch(e){} },90);
+  if(form&&!form._wired){ form._wired=true; form.addEventListener('submit',e=>{ e.preventDefault();
+    const email=String(em&&em.value||'').trim().toLowerCase(); const u=GTG_UBYMAIL[email]; const btn=form.querySelector('.gl-btn');
+    if(err) err.classList.remove('show'); if(btn){ btn.disabled=true; btn.dataset.t=btn.textContent; btn.textContent='Prüfe…'; }
+    setTimeout(()=>{ let ok=false; try{ ok = !!u && gtgHashPw(email, (pw&&pw.value)||'')===u.h; }catch(_){ ok=false; }
+      if(ok){ try{ localStorage.setItem('gtg_user', JSON.stringify({e:u.e})); localStorage.setItem('gtg_lastmail', u.e); }catch(_){}
+        try{ document.documentElement.style.overflow=''; }catch(_){} try{ location.reload(); }catch(_){} }
+      else { if(btn){ btn.disabled=false; btn.textContent=btn.dataset.t||'Anmelden'; } if(err) err.classList.add('show');
+        if(card){ card.classList.remove('gl-shake'); void card.offsetWidth; card.classList.add('gl-shake'); } if(pw){ pw.value=''; try{pw.focus();}catch(_){} } }
+    }, 40);
+  }); }
+}
+function gtgInitAuthUI(){ const b=$('#logoutBtn'); if(b){ const nm=(ME&&ME.n)?ME.n:''; const rl=(ME&&ME.r==='admin')?' · Admin':''; b.title='Abmelden'+(nm?(' ('+nm+rl+')'):''); b.onclick=()=>{ gtgLogout(); }; }
+  const badge=$('#meBadge'); if(badge&&ME){ badge.textContent=(ME.n||ME.e)+(ME.r==='admin'?' · Admin':''); badge.style.display=''; }
+}
+
 /* ---- einheitliches Bestätigungs-Modal (statt window.confirm) ---- */
 let _cfResolve=null;
 function gtgConfirm(opts){ opts=opts||{}; const m=document.getElementById('confirmModal');
@@ -2530,7 +2647,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061327';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610061422';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2620,19 +2737,19 @@ function buildFilters(){
     $('#main').innerHTML = `<div class="card">${emptyBox(isTrain()?'Noch keine Trainings getaggt. Wechsle auf <b>Tagging</b> (Modus «Training»), tagge einen Lauf und speichere ihn.':'Noch keine Daten. Tagge zuerst einen Lauf.', 'tag')}</div>`;
     return;
   }
-  const discs = DISCS.filter(d=> D.some(e=>e.discipline===d));
+  const discs = DISCS.filter(d=> D.some(e=>e.discipline===d && evVisible(e)));
   if(!discs.includes(S.disc)) S.disc=discs[0];
   segFill('#selDisc', discs, d=> d, S.disc, v=>{ S.disc=v; savePrefs(); refreshGen(); });
   refreshGen();
 }
 function refreshGen(){
-  const gens = uniq(DS().filter(e=>e.discipline===S.disc).map(e=>e.gender)).sort();
+  const gens = uniq(DS().filter(e=>e.discipline===S.disc && evVisible(e)).map(e=>e.gender)).sort();
   if(!gens.includes(S.gen)) S.gen=gens[0];
   segFill('#selGen', gens, g=> g==='M'?'Männer':'Frauen', S.gen, v=>{ S.gen=v; savePrefs(); refreshEvt(); });
   refreshEvt();
 }
 function refreshEvt(){
-  const evs = DS().filter(e=>e.discipline===S.disc && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e))
+  const evs = DS().filter(e=>e.discipline===S.disc && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e) && evVisible(e))
     .sort((a,b)=> a.date<b.date?1:-1 || a.venue.localeCompare(b.venue));
   const keys = uniq(evs.map(e=> e.date+'|'+e.venue));
   fill($('#selEvt'), keys, k=>{ const e=evs.find(x=> x.date+'|'+x.venue===k); return evLabel(e); },
@@ -2645,7 +2762,7 @@ function refreshRun(){
   const rf=$('#selRunField'); if(rf) rf.style.display='';
   const sp=$('#seriesPick'); if(sp) sp.style.display='none';
   const [date,venue]=S.evtKey.split('|');
-  const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e))
+  const runs = DS().filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&e.hasTop&&!isArchived(e)&&!isDeleted(e)&&evVisible(e))
     .map(e=>e.run);
   runs.sort((a,b)=>(+a)-(+b));
   fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), runs.includes(S.run)?S.run:runs[0], true);
@@ -2766,6 +2883,16 @@ function loadEvent(){
 
 /* ---------- compute ---------- */
 function compute(ev){
+  // Rollen-/Team-Filter: Coaches sehen nur eigene + Team + Admin/Wettkampf-Athlet:innen.
+  if(ME && ME.r!=='admin' && ev && ev.skiers){
+    const vis = ev.skiers.filter(s=>canSeeBy(s.by));
+    if(vis.length && vis.length!==ev.skiers.length){
+      const copies = vis.map(s=>Object.assign({}, s, {fastest:false}));
+      const fe = Object.assign({}, ev, {skiers:copies});
+      try{ recomputeEvent(fe); }catch(e){}
+      ev = fe;
+    }
+  }
   const n = ev.nGates;
   // sanitize: gate-to-gate times <= 0 sind unmöglich (Tagging-Fehler) -> als fehlend behandeln
   const SG = new Map(ev.skiers.map(s=>[s, s.gates.map(v=> (typeof v==='number' && v>0)? v : null)]));
@@ -4369,7 +4496,7 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   if(!ev){ ev={date:rec.date,venue:rec.venue,discipline:rec.disc,gender:rec.gen,run:rec.run,mode:rec.mode||'comp',nGates:0,figures:[],skiers:[],hasSUI:false,hasTop:false}; target.push(ev); }
   ev.skiers = ev.skiers.filter(s=>s.name!==rec.name);
   ev.skiers.push({name:rec.name, nation:rec.nation, fastest:false, gates:rec.gates.slice(),
-    officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest});
+    officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
   // figures zusammenführen (nach Tor-Nr.)
   const fmap=new Map(ev.figures.map(f=>[f.gate,f.label])); (rec.figures||[]).forEach(f=>fmap.set(f.gate,f.label));
   ev.figures=[...fmap.entries()].map(([gate,label])=>({gate,label})).sort((a,b)=>a.gate-b.gate);
@@ -4431,6 +4558,7 @@ function saveRun(){
     SAVED.push(rec); LS.set('gtg_runs',SAVED);
     fisTxt = noFis ? ' · ohne FIS-Zeit · Endrückstand aus Taggings' : (best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)'));
   }
+  if(ME&&ME.e) rec.by=ME.e;   // Ersteller:in stempeln (für Sichtbarkeit/Rechte)
   applyRun(rec);
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
   if(nProp && typeof gtgToast==='function') gtgToast('Figuren auf '+nProp+' weitere getaggte Video'+(nProp>1?'s':'')+' desselben Laufs übernommen.','ok');
@@ -5754,8 +5882,8 @@ function openKursPdf(id){
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
 function dbEvents(){ const tk=dbTaggedKeys(); const out=[];
-  DATA.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
-  TRAIN.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; if(!(e.skiers||[]).length && !e.hasTop) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:(e.skiers||[]).length}); });
+  DATA.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; if(!evVisible(e)) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
+  TRAIN.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; if(!(e.skiers||[]).length && !e.hasTop) return; if(!evVisible(e)) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
   return out.sort((a,b)=> (b.e.date||'').localeCompare(a.e.date||'') || (a.e.venue||'').localeCompare(b.e.venue) || String(a.e.run).localeCompare(String(b.e.run))); }
 function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
   const q=($('#dbSearch')?.value||'').trim().toLowerCase(), fd=$('#dbDisc')?.value||'', fg=$('#dbGen')?.value||'', fm=$('#dbMode')?.value||'', fs=$('#dbSrc')?.value||'', fst=$('#dbStatus')?.value||'';
@@ -5784,8 +5912,11 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
+    const acts = r.editable
+      ? `<button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button>`
+      : `<span class="db-ro" title="Von Admin/Wettkampf oder anderem Team erstellt – nur Ansicht.">🔒 nur Ansicht</span>`;
     return `<td>${runLbl}</td><td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td><td>${clBtn}</td>`
-      +`<td class="db-act"><button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button></td>`; };
+      +`<td class="db-act">${acts}</td>`; };
    // Gruppieren: ein Eintrag pro Datum + Ort + Disziplin + Geschlecht + Modus; Läufe darunter aufklappbar
    const groups=[]; const gmap=new Map();
    list.forEach(r=>{ const gk=`${r.e.date}|${r.e.venue}|${r.e.discipline}|${r.e.gender}|${r.mode}`;
@@ -5796,7 +5927,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
       html+=`<tr class="${r.archived?'db-arch':''}"><td>${dmy(e.date)}</td><td class="db-venue">${e.venue}</td><td>${e.discipline}</td><td>${genHtml(e.gender)}</td>${runCells(r)}</tr>`;
       return; }
     gid++; const id='g'+gid; const nRuns=g.rows.length;
-    const names=new Set(); g.rows.forEach(r=> (r.e.skiers||[]).forEach(s=> s&&s.name&&names.add(s.name)));
+    const names=new Set(); g.rows.forEach(r=> visSkiers(r.e).forEach(s=> s&&s.name&&names.add(s.name)));
     const art=g.rows[0].mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
     const allTag=g.rows.every(r=>r.tagged); const anyTag=g.rows.some(r=>r.tagged);
     const src=(allTag||anyTag)?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
@@ -5916,6 +6047,7 @@ function gateUndoPush(id,i,oldVal,newVal){ GATE_UNDO.push({id,i,oldVal,newVal});
 function editTagGate(id, i, val, noUndo){
   let rec=SAVED.find(r=>runId(r)===id), isT=false;
   if(!rec){ rec=SAVED_TRAIN.find(r=>runId(r)===id); isT=true; }
+  if(rec && !canEditBy(rec.by)){ gtgToast('Nur Ansicht – dieses Tagging gehört Admin/Wettkampf oder einem anderen Team.'); return; }
   if(rec){ if(i<0) return; if(!rec.gates) rec.gates=[];
     if(val==null && i>=rec.gates.length) return;                 // leeres Feld leer lassen
     while(rec.gates.length<=i) rec.gates.push(null);             // vergessene/fehlende Tore auffüllen
@@ -5950,7 +6082,7 @@ function applyGateOverrides(){ const ov=LS.get('gtg_gate_override',{}); if(!ov||
 function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
   const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'', fsrc=$('#dbtSrc')?.value||'';
   vdbAll().then(vlist=>{ try{ const VIDS=new Set((vlist||[]).map(v=>v.id));
-    const all=dbAllTaggings();
+    const all=dbAllTaggings().filter(r=>canSeeBy(r.by));   // Coach: nur eigene + Team + Admin/Wettkampf
     // pro Lauf höchste Tor-Zahl -> DNF-Erkennung
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.gates||[]).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
     const isDnfRec=r=>{ const mx=evtMax[`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`]||0, nt=(r.gates||[]).length; return mx>=8 && nt>0 && nt<mx-3; };
@@ -5974,7 +6106,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     const _stats={}; all.forEach(r=>{ const k=medK(r), st=_stats[k]||(_stats[k]={}); (r.gates||[]).forEach((g,i)=>{ if(g==null) return; (st[i]=st[i]||[]).push(+g); }); });
     const _evMed={}; Object.keys(_stats).forEach(k=>{ const per=_stats[k], out={}; Object.keys(per).forEach(i=>{ const vals=per[i]; if(vals.length<3) return; const md=_median(vals); const mad=_median(vals.map(v=>Math.abs(v-md)))||0; out[i]={md,mad}; }); _evMed[k]=out; });
     const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g - s.md) >= 0.25; }); };   // ≥ 0,25 s Abweichung zum Median
-    body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id);
+    body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id); const _ed=canEditBy(r.by);
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
       const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
@@ -5982,14 +6114,19 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const nA=anomFor(r).filter(Boolean).length;
       const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
-      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk"><input type="checkbox" class="dbt-check" data-id="${enc}"></td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
     }).join('');
     const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
     const wireDetail=inner=>{ if(!inner || inner.dataset.built==='1') return; const encId=inner.dataset.id, id=decodeURIComponent(encId), r=byId[id]; inner.dataset.built='1'; if(!r) return;
-      const hasV=VIDS.has(id); const delBtn=r._databank?'':`<button class="btn-mini del" data-deltag="${encId}">Tagging löschen</button>`;
-      inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`;
-      inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
-        inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); }; });
+      const hasV=VIDS.has(id); const editable=canEditBy(r.by);
+      const delBtn=(r._databank||!editable)?'':`<button class="btn-mini del" data-deltag="${encId}">Tagging löschen</button>`;
+      const actRow = editable
+        ? `<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`
+        : `<div class="dbt-actions"><span class="db-ro" title="Von Admin/Wettkampf oder anderem Team erstellt – nur Ansicht.">🔒 nur Ansicht (von Admin/anderem Team)</span></div>`;
+      inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}${actRow}`;
+      if(editable){ inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
+        inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); }; }); }
+      else { inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.disabled=true; inp.readOnly=true; inp.onclick=e=>e.stopPropagation(); }); }
       const eb=inner.querySelector('button[data-edit]'); if(eb) eb.onclick=e=>{ e.stopPropagation(); editTagging(decodeURIComponent(eb.dataset.edit)); };
       const db=inner.querySelector('button[data-deltag]'); if(db) db.onclick=e=>{ e.stopPropagation(); const gid=decodeURIComponent(db.dataset.deltag), nm=gid.split('|').slice(5).join('|');
         gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).`}).then(okc=>{ if(okc) deleteTagging(gid); }); };
@@ -6110,6 +6247,8 @@ function openTaggingFromRecord(rec){ switchView('tagging'); if(typeof setTagMode
   const m=$('#saveMsg'); if(m){ m.className='save-msg ok'; m.textContent=`Zum Bearbeiten geladen: ${rec.name} · ${rec.venue} (kein Video – nur Zeiten).`; }
 }
 function deleteTagging(id){ const p=id.split('|'); const date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4],name=p[5];
+  const _rec=SAVED.find(r=>runId(r)===id)||SAVED_TRAIN.find(r=>runId(r)===id);
+  if(_rec && !canEditBy(_rec.by)){ gtgToast('Nur Ansicht – dieses Tagging gehört Admin/Wettkampf oder einem anderen Team.'); return; }
   let mode=null;
   const ci=SAVED.findIndex(r=>runId(r)===id); if(ci>=0){ SAVED.splice(ci,1); LS.set('gtg_runs',SAVED); mode='comp'; }
   const ti=SAVED_TRAIN.findIndex(r=>runId(r)===id); if(ti>=0){ SAVED_TRAIN.splice(ti,1); LS.set('gtg_runs_train',SAVED_TRAIN); if(!mode)mode='train'; }
@@ -7290,6 +7429,7 @@ function initI18n(){
  try{ const obs=new MutationObserver(ms=>{ try{ for(const m of ms){ if(m.type==='childList'){ m.addedNodes.forEach(trNode); } else if(m.type==='characterData'){ trNode(m.target); } else if(m.type==='attributes'){ trNode(m.target); } } }catch(_){} });
    obs.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label']}); }catch(e){}
 }
+ME = gtgLoadSession();   // angemeldete Person (oder null) – vor allen Renders setzen, damit Filter greifen
 initWorkflow();
 initVerlauf();
 initProfil();
@@ -7369,6 +7509,8 @@ initTour();
 initWelcome();
 initUpdateCheck();
 initI18n();
+/* Login-Gate: nicht angemeldet -> Login-Overlay; angemeldet -> Logout-Button/Badge verdrahten */
+if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
