@@ -2786,7 +2786,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610071422';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610071603';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7520,6 +7520,7 @@ function enterCoach(bundle){
   if($('#coachRunCount')) $('#coachRunCount').textContent = runs.length===1 ? '1 Lauf' : runs.length+' Läufe';
   if($('#coachRunWrap')) $('#coachRunWrap').style.display = runs.length>=1 ? '' : 'none';   // Anzahl Läufe direkt sichtbar
   try{ document.title=`Coach · ${ev0.venue} ${dmy(ev0.date)} · ${ev0.gender==='M'?'Männer':'Frauen'}`; }catch(e){}
+  S.anaSub='analyse';   // Coach-Link zeigt immer die Lauf-Analyse (nicht die gemerkte Verlauf-/Profil-Unteransicht)
   switchView('analyse'); loadEvent();
 }
 
@@ -8126,8 +8127,10 @@ initI18n();
 /* Login-Gate: sofort anzeigen/verdrahten (eingebaute Liste), damit der Login nie blockiert.
    Die aktuelle users.json wird im Hintergrund nachgeladen – neue/geänderte Logins greifen beim nächsten Versuch,
    entzogene Zugänge werden nach dem Laden abgemeldet. */
-if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
-(async()=>{ try{ await gtgLoadUsers(); }catch(e){}
+const _coachUrl=(()=>{ try{ return !!new URLSearchParams(location.search).get('coach'); }catch(e){ return false; } })();
+if(_coachUrl){ if(ME){ try{ gtgInitAuthUI(); }catch(e){} } }   // öffentlicher Coach-Link: kein Login-Zwang
+else if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
+(async()=>{ if(_coachUrl) return; try{ await gtgLoadUsers(); }catch(e){}
   try{ if(ME && !GTG_UBYMAIL[String(ME.e).toLowerCase()]){ gtgLogout(); } }catch(e){} })();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
