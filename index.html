@@ -1032,14 +1032,17 @@ body.dark .db-by{color:#8a93a0}
 .db-vcol{display:flex;flex-direction:column;min-width:0}
 .db-vname{font-weight:700;color:var(--ink);line-height:1.25}
 .db-table tr.db-arch .db-vname{text-decoration:line-through;text-decoration-color:#c3cad4}
-.db-act{display:flex;gap:6px;justify-content:flex-end;align-items:center;white-space:nowrap}
+.db-act{white-space:nowrap;text-align:right;vertical-align:middle}
+.db-act>*{vertical-align:middle}
+.db-act .btn-mini{margin-left:6px}
+.db-act .btn-mini:first-child{margin-left:0}
 .db-table tr.db-grp{cursor:pointer}
 .db-table tr.db-grp:hover{background:var(--bg)}
 .db-chev{display:inline-block;color:var(--muted);font-size:10px;transition:transform .15s;width:10px}
 .db-table tr.db-grp.open .db-chev{transform:rotate(90deg)}
 .db-grpcount{display:inline-block;font-weight:800;font-size:10.5px;color:var(--ink2);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
 .db-grphint{font-size:10.5px;color:var(--muted);font-style:italic}
-#dbSecEvents .db-act{justify-content:flex-start}
+#dbSecEvents .db-act{text-align:left}
 .db-clind{color:#1f6fb2;font-weight:800;font-size:11px;white-space:nowrap}
 body.dark .db-clind{color:#6ea8e6}
 .db-table tr.db-sub>td{background:var(--bg)}
@@ -1580,9 +1583,6 @@ body.dark .empty{color:#9aa6b4}
       <span class="cloud-dot" id="cloudDot"></span>
       <span class="cloud-badge" id="cloudBadge" style="display:none"></span>
     </button>
-    <button id="sbsBtn" class="hdr-ico" title="Side by Side — zwei Läufe synchron vergleichen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/><path d="M6.5 9.5l2.5 2.5-2.5 2.5" fill="none"/><path d="M17.5 9.5L15 12l2.5 2.5" fill="none"/></svg>
-    </button>
     <button id="langBtn" class="hdr-ico hdr-lang" type="button" title="Sprache / Language">EN</button>
     <button id="darkBtn" class="hdr-ico" title="Dunkelmodus umschalten (Videoanalyse am Abend)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -1668,7 +1668,7 @@ body.dark .empty{color:#9aa6b4}
       </div>
     </div>
     <div id="anaVerlauf" style="display:none">
-      <div class="beta-note">🧪 <b>BETA</b> – der Saison-Verlauf ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.</div>
+      <div class="beta-note">🧪 <b>BETA</b> – Saison-Verlauf in Entwicklung, Zahlen als Orientierung.</div>
       <div class="filters">
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Disziplin</label><div id="vlDisc" class="seg-toggle"></div></div>
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Geschlecht</label><div id="vlGen" class="seg-toggle"></div></div>
@@ -1698,7 +1698,7 @@ body.dark .empty{color:#9aa6b4}
     </div>
 
     <div id="anaProfil" style="display:none">
-      <div class="beta-note">🧪 <b>BETA</b> – das Athleten-Profil ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.</div>
+      <div class="beta-note">🧪 <b>BETA</b> – Athleten-Profil in Entwicklung, Zahlen als Orientierung.</div>
       <div class="filters">
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Disziplin</label><div id="pfDisc" class="seg-toggle"></div></div>
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Geschlecht</label><div id="pfGen" class="seg-toggle"></div></div>
@@ -2781,7 +2781,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610070907';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610071405';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -8012,8 +8012,8 @@ Object.assign(I18N_EN,{
  "Keine Daten für diese Auswahl. Wähle eine andere Disziplin bzw. ein anderes Geschlecht – oder ein anderes Event.":"No data for this selection. Choose a different discipline or gender – or another event.",
  "Kein Event/Lauf ausgewählt. Wähle oben ein Event.":"No event/run selected. Choose an event above.",
  "Angemeldet bleiben":"Stay signed in",
- "– der Saison-Verlauf ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.":"– the season progression is under development. Figures and layout may still change; please treat it as a rough guide.",
- "– das Athleten-Profil ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.":"– the athlete profile is under development. Figures and layout may still change; please treat it as a rough guide.",
+ "– Saison-Verlauf in Entwicklung, Zahlen als Orientierung.":"– season progression under development, figures are a rough guide.",
+ "– Athleten-Profil in Entwicklung, Zahlen als Orientierung.":"– athlete profile under development, figures are a rough guide.",
  "Passwort":"Password","Rolle":"Role","Team / Gruppen":"Team / Groups","CSV laden":"Load CSV","Leeren":"Clear","Noch keine Datei geladen.":"No file loaded yet.","Keine Treffer für die Suche.":"No matches."
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
