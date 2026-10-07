@@ -990,9 +990,10 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .dbtg-cell.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
 .dbt-gate b{color:var(--ink);min-width:18px;display:inline-block;text-align:right}
 .dbt-fig b{text-decoration:underline;text-underline-offset:2px}
-/* Tabellen-Politur: mitlaufende Kopfzeile (deckend, unter der App-Kopfzeile), Zebra, klarere Hover-Zeile */
-.db-table thead th{position:sticky;top:60px;z-index:15;box-shadow:0 -26px 0 #f4f6f9}
-body.dark .db-table thead th{background:#222a34;box-shadow:0 -26px 0 #222a34}
+/* Tabellen-Politur: eigener Scrollbereich je Tabelle -> Kopfzeile bleibt zuverlässig an der Oberkante */
+.db-wrap{max-height:calc(100vh - 240px);overflow:auto}
+.db-table thead th{position:sticky;top:0;z-index:15}
+body.dark .db-table thead th{background:#222a34}
 #dbSecEvents .db-table tr.z-alt td{background:#fafbfd}
 body.dark #dbSecEvents .db-table tr.z-alt td{background:#20272f}
 #dbSecAthletes .db-table tbody tr:nth-child(even) td,#dbSecLogins .db-table tbody tr:nth-child(even) td,#dbSecVideos .db-table tbody tr:nth-child(even) td,#dbSecKurs .db-table tbody tr:nth-child(even) td{background:#fafbfd}
@@ -2747,7 +2748,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610070730';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610070748';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
