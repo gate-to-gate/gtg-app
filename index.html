@@ -2639,10 +2639,13 @@ function gtgUser(email){ return email? (GTG_UBYMAIL[String(email).toLowerCase()]
    Fällt auf die eingebaute Liste zurück, wenn offline/nicht erreichbar. */
 async function gtgLoadUsers(){
   const url='https://gate-to-gate.github.io/gtg-app/users.json?t='+Date.now();
+  const timeout=(p,ms)=>Promise.race([Promise.resolve(p), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
   try{
     let txt=null; const dk=(typeof GD==='function')?GD():null;
-    if(dk && dk.fetchText){ txt=await Promise.resolve(dk.fetchText(url)).catch(()=>null); }
-    if(txt==null){ const r=await fetch(url,{cache:'no-store'}); if(r.ok) txt=await r.text(); }
+    if(dk && dk.fetchText){ txt=await timeout(Promise.resolve(dk.fetchText(url)),4500).catch(()=>null); }
+    if(txt==null){ let ctrl; try{ ctrl=new AbortController(); }catch(_){}
+      const r=await timeout(fetch(url, ctrl?{cache:'no-store',signal:ctrl.signal}:{cache:'no-store'}), 4500).catch(e=>{ try{ctrl&&ctrl.abort();}catch(_){}; return null; });
+      if(r && r.ok) txt=await r.text(); }
     if(!txt) return false;
     const j=JSON.parse(txt); if(!j||!Array.isArray(j.users)||!j.users.length) return false;
     if(j.salt) GTG_SALT=j.salt; if(j.hn) GTG_HN=(+j.hn)||GTG_HN;
@@ -2744,7 +2747,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610070542';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610070730';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3099,7 +3102,8 @@ const EMPTY_ICONS={
   gate:'<path d="M6 21V7l6-4 6 4v14"/><path d="M6 11l6-4 6 4"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
   tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.83 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.1"/>',
-  info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/>'};
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/>',
+  file:'<path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>'};
 function emptyBox(text, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<div class="empty"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg><div class="et">${text}</div></div>`; }
 function dbEmpty(text, cols, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<tr><td colspan="${cols}" class="db-empty"><span class="dbe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg>${text}</span></td></tr>`; }
 const bounds = d => d==='SL' ? [0.6,1.3] : d==='GS' ? [0.9,1.8] : d==='SG' ? [1.0,3.5] : d==='DH' ? [1.2,5.5] : [0.6,1.8];
@@ -6325,8 +6329,8 @@ function renderDbLogins(){
   const q=($('#dbLoginsSearch')&&$('#dbLoginsSearch').value||'').trim().toLowerCase();
   let list=data;
   if(q) list=list.filter(r=> (r.name+' '+r.mail+' '+r.grp+' '+r.role).toLowerCase().includes(q));
-  if(!data.length){ box.innerHTML=`<tr><td colspan="5">${dbEmpty('Lade die Login-Liste als CSV (aus der Excel exportiert). Die Daten bleiben nur auf diesem Gerät – nichts wird hochgeladen.', 5, 'file')}</td></tr>`; return; }
-  if(!list.length){ box.innerHTML=`<tr><td colspan="5">${dbEmpty('Keine Treffer für die Suche.', 5, 'search')}</td></tr>`; return; }
+  if(!data.length){ box.innerHTML=dbEmpty('Lade die Login-Liste als CSV (aus der Excel exportiert). Die Daten bleiben nur auf diesem Gerät – nichts wird hochgeladen.', 5, 'file'); return; }
+  if(!list.length){ box.innerHTML=dbEmpty('Keine Treffer für die Suche.', 5, 'search'); return; }
   box.innerHTML=list.map(r=>{ const admin=/direktor|admin/i.test(r.role);
     return `<tr><td><b>${escHtml(r.name)}</b></td><td>${escHtml(r.mail)}</td><td><code class="lg-pw">${escHtml(r.pw||'—')}</code></td>`
       +`<td>${admin?'<span class="db-badge wk">Admin</span>':'<span class="db-badge tr">Coach</span>'}</td><td class="lg-grp">${escHtml(r.grp||'—')}</td></tr>`; }).join('');
@@ -6344,8 +6348,8 @@ function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
   let list=Object.values(COURSES).filter(c=> (!q||(c.venue||'').toLowerCase().includes(q)) && (!fd||c.disc===fd) && (!fg||c.gen===fg));
   list.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (a.venue||'').localeCompare(b.venue||'') || (a.run-b.run));
   if($('#dbkCount')) $('#dbkCount').textContent = total? `${list.length} / ${total}` : '';
-  if(!total){ body.innerHTML=`<tr><td colspan="8">${dbEmpty('Noch keine Kurssetzungen. Importiere PDFs über «＋ Neue Kurssetzung» oben rechts.', 8, 'file')}</td></tr>`; return; }
-  if(!list.length){ body.innerHTML=`<tr><td colspan="8">${dbEmpty('Keine Kurssetzung für diesen Filter.', 8, 'search')}</td></tr>`; return; }
+  if(!total){ body.innerHTML=dbEmpty('Noch keine Kurssetzungen. Importiere PDFs über «＋ Neue Kurssetzung» oben rechts.', 8, 'file'); return; }
+  if(!list.length){ body.innerHTML=dbEmpty('Keine Kurssetzung für diesen Filter.', 8, 'search'); return; }
   body.innerHTML=list.map(c=>`<tr>
     <td>${dmy(c.date)}</td><td><b>${c.venue||''}</b></td><td>${c.disc||''}</td><td>${c.gen||''}</td><td>L${c.run}</td>
     <td class="num">${(c.gates&&c.gates.length)||0}</td>
@@ -6434,7 +6438,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
     const anyCL=g.rows.some(r=> r.mode==='comp' && r.tagged && vidEvt.has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
     html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}${zeb}" data-grp="${id}">`
-      +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${e.venue}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
+      +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${escHtml(e.venue)}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
       +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
@@ -7918,7 +7922,8 @@ Object.assign(I18N_EN,{
  "Kein Event/Lauf ausgewählt. Wähle oben ein Event.":"No event/run selected. Choose an event above.",
  "Angemeldet bleiben":"Stay signed in",
  "– der Saison-Verlauf ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.":"– the season progression is under development. Figures and layout may still change; please treat it as a rough guide.",
- "– das Athleten-Profil ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.":"– the athlete profile is under development. Figures and layout may still change; please treat it as a rough guide."
+ "– das Athleten-Profil ist in Entwicklung. Zahlen und Darstellung können sich noch ändern; bitte als Orientierung verstehen.":"– the athlete profile is under development. Figures and layout may still change; please treat it as a rough guide.",
+ "Passwort":"Password","Rolle":"Role","Team / Gruppen":"Team / Groups","CSV laden":"Load CSV","Leeren":"Clear","Noch keine Datei geladen.":"No file loaded yet.","Keine Treffer für die Suche.":"No matches."
 });
 function trStr(s){ if(LANG!=='en'||s==null) return s; try{ const k=String(s).trim(); if(!k) return s;
  if(I18N_EN[k]!=null) return String(s).replace(k, I18N_EN[k]);
@@ -8019,11 +8024,12 @@ initTour();
 initWelcome();
 initUpdateCheck();
 initI18n();
-/* Login-Gate: zuerst die aktuelle Nutzerliste (users.json) laden, dann anmelden/gate. */
+/* Login-Gate: sofort anzeigen/verdrahten (eingebaute Liste), damit der Login nie blockiert.
+   Die aktuelle users.json wird im Hintergrund nachgeladen – neue/geänderte Logins greifen beim nächsten Versuch,
+   entzogene Zugänge werden nach dem Laden abgemeldet. */
+if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
 (async()=>{ try{ await gtgLoadUsers(); }catch(e){}
-  try{ const m2=gtgLoadSession(); if(m2) ME=m2; }catch(e){}
-  if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }catch(e){} }
-})();
+  try{ if(ME && !GTG_UBYMAIL[String(ME.e).toLowerCase()]){ gtgLogout(); } }catch(e){} })();
 // Automatisch dauerhaften (grösseren) Speicher anfordern – einmalig, ohne den Nutzer zu nerven
 (function autoPersistStorage(){
   try{ if(!(navigator.storage && navigator.storage.persist && navigator.storage.persisted)) return;
