@@ -979,9 +979,11 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 .dbtg-cell.dbt-anom .dbt-gedit{border-color:#d9584c;color:#c0392b;font-weight:700}
 .dbt-gate b{color:var(--ink);min-width:18px;display:inline-block;text-align:right}
 .dbt-fig b{text-decoration:underline;text-underline-offset:2px}
-/* Tabellen-Politur: mitlaufende Kopfzeile, Zebra-Streifen, klarere Hover-Zeile */
-.db-table thead th{position:sticky;top:52px;z-index:20}
-body.dark .db-table thead th{background:#222a34}
+/* Tabellen-Politur: mitlaufende Kopfzeile (deckend, unter der App-Kopfzeile), Zebra, klarere Hover-Zeile */
+.db-table thead th{position:sticky;top:54px;z-index:15;box-shadow:0 -22px 0 #f4f6f9}
+body.dark .db-table thead th{background:#222a34;box-shadow:0 -22px 0 #222a34}
+#dbSecEvents .db-table tr.z-alt td{background:#fafbfd}
+body.dark #dbSecEvents .db-table tr.z-alt td{background:#20272f}
 #dbSecAthletes .db-table tbody tr:nth-child(even) td,#dbSecLogins .db-table tbody tr:nth-child(even) td,#dbSecVideos .db-table tbody tr:nth-child(even) td,#dbSecKurs .db-table tbody tr:nth-child(even) td{background:#fafbfd}
 body.dark #dbSecAthletes .db-table tbody tr:nth-child(even) td,body.dark #dbSecLogins .db-table tbody tr:nth-child(even) td,body.dark #dbSecVideos .db-table tbody tr:nth-child(even) td,body.dark #dbSecKurs .db-table tbody tr:nth-child(even) td{background:#20272f}
 #dbSecAthletes .db-table tbody tr:hover td,#dbSecLogins .db-table tbody tr:hover td,#dbSecVideos .db-table tbody tr:hover td,#dbSecKurs .db-table tbody tr:hover td{background:#eef4fb}
@@ -2731,7 +2733,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610061955';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610070523';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6034,14 +6036,15 @@ async function ghPut(obj, sha, msg){
 function ghLocalData(){ return {athletes:ATHLETES, runs:SAVED, trainRuns:SAVED_TRAIN, courses:Object.values(COURSES), savedAt:Date.now()}; }
 function ghMergeIn(o){ if(!o) return; let changed=false;
   if(Array.isArray(o.athletes)) o.athletes.forEach(a=>{ if(a&&a.name){ const ex=ATHLETES.find(x=>x.name===a.name); if(ex){ if(a.nation)ex.nation=a.nation; if(a.fis)ex.fis=a.fis; if(a.color)ex.color=a.color; } else { const e={name:a.name,nation:a.nation,fis:a.fis}; if(a.color)e.color=a.color; ATHLETES.push(e); changed=true; } } });
-  ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); persistAthletes(); fillAthleteSelect();
+  ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); persistAthletes(); if(changed) fillAthleteSelect();
   if(Array.isArray(o.runs)) o.runs.forEach(rec=>{ const rc={...rec,mode:'comp'}; const id=runId(rc); if(!SAVED.some(x=>runId({...x,mode:'comp'})===id)){ SAVED.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   if(Array.isArray(o.trainRuns)) o.trainRuns.forEach(rec=>{ const rc={...rec,mode:'train'}; const id=runId(rc); if(!SAVED_TRAIN.some(x=>runId({...x,mode:'train'})===id)){ SAVED_TRAIN.push(rc); try{applyRun(rc);}catch(e){} changed=true; } });
   LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN);
   if(Array.isArray(o.courses)) o.courses.forEach(c=>{ if(c&&c.id){ const ex=COURSES[c.id];
     if(ex){ if(ex._pdf && !c._pdf) c._pdf=ex._pdf; if(ex._hosted && !c._hosted) c._hosted=ex._hosted; }   // hinterlegte PDF-Verknüpfung nicht verlieren
     if(!ex || JSON.stringify(ex)!==JSON.stringify(c)){ COURSES[c.id]=c; try{vdbPut(c,'courses');}catch(e){} changed=true; } } });   // nur bei echter Änderung (sonst 90-Sek-Toast/Schreib-Schleife)
-  buildFilters(); if(typeof renderLibrary==='function') renderLibrary(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope();
+  // Nur neu zeichnen, wenn sich wirklich etwas geändert hat – sonst flackert die Ansicht bei jedem Auto-Speichern/-Sync.
+  if(changed){ buildFilters(); if(typeof renderLibrary==='function') renderLibrary(); if(typeof renderCourseList==='function') renderCourseList(); if(typeof fillKScope==='function') fillKScope(); }
   return changed;
 }
 async function ghConnect(){
@@ -6391,7 +6394,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
      let g=gmap.get(gk); if(!g){ g={rows:[]}; gmap.set(gk,g); groups.push(g); } g.rows.push(r); });
    let gid=0, html='';
    groups.forEach(g=>{ const e=g.rows[0].e;
-    gid++; const id='g'+gid; const nRuns=g.rows.length;
+    gid++; const id='g'+gid; const nRuns=g.rows.length; const zeb=(gid%2===0)?' z-alt':'';   // Zebra je Event-Block
     const names=new Set(); g.rows.forEach(r=> visSkiers(r.e).forEach(s=> s&&s.name&&names.add(s.name)));
     const art=g.rows[0].mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
     const allTag=g.rows.every(r=>r.tagged); const anyTag=g.rows.some(r=>r.tagged);
@@ -6400,13 +6403,13 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
     const anyCL=g.rows.some(r=> r.mode==='comp' && r.tagged && vidEvt.has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
-    html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}" data-grp="${id}">`
+    html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}${zeb}" data-grp="${id}">`
       +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${e.venue}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
       +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
       +`<td>${anyCL?'<span class="db-clind" title="Coach-Link in diesem Event verfügbar – zum Erstellen aufklappen">↗ Coach-Link</span>':'<span class="db-dash">—</span>'}</td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
-    g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
+    g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}${zeb}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
    });
    body.innerHTML=html;
    body.querySelectorAll('tr.db-grp').forEach(tr=> tr.addEventListener('click', ev=>{ if(ev.target.closest('button')) return;
