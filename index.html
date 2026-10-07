@@ -714,14 +714,16 @@ body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 @keyframes updIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 .upd-banner .upd-ico{display:inline-flex;align-items:center;color:#ffd24a}
 .upd-banner .upd-txt{font-weight:700;letter-spacing:.01em}
-.upd-banner button#updReload{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;border:none;border-radius:10px;padding:9px 16px;font:inherit;font-weight:800;font-size:13.5px;letter-spacing:.01em;cursor:pointer;box-shadow:0 7px 18px -6px rgba(218,41,28,.85);transition:.14s;animation:updPulse 1.9s ease-in-out infinite}
-.upd-banner button#updReload:hover{transform:translateY(-1px)}
-.upd-banner button#updReload svg{flex:none}
-@keyframes updPulse{0%,100%{box-shadow:0 7px 18px -6px rgba(218,41,28,.85)}50%{box-shadow:0 7px 26px -3px rgba(228,53,43,1)}}
+.upd-banner button#updReload{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(145deg,#f23b30,#c01d13);color:#fff;border:1.5px solid rgba(255,255,255,.22);border-radius:11px;padding:12px 22px;font:inherit;font-weight:800;font-size:15px;letter-spacing:.015em;cursor:pointer;box-shadow:0 9px 22px -6px rgba(228,53,43,.9), inset 0 1px 0 rgba(255,255,255,.25);transition:.14s;animation:updPulse 1.7s ease-in-out infinite}
+.upd-banner button#updReload:hover{transform:translateY(-1px) scale(1.02);filter:brightness(1.06)}
+.upd-banner button#updReload:active{transform:translateY(0) scale(.99)}
+.upd-banner button#updReload svg{flex:none;width:17px;height:17px}
+@keyframes updPulse{0%,100%{box-shadow:0 9px 22px -6px rgba(228,53,43,.9), inset 0 1px 0 rgba(255,255,255,.25)}50%{box-shadow:0 9px 30px -2px rgba(228,53,43,1), inset 0 1px 0 rgba(255,255,255,.3)}}
 .gtg-confetti{position:fixed;inset:0;pointer-events:none;z-index:100000;overflow:hidden}
-.gtg-confetti i{position:absolute;width:9px;height:9px;border-radius:2px;opacity:0;animation:gtgconf 1.15s cubic-bezier(.2,.7,.3,1) forwards}
-@keyframes gtgconf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 220px)) rotate(var(--rot))}}
-@media(prefers-reduced-motion:reduce){.upd-banner button#updReload{animation:none}.gtg-confetti{display:none}}
+.gtg-confetti i{position:absolute;width:11px;height:11px;border-radius:2px;opacity:0;animation:gtgconf 1.3s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes gtgconf{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 240px)) rotate(var(--rot)) scale(.7)}}
+/* Button-Pulsieren respektiert «Bewegung reduzieren»; das Konfetti bleibt (bewusster Klick-Effekt). */
+@media(prefers-reduced-motion:reduce){.upd-banner button#updReload{animation:none}}
 .upd-banner button#updReload:hover{background:var(--red-d)}
 .upd-banner .upd-x{background:none;border:none;color:#cfd6e0;font-size:14px;cursor:pointer;padding:2px 6px}
 @media print{.upd-banner{display:none!important}}
@@ -2742,7 +2744,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610070536';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610070542';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
