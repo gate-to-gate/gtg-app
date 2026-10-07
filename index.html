@@ -946,6 +946,17 @@ body.dark .lg-note{background:#2f2a1e;border-color:#5a4e2e;color:#d9ceb0}
 .lg-pw{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f1f3f6;padding:2px 7px;border-radius:5px;color:var(--ink)}
 body.dark .lg-pw{background:#2a323d;color:#eef1f6}
 .lg-grp{font-size:11.5px;color:var(--muted);max-width:320px}
+.lg-showpw{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
+.lg-showpw input{width:15px;height:15px;accent-color:var(--red);cursor:pointer}
+.lg-gate{display:flex;justify-content:center;padding:28px 16px}
+.lg-gate-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:24px 22px;text-align:center}
+.lg-gate-ic{font-size:26px;margin-bottom:6px}
+.lg-gate-t{font-size:16px;font-weight:800;color:var(--ink)}
+.lg-gate-s{font-size:12.5px;color:var(--muted);line-height:1.5;margin:6px 0 14px}
+.lg-in{width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--card);color:var(--ink)}
+.lg-in:focus{outline:none;border-color:var(--red)}
+.lg-gate-card .btn-mini.solid{width:100%;padding:11px;font-size:14px;margin-top:2px}
+body.dark .lg-in{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 body.dark .db-ro{background:#2a323d;color:#aeb8c4;border-color:#3a4450}
 .gsex{font-weight:700}
 .gsex.w{color:#e5389a}
@@ -1021,7 +1032,7 @@ body.dark .db-by{color:#8a93a0}
 .db-vcol{display:flex;flex-direction:column;min-width:0}
 .db-vname{font-weight:700;color:var(--ink);line-height:1.25}
 .db-table tr.db-arch .db-vname{text-decoration:line-through;text-decoration-color:#c3cad4}
-.db-act{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}
+.db-act{display:flex;gap:6px;justify-content:flex-end;align-items:center;white-space:nowrap}
 .db-table tr.db-grp{cursor:pointer}
 .db-table tr.db-grp:hover{background:var(--bg)}
 .db-chev{display:inline-block;color:var(--muted);font-size:10px;transition:transform .15s;width:10px}
@@ -2030,16 +2041,31 @@ body.dark .empty{color:#9aa6b4}
       </div>
 
       <div id="dbSecLogins" style="display:none">
-        <div class="lg-note">🔒 Nur für Admins. Übersicht aller Logins – Datengrundlage ist die Excel-Liste. Lade sie als <b>CSV</b> (in Excel: «Speichern unter» → CSV). Die Daten bleiben <b>nur auf diesem Gerät</b> (nichts wird hochgeladen) und sind hier nur zur Ansicht.</div>
-        <div class="db-filters">
-          <input type="text" id="dbLoginsSearch" class="lib-search" placeholder="Suche Name, E-Mail, Team …">
-          <label class="btn-mini solid" style="cursor:pointer">CSV laden<input type="file" id="dbLoginsFile" accept=".csv,text/csv,.txt" hidden></label>
-          <button class="btn-mini" id="dbLoginsClear" title="Geladene Liste von diesem Gerät entfernen">Leeren</button>
-          <span id="dbLoginsInfo" class="lib-count"></span>
+        <div id="dbLoginsSupaGate" class="lg-gate" style="display:none">
+          <div class="lg-gate-card">
+            <div class="lg-gate-ic">🔒</div>
+            <div class="lg-gate-t">Login-Secrets anzeigen</div>
+            <div class="lg-gate-s">Zur Sicherheit noch einmal dein GtG-Passwort bestätigen. Die Daten liegen geschützt auf dem Server (Supabase, Row-Level-Security).</div>
+            <input type="email" id="dbLoginsSupaEmail" class="lg-in" placeholder="E-Mail" autocomplete="off" spellcheck="false" readonly>
+            <input type="password" id="dbLoginsSupaPw" class="lg-in" placeholder="GtG-Passwort" autocomplete="off">
+            <button class="btn-mini solid" id="dbLoginsSupaBtn">Anzeigen</button>
+            <div id="dbLoginsSupaErr" class="dba-msg err" style="display:none"></div>
+          </div>
         </div>
-        <div class="db-wrap"><table class="db-table"><thead>
-          <tr><th>Name</th><th>E-Mail</th><th>Passwort</th><th>Rolle</th><th>Team / Gruppen</th></tr>
-        </thead><tbody id="dbLoginsBody"></tbody></table></div>
+        <div id="dbLoginsContent">
+          <div class="lg-note" id="dbLoginsNote">🔒 Nur für Admins.</div>
+          <div class="db-filters">
+            <input type="text" id="dbLoginsSearch" class="lib-search" placeholder="Suche Name, E-Mail, Team …">
+            <label class="lg-showpw"><input type="checkbox" id="dbLoginsShow"> Passwörter anzeigen</label>
+            <label class="btn-mini solid" id="dbLoginsCsvBtn" style="cursor:pointer">CSV laden<input type="file" id="dbLoginsFile" accept=".csv,text/csv,.txt" hidden></label>
+            <button class="btn-mini" id="dbLoginsClear" title="Geladene Liste aus dieser Sitzung entfernen">Leeren</button>
+            <button class="btn-mini" id="dbLoginsSupaOut" title="Secrets sperren" style="display:none">🔒 Secrets sperren</button>
+            <span id="dbLoginsInfo" class="lib-count"></span>
+          </div>
+          <div class="db-wrap"><table class="db-table"><thead>
+            <tr><th>Name</th><th>E-Mail</th><th>Passwort</th><th>Rolle</th><th>Team / Gruppen</th></tr>
+          </thead><tbody id="dbLoginsBody"></tbody></table></div>
+        </div>
       </div>
     </div>
   </div>
@@ -2716,7 +2742,14 @@ function gtgShowLogin(){ const gate=$('#gateLogin'); if(!gate) return;
       if(ok){ const rem=!($('#glRemember')&&$('#glRemember').checked===false);   // Standard: angemeldet bleiben
         try{ localStorage.removeItem('gtg_user'); sessionStorage.removeItem('gtg_user'); }catch(_){}
         try{ (rem?localStorage:sessionStorage).setItem('gtg_user', JSON.stringify({e:u.e})); localStorage.setItem('gtg_lastmail', u.e); }catch(_){}
-        try{ document.documentElement.style.overflow=''; }catch(_){} try{ location.reload(); }catch(_){} }
+        const finish=()=>{ try{ document.documentElement.style.overflow=''; }catch(_){} try{ location.reload(); }catch(_){} };
+        // Nahtlos: Admins entsperren mit denselben Zugangsdaten auch die geschützte Logins-Seite (Supabase).
+        // Läuft im Hintergrund und blockiert das Login nicht (Timeout 4s). Passwort wird nicht gespeichert.
+        if(u.r==='admin' && typeof supaConfigured==='function' && supaConfigured()){
+          const pwv=(pw&&pw.value)||''; let done=false; const go=()=>{ if(done) return; done=true; finish(); };
+          try{ supaSignIn(u.e, pwv).then(go, go); }catch(_){ go(); }
+          setTimeout(go, 4000);
+        } else { finish(); } }
       else { if(btn){ btn.disabled=false; btn.textContent=btn.dataset.t||'Anmelden'; } if(err) err.classList.add('show');
         if(card){ card.classList.remove('gl-shake'); void card.offsetWidth; card.classList.add('gl-shake'); } if(pw){ pw.value=''; try{pw.focus();}catch(_){} } }
     }, 40);
@@ -2748,7 +2781,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610070748';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610070907';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6323,24 +6356,81 @@ function parseCsvLogins(txt){
     out.push({ name:((iV>=0?x[iV]:'')+' '+(iN>=0?x[iN]:'')).trim(), mail, role:(iRole>=0?x[iRole]:'').trim(), pw:(iPw>=0?x[iPw]:'').trim(), grp:(iGrp>=0?x[iGrp]:'').trim(), list:(iList>=0?x[iList]:'').trim() }); }
   return out;
 }
-function renderDbLogins(){
+/* ===== Supabase (nur für die geschützte Logins-Seite) =====
+   Projekt-URL + anon key eintragen -> Secrets kommen aus der geschützten Tabelle (RLS).
+   Leer lassen -> Rückfall auf lokalen CSV-Modus. Der anon key darf öffentlich sein (Schutz via RLS + Login). */
+const SUPABASE = { url:'https://sswtnkwqkmokozrcqrxf.supabase.co', anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzd3Rua3dxa21va296cmNxcnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNTc5NzYsImV4cCI6MjEwNjkzMzk3Nn0.zrmxa0uJMgZMEfRiTlN2nqidkSymd6SIBYTNxczHHkE' };
+function supaConfigured(){ return !!(SUPABASE.url && SUPABASE.anon); }
+function supaBase(){ return String(SUPABASE.url||'').replace(/\/+$/,''); }
+let SUPA_TOKEN=null;
+function supaToken(){ if(SUPA_TOKEN) return SUPA_TOKEN; try{ return sessionStorage.getItem('gtg_supa_token')||null; }catch(e){ return null; } }
+async function supaSignIn(email,pw){
+  const r=await fetch(supaBase()+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SUPABASE.anon,'Content-Type':'application/json'},body:JSON.stringify({email:String(email||'').trim(),password:pw||''})});
+  if(!r.ok) throw new Error(r.status===400?'Passwort stimmt nicht – oder für diese E-Mail ist noch kein Secrets-Zugang angelegt.':'Anmeldung fehlgeschlagen ('+r.status+')');
+  const j=await r.json(); if(!j||!j.access_token) throw new Error('Kein Zugriffstoken erhalten');
+  SUPA_TOKEN=j.access_token; try{ sessionStorage.setItem('gtg_supa_token',SUPA_TOKEN); }catch(e){}
+  return true;
+}
+function supaSignOut(){ SUPA_TOKEN=null; try{ sessionStorage.removeItem('gtg_supa_token'); }catch(e){} }
+async function supaFetchLogins(){
+  const tok=supaToken(); if(!tok) throw new Error('nicht angemeldet');
+  const r=await fetch(supaBase()+'/rest/v1/logins?select=*&order=name.asc',{headers:{'apikey':SUPABASE.anon,'Authorization':'Bearer '+tok,'Accept':'application/json'}});
+  if(r.status===401||r.status===403){ supaSignOut(); throw new Error('Sitzung abgelaufen – bitte erneut anmelden.'); }
+  if(!r.ok) throw new Error('Laden fehlgeschlagen ('+r.status+')');
+  return await r.json();
+}
+let LOGINS_SHOWPW=false, LOGINS_DATA=[];
+function loginsPaint(){
   const box=$('#dbLoginsBody'); if(!box) return;
-  let data=[]; try{ data=LS.get('gtg_logins_cache',[])||[]; }catch(e){ data=[]; }
-  const info=$('#dbLoginsInfo'); if(info) info.textContent = data.length? `${data.length} Logins geladen (nur auf diesem Gerät gespeichert)` : 'Noch keine Datei geladen.';
   const q=($('#dbLoginsSearch')&&$('#dbLoginsSearch').value||'').trim().toLowerCase();
-  let list=data;
-  if(q) list=list.filter(r=> (r.name+' '+r.mail+' '+r.grp+' '+r.role).toLowerCase().includes(q));
-  if(!data.length){ box.innerHTML=dbEmpty('Lade die Login-Liste als CSV (aus der Excel exportiert). Die Daten bleiben nur auf diesem Gerät – nichts wird hochgeladen.', 5, 'file'); return; }
+  let list=LOGINS_DATA; if(q) list=list.filter(r=> (r.name+' '+r.mail+' '+r.grp+' '+r.role).toLowerCase().includes(q));
+  if(!LOGINS_DATA.length){ box.innerHTML=dbEmpty(supaConfigured()?'Keine Logins gefunden.':'Lade die Login-Liste als CSV (aus der Excel exportiert). Die Daten bleiben nur in dieser Sitzung auf diesem Gerät.', 5, 'file'); return; }
   if(!list.length){ box.innerHTML=dbEmpty('Keine Treffer für die Suche.', 5, 'search'); return; }
   box.innerHTML=list.map(r=>{ const admin=/direktor|admin/i.test(r.role);
-    return `<tr><td><b>${escHtml(r.name)}</b></td><td>${escHtml(r.mail)}</td><td><code class="lg-pw">${escHtml(r.pw||'—')}</code></td>`
+    const pw=LOGINS_SHOWPW?escHtml(r.pw||'—'):'••••••••';
+    return `<tr><td><b>${escHtml(r.name)}</b></td><td>${escHtml(r.mail)}</td><td><code class="lg-pw">${pw}</code></td>`
       +`<td>${admin?'<span class="db-badge wk">Admin</span>':'<span class="db-badge tr">Coach</span>'}</td><td class="lg-grp">${escHtml(r.grp||'—')}</td></tr>`; }).join('');
+}
+function loginsSetData(data, infoTxt){ LOGINS_DATA=data||[]; if($('#dbLoginsInfo')) $('#dbLoginsInfo').textContent=infoTxt||''; loginsPaint(); }
+function renderDbLogins(){
+  const box=$('#dbLoginsBody'); if(!box) return;
+  const supa=supaConfigured();
+  if($('#dbLoginsCsvBtn')) $('#dbLoginsCsvBtn').style.display = supa?'none':'';
+  if($('#dbLoginsClear')) $('#dbLoginsClear').style.display = supa?'none':'';
+  if($('#dbLoginsNote')) $('#dbLoginsNote').innerHTML = supa
+    ? '🔒 Nur für Admins. Die Login-Secrets liegen geschützt auf dem Server (Supabase, Row-Level-Security) – entsperrt automatisch mit deinem GtG-Login, nichts wird dauerhaft auf dem Gerät gespeichert. Passwörter sind standardmässig verdeckt.'
+    : '🔒 Nur für Admins. Datengrundlage ist die Excel-Liste (als CSV laden). Bleibt nur in dieser Sitzung auf diesem Gerät – nichts wird hochgeladen. Passwörter sind standardmässig verdeckt.';
+  if(supa){
+    const tok=supaToken();
+    if($('#dbLoginsSupaOut')) $('#dbLoginsSupaOut').style.display = tok?'':'none';
+    if(!tok){ try{ const em=$('#dbLoginsSupaEmail'); if(em&&ME&&ME.e) em.value=ME.e; }catch(_){}
+      if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display=''; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='none'; return; }
+    if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display='none'; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='';
+    if($('#dbLoginsInfo')) $('#dbLoginsInfo').textContent='Lade…'; if(box) box.innerHTML=dbEmpty('Lade Logins vom Server …', 5, 'info');
+    supaFetchLogins().then(rows=>{
+      const data=(rows||[]).map(r=>({ name:(r.name||((r.vorname||'')+' '+(r.nachname||''))).trim(), mail:(r.email||r.mail||'').trim(), role:(r.role||r.rolle||'').trim(), pw:(r.password||r.passwort||'').toString(), grp:(Array.isArray(r.groups)?r.groups.join(', '):(r.groups||r.gruppen||r.team||'')).toString() }));
+      loginsSetData(data, 'Server · '+data.length+' Logins · Sitzung');
+    }).catch(err=>{ supaSignOut(); if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display=''; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='none';
+      const e2=$('#dbLoginsSupaErr'); if(e2){ e2.textContent=(err&&err.message)||'Fehler'; e2.style.display=''; } });
+    return;
+  }
+  // CSV-Fallback (nur in der Sitzung gespeichert)
+  if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display='none'; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='';
+  let data=[]; try{ data=JSON.parse(sessionStorage.getItem('gtg_logins_cache')||'[]')||[]; }catch(e){ data=[]; }
+  loginsSetData(data, data.length? (data.length+' Logins (nur in dieser Sitzung)') : 'Noch keine Datei geladen.');
 }
 function initDbLogins(){
   const fi=$('#dbLoginsFile'); if(fi) fi.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
-    const rd=new FileReader(); rd.onload=()=>{ try{ const data=parseCsvLogins(String(rd.result)); LS.set('gtg_logins_cache', data); gtgToast(`${data.length} Logins geladen.`, 'ok'); }catch(err){ gtgToast('Datei konnte nicht gelesen werden.'); } renderDbLogins(); }; rd.readAsText(f,'utf-8'); fi.value=''; };
-  const cl=$('#dbLoginsClear'); if(cl) cl.onclick=()=>{ LS.set('gtg_logins_cache', []); renderDbLogins(); };
-  const se=$('#dbLoginsSearch'); if(se) se.oninput=()=>renderDbLogins();
+    const rd=new FileReader(); rd.onload=()=>{ try{ const data=parseCsvLogins(String(rd.result)); try{ sessionStorage.setItem('gtg_logins_cache', JSON.stringify(data)); }catch(_){} gtgToast(`${data.length} Logins geladen.`, 'ok'); }catch(err){ gtgToast('Datei konnte nicht gelesen werden.'); } renderDbLogins(); }; rd.readAsText(f,'utf-8'); fi.value=''; };
+  const cl=$('#dbLoginsClear'); if(cl) cl.onclick=()=>{ try{ sessionStorage.removeItem('gtg_logins_cache'); }catch(_){} renderDbLogins(); };
+  const se=$('#dbLoginsSearch'); if(se) se.oninput=()=>loginsPaint();
+  const sh=$('#dbLoginsShow'); if(sh) sh.onchange=()=>{ LOGINS_SHOWPW=!!sh.checked; loginsPaint(); };
+  const sb=$('#dbLoginsSupaBtn'); if(sb) sb.onclick=()=>{ const em=$('#dbLoginsSupaEmail'), pw=$('#dbLoginsSupaPw'), er=$('#dbLoginsSupaErr');
+    if(er) er.style.display='none'; sb.disabled=true; const t0=sb.textContent; sb.textContent='Prüfe…';
+    supaSignIn(em?em.value:'', pw?pw.value:'').then(()=>{ if(pw) pw.value=''; sb.disabled=false; sb.textContent=t0; renderDbLogins(); })
+      .catch(err=>{ sb.disabled=false; sb.textContent=t0; if(er){ er.textContent=(err&&err.message)||'Anmeldung fehlgeschlagen.'; er.style.display=''; } }); };
+  const so=$('#dbLoginsSupaOut'); if(so) so.onclick=()=>{ supaSignOut(); LOGINS_DATA=[]; renderDbLogins(); };
+  const sp=$('#dbLoginsSupaPw'); if(sp) sp.onkeydown=e=>{ if(e.key==='Enter'&&$('#dbLoginsSupaBtn')) $('#dbLoginsSupaBtn').click(); };
 }
 function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
   const q=($('#dbkSearch')&&$('#dbkSearch').value||'').trim().toLowerCase();
