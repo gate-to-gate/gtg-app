@@ -435,11 +435,16 @@ body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;col
 .vrow{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .cv-grid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:14px;align-items:start}
 .hero-band{margin-top:8px}
+.hero-note{margin:9px 0 2px;font-size:12px;line-height:1.45;color:#8a5a00;background:#fff6e5;border:1px solid #f0cf8a;border-left:4px solid #e0920a;border-radius:9px;padding:8px 12px}
+.hero-note .hn-ic{color:#e0920a;font-weight:800;margin-right:5px}
+.hero-note b{color:#b5651d}
+body.dark .hero-note{background:#332818;border-color:#5e4a26;border-left-color:#e0920a;color:#e8cf95}
 .hb-cap{font-size:10px;font-weight:600;color:var(--muted);margin-bottom:3px}
 .hero-band svg{display:block;width:100%;border-radius:4px;overflow:hidden}
 .tb-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px}
 .tb-i{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ink2)}
-.tb-i i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.tb-i i{width:12px;height:12px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
+body.dark .tb-i i{border-color:rgba(255,255,255,.14)}
 body.dark .tb-i{color:#c4ccd6}
 @media(max-width:980px){.vrow,.cv-grid{grid-template-columns:1fr}}
 .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px}
@@ -2788,7 +2793,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610080637';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610080733';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3495,6 +3500,7 @@ function render(){
         </div>
         <div id="legend" class="legend" style="margin-bottom:10px"></div>
         <div class="chart-shell" id="heroShell"></div>
+        <div id="heroNote" class="hero-note" style="display:none"></div>
         <div id="heroBand" class="hero-band"></div>
         <div id="figstrip" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
         <div class="print-only hero-readhelp">
@@ -3604,6 +3610,10 @@ function smoothCum(arr){
   return out;
 }
 /* ---------- HERO: cumulative gap line ---------- */
+/* Gegen die alten, damals versendeten GtG-PDFs abgeglichene manuelle Anpassungen.
+   Schlüssel: date|gender|discipline|run  ->  Tor-Nummern, die im alten PDF geglättet wurden
+   (nur isolierte, grosse Einzel-Glättungen |Δ|≥0.8 s; 0.00-Werte & Fehlalarme ausgeschlossen). */
+const GTG_ADJ = {"2025-10-25|W|GS|1":[34],"2025-10-25|W|GS|2":[28],"2025-12-07|W|GS|1":[3],"2025-12-13|M|GS|2":[30],"2026-01-10|M|GS|1":[19],"2026-01-10|M|GS|2":[21],"2026-01-20|W|GS|2":[34],"2026-01-27|M|GS|1":[14],"2026-01-27|M|GS|2":[14,24],"2026-01-28|M|SL|1":[36],"2026-02-14|M|GS|1":[43],"2026-03-07|M|GS|1":[47]};
 function drawHero(){
   const T=chTheme();
   const c=S.comp, n=c.n;
@@ -3678,6 +3688,14 @@ function drawHero(){
   labs.sort((a,b)=>a.cx-b.cx); let lcur=-1e9; const lgap=2;
   labs.forEach(L=>{ let left=L.cx-L.w/2; if(left<lcur+lgap) left=lcur+lgap; lcur=left+L.w;
     svg+=`<text x="${left.toFixed(1)}" y="${mt-4}" text-anchor="start" font-size="9.5" font-weight="700" fill="${L.col}">${L.t}</text>`; });
+  // ---- Historische PDF-Anpassungen: gegen die alten, versendeten Reports abgeglichen ----
+  const AMB='#e0920a';
+  const _ek = (S.mode!=='train' && S.evtKey) ? (S.evtKey.split('|')[0]+'|'+S.gen+'|'+S.disc+'|'+S.run) : '';
+  const _anom = ((GTG_ADJ[_ek]||[]).filter(g=>g>=1&&g<=n)).map(g=>({g}));
+  if(_anom.length && !S.printMode){ _anom.forEach(a=>{ const gx=x(a.g+1);
+    svg+=`<line x1="${gx}" x2="${gx}" y1="${mt}" y2="${mt+ih}" stroke="${AMB}" stroke-width="1.2" stroke-dasharray="2 3" opacity=".5"/>`;
+    svg+=`<text x="${gx}" y="${mt+11}" text-anchor="middle" font-size="12" font-weight="700" fill="${AMB}">⚠</text>`;
+  }); }
   // lines (weich geglättet, monoton; weisser Halo; Fokus-Füllung; steile Tore kräftiger)
   const y0=y(0), hasPitch=Object.keys(pitchByGate).length>0;
   // Plot-Werte: führende 0 (Tor 1 = Start), danach kumuliert – so starten alle Linien bei 0, Endwerte bleiben exakt
@@ -3715,6 +3733,13 @@ function drawHero(){
   svg+=`<rect id="hov" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg+='</svg>';
   $('#heroShell').innerHTML=svg;
+  // Hinweis-Text zu auffälligen Stellen unter der Grafik
+  const _hn=$('#heroNote');
+  if(_hn){ if(_anom.length && !S.printMode){
+      const tore=_anom.map(a=>`Tor ${a.g}`).join(', ');
+      _hn.innerHTML=`<span class="hn-ic">⚠</span><b>Auffällige Stelle${_anom.length>1?'n':''}:</b> ${tore}. Hier wurden damals für das versendete PDF manuelle Anpassungen gemacht — angezeigt sind die Original-Taggings.`;
+      _hn.style.display='';
+    } else { _hn.style.display='none'; _hn.innerHTML=''; } }
   // interactivity
   const shell=$('#heroShell'), svgN=shell.querySelector('svg'), hg=shell.querySelector('#hg'), hov=shell.querySelector('#hov'), hgm=shell.querySelector('#hgm');
   hov.addEventListener('mousemove',ev=>{
@@ -3830,20 +3855,29 @@ function updateTerrainBand(){ const band=$('#heroBand'); if(!band) return;
   drawTerrainBand(course);
 }
 function drawTerrainBand(course){ const T=chTheme(); const band=$('#heroBand'); if(!band||!S.comp) return; const n=S.comp.n;
-  const g=course.gates||[], W=980, ml=74, mr=20, iw=W-ml-mr;
-  const x=k=> ml+(n<=1?0:(k-1)/(n-1))*iw, seg=Math.max(2, iw/Math.max(1,n-1));
-  const rowH=9, gap=4, y1=13, y2=y1+rowH+gap, H=y2+rowH+3;
-  const CN='#e6eaef', CMISS='#f0f2f5';
-  const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?'#d65a4e':(z.pitch<25?'#22a06b':CN)) : CMISS;
-  const oCol=z=> (z&&z.offset!=null) ? (z.offset>=3?'#7a3fb5':(z.offset<2?'#1f6fb2':CN)) : CMISS;
+  const g=course.gates||[], W=980, ml=86, mr=20, iw=W-ml-mr;
+  const rowH=12, gap=7, y1=17, y2=y1+rowH+gap, H=y2+rowH+6, rx=rowH/2;
+  const track = T.dark ? '#2b333e' : '#eef1f5';
+  const border = T.dark ? '#3a4451' : '#e2e7ee';
+  const STEIL='#e0564a', FLACH='#1f9d6b', DREH='#7a3fb5', DIR='#2f7fc4';
+  const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?STEIL:(z.pitch<25?FLACH:null)) : null;   // mittel/fehlend -> null (Track)
+  const oCol=z=> (z&&z.offset!=null) ? (z.offset>=3?DREH:(z.offset<2?DIR:null)) : null;
+  const bx=i=> ml + (i/n)*iw;   // lückenlose Block-Kacheln pro Tor
+  const row=(y,colFn,cid)=>{
+    let s=`<clipPath id="${cid}"><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" rx="${rx}"/></clipPath>`;
+    s+=`<g clip-path="url(#${cid})"><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" fill="${track}"/>`;
+    let i=0; while(i<n){ const c=colFn(g[i]); let j=i+1; while(j<n && colFn(g[j])===c) j++;
+      if(c){ const x0=bx(i), x1=bx(j); s+=`<rect x="${x0.toFixed(2)}" y="${y}" width="${(x1-x0).toFixed(2)}" height="${rowH}" fill="${c}"/>`; }
+      i=j; }
+    s+=`</g><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" rx="${rx}" fill="none" stroke="${border}" stroke-width="1"/>`;
+    return s;
+  };
   let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">`;
-  svg+=`<text x="${ml-7}" y="${y1+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="${T.txt2}">STEIL.</text>`;
-  svg+=`<text x="${ml-7}" y="${y2+rowH-1.5}" text-anchor="end" font-size="8.5" font-weight="800" fill="${T.txt2}">CHAR.</text>`;
-  for(let i=0;i<n;i++){ const z=g[i]; const xx=(x(i+1)-seg/2).toFixed(1);
-    svg+=`<rect x="${xx}" y="${y1}" width="${seg.toFixed(1)}" height="${rowH}" fill="${pCol(z)}"/>`;
-    svg+=`<rect x="${xx}" y="${y2}" width="${seg.toFixed(1)}" height="${rowH}" fill="${oCol(z)}"/>`; }
-  svg+=`</svg>`;
-  const leg=`<span class="tb-i"><i style="background:#d65a4e"></i>Steil</span><span class="tb-i"><i style="background:#22a06b"></i>Flach</span><span class="tb-i"><i style="background:#7a3fb5"></i>Drehend</span><span class="tb-i"><i style="background:#1f6fb2"></i>Direkt</span><span class="tb-i"><i style="background:${CN}"></i>mittel</span>`;
+  svg+=`<text x="${ml-10}" y="${y1+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Steilheit</text>`;
+  svg+=`<text x="${ml-10}" y="${y2+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Charakter</text>`;
+  svg+=row(y1,pCol,'tbClipP')+row(y2,oCol,'tbClipC')+`</svg>`;
+  const dot=(c,l)=>`<span class="tb-i"><i style="background:${c}"></i>${l}</span>`;
+  const leg=dot(STEIL,'Steil')+dot(FLACH,'Flach')+dot(DREH,'Drehend')+dot(DIR,'Direkt')+dot(track,'mittel');
   band.innerHTML=`<div class="hb-cap">Terrain pro Tor — Steilheit &amp; Charakter (aus der Kurssetzung)</div>${svg}<div class="tb-leg">${leg}</div>`;
 }
 function drawCourseMap(course){ const T=chTheme(); const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;

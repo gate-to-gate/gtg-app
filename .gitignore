@@ -26,6 +26,14 @@ desktop/package-lock.json
 Kurssetzungsdokumente*/
 GtG_tagging_backup.json
 
-# Login-Liste mit Klartext-Passwoertern - NIE committen!
+# Interne Alt-Reports (Gate-to-Gate PDFs der Vorsaison) - NICHT ins oeffentliche Repo!
+TECH/
+TECH*
+*.zip
+
+# Login-Liste / Login-Quelle mit Klartext-Passwoertern - NIE committen!
 logins.csv
 gtg_logins.csv
+logins_supabase.csv
+Coaches_Zugaenge*.xlsx
+*.command
