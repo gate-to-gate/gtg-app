@@ -2794,7 +2794,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610080756';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610080800';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3873,7 +3873,7 @@ function drawTerrainBand(course){ const T=chTheme(); const band=$('#heroBand'); 
     s+=`</g><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" rx="${rx}" fill="none" stroke="${border}" stroke-width="1"/>`;
     return s;
   };
-  let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px">`;
+  let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif">`;
   svg+=`<text x="${ml-10}" y="${y1+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Steilheit</text>`;
   svg+=`<text x="${ml-10}" y="${y2+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Charakter</text>`;
   svg+=row(y1,pCol,'tbClipP')+row(y2,oCol,'tbClipC')+`</svg>`;
