@@ -441,7 +441,12 @@ body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;col
 body.dark .hero-note{background:#332818;border-color:#5e4a26;border-left-color:#e0920a;color:#e8cf95}
 .hb-cap{font-size:10px;font-weight:600;color:var(--muted);margin-bottom:3px}
 .hero-band svg{display:block;width:100%;border-radius:4px;overflow:hidden}
-.tb-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px}
+.tb-rows{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+.tb-row{display:flex;align-items:center;gap:9px}
+.tb-rlab{flex:none;width:66px;text-align:right;font-size:10.5px;font-weight:700;color:var(--muted)}
+.tb-barsvg{flex:1;height:12px;display:block;border-radius:6px;overflow:hidden;border:1px solid #e2e7ee}
+body.dark .tb-barsvg{border-color:#3a4451}
+.tb-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:7px;padding-left:75px}
 .tb-i{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ink2)}
 .tb-i i{width:12px;height:12px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
 body.dark .tb-i i{border-color:rgba(255,255,255,.14)}
@@ -2794,7 +2799,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610080800';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610080804';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3856,30 +3861,26 @@ function updateTerrainBand(){ const band=$('#heroBand'); if(!band) return;
   drawTerrainBand(course);
 }
 function drawTerrainBand(course){ const T=chTheme(); const band=$('#heroBand'); if(!band||!S.comp) return; const n=S.comp.n;
-  const g=course.gates||[], W=980, ml=86, mr=20, iw=W-ml-mr;
-  const rowH=12, gap=7, y1=17, y2=y1+rowH+gap, H=y2+rowH+6, rx=rowH/2;
+  const g=course.gates||[], W2=1000, rowH=12;
   const track = T.dark ? '#2b333e' : '#eef1f5';
-  const border = T.dark ? '#3a4451' : '#e2e7ee';
   const STEIL='#e0564a', FLACH='#1f9d6b', DREH='#7a3fb5', DIR='#2f7fc4';
-  const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?STEIL:(z.pitch<25?FLACH:null)) : null;   // mittel/fehlend -> null (Track)
+  const pCol=z=> (z&&z.pitch!=null) ? (z.pitch>=38?STEIL:(z.pitch<25?FLACH:null)) : null;   // mittel/fehlend -> Track
   const oCol=z=> (z&&z.offset!=null) ? (z.offset>=3?DREH:(z.offset<2?DIR:null)) : null;
-  const bx=i=> ml + (i/n)*iw;   // lückenlose Block-Kacheln pro Tor
-  const row=(y,colFn,cid)=>{
-    let s=`<clipPath id="${cid}"><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" rx="${rx}"/></clipPath>`;
-    s+=`<g clip-path="url(#${cid})"><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" fill="${track}"/>`;
+  // Balken als reines Rechteck-SVG (lückenlose Tor-Kacheln); Rundung/Rahmen macht CSS am Element
+  const bar=colFn=>{
+    let s=`<svg class="tb-barsvg" viewBox="0 0 ${W2} ${rowH}" preserveAspectRatio="none"><rect x="0" y="0" width="${W2}" height="${rowH}" fill="${track}"/>`;
     let i=0; while(i<n){ const c=colFn(g[i]); let j=i+1; while(j<n && colFn(g[j])===c) j++;
-      if(c){ const x0=bx(i), x1=bx(j); s+=`<rect x="${x0.toFixed(2)}" y="${y}" width="${(x1-x0).toFixed(2)}" height="${rowH}" fill="${c}"/>`; }
+      if(c){ const x0=(i/n)*W2, x1=(j/n)*W2; s+=`<rect x="${x0.toFixed(2)}" y="0" width="${(x1-x0).toFixed(2)}" height="${rowH}" fill="${c}"/>`; }
       i=j; }
-    s+=`</g><rect x="${ml}" y="${y}" width="${iw}" height="${rowH}" rx="${rx}" fill="none" stroke="${border}" stroke-width="1"/>`;
-    return s;
+    return s+`</svg>`;
   };
-  let svg=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:${H}px" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif">`;
-  svg+=`<text x="${ml-10}" y="${y1+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Steilheit</text>`;
-  svg+=`<text x="${ml-10}" y="${y2+rowH-3}" text-anchor="end" font-size="9.5" font-weight="700" fill="${T.txt2}">Charakter</text>`;
-  svg+=row(y1,pCol,'tbClipP')+row(y2,oCol,'tbClipC')+`</svg>`;
   const dot=(c,l)=>`<span class="tb-i"><i style="background:${c}"></i>${l}</span>`;
   const leg=dot(STEIL,'Steil')+dot(FLACH,'Flach')+dot(DREH,'Drehend')+dot(DIR,'Direkt')+dot(track,'mittel');
-  band.innerHTML=`<div class="hb-cap">Terrain pro Tor — Steilheit &amp; Charakter (aus der Kurssetzung)</div>${svg}<div class="tb-leg">${leg}</div>`;
+  band.innerHTML=`<div class="hb-cap">Terrain pro Tor — Steilheit &amp; Charakter (aus der Kurssetzung)</div>`
+    +`<div class="tb-rows">`
+    +`<div class="tb-row"><span class="tb-rlab">Steilheit</span>${bar(pCol)}</div>`
+    +`<div class="tb-row"><span class="tb-rlab">Charakter</span>${bar(oCol)}</div>`
+    +`</div><div class="tb-leg">${leg}</div>`;
 }
 function drawCourseMap(course){ const T=chTheme(); const shell=$('#courseMapShell'); if(!shell) return; const c=S.comp,n=c.n;
   const fs=c.skiers.find(z=>z.name===S.perGate), dkey=S.excludeAnom?'cleanDiff':'diff';
