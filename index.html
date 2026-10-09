@@ -2799,7 +2799,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610080845';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610091443';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6386,19 +6386,28 @@ function parseCsvLogins(txt){
 const SUPABASE = { url:'https://sswtnkwqkmokozrcqrxf.supabase.co', anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzd3Rua3dxa21va296cmNxcnhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNTc5NzYsImV4cCI6MjEwNjkzMzk3Nn0.zrmxa0uJMgZMEfRiTlN2nqidkSymd6SIBYTNxczHHkE' };
 function supaConfigured(){ return !!(SUPABASE.url && SUPABASE.anon); }
 function supaBase(){ return String(SUPABASE.url||'').replace(/\/+$/,''); }
-let SUPA_TOKEN=null;
-function supaToken(){ if(SUPA_TOKEN) return SUPA_TOKEN; try{ return sessionStorage.getItem('gtg_supa_token')||null; }catch(e){ return null; } }
+// Dauerhaft angemeldet bleiben: Access- UND Refresh-Token lokal halten; Access-Token erneuert sich automatisch.
+function supaLoad(){ try{ return JSON.parse(localStorage.getItem('gtg_supa')||'null'); }catch(e){ return null; } }
+function supaStore(j){ if(!j||!j.access_token) return; try{ localStorage.setItem('gtg_supa', JSON.stringify({access_token:j.access_token, refresh_token:j.refresh_token||null})); }catch(e){} }
+function supaToken(){ const o=supaLoad(); return (o&&o.access_token)||null; }
 async function supaSignIn(email,pw){
   const r=await fetch(supaBase()+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SUPABASE.anon,'Content-Type':'application/json'},body:JSON.stringify({email:String(email||'').trim(),password:pw||''})});
   if(!r.ok) throw new Error(r.status===400?'Passwort stimmt nicht – oder für diese E-Mail ist noch kein Secrets-Zugang angelegt.':'Anmeldung fehlgeschlagen ('+r.status+')');
   const j=await r.json(); if(!j||!j.access_token) throw new Error('Kein Zugriffstoken erhalten');
-  SUPA_TOKEN=j.access_token; try{ sessionStorage.setItem('gtg_supa_token',SUPA_TOKEN); }catch(e){}
-  return true;
+  supaStore(j); return true;
 }
-function supaSignOut(){ SUPA_TOKEN=null; try{ sessionStorage.removeItem('gtg_supa_token'); }catch(e){} }
+async function supaRefresh(){
+  const o=supaLoad(); if(!o||!o.refresh_token) return false;
+  try{ const r=await fetch(supaBase()+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SUPABASE.anon,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:o.refresh_token})});
+    if(!r.ok) return false; const j=await r.json(); if(!j||!j.access_token) return false; supaStore(j); return true;
+  }catch(e){ return false; }
+}
+function supaSignOut(){ try{ localStorage.removeItem('gtg_supa'); }catch(e){} }
 async function supaFetchLogins(){
-  const tok=supaToken(); if(!tok) throw new Error('nicht angemeldet');
-  const r=await fetch(supaBase()+'/rest/v1/logins?select=*&order=name.asc',{headers:{'apikey':SUPABASE.anon,'Authorization':'Bearer '+tok,'Accept':'application/json'}});
+  let tok=supaToken(); if(!tok){ if(!(await supaRefresh())) throw new Error('nicht angemeldet'); tok=supaToken(); }
+  const go=t=>fetch(supaBase()+'/rest/v1/logins?select=*&order=name.asc',{headers:{'apikey':SUPABASE.anon,'Authorization':'Bearer '+t,'Accept':'application/json'}});
+  let r=await go(tok);
+  if(r.status===401||r.status===403){ if(await supaRefresh()){ r=await go(supaToken()); } }   // Access-Token abgelaufen -> einmal erneuern
   if(r.status===401||r.status===403){ supaSignOut(); throw new Error('Sitzung abgelaufen – bitte erneut anmelden.'); }
   if(!r.ok) throw new Error('Laden fehlgeschlagen ('+r.status+')');
   return await r.json();
@@ -6434,8 +6443,10 @@ function renderDbLogins(){
     supaFetchLogins().then(rows=>{
       const data=(rows||[]).map(r=>({ name:(r.name||((r.vorname||'')+' '+(r.nachname||''))).trim(), mail:(r.email||r.mail||'').trim(), role:(r.role||r.rolle||'').trim(), pw:(r.password||r.passwort||'').toString(), grp:(Array.isArray(r.groups)?r.groups.join(', '):(r.groups||r.gruppen||r.team||'')).toString() }));
       loginsSetData(data, 'Server · '+data.length+' Logins · Sitzung');
-    }).catch(err=>{ supaSignOut(); if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display=''; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='none';
-      const e2=$('#dbLoginsSupaErr'); if(e2){ e2.textContent=(err&&err.message)||'Fehler'; e2.style.display=''; } });
+    }).catch(err=>{ supaSignOut(); try{ const em=$('#dbLoginsSupaEmail'); if(em&&ME&&ME.e) em.value=ME.e; }catch(_){}
+      if($('#dbLoginsSupaGate')) $('#dbLoginsSupaGate').style.display=''; if($('#dbLoginsContent')) $('#dbLoginsContent').style.display='none';
+      const e2=$('#dbLoginsSupaErr'); if(e2){ e2.textContent=(err&&err.message)||'Fehler'; e2.style.display=''; }
+      const pw=$('#dbLoginsSupaPw'); if(pw){ try{ pw.focus(); }catch(_){} } });
     return;
   }
   // CSV-Fallback (nur in der Sitzung gespeichert)
@@ -6444,6 +6455,7 @@ function renderDbLogins(){
   loginsSetData(data, data.length? (data.length+' Logins (nur in dieser Sitzung)') : 'Noch keine Datei geladen.');
 }
 function initDbLogins(){
+  try{ const em=$('#dbLoginsSupaEmail'); if(em&&typeof ME!=='undefined'&&ME&&ME.e) em.value=ME.e; }catch(_){}
   const fi=$('#dbLoginsFile'); if(fi) fi.onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
     const rd=new FileReader(); rd.onload=()=>{ try{ const data=parseCsvLogins(String(rd.result)); try{ sessionStorage.setItem('gtg_logins_cache', JSON.stringify(data)); }catch(_){} gtgToast(`${data.length} Logins geladen.`, 'ok'); }catch(err){ gtgToast('Datei konnte nicht gelesen werden.'); } renderDbLogins(); }; rd.readAsText(f,'utf-8'); fi.value=''; };
   const cl=$('#dbLoginsClear'); if(cl) cl.onclick=()=>{ try{ sessionStorage.removeItem('gtg_logins_cache'); }catch(_){} renderDbLogins(); };
