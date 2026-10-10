@@ -47,7 +47,7 @@ header{background:#fff;color:var(--ink);padding:9px 0;margin-bottom:16px;positio
 .hdr-ico svg{width:15px;height:15px}
 .hdr-ico:hover{background:#eef1f5;color:var(--ink);transform:translateY(-1px)}
 .hdr-ico.on{background:var(--red);border-color:var(--red);color:#fff}
-.hdr-me{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:var(--ink2);background:#f1f4f8;border:1px solid var(--line);border-radius:999px;padding:4px 11px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.hdr-me{display:inline-block;line-height:1.5;font-size:11.5px;font-weight:700;color:var(--ink2);background:#f1f4f8;border:1px solid var(--line);border-radius:999px;padding:4px 11px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
 body.dark .hdr-me{background:#2a323d;color:#e6ebf2;border-color:#3a4450}
 .hdr-ico{position:relative}
 .hdr-sep{align-self:stretch;width:1px;background:var(--line);margin:6px 5px}
@@ -63,11 +63,11 @@ body.dark .cloud-badge{border-color:#171d26}
 .gh-status.sync{background:#eef4ff;color:#2b6cb0}
 .gh-status.off{background:var(--bg);color:var(--muted)}
 body.dark .gh-status.dirty{background:#2a2113}
-.upd-banner{display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap;background:#fff4e5;border-bottom:1px solid #f0d9b0;color:#7a4b00;font-size:12.5px;font-weight:600;padding:9px 16px}
-.upd-banner .ub-dl{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;text-decoration:none;padding:5px 13px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer}
-.upd-banner .ub-dl:disabled{opacity:.75;cursor:default}
-.upd-banner .ub-dl:hover{background:#ef3326}
-.upd-banner .ub-x{background:none;border:none;color:#a9853f;cursor:pointer;font-size:15px;line-height:1;padding:2px 4px}
+.upd-bar{display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap;background:#fff4e5;border-bottom:1px solid #f0d9b0;color:#7a4b00;font-size:12.5px;font-weight:600;padding:9px 16px}
+.upd-bar .ub-dl{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;text-decoration:none;padding:5px 13px;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer}
+.upd-bar .ub-dl:disabled{opacity:.75;cursor:default}
+.upd-bar .ub-dl:hover{background:#ef3326}
+.upd-bar .ub-x{background:none;border:none;color:#a9853f;cursor:pointer;font-size:15px;line-height:1;padding:2px 4px}
 .cloud-body{display:block!important;padding:15px 20px 18px}
 .cloud-intro{font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:12px}
 .cloud-body .mf{margin-bottom:9px}
@@ -409,10 +409,10 @@ body.dark .dba-form input[type=text]{background:#1f2732;border-color:#3a4452;col
 .seg-toggle .seg-btn:hover{color:var(--ink)}
 .seg-toggle .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.22)}
 /* Ansicht-Umschalter dunkler/prägnanter als die übrigen */
-#anaSub,#anaSub2{background:#3f4a59;border-color:#323b47}
-#anaSub .seg-btn,#anaSub2 .seg-btn{color:#c7d0dc}
-#anaSub .seg-btn:hover,#anaSub2 .seg-btn:hover{color:#fff}
-#anaSub .seg-btn.on,#anaSub2 .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.3)}
+#anaSub,#anaSub2,#anaSub3{background:#3f4a59;border-color:#323b47}
+#anaSub .seg-btn,#anaSub2 .seg-btn,#anaSub3 .seg-btn{color:#c7d0dc}
+#anaSub .seg-btn:hover,#anaSub2 .seg-btn:hover,#anaSub3 .seg-btn:hover{color:#fff}
+#anaSub .seg-btn.on,#anaSub2 .seg-btn.on,#anaSub3 .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.3)}
 .seg-toggle.seg-sm{align-self:auto}
 .seg-toggle.seg-sm .seg-btn{padding:7px 13px;font-size:12.5px}
 
@@ -721,7 +721,7 @@ body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 @media (max-height:720px){.gl-spark,.gl-feats{display:none}.gl-logo{width:54px;height:54px;margin-bottom:8px}.gl-quote{margin:14px 0 16px}}
 @keyframes glshake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}}
 /* Auto-Update-Banner */
-.upd-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:12px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);font-size:13px;font-weight:600;animation:updIn .25s ease}
+.upd-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:12px;background:#14181f;color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px 10px 16px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);font-size:13px;font-weight:600;animation:updIn .25s ease}
 @keyframes updIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 .upd-banner .upd-ico{display:inline-flex;align-items:center;color:#ffd24a}
 .upd-banner .upd-txt{font-weight:700;letter-spacing:.01em}
@@ -918,7 +918,7 @@ body.coach .hero-ctrls .toggle{display:none!important}   /* Anomalien-/Glättung
 .ctl-lab{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--muted)}
 .ctl-lab select.mini{height:30px;box-sizing:border-box;padding:0 6px;font-size:12px}
 .fps-auto{font-size:9px;font-weight:800;color:#22a06b;letter-spacing:.02em}
-.num{width:54px;height:30px;box-sizing:border-box;border:1.4px solid var(--line);border-radius:8px;padding:0 8px;font:inherit;font-size:13px;font-weight:600;text-align:center}
+input.num{width:54px;height:30px;box-sizing:border-box;border:1.4px solid var(--line);border-radius:8px;padding:0 8px;font:inherit;font-size:13px;font-weight:600;text-align:center}
 .tag-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:750;cursor:pointer;box-shadow:0 2px 10px rgba(218,41,28,.32);transition:.12s;white-space:nowrap}
 .tag-btn:hover{background:#ef3326}
 .tag-btn:active{transform:scale(.97)}
@@ -984,7 +984,8 @@ body.dark .db-novid{color:#e0b45a;background:#3a2e16;border-color:#5a481f}
 /* Datenbank */
 .db-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
 .db-filters .lib-search{flex:1;min-width:190px}
-.db-filters .mini{border:1.4px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:600;background:#fbfcfe;cursor:pointer}
+.db-filters .mini{border:1.4px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:600;background-color:#fbfcfe;cursor:pointer}
+.db-filters select.mini{padding-right:26px}   /* Platz für den Pfeil (Kurzform «background» hatte ihn gelöscht) */
 .db-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
 .db-table tbody tr.dbt-row{cursor:pointer}
 .db-table tbody tr.dbt-open{background:#f4f8fd}
@@ -1245,6 +1246,8 @@ table.hmp .g b{font-size:6.5px}
   /* App-Header, Filter, Tagging/Kurs/Workflow, Buttons, Fussnote -> weg */
   header,.filters,.pdf-btn,.tt,.no-print,#viewTagging,#viewKurs,#viewWorkflow,.foot{display:none!important}
   .print-only{display:block!important}
+  #gtgToast,.modal-backdrop,#tour,#welcome,.upd-bar{display:none!important}
+  body.dark{--ink:#14181f;--ink2:#3a4350;--muted:#6b7785;--line:#e6e9ee;--bg:#f4f6f9;--card:#ffffff;--good-l:#e4f5ee;--bad-l:#fdecea;--top:#9aa3af}   /* Rückfall, falls «beforeprint» nicht greift */
   #printHead{display:flex!important;border-bottom:2px solid var(--red);padding-bottom:5px;margin-bottom:8px}
   #printHead .ph-logo{width:24px;height:24px}
   #printHead .ph-left{gap:9px}
@@ -1501,7 +1504,7 @@ body.dark .cloud-badge{border-color:#252d39}
 /* Formular-Felder & Filter */
 body.dark .filters{background:#252d39}
 body.dark select,body.dark input,body.dark textarea,
-body.dark .f select,body.dark #kScope,body.dark .clip-selb{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+body.dark .f select,body.dark #kScope,body.dark .clip-selb{background-color:#2d3644;color:#eef1f6;border-color:#3a4452}
 body.dark select option{background:#252d39;color:#eef1f6}
 body.dark input::placeholder,body.dark textarea::placeholder{color:#8892a0}
 body.dark .f label{color:#9aa6b4}
@@ -1529,7 +1532,7 @@ body.dark .hm tr.hm-start td{background:#20272f!important}
 body.dark .clip-sbsbtn,body.dark .clip-sbsbar button,body.dark .coach-run{background:#2d3644;color:#e7ebf1;border-color:#3a4452}
 body.dark .lg{color:#cfd6e0}
 body.dark .lg:hover{background:#2d3644}
-/* Charts bleiben auf hellem Panel (SVG-Texte sind dunkel gesetzt) */
+/* Chart-Flächen transparent (SVG-Farben kommen aus chTheme()) */
 body.dark .chart-shell,body.dark .pf-radar svg{background:transparent}
 body.dark .gh-status.dirty{background:#3a2e16;color:#e0a94a}
 body.dark .gh-status.sync{background:#1e2b3d;color:#7db1e8}
@@ -1546,7 +1549,7 @@ body.dark .clip-selb,body.dark .clip-alabel,body.dark .clip-sbsbtn,body.dark .cl
 body.dark .clip-chips .cv-chip,body.dark .coach-run,body.dark .lib-item,
 body.dark .meta-grid input,body.dark .meta-grid select,body.dark .athlete-row select,
 body.dark .mf input,body.dark .mf select,body.dark .cm-linkrow input,
-body.dark .modal-foot{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+body.dark .modal-foot{background-color:#2d3644;color:#eef1f6;border-color:#3a4452}
 body.dark .lib-search::placeholder,body.dark .mf input::placeholder{color:#8892a0}
 body.dark .btn-mini:hover,body.dark .ctl:hover,body.dark .cv-ctrl button:hover,
 body.dark .clip-sbsbtn:hover,body.dark .clip-sbsbar button:hover,body.dark .cv-chip:hover{background:#38424f;color:#fff;border-color:#4a5563}
@@ -1571,6 +1574,65 @@ body.dark #dropZone{background:radial-gradient(120% 100% at 50% 0%,#2c2420 0%,#2
 body.dark .dropzone .dz-bg span{background:#5a6473}
 body.dark .chart-shell:has(.empty){background:transparent}
 body.dark .empty{color:#9aa6b4}
+/* ===================== Feinschliff 10/2026 ===================== */
+/* Farbpunkt in den «Linien»-Chips (Saison-Verlauf) */
+.kf-chip .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+/* deaktivierte Buttons sehen deaktiviert aus */
+.ctl:disabled,.btn-mini:disabled,.btn-ghost:disabled{opacity:.4;cursor:default;pointer-events:none}
+label.is-disabled{opacity:.45;cursor:default}
+/* Coach-Link-Dialog: Hinweis «Setup vorhanden» + Haupt-Aufklapper */
+.cm-ready{background:var(--good-l);color:var(--good);border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:700;margin-bottom:10px}
+.cm-settings>summary{font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;list-style:none;padding:3px 0}
+.cm-settings>summary::-webkit-details-marker{display:none}
+.cm-settings>summary::before{content:"▸ ";color:var(--muted)}
+.cm-settings[open]>summary::before{content:"▾ "}
+
+/* ---------- Dark-Mode: Lücken schliessen ---------- */
+body.dark{color-scheme:dark}
+/* Tagging-Liste */
+body.dark table.tag-list th{background:#2d3644;color:#aeb8c6;border-bottom-color:#3a4452}
+body.dark table.tag-list td{border-bottom-color:#333c48}
+body.dark table.tag-list tbody tr:hover td{background:#2b333e}
+body.dark table.tag-list tbody tr.active td{background:#4a2622}
+body.dark table.tag-list tbody tr.row-new td{background:#3d3418}
+body.dark table.tag-list tbody tr.unsure td{background:#3a2f1c}
+body.dark .row-flag{color:#5f6b7a}
+body.dark .row-flag:hover,body.dark .row-flag.on{color:#e0a85a}
+body.dark .tag-draft{background:#332a14;border-color:#6b5520;color:#e8cf95}
+/* Button-Hierarchie */
+body.dark .btn-mini.solid,body.dark .ctl.play{background:#e9edf2;color:#14181f;border-color:#e9edf2}
+body.dark .btn-mini.solid:hover,body.dark .ctl.play:hover{background:#fff;color:#14181f;border-color:#fff}
+body.dark .btn-mini.del{color:#ff8a80;border-color:rgba(255,138,128,.4)}
+body.dark .btn-mini.del:hover{background:#4a2622;color:#ffb0a8;border-color:rgba(255,138,128,.6)}
+body.dark .btn-mini.coach{background:#1f6fb2;color:#fff;border-color:#1a5f9a}
+body.dark .btn-mini.coach:hover{background:#2a82cc;color:#fff;border-color:#2a82cc}
+body.dark .ctl.tgl.on,body.dark .clip-sbsbtn.on{background:var(--red);border-color:var(--red);color:#fff}
+body.dark .btn-ghost{background:#2d3644;color:#c2ccd8;border-color:#3a4452}
+body.dark .btn-ghost:hover{background:#38424f;color:#fff;border-color:#4a5563}
+/* Schalter «Kurve glätten»: An = hell, Aus = dunkel */
+body.dark .toggle .sw{background:#4a5563}
+body.dark .hero-ctrls .toggle input:checked + .sw{background:#aab4c0}
+/* Detail-Matrix / Video-Tabelle: hervorgehobene Zelle */
+body.dark td.clip-hi{background:#22344d!important}
+/* helle Restflächen */
+body.dark .clip-vids.sbs .clip-alabel{background:#2d3644;color:#eef1f6;border-color:#3a4452}
+body.dark .db-table tr.db-arch{background:#20272f}
+body.dark .db-selinfo{color:#9cc4f5}
+body.dark .lib-item .li-badge:not(.gold):not(.tr):not(.dnf){background:#4a5563;color:#fff}
+body.dark table.kprev input:focus,body.dark table.kprev select:focus{background:#1f2630}
+body.dark .app-footer .foot-wf:hover,body.dark .app-footer .af-dl a:hover,body.dark .tc-x:hover,body.dark .modal-x:hover{background:#38424f;color:#fff}
+body.dark .dbt-gate.dbt-anom{background:#4a2622;border-color:#8a4a42}
+body.dark .dbt-gate.dbt-anom .dbt-gedit{color:#ff9d94;border-color:#b0584e}
+body.dark .dropzone.drag,body.dark #dropZone.drag{border-color:var(--red);background:#3a2422;color:#eef1f6}
+/* Workflow: Beschriftung und Pfeile */
+body.dark .wf-cap{border-color:#e6e9ee}   /* Bühne bleibt hell -> Beschriftung dunkel auf Weiss */
+body.dark .wf-cap b{color:#14181f}
+body.dark .wf-cap span{color:#6b7785}
+body.dark .wf-ico{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
+body.dark .wf-ico:hover{border-color:var(--red);color:#fff}
+/* Desktop-Update-Leiste */
+body.dark .upd-bar{background:#3a2e16;border-bottom-color:#5e4a26;color:#f0cf8a}
+body.dark .upd-bar .ub-x{color:#d9b876}
 </style>
 </head>
 <body>
@@ -1610,7 +1672,7 @@ body.dark .empty{color:#9aa6b4}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
     </button>
     <span class="hdr-sep" aria-hidden="true"></span>
-    <button id="pdfBtn" class="pdf-btn" onclick="window.print()" title="Als PDF speichern / drucken">
+    <button id="pdfBtn" class="pdf-btn" onclick="gtgPrint()" title="Als PDF speichern / drucken">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
       PDF
     </button>
@@ -1813,7 +1875,7 @@ body.dark .empty{color:#9aa6b4}
             <div class="ctl-sep"></div>
             <button class="ctl" id="btnUndo" title="Rückgängig (Cmd/Ctrl+Z)" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-2"/></svg></button>
             <button class="ctl" id="btnRedo" title="Wiederholen (Cmd/Ctrl+Shift+Z)" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h2"/></svg></button>
-            <button class="tag-btn" id="btnTag" title="Tor taggen (T oder Enter)">＋ Tor taggen</button>
+            <button class="tag-btn" id="btnTag" title="Tor taggen (Enter)">＋ Tor taggen</button>
           </div>
           <div class="kbd-hint">
             <div class="kh-title">Shortcuts</div>
@@ -1823,7 +1885,7 @@ body.dark .empty{color:#9aa6b4}
               <span><b>␣</b> Play</span>
               <span><b>Rad</b> scrubben</span>
               <span><b>Enter</b> taggen</span>
-              <span><b>⌫</b> letzter Tag</span>
+              <span><b>⌫</b> Tag löschen</span>
               <span><b>z</b> Lupe</span>
               <span><b>l</b> Zeitlupe</span>
               <span><b>⌘Z</b> undo</span>
@@ -1834,12 +1896,12 @@ body.dark .empty{color:#9aa6b4}
 
       <!-- RIGHT: Tagging Data -->
       <div class="card tg-data-card">
-        <div class="c-head"><div><h2>Tagging Data</h2>
+        <div class="c-head"><div><h2>Tagging-Daten</h2>
           <div class="c-sub" id="tagSummary">Noch keine Tags.</div></div>
           <div style="display:flex;gap:6px">
           <div class="tg-head-btns" style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).">⌖ Start</button>
-            <label class="btn-mini" title="Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.">CSV → Tags<input type="file" id="impTagsCsv" accept=".csv,text/csv" hidden></label>
+            <button class="btn-mini" id="btnSyncStart" title="Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Tor-Abstände bleiben gleich).">⌖ Start</button>
+            <label class="btn-mini" title="Tor-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.">CSV → Tags<input type="file" id="impTagsCsv" accept=".csv,text/csv" hidden></label>
             <button class="btn-mini" id="btnClearTags">Löschen</button>
           </div>
         </div>
@@ -1847,10 +1909,10 @@ body.dark .empty{color:#9aa6b4}
         <div id="tgEmpty" class="tg-empty">
           <div class="tge-step"><span class="tge-n">1</span><div class="tge-tx"><b>Video laden</b><span>Datei links reinziehen oder «Datei wählen». Bleibt lokal auf deinem Gerät.</span></div></div>
           <div class="tge-step"><span class="tge-n">2</span><div class="tge-tx"><b>Tore taggen</b><span>Video abspielen (<kbd>Leertaste</kbd>), bei jedem Tor <kbd>Enter</kbd>. Feineinstellung: <kbd>x</kbd>/<kbd>y</kbd> = 1 Frame.</span></div></div>
-          <div class="tge-step"><span class="tge-n">3</span><div class="tge-tx"><b>Speichern</b><span>FIS-Zeit-Modus wählen, dann «✓ Save» — der Lauf landet in Datenbank &amp; Analyse.</span></div></div>
+          <div class="tge-step"><span class="tge-n">3</span><div class="tge-tx"><b>Speichern</b><span>FIS-Zeit-Modus wählen, dann «✓ Speichern» — der Lauf landet in Datenbank &amp; Analyse.</span></div></div>
         </div>
         <div class="tag-list-wrap"><table class="tag-list"><thead>
-          <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Gate (s)</th><th>Figur</th><th></th></tr>
+          <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Tor (s)</th><th>Figur</th><th></th></tr>
         </thead><tbody id="tagBody"></tbody></table></div>
         <div id="tgTagHint" class="tg-taghint">▶ Video abspielen (<kbd>Leertaste</kbd>) und bei jedem Tor <kbd>Enter</kbd> drücken.</div>
         <div class="fis-row" id="fisRow">
@@ -1864,10 +1926,10 @@ body.dark .empty{color:#9aa6b4}
           </div>
         </div>
         <div class="save-row">
-          <button class="save-btn" id="btnSaveRun">✓ Save</button>
+          <button class="save-btn" id="btnSaveRun">✓ Speichern</button>
           <div class="save-exports">
             <span class="se-group" title="Einzelner Lauf als CSV">
-              <button class="btn-ghost" id="btnExportCsv" title="Diesen getaggten Lauf als CSV-Datei speichern">CSV export</button>
+              <button class="btn-ghost" id="btnExportCsv" title="Diesen getaggten Lauf als CSV-Datei speichern">CSV-Export</button>
             </span>
             <span class="se-sep"></span>
             <span class="se-group" title="Komplettes Backup (alle Daten)">
@@ -1877,7 +1939,7 @@ body.dark .empty{color:#9aa6b4}
           </div>
         </div>
         <ul class="export-legend">
-          <li><b>CSV export</b> – nur dieser Lauf als Tabelle (z. B. für Excel).</li>
+          <li><b>CSV-Export</b> – nur dieser Lauf als Tabelle (z. B. für Excel).</li>
           <li><b>Backup sichern</b> – alle Daten (Läufe, Athleten, Kurssetzungen) in eine Datei speichern.</li>
           <li><b>Backup laden</b> – eine solche Datei wieder einlesen.</li>
         </ul>
@@ -1893,7 +1955,7 @@ body.dark .empty{color:#9aa6b4}
     <!-- VIDEO-BIBLIOTHEK -->
     <div class="card lib-card">
       <div class="c-head"><div><h2>Video-Bibliothek</h2>
-        <div class="c-sub">Gespeicherte Videos inkl. Tags. Klick auf „Laden" öffnet Video + Tag-Liste wieder zum Anschauen oder Anpassen.</div></div>
+        <div class="c-sub">Gespeicherte Videos inkl. Tags. Klick auf «Laden» öffnet Video + Tag-Liste wieder zum Anschauen oder Anpassen.</div></div>
         <span id="libCount" class="lib-count"></span>
       </div>
       <div class="lib-filters">
@@ -1995,7 +2057,7 @@ body.dark .empty{color:#9aa6b4}
           <select id="dbtVid" class="mini"><option value="">Mit + ohne Video</option><option value="1">Nur mit Video</option><option value="0">Nur ohne Video</option></select>
           <select id="dbtDnf" class="mini"><option value="">Alle Läufe</option><option value="dnf">Nur DNF (wenig Tore)</option><option value="full">Nur vollständige</option></select>
           <div class="seg-toggle seg-sm dbt-viewseg" id="dbtView"></div>
-          <label class="btn-mini" style="margin-left:auto" title="Fertig getaggte Läufe aus CSV-Datei(en) importieren (mehrere möglich) — ohne Video, direkt in Datenbank &amp; Analyse.">⭳ CSV import<input type="file" id="impCsv" accept=".csv,text/csv" multiple hidden></label>
+          <label class="btn-mini" style="margin-left:auto" title="Fertig getaggte Läufe aus CSV-Datei(en) importieren (mehrere möglich) — ohne Video, direkt in Datenbank &amp; Analyse.">⭳ CSV-Import<input type="file" id="impCsv" accept=".csv,text/csv" multiple hidden></label>
           <span id="dbtCount" class="lib-count"></span>
         </div>
         <div class="db-bulk" id="dbtBulk" style="display:none"><span class="db-selinfo" id="dbtSel">0 ausgewählt</span><button class="btn-mini" id="dbtExport">⭳ Zeiten exportieren (CSV)</button><button class="btn-mini del" id="dbtDel">Ausgewählte löschen</button></div>
@@ -2004,8 +2066,8 @@ body.dark .empty{color:#9aa6b4}
         </thead><tbody id="dbtBody"></tbody></table></div>
         <div id="dbtGridBox" style="display:none">
           <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><button class="btn-mini" id="dbtGridCsv" style="margin-left:auto">⭳ CSV (Event)</button><span id="dbtGridInfo" class="lib-count"></span></div>
-        <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>Pfeiltasten</b> bewegen zwischen den Zellen, <b>Tab</b> nach rechts — wie in Excel. <b>Cmd/Ctrl+Z</b> macht rückgängig (Shift+Z wiederholt).</div>
-          <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0,25 s</b> Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.</div>
+        <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>↑/↓</b> wechseln die Zeile, <b>Tab</b> nach rechts — wie in Excel. <b>Cmd/Ctrl+Z</b> macht rückgängig (mit Shift: wiederholen).</div>
+          <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0.25 s</b> Abweichung zum Median des Feldes an diesem Tor — möglicher Tagging-Fehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.</div>
           <div class="db-wrap dbtg-wrap" id="dbtGridWrap"></div>
         </div>
       </div>
@@ -2245,7 +2307,7 @@ body.dark .empty{color:#9aa6b4}
             <!-- KPI-Badge -->
             <g class="wf-kpi"><rect x="346" y="30" width="86" height="40" rx="9" fill="#fff5f4" stroke="#f2c7c2"/><text x="389" y="47" text-anchor="middle" font-size="9" fill="#9a4a42" font-weight="700">Endrückstand</text><text x="389" y="62" text-anchor="middle" font-size="15" fill="#da291c" font-weight="900">+0.42 s</text></g>
           </svg>
-          <div class="wf-cap"><span class="wf-step-no">4</span><div><b>Analyse entsteht</b><span>Aus den Zeiten wächst die Gate-to-Gate Analyse: Rückstand pro Tor, kumulierte Kurve, Sektoren und Rhythmus — sofort sichtbar, wo Zeit liegen bleibt.</span></div></div>
+          <div class="wf-cap"><span class="wf-step-no">4</span><div><b>Analyse entsteht</b><span>Aus den Zeiten wächst die Gate-to-Gate Analyse: Rückstand pro Tor, kumulierte Kurve und Abschnitte — sofort sichtbar, wo Zeit liegen bleibt.</span></div></div>
         </div>
 
         <!-- ===== SZENE 4: AN COACHES ===== -->
@@ -2287,7 +2349,7 @@ body.dark .empty{color:#9aa6b4}
     </div>
   </div>
 
-  <footer id="appFooter" class="app-footer no-print"><button id="wfBtn" class="foot-wf" title="Workflow ansehen — vom Start bis zum Coach"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Workflow</button><div class="af-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.89671641 -0.89671641 136.68413282 31.68397982" class="foot-logo" role="img" aria-label="Swiss-Ski"> <defs   id="defs11989" /> <path   d="M 45.167373,4.5035962 44.854261,4.3440205 44.541148,4.2644718 44.306373,4.0253475 44.071676,3.7863028 43.915237,3.4673906 43.758563,3.1484785 l 0,-0.3984609 0.07834,-0.4782488 0.07834,-0.5579568 0.234775,-0.4782487 0.313034,-0.39870004 0.391215,-0.31867306 0.469551,-0.23912436 0.469551,-0.15957566 0.547809,-0.0795487 0.313112,0 0.391215,0.0795487 0.313112,0.15957566 0.234775,0.23912436 0.234776,0.23912436 0.15636,0.31891214 0.07841,0.3186731 0,0.3189122 0,0.5579568 -0.156751,0.5580366 -0.234698,0.4782487 -0.312877,0.3984609 -0.391449,0.3188325 -0.391214,0.2391243 -0.54781,0.1593366 -0.469551,0.079788 -0.391214,0 z"   id="path9406"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 38.515322,29.531786 4.304139,-20.5645355 3.443374,0 -4.304139,20.5645355 -3.443374,0 z"   id="path9426"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 28.106824,29.531786 -0.782428,-13.390884 -0.156674,-2.311616 0,-1.753578 -0.782585,1.833366 -1.095541,2.311615 -6.495534,13.311097 -2.347676,0 -0.313112,-20.5645355 2.347911,0 -0.07834,12.8328475 -0.07834,4.463655 0.860922,-1.992703 1.173878,-2.391164 6.260601,-12.9126355 2.504272,0 0.704327,12.9126355 0.07834,2.470952 0.07834,1.833366 0.704326,-1.833366 1.017361,-2.55074 5.477938,-12.8328475 2.347912,0 -8.999885,20.5645355 -2.426013,0 z"   id="path9438"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 5.4119377,29.850699 -0.7826633,0 L 3.8469242,29.770911 3.1423629,29.611575 2.4381147,29.37245 1.7337882,28.974069 1.1077985,28.575369 0.5599107,28.017333 0.0903597,27.379747 0.0121012,27.22049 l 1.0956973,-1.036285 0.1564387,0.239125 0.3131123,0.558036 0.3912142,0.478169 0.469551,0.318673 0.5478095,0.318912 0.5478878,0.239125 0.6259897,0.07979 0.5478095,0.07979 0.7043265,0.07955 0.8609218,-0.07955 0.8607652,-0.239363 0.8609218,-0.318673 0.7043265,-0.558037 0.5476529,-0.557957 0.3131123,-0.39846 0.1565953,-0.3987 0.1564387,-0.398461 0.1565168,-0.398382 0.07826,-0.478248 0,-0.558037 -0.07826,-0.797081 L 9.8726722,22.677048 9.5596382,22.039224 9.168424,21.481506 8.6205362,20.923469 7.9945465,20.365433 6.6640737,19.329227 5.3336009,18.292942 4.785948,17.655357 4.2380602,17.0974 3.7685875,16.380027 3.3771384,15.662654 3.2206997,14.865572 3.064261,13.909075 3.142363,13.351118 3.2207,12.793321 3.3771387,12.235284 3.6119142,11.677248 3.8469245,11.199079 4.159802,10.800618 4.5511728,10.401918 4.942387,10.003457 5.3336012,9.6845446 5.803387,9.3657122 6.2728598,9.1265878 6.7424108,8.9672513 7.8379515,8.6483391 l 1.0956973,-0.079788 0.7042482,0 0.704326,0.079788 0.62599,0.1595756 0.704483,0.2391244 0.62599,0.3186731 0.547887,0.3987 0.469551,0.5577178 0.469473,0.558036 0.07834,0.159576 -1.095697,0.956418 -0.07834,-0.239045 -0.312878,-0.478249 -0.39137,-0.3987 -0.469551,-0.318912 -0.469551,-0.318673 -0.469551,-0.159575 -0.54781,-0.159337 -0.5478873,-0.079788 -0.5476529,0 -0.8609218,0.079788 -0.7826633,0.159337 -0.7824284,0.318912 -0.6261463,0.478248 -0.5478878,0.558037 -0.3912142,0.717293 -0.2347755,0.717373 -0.078337,0.478249 0,0.478169 0,0.637825 0.1566736,0.637585 0.2347755,0.557957 0.3912142,0.478248 0.391449,0.478249 0.547653,0.478249 1.1737992,1.036205 1.4869115,1.116073 0.7044831,0.637506 0.6259894,0.717373 0.547888,0.717373 0.391214,0.797081 0.156674,0.478249 0.15636,0.478249 0.07834,0.478169 0,0.558036 -0.07834,0.637825 -0.07826,0.637505 -0.156439,0.558037 -0.234776,0.558036 -0.313112,0.557798 -0.313112,0.478169 -0.391214,0.3987 -0.3912144,0.398461 -0.4697076,0.318912 -0.469551,0.318912 -0.5476529,0.318593 -0.5478878,0.159576 -0.5478095,0.239124 -0.5478878,0.07955 -0.6259897,0.07979 -0.5478095,0 z"   id="path9450"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 52.366999,29.850699 -1.64335,0 -1.565249,-0.239124 -0.782428,-0.239125 -0.782663,-0.239044 -0.704248,-0.239125 -0.704327,-0.398461 1.799789,-3.905857 0.939102,0.558037 1.01736,0.398381 1.095698,0.318912 0.625989,0.07979 0.547888,0 0.547888,0 0.547653,-0.07979 0.469473,-0.159337 0.469786,-0.239044 0.391214,-0.239125 0.313034,-0.3987 0.156438,-0.478248 0.07834,-0.558037 0,-0.398381 -0.156595,-0.318912 -0.156517,-0.398461 -0.313034,-0.318912 -0.312877,-0.398461 -0.469786,-0.3987 -1.251901,-0.796842 -1.252215,-0.956737 -0.626146,-0.557718 -0.547653,-0.558036 -0.469707,-0.637824 -0.391293,-0.796843 -0.234776,-0.876948 -0.07826,-0.956418 0,-0.717373 0.156674,-0.717373 0.15636,-0.717294 0.234775,-0.637824 0.234776,-0.558036 0.391449,-0.637506 0.391214,-0.478249 0.469473,-0.478248 0.469551,-0.3987 0.626225,-0.3984614 0.625989,-0.3188324 0.704249,-0.3186731 0.704326,-0.2391244 0.782585,-0.1595756 0.861,-0.079788 0.860765,0 1.565249,0.079788 1.408574,0.2391243 0.704327,0.1595757 0.625989,0.2391244 0.704484,0.2391243 0.625989,0.3185934 -1.721687,3.7462818 -0.860765,-0.478169 -0.939259,-0.398461 -1.09554,-0.239124 -1.095698,-0.07979 -0.704326,0.07979 -0.62599,0.07955 -0.469472,0.239364 -0.39145,0.239124 -0.234775,0.318673 -0.234776,0.318833 -0.07834,0.318912 -0.0781,0.398461 0.0781,0.478248 0.23501,0.3987 0.234776,0.398382 0.312877,0.398461 0.860922,0.637824 0.782663,0.558036 1.408575,0.956418 0.704326,0.558037 0.54781,0.637585 0.547731,0.717293 0.391371,0.797161 0.156438,0.398461 0.156674,0.478169 0.0781,0.558037 0,0.558036 0,0.797081 -0.156439,0.797161 -0.234775,0.717373 -0.313112,0.637506 -0.313035,0.637824 -0.469551,0.557798 -0.46955,0.557957 -0.469552,0.478248 -0.625989,0.3987 -0.626147,0.398461 -0.625989,0.318912 -0.704327,0.239045 -0.626146,0.159337 -0.782663,0.159336 -0.704249,0.07979 -0.704326,0 z"   id="path9470"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 68.175372,29.850699 -1.643585,0 -1.64335,-0.239124 -0.860766,-0.159337 -0.782585,-0.159576 -0.782663,-0.239044 -0.704326,-0.318673 1.878125,-5.021692 0.861,0.478249 1.017361,0.398461 1.017204,0.318912 1.01736,0.07979 0.547888,-0.07979 0.469551,0 0.469551,-0.159336 0.313034,-0.159576 0.313112,-0.159336 0.234776,-0.318913 0.156439,-0.318912 0,-0.398381 0,-0.239124 -0.07834,-0.318913 -0.234776,-0.239124 -0.234775,-0.239124 -0.704248,-0.558037 -1.095541,-0.717293 -1.174034,-0.87671 -0.62599,-0.558036 -0.469551,-0.557957 -0.469472,-0.637585 -0.39145,-0.717374 -0.234775,-0.797081 -0.0781,-0.956497 0.0781,-0.876869 0.07834,-0.797161 0.234775,-0.796842 0.234776,-0.717373 0.391136,-0.637825 0.391449,-0.637505 0.469551,-0.558037 0.547887,-0.478248 0.547575,-0.478249 0.704561,-0.3987002 0.704327,-0.3185933 0.704248,-0.2391244 0.782663,-0.2391244 0.860766,-0.1595756 0.860921,-0.079788 0.860766,0 1.721687,0.079788 1.565248,0.1595756 1.565013,0.3984609 1.486912,0.478169 -1.878126,4.8621154 -0.860765,-0.478248 -0.939259,-0.398461 -1.095462,-0.318833 -1.095776,-0.07955 -0.547809,0.07955 -0.469551,0.07979 -0.391214,0.159257 -0.313113,0.159575 -0.156438,0.239125 -0.234697,0.239124 -0.07834,0.239125 0,0.239124 0.07834,0.398461 0.07826,0.318912 0.234775,0.239045 0.312878,0.318912 0.782663,0.557797 0.860922,0.558037 1.330316,0.876869 0.626146,0.558036 0.547653,0.637586 0.469708,0.637505 0.391292,0.797161 0.234776,0.876949 0.07826,0.478169 0.0781,0.478249 -0.0781,0.956497 -0.156595,0.87663 -0.234775,0.797161 -0.312956,0.797081 -0.391371,0.637824 -0.547888,0.637586 -0.469472,0.557956 -0.62599,0.478249 -0.626225,0.398461 -0.704248,0.3987 -0.782663,0.239124 -0.704327,0.239045 -0.782585,0.239124 -0.860765,0.07955 -0.782585,0.07979 -0.860765,0 z"   id="path9490"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 112.70442,29.531786 -2.66079,-7.332988 -1.1738,1.673791 0,5.659197 -8.37374,0 0,-28.6949232 8.37374,0 0,14.9055782 3.99103,-7.1738906 9.93898,0 -6.02606,8.5288486 6.1825,12.434387 -10.25186,0 z"   id="path9510"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 87.505182,29.850699 -1.721687,0 -1.721687,-0.159337 -1.721687,-0.239124 -1.64335,-0.39862 1.017125,-5.659197 1.017361,0.398381 1.174112,0.239125 1.095463,0.239124 1.173877,0.07979 0.469473,-0.07979 0.391449,0 0.312877,-0.159337 0.313113,-0.159336 0.234775,-0.159576 0.156674,-0.159336 0.0781,-0.239045 0.07834,-0.318912 -0.07834,-0.318673 -0.0781,-0.239125 -0.156674,-0.239363 -0.234775,-0.159337 -0.547888,-0.318912 -0.547575,-0.159336 -1.486989,-0.478169 -0.782585,-0.318913 -0.782664,-0.39846 -0.782663,-0.558037 -0.625912,-0.637506 -0.547887,-0.717373 -0.391214,-0.876948 -0.156674,-0.478169 -0.156439,-0.478249 -0.07834,-0.558037 0,-0.558036 0,-0.796842 0.156752,-0.717612 0.156361,-0.717294 0.313112,-0.717373 0.312877,-0.637585 0.469786,-0.637745 0.469551,-0.557797 0.547575,-0.558037 0.704561,-0.4781688 0.704327,-0.3987 0.78235,-0.3186731 0.861,-0.3189122 0.939024,-0.2391244 0.939102,-0.1595756 1.095697,-0.1593365 1.095541,0 1.565248,0.079788 1.64335,0.1593365 1.64335,0.2391244 1.721687,0.3189122 -0.939023,5.2607355 -1.095541,-0.318912 -1.173799,-0.239124 -1.095776,-0.159257 -1.252136,-0.07979 -0.704326,0.07979 -0.313034,0.159257 -0.234776,0.07979 -0.156439,0.159337 -0.156438,0.239124 0,0.159337 -0.07834,0.239124 0.07834,0.239364 0.0781,0.239124 0.234775,0.318673 0.469473,0.239045 0.469551,0.239124 1.330551,0.3987 1.017361,0.398461 1.017438,0.3987 0.860687,0.557718 0.782663,0.558036 0.391136,0.3987 0.313113,0.318673 0.234775,0.478249 0.234776,0.39862 0.156673,0.478249 0.156439,0.558037 0.07834,0.557797 0,0.637745 0,0.956497 -0.156674,0.87663 -0.234775,0.876949 -0.313113,0.717293 -0.469551,0.717373 -0.469472,0.637825 -0.547653,0.637505 -0.626225,0.478249 -0.704248,0.478249 -0.782663,0.3987 -0.860687,0.398461 -0.861,0.239044 -0.939102,0.239125 -1.017361,0.159336 -1.017439,0.07979 -1.095462,0 z"   id="path9522"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 129.1387,7.2136723 -0.93902,-0.2391244 -0.78267,-0.2391243 -0.70425,-0.4782487 -0.54788,-0.4781691 -0.39145,-0.6378243 -0.23478,-0.7173731 -0.0781,-0.7172934 0,-0.7173731 0.23478,-0.6378243 0.39121,-0.6375056 0.46955,-0.5580365 0.70425,-0.47824875 0.78266,-0.31891219 1.01736,-0.23912436 1.09578,-0.0795487 1.09546,0.0795487 0.9391,0.15957566 0.78259,0.31867306 0.70432,0.47848788 0.46956,0.4782487 0.39144,0.6375055 0.23478,0.7173731 0.078,0.7971609 -0.078,0.7970812 -0.23478,0.7173731 -0.39144,0.5580365 -0.54789,0.5577178 -0.70433,0.3987 -0.78235,0.3189122 -0.93934,0.1593365 -1.01712,0.079788 -1.01744,-0.079788 z"   id="path9542"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-20.9687503 z"   id="path12260"   style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-7 -1.09375,0 0,2.6875 -2.34375,0 0,-2.6875 -2.65625,0 0,-2.3125 2.65625,0 0,-2.71875 2.34375,0 0,2.71875 1.09375,0 0,-11.6562503 -9.0625,0 z"   id="path9564"   style="fill:#e3001b;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /></svg></div><button id="tutBtn" class="tut-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Tutorial</button><div class="af-dl" id="afDownload"><span class="afdl-lab" title="Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.">Desktop-App v1.7.0 – Videos auf der Festplatte statt im Browser:</span><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-mac.dmg" title="Mac: nach dem Download öffnen, App in „Programme" ziehen. Beim 1. Start Rechtsklick → „Öffnen" (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Mac</a><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-win.exe" title="Windows: Datei ausführen. Bei „Windows hat den PC geschützt" → Mehr Infos → Trotzdem ausführen (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Windows</a></div><div class="af-ver-row no-print" id="afVerWrap" style="display:none"><span id="afVer"></span></div></footer>
+  <footer id="appFooter" class="app-footer no-print"><button id="wfBtn" class="foot-wf" title="Workflow ansehen — vom Start bis zum Coach"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Workflow</button><div class="af-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.89671641 -0.89671641 136.68413282 31.68397982" class="foot-logo" role="img" aria-label="Swiss-Ski"> <defs   id="defs11989" /> <path   d="M 45.167373,4.5035962 44.854261,4.3440205 44.541148,4.2644718 44.306373,4.0253475 44.071676,3.7863028 43.915237,3.4673906 43.758563,3.1484785 l 0,-0.3984609 0.07834,-0.4782488 0.07834,-0.5579568 0.234775,-0.4782487 0.313034,-0.39870004 0.391215,-0.31867306 0.469551,-0.23912436 0.469551,-0.15957566 0.547809,-0.0795487 0.313112,0 0.391215,0.0795487 0.313112,0.15957566 0.234775,0.23912436 0.234776,0.23912436 0.15636,0.31891214 0.07841,0.3186731 0,0.3189122 0,0.5579568 -0.156751,0.5580366 -0.234698,0.4782487 -0.312877,0.3984609 -0.391449,0.3188325 -0.391214,0.2391243 -0.54781,0.1593366 -0.469551,0.079788 -0.391214,0 z"   id="path9406"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 38.515322,29.531786 4.304139,-20.5645355 3.443374,0 -4.304139,20.5645355 -3.443374,0 z"   id="path9426"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 28.106824,29.531786 -0.782428,-13.390884 -0.156674,-2.311616 0,-1.753578 -0.782585,1.833366 -1.095541,2.311615 -6.495534,13.311097 -2.347676,0 -0.313112,-20.5645355 2.347911,0 -0.07834,12.8328475 -0.07834,4.463655 0.860922,-1.992703 1.173878,-2.391164 6.260601,-12.9126355 2.504272,0 0.704327,12.9126355 0.07834,2.470952 0.07834,1.833366 0.704326,-1.833366 1.017361,-2.55074 5.477938,-12.8328475 2.347912,0 -8.999885,20.5645355 -2.426013,0 z"   id="path9438"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 5.4119377,29.850699 -0.7826633,0 L 3.8469242,29.770911 3.1423629,29.611575 2.4381147,29.37245 1.7337882,28.974069 1.1077985,28.575369 0.5599107,28.017333 0.0903597,27.379747 0.0121012,27.22049 l 1.0956973,-1.036285 0.1564387,0.239125 0.3131123,0.558036 0.3912142,0.478169 0.469551,0.318673 0.5478095,0.318912 0.5478878,0.239125 0.6259897,0.07979 0.5478095,0.07979 0.7043265,0.07955 0.8609218,-0.07955 0.8607652,-0.239363 0.8609218,-0.318673 0.7043265,-0.558037 0.5476529,-0.557957 0.3131123,-0.39846 0.1565953,-0.3987 0.1564387,-0.398461 0.1565168,-0.398382 0.07826,-0.478248 0,-0.558037 -0.07826,-0.797081 L 9.8726722,22.677048 9.5596382,22.039224 9.168424,21.481506 8.6205362,20.923469 7.9945465,20.365433 6.6640737,19.329227 5.3336009,18.292942 4.785948,17.655357 4.2380602,17.0974 3.7685875,16.380027 3.3771384,15.662654 3.2206997,14.865572 3.064261,13.909075 3.142363,13.351118 3.2207,12.793321 3.3771387,12.235284 3.6119142,11.677248 3.8469245,11.199079 4.159802,10.800618 4.5511728,10.401918 4.942387,10.003457 5.3336012,9.6845446 5.803387,9.3657122 6.2728598,9.1265878 6.7424108,8.9672513 7.8379515,8.6483391 l 1.0956973,-0.079788 0.7042482,0 0.704326,0.079788 0.62599,0.1595756 0.704483,0.2391244 0.62599,0.3186731 0.547887,0.3987 0.469551,0.5577178 0.469473,0.558036 0.07834,0.159576 -1.095697,0.956418 -0.07834,-0.239045 -0.312878,-0.478249 -0.39137,-0.3987 -0.469551,-0.318912 -0.469551,-0.318673 -0.469551,-0.159575 -0.54781,-0.159337 -0.5478873,-0.079788 -0.5476529,0 -0.8609218,0.079788 -0.7826633,0.159337 -0.7824284,0.318912 -0.6261463,0.478248 -0.5478878,0.558037 -0.3912142,0.717293 -0.2347755,0.717373 -0.078337,0.478249 0,0.478169 0,0.637825 0.1566736,0.637585 0.2347755,0.557957 0.3912142,0.478248 0.391449,0.478249 0.547653,0.478249 1.1737992,1.036205 1.4869115,1.116073 0.7044831,0.637506 0.6259894,0.717373 0.547888,0.717373 0.391214,0.797081 0.156674,0.478249 0.15636,0.478249 0.07834,0.478169 0,0.558036 -0.07834,0.637825 -0.07826,0.637505 -0.156439,0.558037 -0.234776,0.558036 -0.313112,0.557798 -0.313112,0.478169 -0.391214,0.3987 -0.3912144,0.398461 -0.4697076,0.318912 -0.469551,0.318912 -0.5476529,0.318593 -0.5478878,0.159576 -0.5478095,0.239124 -0.5478878,0.07955 -0.6259897,0.07979 -0.5478095,0 z"   id="path9450"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 52.366999,29.850699 -1.64335,0 -1.565249,-0.239124 -0.782428,-0.239125 -0.782663,-0.239044 -0.704248,-0.239125 -0.704327,-0.398461 1.799789,-3.905857 0.939102,0.558037 1.01736,0.398381 1.095698,0.318912 0.625989,0.07979 0.547888,0 0.547888,0 0.547653,-0.07979 0.469473,-0.159337 0.469786,-0.239044 0.391214,-0.239125 0.313034,-0.3987 0.156438,-0.478248 0.07834,-0.558037 0,-0.398381 -0.156595,-0.318912 -0.156517,-0.398461 -0.313034,-0.318912 -0.312877,-0.398461 -0.469786,-0.3987 -1.251901,-0.796842 -1.252215,-0.956737 -0.626146,-0.557718 -0.547653,-0.558036 -0.469707,-0.637824 -0.391293,-0.796843 -0.234776,-0.876948 -0.07826,-0.956418 0,-0.717373 0.156674,-0.717373 0.15636,-0.717294 0.234775,-0.637824 0.234776,-0.558036 0.391449,-0.637506 0.391214,-0.478249 0.469473,-0.478248 0.469551,-0.3987 0.626225,-0.3984614 0.625989,-0.3188324 0.704249,-0.3186731 0.704326,-0.2391244 0.782585,-0.1595756 0.861,-0.079788 0.860765,0 1.565249,0.079788 1.408574,0.2391243 0.704327,0.1595757 0.625989,0.2391244 0.704484,0.2391243 0.625989,0.3185934 -1.721687,3.7462818 -0.860765,-0.478169 -0.939259,-0.398461 -1.09554,-0.239124 -1.095698,-0.07979 -0.704326,0.07979 -0.62599,0.07955 -0.469472,0.239364 -0.39145,0.239124 -0.234775,0.318673 -0.234776,0.318833 -0.07834,0.318912 -0.0781,0.398461 0.0781,0.478248 0.23501,0.3987 0.234776,0.398382 0.312877,0.398461 0.860922,0.637824 0.782663,0.558036 1.408575,0.956418 0.704326,0.558037 0.54781,0.637585 0.547731,0.717293 0.391371,0.797161 0.156438,0.398461 0.156674,0.478169 0.0781,0.558037 0,0.558036 0,0.797081 -0.156439,0.797161 -0.234775,0.717373 -0.313112,0.637506 -0.313035,0.637824 -0.469551,0.557798 -0.46955,0.557957 -0.469552,0.478248 -0.625989,0.3987 -0.626147,0.398461 -0.625989,0.318912 -0.704327,0.239045 -0.626146,0.159337 -0.782663,0.159336 -0.704249,0.07979 -0.704326,0 z"   id="path9470"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 68.175372,29.850699 -1.643585,0 -1.64335,-0.239124 -0.860766,-0.159337 -0.782585,-0.159576 -0.782663,-0.239044 -0.704326,-0.318673 1.878125,-5.021692 0.861,0.478249 1.017361,0.398461 1.017204,0.318912 1.01736,0.07979 0.547888,-0.07979 0.469551,0 0.469551,-0.159336 0.313034,-0.159576 0.313112,-0.159336 0.234776,-0.318913 0.156439,-0.318912 0,-0.398381 0,-0.239124 -0.07834,-0.318913 -0.234776,-0.239124 -0.234775,-0.239124 -0.704248,-0.558037 -1.095541,-0.717293 -1.174034,-0.87671 -0.62599,-0.558036 -0.469551,-0.557957 -0.469472,-0.637585 -0.39145,-0.717374 -0.234775,-0.797081 -0.0781,-0.956497 0.0781,-0.876869 0.07834,-0.797161 0.234775,-0.796842 0.234776,-0.717373 0.391136,-0.637825 0.391449,-0.637505 0.469551,-0.558037 0.547887,-0.478248 0.547575,-0.478249 0.704561,-0.3987002 0.704327,-0.3185933 0.704248,-0.2391244 0.782663,-0.2391244 0.860766,-0.1595756 0.860921,-0.079788 0.860766,0 1.721687,0.079788 1.565248,0.1595756 1.565013,0.3984609 1.486912,0.478169 -1.878126,4.8621154 -0.860765,-0.478248 -0.939259,-0.398461 -1.095462,-0.318833 -1.095776,-0.07955 -0.547809,0.07955 -0.469551,0.07979 -0.391214,0.159257 -0.313113,0.159575 -0.156438,0.239125 -0.234697,0.239124 -0.07834,0.239125 0,0.239124 0.07834,0.398461 0.07826,0.318912 0.234775,0.239045 0.312878,0.318912 0.782663,0.557797 0.860922,0.558037 1.330316,0.876869 0.626146,0.558036 0.547653,0.637586 0.469708,0.637505 0.391292,0.797161 0.234776,0.876949 0.07826,0.478169 0.0781,0.478249 -0.0781,0.956497 -0.156595,0.87663 -0.234775,0.797161 -0.312956,0.797081 -0.391371,0.637824 -0.547888,0.637586 -0.469472,0.557956 -0.62599,0.478249 -0.626225,0.398461 -0.704248,0.3987 -0.782663,0.239124 -0.704327,0.239045 -0.782585,0.239124 -0.860765,0.07955 -0.782585,0.07979 -0.860765,0 z"   id="path9490"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 112.70442,29.531786 -2.66079,-7.332988 -1.1738,1.673791 0,5.659197 -8.37374,0 0,-28.6949232 8.37374,0 0,14.9055782 3.99103,-7.1738906 9.93898,0 -6.02606,8.5288486 6.1825,12.434387 -10.25186,0 z"   id="path9510"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 87.505182,29.850699 -1.721687,0 -1.721687,-0.159337 -1.721687,-0.239124 -1.64335,-0.39862 1.017125,-5.659197 1.017361,0.398381 1.174112,0.239125 1.095463,0.239124 1.173877,0.07979 0.469473,-0.07979 0.391449,0 0.312877,-0.159337 0.313113,-0.159336 0.234775,-0.159576 0.156674,-0.159336 0.0781,-0.239045 0.07834,-0.318912 -0.07834,-0.318673 -0.0781,-0.239125 -0.156674,-0.239363 -0.234775,-0.159337 -0.547888,-0.318912 -0.547575,-0.159336 -1.486989,-0.478169 -0.782585,-0.318913 -0.782664,-0.39846 -0.782663,-0.558037 -0.625912,-0.637506 -0.547887,-0.717373 -0.391214,-0.876948 -0.156674,-0.478169 -0.156439,-0.478249 -0.07834,-0.558037 0,-0.558036 0,-0.796842 0.156752,-0.717612 0.156361,-0.717294 0.313112,-0.717373 0.312877,-0.637585 0.469786,-0.637745 0.469551,-0.557797 0.547575,-0.558037 0.704561,-0.4781688 0.704327,-0.3987 0.78235,-0.3186731 0.861,-0.3189122 0.939024,-0.2391244 0.939102,-0.1595756 1.095697,-0.1593365 1.095541,0 1.565248,0.079788 1.64335,0.1593365 1.64335,0.2391244 1.721687,0.3189122 -0.939023,5.2607355 -1.095541,-0.318912 -1.173799,-0.239124 -1.095776,-0.159257 -1.252136,-0.07979 -0.704326,0.07979 -0.313034,0.159257 -0.234776,0.07979 -0.156439,0.159337 -0.156438,0.239124 0,0.159337 -0.07834,0.239124 0.07834,0.239364 0.0781,0.239124 0.234775,0.318673 0.469473,0.239045 0.469551,0.239124 1.330551,0.3987 1.017361,0.398461 1.017438,0.3987 0.860687,0.557718 0.782663,0.558036 0.391136,0.3987 0.313113,0.318673 0.234775,0.478249 0.234776,0.39862 0.156673,0.478249 0.156439,0.558037 0.07834,0.557797 0,0.637745 0,0.956497 -0.156674,0.87663 -0.234775,0.876949 -0.313113,0.717293 -0.469551,0.717373 -0.469472,0.637825 -0.547653,0.637505 -0.626225,0.478249 -0.704248,0.478249 -0.782663,0.3987 -0.860687,0.398461 -0.861,0.239044 -0.939102,0.239125 -1.017361,0.159336 -1.017439,0.07979 -1.095462,0 z"   id="path9522"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 129.1387,7.2136723 -0.93902,-0.2391244 -0.78267,-0.2391243 -0.70425,-0.4782487 -0.54788,-0.4781691 -0.39145,-0.6378243 -0.23478,-0.7173731 -0.0781,-0.7172934 0,-0.7173731 0.23478,-0.6378243 0.39121,-0.6375056 0.46955,-0.5580365 0.70425,-0.47824875 0.78266,-0.31891219 1.01736,-0.23912436 1.09578,-0.0795487 1.09546,0.0795487 0.9391,0.15957566 0.78259,0.31867306 0.70432,0.47848788 0.46956,0.4782487 0.39144,0.6375055 0.23478,0.7173731 0.078,0.7971609 -0.078,0.7970812 -0.23478,0.7173731 -0.39144,0.5580365 -0.54789,0.5577178 -0.70433,0.3987 -0.78235,0.3189122 -0.93934,0.1593365 -1.01712,0.079788 -1.01744,-0.079788 z"   id="path9542"   style="fill:#e3001b;fill-opacity:1;fill-rule:nonzero;stroke:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-20.9687503 z"   id="path12260"   style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /> <path   d="m 125.625,8.5625077 0,20.9687503 9.0625,0 0,-7 -1.09375,0 0,2.6875 -2.34375,0 0,-2.6875 -2.65625,0 0,-2.3125 2.65625,0 0,-2.71875 2.34375,0 0,2.71875 1.09375,0 0,-11.6562503 -9.0625,0 z"   id="path9564"   style="fill:#e3001b;fill-opacity:1;stroke:#ffffff;stroke-width:0.07897998;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:0;stroke-dasharray:none" /></svg></div><button id="tutBtn" class="tut-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none"/></svg>Tutorial</button><div class="af-dl" id="afDownload"><span class="afdl-lab" title="Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.">Desktop-App – Videos auf der Festplatte statt im Browser:</span><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-mac.dmg" title="Mac: nach dem Download öffnen, App in «Programme» ziehen. Beim 1. Start Rechtsklick → «Öffnen» (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Mac</a><a href="https://github.com/gate-to-gate/gtg-app/releases/latest/download/Gate-to-Gate-win.exe" title="Windows: Datei ausführen. Bei «Windows hat den PC geschützt» → Mehr Infos → Trotzdem ausführen (unsigniert)."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>Windows</a></div><div class="af-ver-row no-print" id="afVerWrap" style="display:none"><span id="afVer"></span></div></footer>
 </div>
 
 <!-- ===================== CLOUD-MODAL ===================== -->
@@ -2799,7 +2861,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610091443';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610101803';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -2826,7 +2888,32 @@ const ATH_COLOR = (function(){
 // benutzerdefinierte Farbe pro Athlet:in (in der Datenbank → Athlet:innen einstellbar)
 function athCustomColor(name){ try{ const a=ATHLETES.find(x=>x.name===name); return a&&a.color?a.color:null; }catch(e){ return null; } }
 // stabile Farbe je Athlet:in: eigene Farbe > Fixfarbe/Palette (Wettkampf) > Namens-Hash (Training/übrige)
-const athColor = (name,isTop)=> isTop ? GOLD : (athCustomColor(name) || ATH_COLOR[name] || (name?palHash(name, ATH_PAL):'#7a8694'));
+/* Dark-Mode: zu dunkle Linienfarben (Navy/Slate/Braun) aufhellen, damit sie auf der dunklen Karte sichtbar bleiben.
+   Im hellen Design bleibt jede Farbe unverändert. */
+const _TC_CACHE={};
+function themeCol(c){ try{
+    if(!c || !document.body.classList.contains('dark')) return c;
+    if(_TC_CACHE[c]) return _TC_CACHE[c];
+    const m=/^#([0-9a-f]{6})$/i.exec(String(c).trim()); if(!m) return c;
+    const n=parseInt(m[1],16); let r=((n>>16)&255)/255, g=((n>>8)&255)/255, b=(n&255)/255;
+    const lin=x=> x<=0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055,2.4);
+    const lum=(R,G,B)=> 0.2126*lin(R)+0.7152*lin(G)+0.0722*lin(B);
+    const BG=0.0256;                                   // Leuchtdichte der dunklen Karte (#252d39)
+    const cr=(R,G,B)=> (lum(R,G,B)+0.05)/(BG+0.05);
+    const c0=cr(r,g,b); if(c0>=3.2){ _TC_CACHE[c]=c; return c; }
+    const target = c0<1.8 ? 5.2 : 3.8;                 // sehr dunkle Töne deutlich heller, mittlere nur leicht
+    // RGB -> HSL, Helligkeit schrittweise anheben (Farbton bleibt)
+    const mx=Math.max(r,g,b), mn=Math.min(r,g,b); let h=0, sat=0, l=(mx+mn)/2; const d=mx-mn;
+    if(d>0){ sat = l>0.5 ? d/(2-mx-mn) : d/(mx+mn);
+      h = mx===r ? ((g-b)/d + (g<b?6:0)) : mx===g ? ((b-r)/d + 2) : ((r-g)/d + 4); h/=6; }
+    const h2r=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6) return p+(q-p)*6*t; if(t<1/2) return q; if(t<2/3) return p+(q-p)*(2/3-t)*6; return p; };
+    const toRgb=L=>{ if(sat===0) return [L,L,L]; const q=L<0.5?L*(1+sat):L+sat-L*sat, p=2*L-q; return [h2r(p,q,h+1/3),h2r(p,q,h),h2r(p,q,h-1/3)]; };
+    let out=[r,g,b];
+    for(let L=l; L<=0.92; L+=0.02){ out=toRgb(L); if(cr(out[0],out[1],out[2])>=target) break; }
+    const hex='#'+out.map(v=>('0'+Math.round(Math.max(0,Math.min(1,v))*255).toString(16)).slice(-2)).join('');
+    _TC_CACHE[c]=hex; return hex;
+  }catch(e){ return c; } }
+const athColor = (name,isTop)=> isTop ? GOLD : themeCol(athCustomColor(name) || ATH_COLOR[name] || (name?palHash(name, ATH_PAL):'#7a8694'));
 /* FIS-Codes (Quelle: offizielle FIS-Datenbank, Alpine). Schlüssel = normalisierter Name.
    Füllt fehlende Codes automatisch und hält bekannte Athlet:innen korrekt. */
 const ATH_FIS = {
@@ -3144,7 +3231,7 @@ try{ (typeof DATA!=='undefined'?DATA:[]).forEach(e=> ((e&&e.skiers)||[]).forEach
 
 
 function palHash(str, pal){ let h=0; str=String(str); for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return pal[h%pal.length]; }
-const hatchDef = (id='hatch')=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff5d6"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e8c14d" stroke-width="2.4"/></pattern></defs>`;
+const hatchDef = (id='hatch', dark=false)=>`<defs><pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="${dark?'#3a3220':'#fff5d6'}"/><line x1="0" y1="0" x2="0" y2="7" stroke="${dark?'#7d6a2c':'#e8c14d'}" stroke-width="2.4"/></pattern></defs>`;
 const FIG = {L:{n:'Lap / Zwischenzeit',c:'#5b6cff'},B:{n:'Banane',c:'#7a8694'},
   H:{n:'Hairpin / Wende',c:'#7a3fb5'},F:{n:'Flush (3er)',c:'#0f9b8e'},K:{n:'Kuppe (Schlüsselstelle)',c:'#d6457f'}};
 const EMPTY_ICONS={
@@ -3225,7 +3312,7 @@ function refreshGen(){
 }
 function refreshEvt(){
   const evs = DS().filter(e=> discMatch(e) && e.gender===S.gen && e.hasTop && !isArchived(e) && !isDeleted(e) && evVisible(e))
-    .sort((a,b)=> a.date<b.date?1:-1 || a.venue.localeCompare(b.venue));
+    .sort((a,b)=> String(b.date).localeCompare(String(a.date)) || String(a.venue).localeCompare(String(b.venue)));
   const keys = uniq(evs.map(e=> e.date+'|'+e.venue));
   if(!keys.length){   // keine (sichtbaren) Events für diese Auswahl -> nichts anzeigen, Hinweis
     if($('#selEvt')) $('#selEvt').innerHTML=''; if($('#selRun')) $('#selRun').innerHTML=''; S.evtKey=''; S.comp=null; S.ev=null;
@@ -3308,7 +3395,7 @@ function loadTrainEvent(all){
   if(!S.evtKey){ return; }
   const [date,venue]=S.evtKey.split('|');
   if(!all) all=trainSectionSeries(date,venue);
-  if(!all.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Noch keine Trainings-Läufe in dieser Sektion.', 'tag')+'</div>'; return; }
+  if(!all.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Noch keine Trainingsläufe für diesen Tag und Ort.', 'tag')+'</div>'; return; }
   const sel = all.filter(s=> S.trainSel.picked.has(seriesKey(s.name,s.run)));
   if(!sel.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.', 'chart')+'</div>'; return; }
   // Serien -> eindeutige Einträger «Nachname·L<Lauf>» (eigene Farbe je Serie über athColor)
@@ -3329,7 +3416,7 @@ function loadTrainEvent(all){
   // Kürzel (z. B. "BLANC") -> voller Name (z. B. "BLANC Malorie"), damit die Farbe mit Datenbank/Wettkampf übereinstimmt
   const baseFull={}; skiers.forEach(x=>{ baseFull[String(x.name).split('·L')[0]] = x._base; });
   S.comp.skiers.forEach(s=>{ const p=String(s.name).split('·L'); const b=p[0]; s._lauf=p[1]||''; s._dup=baseCount[b]>1;
-    if(!s.isTop){ s.color = athColor(baseFull[b]||b, false); } });
+    s._cn = baseFull[b]||b; if(!s.isTop){ s.color = athColor(s._cn, false); } });
   S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
   S.wfAth=S.perGate; S.heroFocus='';
   const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
@@ -3935,7 +4022,7 @@ function drawBar(){
   $('#barShell').querySelectorAll('.gb').forEach(r=> r.addEventListener('mousemove',ev=>{
     const i=+r.dataset.g-1; const fg=c.figs.find(f=>f.gate===i+1);
     tt.innerHTML=`<div class="tt-h">${s.name.split(' ')[0]} · Tor ${i+2}${fg?' · '+fg.label:''}</div>
-      <div class="tt-r"><span class="n">Gate-Zeit</span><b>${fmt0(s.gates[i])} s</b></div>
+      <div class="tt-r"><span class="n">Tor-Zeit</span><b>${fmt0(s.gates[i])} s</b></div>
       <div class="tt-r"><span class="n">Δ Bestzeit</span><b>${fmt(s.diff[i])} s</b></div>
       ${s.anom[i]?'<div class="tt-r"><span class="n">⚠ Anomalie</span><b>ausgeschl.</b></div>':''}`;
     const br=r.getBoundingClientRect(); tt.style.opacity=1; tt.style.left=(br.left+br.width/2)+'px'; tt.style.top=(br.top-6)+'px';
@@ -3964,12 +4051,12 @@ function drawSector(){
   const order=[...secTot].map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
   const worst = (order.length>1 && order[0].v>0.4 && order[0].v >= order[1].v*1.4) ? order[0].i
               : (order.length===1 && order[0].v>0.4 ? 0 : -1);
-  let svg=svgEl(W,H)+hatchDef('hatchSec');
+  let svg=svgEl(W,H)+hatchDef('hatchSec', T.dark);
   // Highlight-Schraffur hinter dem klar schlechtesten Abschnitt
   if(worst>=0){ svg+=`<rect x="${ml+gw*worst}" y="${mt}" width="${gw}" height="${ih}" fill="url(#hatchSec)" opacity=".5"/>`;
     // Label vertikal am linken Rand, oben bündig (überschneidet die Balken/Namen nicht)
     const lx=ml+gw*worst+9, ly=mt+7;
-    svg+=`<text x="${lx}" y="${ly}" transform="rotate(-90 ${lx} ${ly})" text-anchor="end" font-size="9" font-weight="800" letter-spacing=".04em" fill="#b8860b" opacity=".85">grösster Zeitverlust</text>`; }
+    svg+=`<text x="${lx}" y="${ly}" transform="rotate(-90 ${lx} ${ly})" text-anchor="end" font-size="9" font-weight="800" letter-spacing=".04em" fill="${T.dark?T.gold:'#b8860b'}" opacity=".85">grösster Zeitverlust</text>`; }
   niceTicks(vmin,vmax,5).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"/>`;
     svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="${T.txt2}">${fmt(t)}</text>`;});
   secs.forEach(([a,b],si)=>{
@@ -3986,7 +4073,7 @@ function drawSector(){
   });
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
-    tt.innerHTML=`<div class="tt-h">${r.dataset.s.split(' ')[0]} · Tor ${r.dataset.sec}</div><div class="tt-r"><span class="n">Sektor-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
+    tt.innerHTML=`<div class="tt-h">${r.dataset.s.split(' ')[0]} · Tor ${r.dataset.sec}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
     const br=r.getBoundingClientRect(); tt.style.opacity=1; tt.style.left=(br.left+br.width/2)+'px'; tt.style.top=(br.top-6)+'px';
   }));
   $('#secShell').addEventListener('mouseleave',()=> tt.style.opacity=0);
@@ -4040,15 +4127,16 @@ function drawHeatmap(mode){
   const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
   let max=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null&&!s.anom[i]) max=Math.max(max,Math.abs(d)); }));
   max=max||0.3;
-  const colorOf=(d,anom)=>{ if(d==null) return '#fff'; if(anom) return '#fff';
+  const _dk=chTheme().dark, _blank=_dk?'transparent':'#fff', _zero=_dk?'rgba(255,255,255,.05)':'#f6f8fa';
+  const colorOf=(d,anom)=>{ if(d==null) return _blank; if(anom) return _blank;
     const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
-    return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:'#f6f8fa'; };
+    return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:_zero; };
   let h=`<div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
   cols.forEach(s=> h+=`<th>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
   h+=`</tr></thead><tbody>`;
   // Start = Tor 1 (Referenz, alle 0.00)
   h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Ref</span></div></td>`;
-  cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:#fff">${fmt(0)}</td>`);
+  cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${fmt(0)}</td>`);
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
     h+=`<tr><td class="gate-c"><div class="gate-in">${fg?`<span class="fig-row" style="background:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
@@ -4198,7 +4286,28 @@ function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,discAll:!!S.discAll,g
 function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
   const b=$('#darkBtn'); if(b) b.classList.toggle('on', !!on); }
 function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e){} setDark(on);
-  const b=$('#darkBtn'); if(b) b.onclick=()=>setDark(!document.body.classList.contains('dark')); }
+  const b=$('#darkBtn'); if(b) b.onclick=()=>{ setDark(!document.body.classList.contains('dark')); gtgThemeRefresh(); }; }
+/* Linienfarben der geladenen Analyse neu bestimmen (hell/dunkel) */
+function gtgRecolor(){ try{ const c=S.comp; if(!c||!Array.isArray(c.skiers)) return;
+    c.skiers.forEach(s=>{ s.color = athColor(s._cn||s.name, s.isTop); }); }catch(e){} }
+/* Analyse-Grafiken neu zeichnen, ohne die Ansicht neu aufzubauen (Video-Panel, Auswahl bleiben) */
+function gtgRedrawAnalyse(){ const _s=fn=>{ try{ fn(); }catch(e){} };
+  if(!S.comp || !$('#heroShell')) return;
+  _s(buildLegend); _s(drawHero); _s(drawSector);
+  _s(()=>{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); });
+  _s(figStrip); }
+function gtgThemeRefresh(){ try{ gtgRecolor();
+    if(S.view!=='analyse') return;
+    if(S.anaSub==='verlauf'){ if(typeof renderVerlauf==='function') renderVerlauf(); }
+    else if(S.anaSub==='profil'){ if(typeof renderProfil==='function') renderProfil(); }
+    else gtgRedrawAnalyse();
+  }catch(e){} }
+/* PDF-Knopf: das PDF ist immer die Analyse-Hauptansicht – von anderen Tabs aus zuerst dorthin wechseln */
+function gtgPrint(){ try{
+    if(S.view!=='analyse' || S.anaSub!=='analyse'){ S.anaSub='analyse'; switchView('analyse'); }
+    if(!S.comp){ gtgToast('Kein Lauf geladen – bitte zuerst in der Analyse ein Event wählen.'); return; }
+  }catch(e){}
+  setTimeout(()=>{ try{ window.print(); }catch(e){} }, 120); }
 function setAnaSub(sub){ S.anaSub = (sub==='verlauf')?'verlauf':(sub==='profil')?'profil':'analyse'; savePrefs();
   ['#anaSub','#anaSub2','#anaSub3'].forEach(id=>{ const seg=$(id); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===S.anaSub)); });
   const sv=S.anaSub;
@@ -4301,10 +4410,10 @@ function vlSeasons(){ const set=new Set();
   DATA.filter(e=>e.discipline===VL.disc&&e.gender===VL.gen&&e.hasTop&&e.mode!=='train').forEach(e=>{ const s=seasonOf(e.date); if(s) set.add(s); });
   return [...set].sort().reverse(); }   // neueste zuerst
 const VL_CATS=[
-  {key:'overall',label:'Gesamt', color:'#1c2430', need:false, filt:null},
+  {key:'overall',label:'Gesamt', get color(){ return themeCol('#1c2430'); }, need:false, filt:null},
   {key:'steep',  label:'Steil',  color:'#d65a4e', need:true,  filt:g=>g.pitch!=null&&g.pitch>=38},
   {key:'flat',   label:'Flach',  color:'#22a06b', need:true,  filt:g=>g.pitch!=null&&g.pitch<25},
-  {key:'turn',   label:'Drehend',color:'#7a3fb5', need:true,  filt:g=>g.offset!=null&&g.offset>=3},
+  {key:'turn',   label:'Drehend',get color(){ return themeCol('#7a3fb5'); }, need:true,  filt:g=>g.offset!=null&&g.offset>=3},
   {key:'direct', label:'Direkt', color:'#1f6fb2', need:true,  filt:g=>g.offset!=null&&g.offset<2},
 ];
 function vlAthletes(){ const cnt={};
@@ -4402,7 +4511,7 @@ function vlInsight(data){
   const tav=tcats.map(c=>{ const v=data.map(d=>d.vals[c.key]).filter(x=>x!=null); return {label:c.label,color:c.color,n:v.length, avg:v.length?avg(v):null}; }).filter(t=>t.avg!=null);
   if(tav.length>=2){ const s=[...tav].sort((x,y)=>x.avg-y.avg); const best=s[0],worst=s[s.length-1];
     terr=`<div style="margin-top:6px">Stärkstes Terrain: <b style="color:${best.color}">${best.label}</b> (Ø ${(best.avg>=0?'+':'')}${best.avg.toFixed(3)} s/Tor) · schwächstes: <b style="color:${worst.color}">${worst.label}</b> (Ø ${(worst.avg>=0?'+':'')}${worst.avg.toFixed(3)} s/Tor).</div>`; }
-  else terr=`<div style="margin-top:6px;color:var(--muted)">Terrain-Auswertung: für mehr Tiefe Kurssetzungen zu den Rennen hinterlegen (Tab «Kurssetzung»).</div>`;
+  else terr=`<div style="margin-top:6px;color:var(--muted)">Terrain-Auswertung: für mehr Tiefe Kurssetzungen zu den Rennen hinterlegen (Datenbank → Kurssetzung).</div>`;
   const nameShort=VL.ath.split(' ')[0];
   host.innerHTML=`<div><b>${nameShort}</b> ${trend}.</div>${terr}
     <div style="margin-top:6px;color:var(--muted)">Basis: ${data.length} Rennen · Ø Rückstand pro Tor auf den jeweiligen Laufbesten.</div>`;
@@ -4529,8 +4638,8 @@ function renderProfil(){
     trendTxt = d<-0.01? '<span style="color:var(--good)">↗ besser</span>' : d>0.01? '<span style="color:var(--bad)">↘ langsamer</span>' : 'stabil'; }
   // Kennzahlen (Athlet A)
   let h='<div class="pf-kpis">';
-  h+=`<div class="pf-kpi" title="Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit-Nähe» = Läufe, in denen er sehr nah an der Bestzeit war."><div class="pf-kl">Rennen</div><div class="pf-kv">${data.length}</div><div class="pf-ks">${topN}× Laufbestzeit-Nähe</div></div>`;
-  h+=`<div class="pf-kpi" title="Durchschnittlicher Rückstand pro Tor auf den jeweiligen Laufbesten, über alle ausgewerteten Läufe. Grün = schneller als der Schnitt, rot = langsamer. «Trend» vergleicht neuere mit älteren Rennen."><div class="pf-kl">Ø Rückstand / Tor</div><div class="pf-kv" style="color:${aggA.overall>0.001?'var(--bad)':(aggA.overall<-0.001?'var(--good)':'var(--ink)')}">${pfFmt(aggA.overall)}</div><div class="pf-ks">Trend: ${trendTxt}</div></div>`;
+  h+=`<div class="pf-kpi" title="Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit» = Läufe, in denen er/sie selbst die Laufbestzeit (Referenz) fuhr."><div class="pf-kl">Rennen</div><div class="pf-kv">${data.length}</div><div class="pf-ks">${topN}× Laufbestzeit</div></div>`;
+  h+=`<div class="pf-kpi" title="Durchschnittlicher Rückstand pro Tor auf den jeweiligen Laufbesten, über alle ausgewerteten Läufe. Grün = im Schnitt schneller als der Laufbeste, rot = langsamer. «Trend» vergleicht neuere mit älteren Rennen."><div class="pf-kl">Ø Rückstand / Tor</div><div class="pf-kv" style="color:${aggA.overall>0.001?'var(--bad)':(aggA.overall<-0.001?'var(--good)':'var(--ink)')}">${pfFmt(aggA.overall)}</div><div class="pf-ks">Trend: ${trendTxt}</div></div>`;
   h+=`<div class="pf-kpi" title="Geländetyp (Steil/Flach/Drehend/Direkt), in dem der Athlet im Schnitt am wenigsten Rückstand pro Tor hat – seine Stärke."><div class="pf-kl">Stärkstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${bestT?bestT.color:'var(--muted)'}">${bestT?bestT.label:'–'}</div><div class="pf-ks">${bestT?pfFmt(aggA[bestT.key]):'—'}</div></div>`;
   h+=`<div class="pf-kpi" title="Geländetyp mit dem grössten durchschnittlichen Rückstand pro Tor – hier liegt das grösste Verbesserungspotenzial."><div class="pf-kl">Schwächstes Terrain</div><div class="pf-kv" style="font-size:16px;color:${worstT?worstT.color:'var(--muted)'}">${worstT?worstT.label:'–'}</div><div class="pf-ks">${worstT?pfFmt(aggA[worstT.key]):'—'}</div></div>`;
   h+='</div>';
@@ -4638,8 +4747,8 @@ function loadVideo(file){ TG.file=file; TG.wantFps=true; loadVideoBlob(file);
   // Angaben & Tags NICHT aus dem Dateinamen überschreiben (Dateiname kann veralteten Ort/Datum haben).
   if(TG.tags && TG.tags.length>=2){
     if($('#pbName')) $('#pbName').textContent=file.name||'';
-    const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent='Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Sichern «Save».'; }
-    if(typeof gtgToast==='function') gtgToast('Video angehängt — Tags & Angaben bleiben. Jetzt «Save».','ok');
+    const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent='Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Speichern auf «✓ Speichern» klicken.'; }
+    if(typeof gtgToast==='function') gtgToast('Video angehängt — Tags & Angaben bleiben. Jetzt «✓ Speichern».','ok');
     return; }
   if($('#mMode')) $('#mMode').value='comp'; setTagMode('comp');   // Standard: Wettkampf, wird bei Erkennung ggf. überschrieben
   const found=autofillFromFilename(file.name||''); openMetaModal();
@@ -4710,7 +4819,7 @@ function computeFps(times){
 }
 function detectFps(){
   const v=$('#vid'); if(!v) return;
-  if(!('requestVideoFrameCallback' in HTMLVideoElement.prototype)){ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='#9aa3af'; fa.title='Automatische Erkennung in diesem Browser nicht verfügbar – fps bei Bedarf manuell setzen.'; } return; }
+  if(!('requestVideoFrameCallback' in HTMLVideoElement.prototype)){ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='var(--muted)'; fa.title='Automatische Erkennung in diesem Browser nicht verfügbar – fps bei Bedarf manuell setzen.'; } return; }
   TGFPS.armed=true; TGFPS.auto=false; const times=[];
   const cb=(now,meta)=>{ if(!TGFPS.armed) return; times.push(meta.mediaTime);
     if(times.length>=18){ TGFPS.armed=false; computeFps(times);
@@ -5069,7 +5178,7 @@ function saveRun(){
   S.mode=mode; S.disc=disc; S.discAll=false; S.gen=gen; S.evtKey=date+'|'+venue; S.run=run;
   buildFilters(); fillVenueSelect(); const vs2=$('#mVenueSel'); if(vs2){ vs2.value=venue; $('#mVenueNew').style.display='none'; }
   const runTxt = runLong(mode,disc,run);
-  const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Gates)${fisTxt}`;
+  const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Tore)${fisTxt}`;
   msg.className='save-msg ok'; msg.textContent = baseMsg + (TG.file?' · Video wird gesichert…':'.');
   clearTagDraft();   // erfolgreich gespeichert -> Entwurf verwerfen
   saveVideoToLib(rec).then(st=>{ if(typeof renderLibrary==='function') renderLibrary();
@@ -5137,7 +5246,7 @@ function importTagsFromCsv(file){ const r=new FileReader(); r.onload=()=>{ try{
       const nm=(c[5]||'').trim().toLowerCase(); if(curName && nm===curName){ row=c; break; } if(!row) row=c; }
     if(!row){ gtgToast('Keine gültige Zeile im CSV gefunden.'); return; }
     const gates=[]; for(let k=gi;k<row.length;k++){ const v=parseFloat(row[k]); if(isFinite(v)) gates.push(Math.round(v*1000)/1000); }
-    if(gates.length<1){ gtgToast('Keine Gate-Zeiten im CSV.'); return; }
+    if(gates.length<1){ gtgToast('Keine Tor-Zeiten im CSV.'); return; }
     // Lauf-Angaben passend zum CSV setzen
     if(row[0]) $('#mDate').value=(row[0]||'').trim();
     let venue=(row[1]||'').trim(); venue=(typeof normVenue==='function')?normVenue(venue):venue;
@@ -5158,7 +5267,7 @@ function importTagsFromCsv(file){ const r=new FileReader(); r.onload=()=>{ try{
     const ts=[{t:Math.round(startT*1000)/1000, fig:null, unsure:false}]; let acc=startT;
     gates.forEach(g=>{ acc=Math.round((acc+g)*1000)/1000; ts.push({t:acc, fig:null, unsure:false}); });
     TG.tags=ts; if(typeof updateMetaSummary==='function') updateMetaSummary(); renderTags(); if(typeof tgResetHistory==='function') tgResetHistory();
-    gtgToast(`${gates.length} Gate-Zeiten aus CSV übernommen. Start liegt bei der aktuellen Videoposition — bei Bedarf zuerst zum Startbalken scrubben und erneut laden.`, 'ok');
+    gtgToast(`${gates.length} Tor-Zeiten aus CSV übernommen. Start liegt bei der aktuellen Videoposition — bei Bedarf zuerst zum Startbalken scrubben und erneut laden.`, 'ok');
   }catch(e){ gtgToast('CSV konnte nicht gelesen werden.'); } };
   r.readAsText(file); }
 function importCsv(files){ const list=[...files]; if(!list.length) return; let done=0, added=0;
@@ -5355,7 +5464,7 @@ function renderLibrary(){
     else if(sort==='gap') list.sort((a,b)=> libGapVal(a)-libGapVal(b));
     else list.sort((a,b)=>b.savedAt-a.savedAt);
     $('#libCount').textContent = all.length? `${list.length} / ${all.length}` : '';
-    if(!all.length){ grid.innerHTML=`<div style="grid-column:1/-1">${emptyBox('Noch keine Videos gespeichert. Tagge ein Video und drücke <b>„Save"</b>.', 'video')}</div>`; return; }
+    if(!all.length){ grid.innerHTML=`<div style="grid-column:1/-1">${emptyBox('Noch keine Videos gespeichert. Tagge ein Video und drücke <b>«✓ Speichern»</b>.', 'video')}</div>`; return; }
     if(!list.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Keine Videos für diesen Filter.', 'search')+'</div>'; return; }
     // pro Lauf die höchste getaggte Tor-Zahl (Referenz), um DNF-Videos (klar weniger Tore) zu markieren
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.tags?.length||0); if(n>(evtMax[k]||0)) evtMax[k]=n; });
@@ -5723,7 +5832,7 @@ function kInsight(athletes,sP,sC,sT,nCourses){
     TYPE_CATS.forEach((c,i)=>{ const v=sT.find(s=>s.name===a.name).vals[i]; if(v!=null) cands.push([v,c]); });
     if(!cands.length) return '';
     cands.sort((x,y)=>y[0]-x[0]); const worst=cands[0], best=cands[cands.length-1];
-    return `<div style="margin:4px 0"><b style="color:${a.color}">${a.name.split(' ')[0]}</b>: am meisten Zeit verliert in <b>${worst[1]}</b> (${(worst[0]>=0?'+':'')}${worst[0].toFixed(3)}s/Tor), am stärksten in <b>${best[1]}</b> (${(best[0]>=0?'+':'')}${best[0].toFixed(3)}s/Tor).</div>`;
+    return `<div style="margin:4px 0"><b style="color:${a.color}">${a.name.split(' ')[0]}</b>: verliert am meisten Zeit in <b>${worst[1]}</b> (${(worst[0]>=0?'+':'')}${worst[0].toFixed(3)} s/Tor), am stärksten in <b>${best[1]}</b> (${(best[0]>=0?'+':'')}${best[0].toFixed(3)} s/Tor).</div>`;
   }).join('');
   return `<div class="kins">${lines}<div style="margin-top:6px;color:var(--muted)">Basis: ${nCourses} Lauf/Läufe.</div></div>`;
 }
@@ -5919,14 +6028,14 @@ function initTagging(){
   $('#btnBack1').onclick=()=>stepFrame(-1); $('#btnFwd1').onclick=()=>stepFrame(1);
   $('#btnBack10').onclick=()=>stepFrame(-10); $('#btnFwd10').onclick=()=>stepFrame(10);
   $('#selSpeed').onchange=e=>{ v.playbackRate=parseFloat(e.target.value); };
-  $('#inpFps').onchange=()=>{ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='#9aa3af'; } renderTags(); updateOSD(); };
+  $('#inpFps').onchange=()=>{ const fa=$('#fpsAuto'); if(fa){ fa.textContent='manuell'; fa.style.color='var(--muted)'; } renderTags(); updateOSD(); };
   $('#scrub').oninput=e=>{ setTime(parseFloat(e.target.value)); updateOSD(); };
   $('#btnTag').onclick=addTag; $('#btnClearTags').onclick=clearTags;
   if($('#btnSyncStart')) $('#btnSyncStart').onclick=()=>{ const v=$('#vid');
     if(!v||!v.src||!(TG.tags&&TG.tags.length)){ gtgToast('Erst Video laden und einen Frame wählen.','warn'); return; }
     const off=Math.round((v.currentTime-TG.tags[0].t)*1000)/1000;
     TG.tags.forEach(t=>t.t=Math.round((t.t+off)*1000)/1000); renderTags(); if(typeof tgPush==='function') tgPush();
-    gtgToast('Start gesetzt: Tor 1 auf aktuellem Frame (alle Tags um '+off.toFixed(3)+' s verschoben). Zum Sichern «Save».','ok'); };
+    gtgToast('Start gesetzt: Tor 1 auf aktuellem Frame (alle Tags um '+off.toFixed(3)+' s verschoben). Zum Speichern auf «✓ Speichern» klicken.','ok'); };
   $('#btnNewVideo').onclick=()=>resetVideo();
   // Lupe / Zeitlupe / Undo / Redo
   if($('#btnZoom')) $('#btnZoom').onclick=()=>toggleZoom();
@@ -6141,7 +6250,7 @@ function refreshAfterSync(){ try{
 async function ghPull(silent){ if(!GH.connected){ if(!silent) cloudMsg('Bitte zuerst verbinden.',false); return; }
   if(GH.pulling){ return; } GH.pulling=true;   // kein überlappender Pull (Poll + visibilitychange + Verbinden)
   try{ if(!silent) cloudMsg('Lade aus GitHub…'); const {json}=await ghGet();
-    if(!json){ if(!silent) cloudMsg('Im Repo ist noch keine Datei — sichere zuerst mit «In GitHub sichern».'); return; }
+    if(!json){ if(!silent) cloudMsg('Im Repo ist noch keine Datei — sichere zuerst mit «▲ Jetzt sichern».'); return; }
     const changed=ghMergeIn(json);
     if(changed){ refreshAfterSync(); }   // still aktualisieren, kein Toast beim Auto-Sync
     if(!silent) cloudMsg(`✓ Geladen: ${(json.runs||[]).length} Läufe, ${(json.trainRuns||[]).length} Trainings, ${(json.courses||[]).length} Kurse.`,true);
@@ -6509,7 +6618,7 @@ function openKursPdf(id){
     if(c && c._pdf){ window.open(c._pdf,'_blank'); return; }   // vorab eingebaute Saison-PDF (gehostet)
     // Fallback: hinterlegte Saison-PDF ort-unabhängig über Datum/Disziplin/Geschlecht/Lauf finden
     if(c){ const k=`${c.date}|${c.disc}|${c.gen}|${c.run}`; if(HOSTED_PDF[k]){ COURSES[id]._pdf=HOSTED_PDF[k]; window.open(HOSTED_PDF[k],'_blank'); return; } }
-    gtgToast('Für diese Kurssetzung ist keine PDF gespeichert. Nur die 88 Saison-Kurssetzungen haben eine hinterlegte PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.');
+    gtgToast('Für diese Kurssetzung ist kein PDF gespeichert. Nur die Saison-Kurssetzungen haben ein hinterlegtes PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.');
   }).catch(()=>gtgToast('PDF konnte nicht geladen werden.'));
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
@@ -6684,7 +6793,7 @@ function editTagGate(id, i, val, noUndo){
     while(rec.gates.length<=i) rec.gates.push(null);             // vergessene/fehlende Tore auffüllen
     const oldVal=rec.gates[i]; if(oldVal===val) return;
     rec.gates[i]=val; LS.set(isT?'gtg_runs_train':'gtg_runs', isT?SAVED_TRAIN:SAVED);
-    try{ applyRun(rec); }catch(e){} if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; }
+    try{ applyRun(rec); }catch(e){} if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Tor '+(i+1)+' aktualisiert.','ok'); return; }
   // Databank-Lauf: passenden Event-Skier direkt bearbeiten und dauerhaft merken
   const p=id.split('|'); const date=p[0],venue=p[1],disc=p[2],gen=p[3],run=p[4],name=p.slice(5).join('|');
   for(const arr of [DATA,TRAIN]){ const e=arr.find(x=>x.date===date&&x.venue===venue&&x.discipline===disc&&x.gender===gen&&String(x.run)===String(run));
@@ -6694,7 +6803,7 @@ function editTagGate(id, i, val, noUndo){
       const oldVal=s.gates[i]; if(oldVal===val) return;
       s.gates[i]=val; try{ recomputeEvent(e); }catch(_){}
       const ov=LS.get('gtg_gate_override',{}); ov[id]=s.gates.slice(); LS.set('gtg_gate_override',ov);
-      if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Gate '+(i+1)+' aktualisiert.','ok'); return; } } }
+      if(!noUndo) gateUndoPush(id,i,oldVal,val); ghAutoSync(); buildFilters(); gtgToast('Tor '+(i+1)+' aktualisiert.','ok'); return; } } }
 }
 function gateUndo(){ const u=GATE_UNDO.pop(); if(!u){ gtgToast('Nichts zum Rückgängigmachen.'); return; }
   editTagGate(u.id, u.i, u.oldVal, true); GATE_REDO.push(u);
@@ -6742,7 +6851,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
       const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
-      const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">möglich doppelt</span>':'';
+      const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">evtl. doppelt</span>':'';
       const nA=anomFor(r).filter(Boolean).length;
       const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
@@ -6773,7 +6882,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     }catch(err){ console.error('renderDbTaggings',err);
       if($('#dbtListBox')) $('#dbtListBox').style.display='';
       if($('#dbtGridBox')) $('#dbtGridBox').style.display='none';
-      if(body) body.innerHTML='<tr><td colspan="11" style="padding:20px;color:#c0392b;font-weight:600">Fehler beim Anzeigen der Taggings: '+((err&&err.message)||err)+'. Bitte melde diese Meldung.</td></tr>'; }
+      if(body) body.innerHTML='<tr><td colspan="11" style="padding:20px;color:#c0392b;font-weight:600">Fehler beim Anzeigen der Taggings: '+((err&&err.message)||err)+'. Bitte melde diesen Fehler.</td></tr>'; }
   });
 }
 /* ---- Taggings: Raster-Ansicht pro Event (Athleten × Tore, direkt editierbar) ---- */
@@ -7362,14 +7471,15 @@ function clipChartViz(name, g){
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
   // dezente Y-Achse (Sekunden) + Gitter
+  const TH=chTheme();
   const range=vmax-vmin; const st=[0.1,0.2,0.25,0.5,1,2].find(x=>range/x<=5)||2; let grid='';
   for(let k=Math.ceil(vmin/st);k<=Math.floor(vmax/st);k++){ const vv=Math.round(k*st*100)/100; const y=Y(vv).toFixed(1); const zero=Math.abs(vv)<1e-6;
-    grid+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="${zero?'#c3cad4':'#eef1f5'}" stroke-width="1"${zero?' stroke-dasharray="3 3"':''}/>`;
-    grid+=`<text x="${ml-5}" y="${(+y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="#9aa3af">${vv>0?'+':''}${vv.toFixed(st<1?2:1)}</text>`; }
+    grid+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="${zero?TH.axis:TH.grid}" stroke-width="1"${zero?' stroke-dasharray="3 3"':''}/>`;
+    grid+=`<text x="${ml-5}" y="${(+y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="${TH.txt2}">${vv>0?'+':''}${vv.toFixed(st<1?2:1)}</text>`; }
   // dezente X-Achse (Tornummern = i+2)
   let xax=''; const xstep=Math.max(1,Math.ceil(n/6));
-  for(let i=0;i<n;i+=xstep){ xax+=`<text x="${X(i).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="middle" font-size="10" fill="#9aa3af">${i+2}</text>`; }
-  xax+=`<text x="${(W-mr).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="end" font-size="9" fill="#c3cad4">Tor</text>`;
+  for(let i=0;i<n;i+=xstep){ xax+=`<text x="${X(i).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="middle" font-size="10" fill="${TH.txt2}">${i+2}</text>`; }
+  xax+=`<text x="${(W-mr).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="end" font-size="9" fill="${TH.txt2}">Tor</text>`;
   let lines='';
   series.forEach(s=>{ const a=PV(s); const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
     const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
@@ -7377,9 +7487,9 @@ function clipChartViz(name, g){
     lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.4}" stroke-linejoin="round"/>`; });
   const s=series.find(x=>x.name===name); const gi0=Math.max(0,Math.min(n-1,g-1)); const gv=s&&PV(s)[gi0];
   const dcol=s&&s.isTop?'#C28E00':((s&&s.color)||'#e0413a');
-  const dot = gv==null?'' : `<line id="clipDotLine" x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="#5b6675" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot" cx="${X(gi0).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${dcol}" stroke="#fff" stroke-width="2.4"/>`;
+  const dot = gv==null?'' : `<line id="clipDotLine" x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="${TH.zero}" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot" cx="${X(gi0).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${dcol}" stroke="${TH.halo}" stroke-width="2.4"/>`;
   const rawArr=s&&(s[numKey]||[]); const rv=rawArr?rawArr[gi0]:null;
-  const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'#555':(rv>0.001?'#c0392b':rv<-0.001?'#1a8f5a':'#555');
+  const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'var(--muted)':(rv>0.001?'var(--bad)':rv<-0.001?'var(--good)':'var(--muted)');
   const short=name.split(' ').slice(-1)[0];
   const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
   el.innerHTML=`<div class="clip-vlab"><span id="clipVlabDyn">Kumulierter Rückstand · <b>${short}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b></span> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
@@ -7392,7 +7502,7 @@ function clipChartViz(name, g){
     if(yv!=null && dEl){ dEl.setAttribute('cx',X(gi).toFixed(1)); dEl.setAttribute('cy',Y(yv).toFixed(1)); }
     if(lEl){ lEl.setAttribute('x1',X(gi).toFixed(1)); lEl.setAttribute('x2',X(gi).toFixed(1)); }
     const ra=s2[numKey]||[]; const rv2=ra[gi]; const dyn=el.querySelector('#clipVlabDyn');
-    if(dyn){ const vv=rv2==null?'—':((rv2>0?'+':'')+(+rv2).toFixed(2)+' s'); const cc=rv2==null?'#555':(rv2>0.001?'#c0392b':rv2<-0.001?'#1a8f5a':'#555'); dyn.innerHTML=`Kumulierter Rückstand · <b>${short}</b> · Tor ${gInt+1}: <b style="color:${cc}">${vv}</b>`; } };
+    if(dyn){ const vv=rv2==null?'—':((rv2>0?'+':'')+(+rv2).toFixed(2)+' s'); const cc=rv2==null?'var(--muted)':(rv2>0.001?'var(--bad)':rv2<-0.001?'var(--good)':'var(--muted)'); dyn.innerHTML=`Kumulierter Rückstand · <b>${short}</b> · Tor ${gInt+1}: <b style="color:${cc}">${vv}</b>`; } };
 }
 function clipGoto(name, g){
   const vids=CVVIDS||[]; if(!name || !vids.some(v=>v.name===name)) name=CLIPNAME;
@@ -7507,13 +7617,13 @@ function updateDefBar(db, name, t){
   let mx=0.4; for(let i=0;i<sm.length;i++){ if(sm[i]!=null) mx=Math.max(mx, Math.abs(sm[i])); }
   const fill=db.querySelector('.db-fill'), vlab=db.querySelector('.db-val'), glab=db.querySelector('.db-gate');
   if(glab) glab.textContent = 'Tor '+(g+1);   // Start = Tor 1
-  if(valNum==null || valBar==null){ fill.style.width='0'; vlab.textContent='—'; vlab.style.color='#8b95a3'; return; }
+  if(valNum==null || valBar==null){ fill.style.width='0'; vlab.textContent='—'; vlab.style.color='var(--muted)'; return; }
   const frac=Math.max(0,Math.min(1, Math.abs(valBar)/mx))*50;
   if(valBar>0.001){ fill.style.left='50%'; fill.style.width=frac+'%'; fill.style.background='#e0413a'; }
-  else if(valBar<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1a9d6b'; }
+  else if(valBar<-0.001){ fill.style.left=(50-frac)+'%'; fill.style.width=frac+'%'; fill.style.background='#1f9d6b'; }
   else { fill.style.left='50%'; fill.style.width='0'; }
   vlab.textContent=(valNum>0.001?'+':(valNum<-0.001?'−':'±'))+Math.abs(valNum).toFixed(2)+' s';
-  vlab.style.color = valNum>0.001?'#c0392b':valNum<-0.001?'#1a8f5a':'#8b95a3';
+  vlab.style.color = valNum>0.001?'var(--bad)':valNum<-0.001?'var(--good)':'var(--muted)';
 }
 function attachDefBar(vidEl, slot, name){
   const db=ensureDefBar(slot); if(!db||!vidEl) return; vidEl._defName=name;
@@ -7763,7 +7873,7 @@ const I18N_EN={
  "Disz.":"Disc.","Gesch.":"Gender","Athl.":"Ath.","Rennen":"Races","Saison":"Season","Speicher":"Storage","Rückstand":"Deficit",
  // Tagging
  "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here",
- "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (T oder Enter)":"Tag gate (T or Enter)",
+ "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (Enter)":"Tag gate (Enter)",
  "Noch keine Tags.":"No tags yet.","Tor":"Gate","Tore":"Gates","Zeit":"Time","Figur":"Figure","Löschen":"Delete",
  "✓ Speichern":"✓ Save","Speichern":"Save","Lauf-Angaben":"Run details","Lauf-Angaben bearbeiten":"Edit run details",
  "FIS-Zeit":"FIS time","Ohne FIS-Zeit":"No FIS time","Laufbestzeit":"Fastest-run time","Laufbester":"Fastest run",
@@ -7775,15 +7885,15 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","letzter Tag":"last tag",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
  "Datei links reinziehen oder «Datei wählen». Bleibt lokal auf deinem Gerät.":"Drag the file in on the left or «Choose file». Stays local on your device.",
- "FIS-Zeit-Modus wählen, dann «✓ Save» — der Lauf landet in Datenbank & Analyse.":"Choose the FIS-time mode, then «✓ Save» — the run goes to Database & Analysis.",
- "Gate-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.":"Import gate times from a matching CSV. Tags start at the current video position — scrub to the start marker first.",
+ "FIS-Zeit-Modus wählen, dann «✓ Speichern» — der Lauf landet in Datenbank & Analyse.":"Choose the FIS-time mode, then «✓ Save» — the run goes to Database & Analysis.",
+ "Tor-Zeiten aus einer passenden CSV übernehmen. Tags starten an der aktuellen Videoposition — vorher zum Startbalken scrubben.":"Import gate times from a matching CSV. Tags start at the current video position — scrub to the start marker first.",
  "Keine FIS-Zeit verwenden – der Endrückstand ergibt sich direkt aus den getaggten Zeiten (relativ zum schnellsten getaggten Athleten).":"Don't use a FIS time – the final deficit comes directly from the tagged times (relative to the fastest tagged athlete).",
- "Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Gate-Abstände bleiben gleich).":"Set the video to the frame where gate 1 is passed — then click here. All tags are shifted so gate 1 sits exactly on this frame (gate spacings stay the same).",
+ "Video zum Frame stellen, wo Tor 1 passiert wird — dann hier klicken. Alle Tags werden so verschoben, dass Tor 1 exakt auf diesem Frame liegt (Tor-Abstände bleiben gleich).":"Set the video to the frame where gate 1 is passed — then click here. All tags are shifted so gate 1 sits exactly on this frame (gate spacings stay the same).",
  "Bilder pro Sekunde – wird beim Laden automatisch erkannt":"Frames per second – detected automatically on load",
  // Buttons / allgemein
  "Abbrechen":"Cancel","Bestätigen":"Confirm","Schliessen":"Close","schliessen":"close","Verbinden":"Connect","Trennen":"Disconnect",
@@ -7816,7 +7926,7 @@ const I18N_EN={
  "Komplettes Backup (alle Läufe, Athleten, Kurssetzungen) als JSON sichern":"Save a full backup (all runs, athletes, course settings) as JSON",
  "Einzelner Lauf als CSV":"Single run as CSV","Diesen getaggten Lauf als CSV-Datei speichern":"Save this tagged run as a CSV file",
  "Alte Videos löschen":"Delete old videos","Rennen älter als 30 Tage":"Races older than 30 days","Videos bleiben lokal":"Videos stay local",
- "Gespeicherte Videos inkl. Tags. Klick auf „Laden“ öffnet Video + Tag-Liste wieder zum Anschauen oder Anpassen.":"Saved videos incl. tags. Click «Load» to reopen the video + tag list for viewing or editing.",
+ "Gespeicherte Videos inkl. Tags. Klick auf «Laden» öffnet Video + Tag-Liste wieder zum Anschauen oder Anpassen.":"Saved videos incl. tags. Click «Load» to reopen the video + tag list for viewing or editing.",
  // Datenbank
  "Event bearbeiten":"Edit event","Ausgewählte löschen":"Delete selected","Neuen Athleten erfassen":"Add new athlete",
  // Willkommen
@@ -7867,21 +7977,21 @@ Object.assign(I18N_EN,{
  "Teilbaren Coach-Link mit Videos erstellen":"Create a shareable coach link with videos","Wähle oben einen Athleten für das Profil.":"Choose an athlete above for the profile.","Noch keine Daten. Tagge zuerst einen Lauf.":"No data yet. Tag a run first.",
  ". Bitte das Video erneut laden & speichern.":". Please reload & save the video.","Diese Tor-Spalte bei allen Athleten löschen":"Delete this gate column for all athletes","Vergessenes Tor am Ende hinzufügen (Spalte)":"Add a forgotten gate at the end (column)",
  "· ohne FIS-Zeit · Endrückstand aus Taggings":"· no FIS time · final deficit from taggings","Für diesen Lauf ist nur ein Video vorhanden.":"Only one video is available for this run.","Keine Schweizer Athlet:innen in diesem Lauf.":"No Swiss athletes in this run.",
- "Video konnte nicht geladen werden (Format?).":"Could not load the video (format?).","Noch keine Trainings-Läufe in dieser Sektion.":"No training runs in this section yet.","Dieses Tor ist nicht in beiden Videos getaggt.":"This gate isn't tagged in both videos.",
+ "Video konnte nicht geladen werden (Format?).":"Could not load the video (format?).","Noch keine Trainingsläufe für diesen Tag und Ort.":"No training runs for this day and venue yet.","Dieses Tor ist nicht in beiden Videos getaggt.":"This gate isn't tagged in both videos.",
  "Entwurf konnte nicht wiederhergestellt werden.":"Could not restore the draft.","Videos liegen auf der Festplatte (Desktop-App)":"Videos are stored on disk (desktop app)","Event-Parameter bearbeiten (Datum, Ort, Lauf …)":"Edit event parameters (date, location, run …)",
  "Videos liegen auf der Festplatte (Desktop-App).":"Videos are stored on disk (desktop app).","Diese Kurssetzung (Daten + PDF) wirklich löschen?":"Really delete this course setting (data + PDF)?","Nur nötig, wenn du Coach-Links mit Videos teilst.":"Only needed if you share coach links with videos.",
- "Dieser Browser unterstützt keinen dauerhaften Speicher.":"This browser doesn't support persistent storage.","Video angehängt — Tags & Angaben bleiben. Jetzt «Save».":"Video attached — tags & details stay. Now «Save».",
+ "Dieser Browser unterstützt keinen dauerhaften Speicher.":"This browser doesn't support persistent storage.","Video angehängt — Tags & Angaben bleiben. Jetzt «✓ Speichern».":"Video attached — tags & details stay. Now «Save».",
  "Alte Videos aufräumen: Datenbank → Videos, «Grösste zuerst».":"Clean up old videos: Database → Videos, «Largest first».","Keine Daten für diese Auswahl. Wähle einen anderen Event/Lauf.":"No data for this selection. Choose a different event/run.",
  "Coach-Link konnte nicht geladen werden — bitte den Link prüfen.":"Could not load the coach link — please check the link.","Wettkampf: mit FIS-Zeit-Kalibrierung. Laufnummer nur bei GS/SL.":"Competition: with FIS-time calibration. Run number only for GS/SL.",
  "Ungültiger Team-Code. Bitte den ganzen Code kopieren und einfügen.":"Invalid team code. Please copy and paste the whole code.","Noch keine Taggings gespeichert. Tagge einen Lauf und speichere ihn.":"No taggings saved yet. Tag a run and save it.",
- "Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.":"No series selected — tick at least one athlete·run series above.","Im Repo ist noch keine Datei — sichere zuerst mit «In GitHub sichern».":"No file in the repo yet — save first with «Save to GitHub».",
+ "Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.":"No series selected — tick at least one athlete·run series above.","Im Repo ist noch keine Datei — sichere zuerst mit «▲ Jetzt sichern».":"No file in the repo yet — save first with «▲ Save now».",
  "Tagging-Entwurf wiederhergestellt. Bitte das passende Video neu laden.":"Tagging draft restored. Please reload the matching video.","Noch keine Videos in der Bibliothek — tagge und speichere zuerst Läufe.":"No videos in the library yet — tag and save runs first.",
  "Öffne zuerst die Analyse mit einem Lauf, dann kannst du die Grafik teilen.":"Open Analysis with a run first, then you can share the chart.","Training: Laufnummer (frei, z.B. Lauf 7), ohne FIS-Zeit, eigene Bibliothek.":"Training: run number (free, e.g. run 7), no FIS time, own library.",
  "Ein Hintergrund-Vorgang ist fehlgeschlagen. (Details in der Browser-Konsole)":"A background task failed. (Details in the browser console)","Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind.":"Number of Swiss athletes (SUI) tagged/recorded in this run.",
  "Dieser Code enthält keinen Zugang. Bitte den vollständigen Team-Code verwenden.":"This code contains no access. Please use the full team code.","Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).":"No tagged videos exist for this event (only shareable with video).",
  "Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).":"No videos on this device. Videos stay local (see Tagging → Library).","✓ Code kopiert (ohne Token) — der Kollege trägt nur noch seinen eigenen Token ein.":"✓ Code copied (without token) — the colleague just enters their own token.",
  "✓ Verbunden & synchronisiert. Neue Taggings gehen ab jetzt automatisch hin und her.":"✓ Connected & synced. New taggings now flow automatically both ways.","Keine Tore für diese Filter-Kombination — erweitere die Steilheit-/Charakter-Filter.":"No gates for this filter combination — widen the steepness/character filters.",
- "Empfohlen als Sicherung & fürs Team — oben Team-Code einfügen oder manuell verbinden.":"Recommended as a backup & for the team — paste the team code above or connect manually.","Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Sichern «Save».":"Video attached to the loaded tagging — details & tags stay. Press «Save» to store.",
+ "Empfohlen als Sicherung & fürs Team — oben Team-Code einfügen oder manuell verbinden.":"Recommended as a backup & for the team — paste the team code above or connect manually.","Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Speichern auf «✓ Speichern» klicken.":"Video attached to the loaded tagging — details & tags stay. Press «Save» to store.",
  "Video-Datenbank nicht verfügbar — evtl. privater Modus. Im normalen Fenster arbeiten.":"Video database not available — possibly private mode. Work in a normal window.","Verbindung fehlgeschlagen — Code prüfen, oder später übers Cloud-Symbol oben verbinden.":"Connection failed — check the code, or connect later via the cloud icon at the top.",
  "Code übernommen — jetzt nur noch deinen Access Token eintragen und «Verbinden & prüfen».":"Code applied — now just enter your access token and «Connect & verify».","Keine Kursdaten – hinterlege eine Kurssetzung für diesen Lauf (Datenbank → Kurssetzung).":"No course data – add a course setting for this run (Database → Course setting).",
  "Automatische Erkennung in diesem Browser nicht verfügbar – fps bei Bedarf manuell setzen.":"Automatic detection not available in this browser – set fps manually if needed.","Entweder Worker-URL angeben – oder Endpoint/Bucket/Key/Secret für den direkten S3-Upload.":"Either provide a worker URL – or endpoint/bucket/key/secret for the direct S3 upload.",
@@ -7894,10 +8004,10 @@ Object.assign(I18N_EN,{
  "Geländetyp (Steil/Flach/Drehend/Direkt), in dem der Athlet im Schnitt am wenigsten Rückstand pro Tor hat – seine Stärke.":"Terrain type (Steep/Flat/Turning/Direct) where the athlete has the least deficit per gate on average – their strength.","Für die gewählten Kategorien gibt es keine Werte. Aktiviere «Gesamt» oder hinterlege Kurssetzungen für die Terrain-Linien.":"No values for the chosen categories. Enable «Total» or add course settings for the terrain lines.",
  "Dauerhafter Speicher aktiviert — die Videos bleiben erhalten und der Browser stellt deutlich mehr Platz bereit (meist mehrere GB).":"Persistent storage enabled — videos are kept and the browser provides much more space (usually several GB).","Der Browser könnte Daten/Videos löschen. In der Bibliothek «Speicher maximieren», Cloud verbinden und regelmässig «Backup sichern».":"The browser could delete data/videos. In the library «Maximize storage», connect the cloud and regularly «Export backup».",
  "Sicherheitssoftware (z. B. ESET) oder Firewall sperrt *.workers.dev. Freigeben lassen (IT) oder im Dialog den GitHub-Upload nutzen.":"Security software (e.g. ESET) or a firewall blocks *.workers.dev. Have it allowed (IT) or use the GitHub upload in the dialog.","✓ Einladungscode (mit Token) kopiert — an Kollegen senden. Er fügt ihn oben unter «Schnell verbinden» ein und ist sofort verbunden.":"✓ Invite code (with token) copied — send it to a colleague. They paste it above under «Quick connect» and are connected instantly.",
- "Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit-Nähe» = Läufe, in denen er sehr nah an der Bestzeit war.":"Number of analyzed runs for the athlete in the chosen season. «Close to best» = runs where they were very close to the best time.","Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps).":"Number of tagged gates in this run. «Marked figures» = key sections stored in the course (offset, rhythm change, laps).",
+ "Anzahl ausgewerteter Läufe des Athleten in der gewählten Saison. «Laufbestzeit» = Läufe, in denen er/sie selbst die Laufbestzeit (Referenz) fuhr.":"Number of analyzed runs for the athlete in the chosen season. «Fastest run» = runs in which they set the fastest time (reference) themselves.","Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps).":"Number of tagged gates in this run. «Marked figures» = key sections stored in the course (offset, rhythm change, laps).",
  "PDF-Modul nicht geladen — für den Kurssetzungs-Import ist einmalig eine Internetverbindung nötig (danach cachet der Browser die Bibliothek).":"PDF module not loaded — a one-time internet connection is needed for the course-setting import (after that the browser caches the library).","Grösster Einzel-Zeitverlust eines Schweizers an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr.":"Biggest single time loss of a Swiss athlete at a single gate vs. the best time (excluding tagging anomalies). Shows athlete and gate no.",
  "Für diese Auswahl gibt es keinen Kurs mit passenden Tagging-Daten. Tagge den Lauf (Tab «Tagging») und lade die Kurssetzung mit gleichem Datum/Ort/Lauf.":"There's no course with matching tagging data for this selection. Tag the run (tab «Tagging») and load the course setting with the same date/location/run.","Bester Schweizer Athlet in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor).":"Best Swiss athlete in this run – measured by the smallest final deficit to the best time (for non-finishers, the fairest average deficit per tagged gate).",
- "Bestzeit":"Best time","möglich doppelt":"possibly duplicate","keine Terrain-Werte":"no terrain values","kein Video":"no video","✓ Video":"✓ video","Neu laden":"Reload",
+ "Bestzeit":"Best time","evtl. doppelt":"possibly duplicate","keine Terrain-Werte":"no terrain values","kein Video":"no video","✓ Video":"✓ video","Neu laden":"Reload",
  "Video konnte nicht geladen werden.":"Could not load the video.","Kein Vergleich — oben hinzufügen (mehrere möglich)":"No comparison — add above (multiple possible)","＋ Vergleich hinzufügen …":"＋ Add comparison …",
  "Serien (Athlet · Lauf)":"Series (athlete · run)","Rennen der Auswahl":"Races in the selection","Lauf-Nr.":"Run no.","Ø s/Tor":"Ø s/gate","1. Lauf:":"1st run:",
  "Frauen":"Women","Männer":"Men","Datensicherheit":"Data safety","Speicherplatz":"Storage space","Cloud-Verbindung":"Cloud connection","Coach-Upload":"Coach upload",
@@ -7916,7 +8026,7 @@ Object.assign(I18N_EN,{
  "Ort wählen":"Choose location","Lade Video":"Loading video","Lade aus GitHub…":"Loading from GitHub…","Lade Analyse-Daten…":"Loading analysis data…",
  "Sammle Videos…":"Collecting videos…","Video wird gesichert…":"saving video…","Zuerst PDF laden.":"Load a PDF first.","Bitte zuerst verbinden.":"Please connect first.",
  "Fehler beim Laden:":"Error loading:","Fehler beim Sichern:":"Error saving:","Fehler beim Anzeigen der Taggings:":"Error displaying the taggings:",
- "Bitte melde diese Meldung.":"Please report this message.","Sicherung wiederherstellen":"Restore backup","Sicherung wiederhergestellt.":"Backup restored.",
+ "Bitte melde diesen Fehler.":"Please report this error.","Sicherung wiederherstellen":"Restore backup","Sicherung wiederhergestellt.":"Backup restored.",
  "Willkommen bei Gate-to-Gate":"Welcome to Gate-to-Gate","lokale Sicherung(en) vorhanden":"local backup(s) available","Video in Bibliothek gespeichert.":"video saved to library.",
  "Fertig — vom Start bis zum Coach.":"Done — from start to coach.","Laufbestzeit — schnellster Athlet":"Fastest-run time — fastest athlete",
  "Hinweis(e) — läuft, aber beachten.":"note(s) — works, but take note.","Problem(e) gefunden — bitte beheben.":"problem(s) found — please fix.",
@@ -7925,21 +8035,21 @@ Object.assign(I18N_EN,{
  "Video-Einträge als CSV exportiert.":"video entries exported as CSV.","Synchronisiert an Tor":"Synced at gate","Datenbank → Kurssetzung":"Database → Course setting",
  "Wechsle in die Analyse.":"Switch to Analysis.","Für diesen Lauf ist noch":"For this run there is still","(kein Video – nur Zeiten).":"(no video – times only).",
  "Alle Tore auf einen Blick:":"All gates at a glance:","1 · Tagging – das Fundament":"1 · Tagging – the foundation","Tore · bei Bedarf anpassen.":"gates · adjust if needed.",
- "bewegen zwischen den Zellen,":"move between the cells,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
+ "wechseln die Zeile,":"change the row,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
  "Tor anklicken für 1. und 2. Lauf":"click a gate for the 1st and 2nd run","Bester Rückstand":"Best deficit","grösster Verlust":"biggest loss","grösster Zeitverlust":"biggest time loss",
- "Sektor-Rückstand":"Sector deficit","Rückstand s":"Deficit s","Bestes Rennen":"Best race","Schwächstes Rennen":"Weakest race","FIS-Rückstand":"FIS deficit",
+ "Abschnitts-Rückstand":"Section deficit","Rückstand s":"Deficit s","Bestes Rennen":"Best race","Schwächstes Rennen":"Weakest race","FIS-Rückstand":"FIS deficit",
  "Alle auswählen":"Select all","An die Coaches":"To the coaches","auf dem Gerät.":"on the device.","erstellen, mit":"create, with","Video wählen —":"Choose video —",
  "Athlet wählen —":"Choose athlete —","keine Daten —":"no data —","älter als 1 Jahr":"older than 1 year","älter als 6 Monate":"older than 6 months","älter als 90 Tage":"older than 90 days",
  "Video(s) löschen und ~":"Delete video(s) and ~","verfügbar — du nutzt v":"available — you're using v","heruntergeladen — bereit zur Installation.":"downloaded — ready to install.",
  "für die Tour — oder klicke dich mit":"for the tour — or click through with","Play drücken für die animierte Tour":"Press play for the animated tour",
  "– eine solche Datei wieder einlesen.":"– read such a file back in.","filtern, suchen, öffnen, bearbeiten.":"filter, search, open, edit.",
- "Komplettes Backup (JSON) wieder laden":"Load a full backup (JSON) again","macht rückgängig (Shift+Z wiederholt).":"undoes it (Shift+Z redoes).",
+ "Komplettes Backup (JSON) wieder laden":"Load a full backup (JSON) again","macht rückgängig (mit Shift: wiederholen).":"undoes it (with Shift: redo).",
  "Ø Rückstand pro Tor auf den Laufbesten":"Ø deficit per gate to the fastest run","Ø Rückstand s/Tor · tiefer = schneller":"Ø deficit s/gate · lower = faster",
  "Update verfügbar – bitte aktualisieren":"Update available – please refresh","Jetzt aktualisieren":"Update now","der Browser könnte deine Videos löschen.":"the browser could delete your videos.",
  "Bitte das Video erneut laden & speichern.":"Please reload & save the video.","Aktuelles Video schliessen und neues laden":"Close the current video and load a new one",
  "Detail nach Filter · Kurssetzung × Tagging":"Detail by filter · course setting × tagging","(0 = Start), dann «Am Tor synchronisieren».":"(0 = start), then «Sync at gate».",
  "weiter aussen = schneller als der Laufbeste":"further out = faster than the fastest run","– nur dieser Lauf als Tabelle (z. B. für Excel).":"– only this run as a table (e.g. for Excel).",
- "» löschen? Das Tagging (Zeiten) bleibt erhalten.":"»? The tagging (times) is kept.","Bereiche: Events · Taggings · Videos · Kurssetzung":"Sections: Events · Taggings · Videos · Course setting",
+ "» löschen? Das Tagging (Zeiten) bleibt erhalten.":"»? The tagging (times) is kept.","Bereiche: Events · Taggings · Videos · Kurssetzung · Athlet:innen":"Sections: Events · Taggings · Videos · Course setting · Athletes",
  "Hinweis: Das Video konnte nicht gespeichert werden.":"Note: the video could not be saved.","Event dauerhaft löschen – inkl. aller getaggten Läufe":"Delete event permanently – incl. all tagged runs",
  "Zu wenig Rennen für eine Trend-Aussage (mind. 2 nötig).":"Too few races for a trend (min. 2 needed).","Grösste/alte Videos löschen (nach «Grösste zuerst» sortieren)":"Delete largest/old videos (sort by «Largest first»)",
  "Vom Start bis zum Coach — so entsteht die Gate-to-Gate Analyse":"From start to coach — this is how the Gate-to-Gate analysis is created","mit gleichem Datum/Ort/Lauf — danach erscheint die Analyse hier.":"with the same date/location/run — then the analysis appears here.",
@@ -7963,26 +8073,26 @@ Object.assign(I18N_EN,{
  "Wo sind die Schweizer:innen schnell/langsam — nach Steilheit und Lauf-Charakter. Ø Rückstand pro Tor (negativ = schneller).":"Where the Swiss are fast/slow — by steepness and run character. Ø deficit per gate (negative = faster).",
  "Cloud nicht verbunden — deine Taggings bleiben nur auf diesem Gerät. Verbinden, damit alle sie in Datenbank & Analyse sehen.":"Cloud not connected — your taggings stay only on this device. Connect so everyone sees them in Database & Analysis.",
  "Das fertige PDF geht direkt in den WhatsApp-Chat der Trainer — die Analyse ist beim Team, noch bevor der nächste Lauf startet.":"The finished PDF goes straight into the coaches' WhatsApp chat — the analysis is with the team before the next run starts.",
- "Gate-Zeiten aus CSV übernommen. Start liegt bei der aktuellen Videoposition — bei Bedarf zuerst zum Startbalken scrubben und erneut laden.":"Gate times imported from CSV. Start is at the current video position — if needed, scrub to the start marker first and reload.",
+ "Tor-Zeiten aus CSV übernommen. Start liegt bei der aktuellen Videoposition — bei Bedarf zuerst zum Startbalken scrubben und erneut laden.":"Gate times imported from CSV. Start is at the current video position — if needed, scrub to the start marker first and reload.",
  "Aus dem Starthaus durch die Riesenslalom-Tore: der Schweizer Athlet und der Laufbeste fahren ihren Lauf — die Uhr läuft, der TV-Feed ist live.":"From the start gate through the giant-slalom gates: the Swiss athlete and the fastest run ski their run — the clock runs, the TV feed is live.",
- "Aus den Zeiten wächst die Gate-to-Gate Analyse: Rückstand pro Tor, kumulierte Kurve, Sektoren und Rhythmus — sofort sichtbar, wo Zeit liegen bleibt.":"From the times the Gate-to-Gate analysis grows: deficit per gate, cumulative curve, sectors and rhythm — instantly showing where time is lost.",
+ "Aus den Zeiten wächst die Gate-to-Gate Analyse: Rückstand pro Tor, kumulierte Kurve und Abschnitte — sofort sichtbar, wo Zeit liegen bleibt.":"From the times the Gate-to-Gate analysis grows: deficit per gate, cumulative curve and sections — instantly showing where time is lost.",
  "Jeder Schweizer Athlet und der Laufbeste werden frame-genau an jedem Tor markiert. Aus den Bild-Zeiten entstehen die Tor-zu-Tor-Zeiten — Tor um Tor.":"Each Swiss athlete and the fastest run are marked frame-accurately at every gate. From the frame times the gate-to-gate times are created — gate by gate.",
  "Zugangs-Token & Coach-Link-Setup mitgeben (Ein-Klick — Kollegen können sofort verbinden und Coach-Links erstellen; nur an vertrauenswürdige Kollegen)":"Include access token & coach-link setup (one click — colleagues can connect and create coach links instantly; only to trusted colleagues)",
  "Fünf Schritte, ein Ziel: jeder Schweizer Athlet wird mit dem Laufbesten verglichen, damit die Trainer sehen, wo Zeit gewonnen und verloren wird. Drücke":"Five steps, one goal: each Swiss athlete is compared to the fastest run so coaches see where time is gained and lost. Press",
- "Abweichung zum Median des Feldes an diesem Tor — mögliche Tippfehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.":"Deviation from the field median at this gate — possible mistags or a non-synced video cut. Only when ≥ 3 athletes tagged this gate.",
+ "Abweichung zum Median des Feldes an diesem Tor — möglicher Tagging-Fehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athleten dieses Tor getaggt haben.":"Deviation from the field median at this gate — possible mistags or a non-synced video cut. Only when ≥ 3 athletes tagged this gate.",
  "Zwei Läufe aus der Bibliothek nebeneinander — an einem gewählten Tor synchronisiert abspielbar. Ideal für den direkten Vergleich SUI-Athlet ↔ Laufbester.":"Two runs from the library side by side — playable synced at a chosen gate. Ideal for a direct comparison SUI athlete ↔ fastest run.",
  "Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen.":"Average gate-to-gate time of the fastest skier, filtered to plausible values (approx. 0.9–1.8 s) so start/finish outliers don't skew the mean.",
  "Direktes Teilen wird auf diesem Gerät/Browser nicht unterstützt — das Bild wurde heruntergeladen und kann manuell in WhatsApp geteilt werden. (Am zuverlässigsten auf dem Handy/Tablet.)":"Direct sharing isn't supported on this device/browser — the image was downloaded and can be shared manually in WhatsApp. (Most reliable on phone/tablet.)",
  "Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Athleten berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit.":"Fastest run = reference (0.00). All deficits are computed relative to this athlete. In competitions from the FIS time, in training from the fastest tagged total time.",
- "Für diese Kurssetzung ist keine PDF gespeichert. Nur die 88 Saison-Kurssetzungen haben eine hinterlegte PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.":"No PDF is stored for this course setting. Only the 88 season course settings have a stored PDF; self-imported PDFs stay only on the device where you loaded them.",
+ "Für diese Kurssetzung ist kein PDF gespeichert. Nur die Saison-Kurssetzungen haben ein hinterlegtes PDF; selbst importierte PDFs liegen nur lokal auf dem Gerät, auf dem du sie geladen hast.":"No PDF is stored for this course setting. Only the 88 season course settings have a stored PDF; self-imported PDFs stay only on the device where you loaded them.",
  "Stärken & Schwächen auf einen Blick: Kennzahlen, Terrain-Profil (Steil/Flach/Drehend/Direkt) und beste/schwächste Rennen der Auswahl. Basis: Ø Gate-to-Gate-Rückstand pro Tor auf den Laufbesten.":"Strengths & weaknesses at a glance: metrics, terrain profile (Steep/Flat/Turning/Direct) and best/weakest races of the selection. Basis: Ø gate-to-gate deficit per gate to the fastest run.",
  "Unterschied zum Web-Link: In der Desktop-App werden die Videos direkt auf deiner Festplatte gespeichert (praktisch unbegrenzt, funktioniert offline). Beim Web-Link bleiben die Videos im begrenzten Browser-Speicher. Die Analyse-Daten (Läufe, Kurse) sind bei beiden gleich.":"Difference from the web link: in the desktop app the videos are stored directly on your disk (practically unlimited, works offline). With the web link the videos stay in the limited browser storage. The analysis data (runs, courses) is the same for both.",
  "Terrain pro Tor — Steilheit & Charakter (aus der Kurssetzung)":"Terrain per gate — steepness & character (from the course setting)",
  "» löschen? Entfernt den Athleten aus der Analyse und löscht das Video (falls vorhanden).":"»? Removes the athlete from the analysis and deletes the video (if present).",
  "Tagging(s) löschen? Entfernt die Athleten aus der Analyse und löscht zugehörige Videos.":"Delete tagging(s)? Removes the athletes from the analysis and deletes associated videos.",
  "Tagging(s) werden übernommen. Bereits hochgeladene Videos können am alten Namen bleiben.":"Tagging(s) will be carried over. Already uploaded videos may keep the old name.",
- "Mac: nach dem Download öffnen, App in „Programme":"Mac: open after download, app to „Applications","Windows: Datei ausführen. Bei „Windows hat den PC geschützt":"Windows: run the file. If „Windows protected your PC",
- "Desktop-App v1.7.0 – Videos auf der Festplatte statt im Browser:":"Desktop app – videos on disk instead of in the browser:","Ein oder mehrere Kurssetzungs-PDFs hierher ziehen oder":"Drag one or more course-setting PDFs here or",
+ "Mac: nach dem Download öffnen, App in «Programme» ziehen. Beim 1. Start Rechtsklick → «Öffnen» (unsigniert).":"Mac: open after download and drag the app to «Applications». On first start right-click → «Open» (unsigned).","Windows: Datei ausführen. Bei «Windows hat den PC geschützt» → Mehr Infos → Trotzdem ausführen (unsigniert).":"Windows: run the file. If «Windows protected your PC» appears → More info → Run anyway (unsigned).",
+ "Desktop-App – Videos auf der Festplatte statt im Browser:":"Desktop app – videos on disk instead of in the browser:","Ein oder mehrere Kurssetzungs-PDFs hierher ziehen oder":"Drag one or more course-setting PDFs here or",
  "Start gesetzt: Tor 1 auf aktuellem Frame (alle Tags um":"Start set: gate 1 on the current frame (all tags by","Alle getaggten Läufe werden hier gegen die":"All tagged runs are evaluated here against the",
  "ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten und Höhenprofil.":"— with main chart, detail table, sections and elevation profile.","» ist in diesem Lauf schon vergeben.":"» is already taken in this run."
 });
@@ -8089,17 +8199,17 @@ initClipBig();
 /* ===================== Tutorial-Tour ===================== */
 const TOUR=[
   {title:'Willkommen bei Gate-to-Gate', text:'Dieses Tool analysiert Ski-Rennläufe <b>Tor für Tor</b>: An welchem Tor genau gewinnt oder verliert ein Athlet Zeit gegenüber der Bestzeit? Gemacht für <b>Trainer:innen & Analyst:innen von Swiss-Ski</b>. Der rote Faden: <b>Video taggen → auswerten → mit den Coaches teilen</b>. Los geht\'s – ca. 2 Minuten.'},
-  {view:'tagging', sel:'.tab[data-view="tagging"]', title:'1 · Tagging – das Fundament', text:'„Taggen" heisst: du markierst im Video jeden Moment, in dem der Athlet ein <b>Tor</b> passiert. Aus den Zeitabständen entstehen die <b>Tor-zu-Tor-Zeiten</b> – die Basis jeder Analyse. Oben wählst du zwischen <b>Wettkampf</b> und <b>Training</b>.'},
+  {view:'tagging', sel:'.tab[data-view="tagging"]', title:'1 · Tagging – das Fundament', text:'«Taggen» heisst: du markierst im Video jeden Moment, in dem der Athlet ein <b>Tor</b> passiert. Aus den Zeitabständen entstehen die <b>Tor-zu-Tor-Zeiten</b> – die Basis jeder Analyse. Oben wählst du zwischen <b>Wettkampf</b> und <b>Training</b>.'},
   {view:'tagging', sel:'#dropZone', title:'Video laden', text:'Video hierher ziehen oder «Datei wählen». <b>Ort, Datum, Disziplin, Athlet</b> liest die App – wenn möglich – aus dem Dateinamen. Das Video bleibt <b>lokal auf deinem Gerät</b>, es wird nichts hochgeladen.'},
-  {view:'tagging', sel:'.tg-data-card', title:'So taggst du', text:'Video abspielen (<b>Leertaste</b>) und an jedem Tor <b>Enter</b> drücken. Frame-genau feinjustieren mit <b>x</b>/<b>y</b> (± 1 Frame). Letztes Tor löschen mit <b>⌫</b>. Rechts füllt sich die Tor-Tabelle mit — am Schluss <b>«Save»</b>, und der Lauf ist sofort in Analyse & Bibliothek.'},
-  {view:'tagging', sel:'#fisRow', title:'FIS-Zeit & Training', text:'Bei <b>Wettkämpfen</b> trägst du den <b>FIS-Rückstand</b> ein oder markierst den <b>Laufbesten</b> als Referenz. Beim <b>Training</b> gibt es keine FIS-Zeit: aktiviere <b>«Ohne FIS-Zeit»</b> – dann wird automatisch der <b>schnellste getaggte Athlet</b> (Gesamtzeit) zur Referenz-Bestzeit.'},
+  {view:'tagging', sel:'.tg-data-card', title:'So taggst du', text:'Video abspielen (<b>Leertaste</b>) und an jedem Tor <b>Enter</b> drücken. Frame-genau feinjustieren mit <b>x</b>/<b>y</b> (± 1 Frame). Letztes Tor löschen mit <b>⌫</b>. Rechts füllt sich dabei die Tor-Tabelle – am Schluss <b>«✓ Speichern»</b>, und der Lauf ist sofort in Analyse & Bibliothek.'},
+  {view:'tagging', sel:'#fisRow', title:'FIS-Zeit & Training', text:'Bei <b>Wettkämpfen</b> trägst du den <b>FIS-Rückstand</b> ein oder markierst den <b>Laufbesten</b> als Referenz. Im Modus <b>Training</b> gibt es keine FIS-Zeit – Referenz ist automatisch der <b>schnellste getaggte Lauf</b> (Gesamtzeit). <b>«Ohne FIS-Zeit»</b> brauchst du nur bei Wettkämpfen ohne offizielle Zeit.'},
   {view:'analyse', sub:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten und Höhenprofil.'},
   {view:'analyse', sub:'analyse', sel:'#anaSub', title:'Drei Ansichten', text:'Oben rechts schaltest du um: <b>Analyse</b> (ein Lauf, Tor für Tor), <b>Saison-Verlauf</b> (Entwicklung über die Saison) und <b>Athleten-Profil</b> (Stärken/Schwächen nach Geländetyp, mit Radar & Mehrfach-Vergleich).'},
   {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>: oben = wenig Rückstand, unten = mehr. Alle Linien starten gemeinsam bei 0, so siehst du sofort, <b>wo</b> Zeit verloren/gewonnen wird. Klick in der Legende blendet einzelne Athleten aus.'},
   {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Video-Pop-up & Side-by-Side', text:'<b>Klick auf ein Tor</b> (Grafik oder Tabelle) öffnet ein Pop-up mit dem <b>Video</b> an genau dieser Stelle – mit mitlaufendem <b>Rückstands-Balken</b> (grün = Vorsprung, rot = Rückstand), <b>Zeitlupe</b>, <b>Frame-Schritt</b> und <b>Side-by-Side</b>, um zwei Läufe synchron zu vergleichen.'},
   {view:'analyse', sub:'analyse', sel:'#hmWrap', title:'Detail-Matrix', text:'Alle Tore auf einen Blick: <b>Δ pro Tor</b> und <b>Σ kumuliert</b>, farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.'},
   {view:'datenbank', sel:'.tab[data-view="datenbank"]', title:'3 · Datenbank', text:'Die zentrale Verwaltung aller <b>Events, Taggings, Videos & Kurssetzungen</b> – filtern, suchen, öffnen, bearbeiten.'},
-  {view:'datenbank', sel:'#dbSub', title:'Bereiche: Events · Taggings · Videos · Kurssetzung', text:'Über diese Reiter verwaltest du alles: <b>Events</b> (bearbeiten, <b>archivieren</b> oder <b>löschen</b>, Coach-Link), <b>Taggings</b> (editierbar, CSV-Import), <b>Videos</b> und <b>Kurssetzung</b> – hier importierst du das Kurs-PDF, das ins <b>Höhenprofil</b> und in die <b>Terrain-Analyse</b> einfliesst.'},
+  {view:'datenbank', sel:'#dbSub', title:'Bereiche: Events · Taggings · Videos · Kurssetzung · Athlet:innen', text:'Über diese Reiter verwaltest du alles: <b>Events</b> (bearbeiten, <b>archivieren</b> oder <b>löschen</b>, Coach-Link), <b>Taggings</b> (editierbar, CSV-Import), <b>Videos</b> und <b>Kurssetzung</b> – hier importierst du das Kurs-PDF, das ins <b>Höhenprofil</b> und in die <b>Terrain-Analyse</b> einfliesst.'},
   {view:'datenbank', sel:['.btn-mini.coach','#dbBody','.tab[data-view="datenbank"]'], title:'Coach-Link teilen', text:'Bei jedem Event mit lokalem Video erstellst du einen <b>Coach-Link</b> (Spalte «Coach-Link»): die Trainer sehen nur die Analyse dieses Events inkl. Videos – klickbar bis ins einzelne Tor, mit Balken, Side-by-Side und Zeitlupe, auch am Handy.'},
   {view:'analyse', sel:'#cloudBtn', title:'☁ Cloud · lokal vs. online', text:'<b>Videos bleiben lokal</b> auf deinem Gerät (schont Speicher & Datenschutz). Deine <b>Analyse-Daten</b> (Läufe, Kurse) synchronisierst du übers Cloud-Symbol sicher mit dem Team. <b>Nur beim Coach-Link</b> werden die betreffenden Videos online gestellt. <b>Das war\'s – viel Erfolg!</b> Die Tour startest du unten über «Tutorial» jederzeit neu.'}
 ];
@@ -8175,7 +8285,7 @@ if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.dis
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
 function showDesktopUpdateBanner(cur, latest, url){
   if(document.getElementById('updBanner')) return;
-  const b=document.createElement('div'); b.id='updBanner'; b.className='upd-banner no-print';
+  const b=document.createElement('div'); b.id='updBanner'; b.className='upd-bar no-print';
   b.innerHTML=`<span>Neue Version <b>v${latest}</b> verfügbar — du nutzt v${cur}.</span>`+
     `<button class="ub-dl" type="button">Update herunterladen</button>`+
     `<button class="ub-x" title="Ausblenden">✕</button>`;
@@ -8197,7 +8307,7 @@ function showDesktopUpdateBanner(cur, latest, url){
 function showUpdateReadyBanner(v){
   const ex=document.getElementById('updBanner'); if(ex) ex.remove();
   if(document.getElementById('updReadyBanner')) return;
-  const b=document.createElement('div'); b.id='updReadyBanner'; b.className='upd-banner no-print';
+  const b=document.createElement('div'); b.id='updReadyBanner'; b.className='upd-bar no-print';
   b.innerHTML=`<span>Update ${v?('v'+v+' '):''}heruntergeladen — bereit zur Installation.</span>`+
     `<button class="ub-dl" type="button">Jetzt neu starten &amp; installieren</button>`+
     `<button class="ub-x" title="Später">Später</button>`;
@@ -8224,9 +8334,14 @@ applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Ev
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
 window.addEventListener('beforeprint',()=>{ if(S.pdfName){ S._titlePrev=document.title; try{ document.title=S.pdfName; }catch(e){} }   // PDF-Dateiname nur während des Druckens
-  if(S.comp){ S.printMode=true; S._smoothPrev=S.heroSmooth; S.heroSmooth=true; try{drawHero();}catch(e){} } });   // im PDF immer geglättet
+  S._darkPrint = document.body.classList.contains('dark');   // PDF immer im hellen Design (Einstellung bleibt unverändert)
+  if(S._darkPrint){ document.body.classList.remove('dark'); gtgRecolor(); }
+  if(S.comp){ S.printMode=true; S._smoothPrev=S.heroSmooth; S.heroSmooth=true; try{drawHero();}catch(e){}   // im PDF immer geglättet
+    if(S._darkPrint){ try{ buildLegend(); }catch(e){} try{ drawSector(); }catch(e){} try{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); }catch(e){} } } });
 window.addEventListener('afterprint',()=>{ try{ document.title = S._titlePrev || APP_TITLE; }catch(e){}
-  S.printMode=false; if(S._smoothPrev!==undefined){ S.heroSmooth=S._smoothPrev; } try{drawHero();}catch(e){} });
+  const wasDark=!!S._darkPrint; if(wasDark){ document.body.classList.add('dark'); S._darkPrint=false; gtgRecolor(); }
+  S.printMode=false; if(S._smoothPrev!==undefined){ S.heroSmooth=S._smoothPrev; }
+  if(wasDark) gtgRedrawAnalyse(); else { try{drawHero();}catch(e){} } });
 const coachMode = initCoach();   // ?coach=<key> -> gesperrte Coach-Ansicht
 if(!coachMode){ buildFilters(); switchView(startView); }   // sonst normaler Start
 
