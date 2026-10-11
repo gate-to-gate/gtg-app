@@ -1632,7 +1632,9 @@ body.dark .wf-ico{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
 body.dark .wf-ico:hover{border-color:var(--red);color:#fff}
 /* Desktop-Update-Leiste */
 body.dark .upd-bar{background:#3a2e16;border-bottom-color:#5e4a26;color:#f0cf8a}
-body.dark .upd-bar .ub-x{color:#d9b876}
+body.dark .upd-bar .ub-x{color:#d9b876}/* Detail-Matrix: mit dem Nachbartor verrechnete Zelle + Hinweiszeile */
+.hm-pair{outline:1.5px dashed #c98a00;outline-offset:-2px;border-radius:3px}
+.hm-note{font-size:11.5px;color:var(--muted);margin-top:8px}
 </style>
 </head>
 <body>
@@ -2861,7 +2863,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610101803';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610111423';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3489,6 +3491,24 @@ function compute(ev){
       rawDiff[i] = (t!=null && tp!=null) ? t-tp : null;
       anom[i] = (t!=null && med[i]!=null && t > med[i]*1.55 && (t - (tp??med[i])) > 0.6);
     }
+    // Pass 1b: versetzt getaggte Tor-Paare erkennen.
+    // Liegt ein langes Intervall (Hairpin/Flush) bei Athlet:in und Bestzeit um ein Tor versetzt, entsteht
+    // ein Paar «−x / +x». Früher wurde nur die positive Hälfte als Ausreisser gestrichen -> Scheingewinn.
+    // Jetzt: hat ein Ausreisser am Nachbartor eine Gegenbewegung (mind. halb so gross), zählen beide Tore
+    // ZUSAMMEN (Netto am späteren Tor, 0 am früheren). Ein Ausreisser ohne Gegenstück zählt weiterhin 0.
+    const pair=new Array(n).fill(-1);          // Index des Partner-Tors (sonst -1)
+    const cleanBase=rawDiff.slice();           // Basis der bereinigten Kurve (vor FIS-Kalibrierung)
+    for(let i=0;i<n;i++){
+      if(!anom[i] || rawDiff[i]==null) continue;
+      let best=-1;
+      [i-1,i+1].forEach(j=>{ if(j<0||j>=n) return; const rj=rawDiff[j];
+        if(rj==null || anom[j] || pair[j]>=0) return;
+        if(rj<0 && -rj >= 0.5*rawDiff[i] && (best<0 || rj<rawDiff[best])) best=j; });
+      if(best>=0){ const lo=Math.min(i,best), hi=Math.max(i,best);
+        pair[i]=best; pair[best]=i; cleanBase[lo]=0; cleanBase[hi]=rawDiff[i]+rawDiff[best];
+        anom[i]=false;                           // kein Ausreisser mehr: wird verrechnet, nicht gestrichen
+      } else cleanBase[i]=0;
+    }
     let lastReal=-1; for(let i=0;i<n;i++) if(SGi[i]!=null) lastReal=i;
     // FIS-Kalibrierung: Endrückstand soll exakt dem offiziellen FIS-Rückstand entsprechen.
     // Die Differenz (getaggt vs. offiziell) wird GEWICHTET verteilt: mehr auf Tore mit grossen
@@ -3499,7 +3519,7 @@ function compute(ev){
     if(!isTop && og!=null){
       const idxs=[]; for(let i=0;i<n;i++) if(rawDiff[i]!=null) idxs.push(i);
       if(idxs.length){
-        const clean=i=> anom[i]?0:rawDiff[i];
+        const clean=i=> cleanBase[i];
         const base = idxs.reduce((a,i)=> a + clean(i), 0);
         const target = og - topOG;
         const D = target - base;                 // gesamte zu verteilende Differenz
@@ -3518,7 +3538,7 @@ function compute(ev){
     for(let i=0;i<n;i++){
       const rd=rawDiff[i]; const corr=corrArr[i];
       const dxRaw  = rd==null ? null : (rd+corr);
-      const dxClean= rd==null ? null : ((anom[i]?0:rd)+corr);
+      const dxClean= rd==null ? null : (cleanBase[i]+corr);
       diff[i]      = dxRaw==null ? null : Math.round(dxRaw*1000)/1000;
       cleanDiff[i] = dxClean==null ? null : Math.round(dxClean*1000)/1000;
       if(dxRaw!=null){ cr+=dxRaw; } cumRaw[i]=Math.round(cr*1000)/1000;
@@ -3530,7 +3550,7 @@ function compute(ev){
     const cumRawDisp = normStart(cumRaw), cumCleanDisp = normStart(cumClean);
     return {name:s.name, nation:s.nation, isTop, sui:s.nation==='SUI', lastReal, dnf,
       officialGap: og, calibrated,
-      gates:SGi, diff, anom, cleanDiff, cumRaw, cumClean, cumRawDisp, cumCleanDisp,
+      gates:SGi, diff, anom, pair, cleanDiff, cumRaw, cumClean, cumRawDisp, cumCleanDisp,
       finalRaw:cumRaw[lastReal]??cr, finalClean:cumClean[lastReal]??cc, filled, complete: n? filled/n : 0, color:null};
   });
   // konsistente Farben: jeder Athlet hat IMMER die gleiche Farbe (global stabil), der Schnellste ist immer goldig
@@ -3643,7 +3663,7 @@ function render(){
 function kpiHTML(){
   const c=S.comp, top=c.top, best=bestSui();
   // biggest single time loss among SUI
-  let bigLoss={v:-9}; c.sui.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
+  let bigLoss={v:-9}; c.sui.forEach(s=> (S.excludeAnom?s.cleanDiff:s.diff).forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
   const nFig = c.figs.length;
   const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
   const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
@@ -3824,7 +3844,7 @@ function drawHero(){
   // Hinweis-Text zu auffälligen Stellen unter der Grafik
   const _hn=$('#heroNote');
   if(_hn){ if(_anom.length && !S.printMode){
-      const tore=_anom.map(a=>`Tor ${a.g}`).join(', ');
+      const tore=_anom.map(a=>`Tor ${a.g+1}`).join(', ');
       _hn.innerHTML=`<span class="hn-ic">⚠</span><b>Auffällige Stelle${_anom.length>1?'n':''}:</b> ${tore}. Hier wurden damals für das versendete PDF manuelle Anpassungen gemacht — angezeigt sind die Original-Taggings.`;
       _hn.style.display='';
     } else { _hn.style.display='none'; _hn.innerHTML=''; } }
@@ -4125,7 +4145,8 @@ function suiCardsHTML(){
 function drawHeatmap(mode){
   const c=S.comp, n=c.n; const cols=[c.top, ...c.skiers.filter(s=>!s.isTop)];
   const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
-  let max=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null&&!s.anom[i]) max=Math.max(max,Math.abs(d)); }));
+  const isPair=(s,i)=> !!(s.pair && s.pair[i]>=0);
+  let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(s.anom[i]||isPair(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); }));
   max=max||0.3;
   const _dk=chTheme().dark, _blank=_dk?'transparent':'#fff', _zero=_dk?'rgba(255,255,255,.05)':'#f6f8fa';
   const colorOf=(d,anom)=>{ if(d==null) return _blank; if(anom) return _blank;
@@ -4143,10 +4164,14 @@ function drawHeatmap(mode){
     cols.forEach(s=>{ const d=s.diff[i], anom=s.anom[i]; const da=`data-ath="${encodeURIComponent(s.name)}" data-g="${i+1}"`;
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
         h+=`<td class="hm-cell" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
-      else { h+=`<td class="hm-cell ${anom?'anom':''}" ${da} style="background:${colorOf(d,anom)}" title="${anom?'Anomalie':''}">${d==null?'':fmt(d)}</td>`; }
+      else { const pr=isPair(s,i);
+        const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:'');
+        h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?'':fmt(d)}</td>`; }
     });
     h+=`</tr>`; }
-  h+=`</tbody></table></div>`; $('#hmWrap').innerHTML=h;
+  h+=`</tbody></table></div>`;
+  if(nAdj && mode!=='cum') h+=`<div class="hm-note">Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.</div>`;
+  $('#hmWrap').innerHTML=h;
   // Klick auf eine Zelle -> Video dieses Athleten an dieses Tor (springt zum Videobereich)
   $('#hmWrap').querySelectorAll('td.hm-cell').forEach(td=> td.onclick=()=>{ const ath=decodeURIComponent(td.dataset.ath||''); const g=parseInt(td.dataset.g,10);
     if(typeof coachSelectAndSeek==='function' && ath && !isNaN(g)) coachSelectAndSeek(ath, g, 'table'); });
@@ -4157,21 +4182,22 @@ function drawHeatmap(mode){
 function heatmapPrint(){
   const el=$('#hmPrint'); if(!el) return;
   const c=S.comp, n=c.n, cols=c.skiers.filter(s=>!s.isTop); const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
-  let max=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d!=null&&!s.anom[i]) max=Math.max(max,Math.abs(d)); })); max=max||0.3;
+  const isAdj=(s,i)=> !!(s.anom[i] || (s.pair && s.pair[i]>=0));
+  let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(isAdj(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); })); max=max||0.3;
   const colorOf=d=>{ if(d==null) return '#fff'; const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
     return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:'#f6f8fa'; };
   // Seite 2 im Hochformat: IMMER eine Spalte — alle Tore untereinander, nicht aufgeteilt.
   // Schriftgrösse automatisch skalieren, damit die ganze Tabelle auf eine A4-Seite passt.
   const ncol = 1; const per = n;
   if(el){ el.dataset.cols = 1;
-    const rows = n + 2;                                   // Tore + 2 Kopfzeilen
+    const rows = n + 3;                                   // Tore + Startzeile + 2 Kopfzeilen
     // Schrift so wählen, dass die Tabelle + Legende die A4-Seite gut ausfüllt (kein grosser Weissraum)
     const fs = Math.max(5.5, Math.min(11, Math.round((710/rows) * 10) / 10));
     const pad = fs>=8 ? '1px 5px' : (fs>=6.5 ? '1px 4px' : '0.5px 3px');
     el.style.setProperty('--hmpfs', fs+'px');
     el.style.setProperty('--hmppad', pad);
   }
-  const cumCol=s=>s.cumRaw;   // aufsummierter Rückstand je Athlet (Summe der Δ)
+  const cumCol=s=> S.excludeAnom ? s.cumClean : s.cumRaw;   // gleiche Werte wie Hauptgrafik und Bildschirm-Matrix
   const cumTxt=v=> v==null?'':(v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(2);
   let blocks='';
   for(let cI=0;cI<ncol;cI++){ const start=cI*per, end=Math.min(n,start+per); if(start>=end) continue;
@@ -4182,12 +4208,16 @@ function heatmapPrint(){
     t+=`</tr><tr>`;
     cols.forEach(()=> t+=`<th class="sub">Δ</th><th class="sub cum">Σ</th>`);
     t+=`</tr></thead><tbody>`;
+    // Start = Tor 1 (Referenz, alle 0.00) – gleiche Zählung wie Hauptgrafik und Bildschirm-Matrix
+    if(start===0){ t+=`<tr><td class="g">1</td>`;
+      cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`; t+=`<td style="background:#f6f8fa;color:#8b95a3">Ref</td><td class="cum" style="color:#555">0.00</td>`; });
+      t+=`</tr>`; }
     for(let i=start;i<end;i++){ const fg=figByGate[i+1];
-      t+=`<tr><td class="g">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+1}</td>`;
+      t+=`<tr><td class="g">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+2}</td>`;
       cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`;
         const d=s.diff[i], cu=cumCol(s)[i];
         const cc = cu==null?'':(cu<-0.001?'#1a8f5a':'#555');
-        t+=`<td style="background:${colorOf(d)}">${d==null?'':fmt(d)}</td>`;
+        t+=`<td style="background:${isAdj(s,i)?'#f6f8fa':colorOf(d)};${isAdj(s,i)?'color:#8b95a3':''}">${d==null?'':fmt(d)}</td>`;
         t+=`<td class="cum" style="color:${cc}">${cumTxt(cu)}</td>`; });
       t+=`</tr>`; }
     t+=`</tbody></table>`; blocks+=`<div class="hmp-col">${t}</div>`;
@@ -4195,6 +4225,7 @@ function heatmapPrint(){
   const legend=`<div class="hmp-legend">`
     +`<div><span class="hl-k">Δ&nbsp;(pro&nbsp;Tor)</span> Zeitdifferenz an diesem Tor gegenüber dem Schnellsten – «+» langsamer, «−» schneller. Farbe: <b style="color:#c0392b">rot = langsamer</b>, <b style="color:#1a8f5a">grün = schneller</b> (je kräftiger, desto grösser der Unterschied).</div>`
     +`<div><span class="hl-k">Σ&nbsp;(kumuliert)</span> aufsummierter Rückstand bis zu diesem Tor – der laufende Gesamtrückstand gegenüber dem Schnellsten.</div>`
+    +(nAdj?`<div><span class="hl-k">Grau</span> Δ-Werte in Grau zählen nicht einzeln in Σ: Ausreisser (nicht gewertet) oder mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt).</div>`:'')
     +`</div>`;
   el.innerHTML=`<div class="hmp-note">Schnellster (Referenz, Δ = 0.00): <b>${c.top.name}</b> · ${c.top.nation||''}</div><div class="hmp-grid">${blocks}</div>${legend}`;
 }
@@ -7885,7 +7916,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
