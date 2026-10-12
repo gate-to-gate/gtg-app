@@ -1544,6 +1544,16 @@ body.dark .fis-gold{color:#e3bd55}
 .fis-shift{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;font-size:12.5px;line-height:2}
 .fis-shift input{width:70px;height:28px;box-sizing:border-box;border:1.4px solid var(--line);border-radius:7px;padding:0 6px;font:inherit;background:var(--card);color:var(--ink)}
 .fis-sub{font-size:11.5px;color:var(--muted);line-height:1.4}
+/* Taggings: Sammelzeile pro Lauf */
+.dbt-grow{cursor:pointer}
+.dbt-grow .dbt-gnames{color:var(--muted);font-size:12px;margin-left:4px}
+.dbt-gdetail>td{background:var(--bg);padding:10px 12px;max-width:1px}   /* Breite an die Tabelle binden, Raster scrollt seitlich */
+.dbt-ginner{width:100%;overflow:hidden}
+.dbt-ginner .dbtg-wrap{overflow-x:auto}
+.dbt-gbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.dbt-ginner .dbtg-wrap{max-height:60vh;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.dbt-ginner .dbtg-table .dbtg-act{position:sticky;right:0;background:var(--card);white-space:nowrap}
+.dbt-ginner .dbtg-table .dbtg-act .btn-mini{padding:3px 7px;margin-left:3px}
 </style>
 </head>
 <body>
@@ -2772,7 +2782,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121356';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121424';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4081,6 +4091,15 @@ function gtgPrint(){ try{
     if(S.view!=='analyse' || S.anaSub!=='analyse'){ S.anaSub='analyse'; switchView('analyse'); }
     if(!S.comp){ gtgToast('Kein Lauf geladen – bitte zuerst in der Analyse ein Event wählen.'); return; }
   }catch(e){}
+  const dk=(typeof GD==='function')?GD():null;
+  if(dk && typeof dk.printPdf==='function'){   // Desktop-App: PDF direkt erzeugen (Seite 1 quer, Seite 2 hoch)
+    setTimeout(async()=>{ try{ window.dispatchEvent(new Event('beforeprint')); document.body.classList.add('gtg-printing');
+        await new Promise(r=>setTimeout(r,250));
+        const r=await dk.printPdf(S.pdfName||document.title);
+        if(r && !r.ok && !r.canceled) gtgToast('PDF konnte nicht erstellt werden: '+(r.error||'unbekannter Fehler'));
+      }catch(e){ gtgToast('PDF konnte nicht erstellt werden.'); }
+      finally{ document.body.classList.remove('gtg-printing'); window.dispatchEvent(new Event('afterprint')); } }, 120);
+    return; }
   setTimeout(()=>{ try{ window.print(); }catch(e){} }, 120); }
 function setAnaSub(sub){ S.anaSub = 'analyse'; savePrefs();   // Saison-Verlauf & Athleten-Profil wurden aus dem Tool entfernt (10/2026)
   ['#anaSub','#anaSub2','#anaSub3'].forEach(id=>{ const seg=$(id); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===S.anaSub)); });
@@ -6730,7 +6749,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       if(fv==='1'&&!VIDS.has(runId(r))) return false; if(fv==='0'&&VIDS.has(runId(r))) return false;
       if(fdnf==='dnf'&&!isDnfRec(r)) return false; if(fdnf==='full'&&isDnfRec(r)) return false;
       if(q){ if(!((r.venue+' '+r.name).toLowerCase().includes(q))) return false; } return true; });
-    if($('#dbtCount')) $('#dbtCount').textContent=`${list.length} Tagging${list.length===1?'':'s'}`;
+    if($('#dbtCount')){ const _ev=new Set(list.map(r=>[r.date,r.venue,r.disc,r.gen,r.run,r.mode].join('|'))).size; $('#dbtCount').textContent=`${list.length} Tagging${list.length===1?'':'s'} · ${_ev} Läufe`; }
     if($('#dbtListBox')) $('#dbtListBox').style.display = DBTVIEW==='grid'?'none':'';
     if($('#dbtGridBox')) $('#dbtGridBox').style.display = DBTVIEW==='grid'?'':'none';
     if(DBTVIEW==='grid'){ if($('#dbtBulk')) $('#dbtBulk').style.display='none'; renderDbtGrid(list); return; }
@@ -6746,7 +6765,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
     const _stats={}; all.forEach(r=>{ const k=medK(r), st=_stats[k]||(_stats[k]={}); (r.gates||[]).forEach((g,i)=>{ if(g==null) return; (st[i]=st[i]||[]).push(+g); }); });
     const _evMed={}; Object.keys(_stats).forEach(k=>{ const per=_stats[k], out={}; Object.keys(per).forEach(i=>{ const vals=per[i]; if(vals.length<3) return; const md=_median(vals); const mad=_median(vals.map(v=>Math.abs(v-md)))||0; out[i]={md,mad}; }); _evMed[k]=out; });
     const anomFor=r=>{ const per=_evMed[medK(r)]||{}; return (r.gates||[]).map((g,i)=>{ const s=per[i]; if(!s||g==null) return false; return Math.abs(+g - s.md) >= 0.25; }); };   // ≥ 0,25 s Abweichung zum Median
-    body.innerHTML=list.map(r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id); const _ed=canEditBy(r.by);
+    const rowHtml=r=>{ const id=runId(r), hasV=VIDS.has(id), enc=encodeURIComponent(id); const _ed=canEditBy(r.by);
       const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
       const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
@@ -6755,7 +6774,56 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
       return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
-    }).join('');
+};
+    // Mehrere Athlet:innen im selben Event & Lauf -> eine Sammelzeile; aufgeklappt: Athlet:innen × Tore
+    const gKey=r=>[r.date,r.venue,r.disc,r.gen,r.run,r.mode].join('|');
+    const groups=[], gMap={}; list.forEach(r=>{ const k=gKey(r); if(!gMap[k]){ gMap[k]=[]; groups.push(k); } gMap[k].push(r); });
+    const groupHtml=k=>{ const rs=gMap[k], r0=rs[0], gid=encodeURIComponent(k);
+      const art=r0.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
+      const nTag=rs.filter(r=>!r._databank).length, nDb=rs.length-nTag;
+      const src=(nTag?'<span class="db-badge tg">getaggt</span>':'')+(nDb?' <span class="db-badge db">Databank</span>':'');
+      const nVid=rs.filter(r=>VIDS.has(runId(r))).length;
+      const vid=nVid?`<span class="db-badge vid">✓ ${nVid}/${rs.length} Video</span>`:'<span class="db-badge novid">kein Video</span>';
+      const maxG=Math.max(0,...rs.map(r=>(r.gates||[]).length));
+      const nA=rs.reduce((a,r)=>a+anomFor(r).filter(Boolean).length,0);
+      const anomBadge=nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – aufklappen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
+      const names=rs.map(r=>String(r.name).split(' ')[0]).join(', ');
+      const hidden=rs.filter(r=>canEditBy(r.by)).map(r=>`<input type="checkbox" class="dbt-check" data-id="${encodeURIComponent(runId(r))}" hidden>`).join('');
+      const anyEd=rs.some(r=>canEditBy(r.by));
+      return `<tr class="dbt-row dbt-grow${nA?' dbt-rowanom':''}" data-g="${gid}"><td class="db-chk">${anyEd?`<input type="checkbox" class="dbt-gcheck" data-g="${gid}" title="Alle eigenen Taggings dieses Laufs auswählen">`:''}${hidden}</td><td>${dmy(r0.date)}</td><td class="db-venue">${escHtml(r0.venue)}</td><td>${r0.disc}</td><td>${genHtml(r0.gen)}</td><td>${runShort(r0.mode,r0.disc,r0.run)}</td><td><b>${rs.length} Athlet:innen</b> <span class="dbt-gnames">${escHtml(names)}</span>${anomBadge}</td><td>${art} ${src}</td><td class="num">${maxG}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-gopen="${gid}">Aufklappen</button></td></tr>`
+        +`<tr class="dbt-gdetail" data-for="${gid}" style="display:none"><td colspan="11"><div class="dbt-ginner" data-g="${gid}" data-built="0"></div></td></tr>`; };
+    body.innerHTML=groups.map(k=> gMap[k].length>1 ? groupHtml(k) : rowHtml(gMap[k][0])).join('');
+    const buildGroup=inner=>{ if(!inner||inner.dataset.built==='1') return; inner.dataset.built='1'; const k=decodeURIComponent(inner.dataset.g), rs=(gMap[k]||[]).slice();
+      rs.sort((a,b)=> (b.officialBest?1:0)-(a.officialBest?1:0) || ((a.officialGap??99)-(b.officialGap??99)) || String(a.name).localeCompare(b.name));
+      const maxG=Math.max(0,...rs.map(r=>(r.gates||[]).length));
+      const hasComp=rs.some(r=>r.mode==='comp'&&!r._databank);
+      let h=`<div class="dbt-gbar">${hasComp?`<button class="btn-mini" data-gfis="1">✎ FIS-Rückstände</button>`:''}<span class="dbtg-hint2" style="margin:0">Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.</span></div>`;
+      h+=`<div class="dbtg-wrap"><table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet:in</th><th class="dbtg-src">FIS</th>`;
+      for(let i=0;i<maxG;i++) h+=`<th class="num">${i+2}</th>`;
+      h+=`<th class="dbtg-act"></th></tr></thead><tbody>`;
+      rs.forEach((r,ri)=>{ const id=runId(r), enc=encodeURIComponent(id), ed=canEditBy(r.by), an=anomFor(r);
+        const fis=r.mode!=='comp'?'—':(r.officialBest?'<span class="fis-gold">Best</span>':(typeof r.officialGap==='number'?('+'+(+r.officialGap).toFixed(2)):'—'));
+        h+=`<tr><td class="dbtg-ath" title="${escHtml(r.name)}">${escHtml(r.name)}${VIDS.has(id)?' <span title="Video vorhanden">🎬</span>':''}</td><td class="dbtg-src">${fis}</td>`;
+        for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${an[i]?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"${ed?'':' readonly tabindex="-1" title="Nur Ansicht"'}></td>`; }
+        const acts = (ed && !r._databank) ? `<button class="btn-mini" data-edit="${enc}" title="Im Tagging öffnen${VIDS.has(id)?' (mit Video)':''}">✎</button><button class="btn-mini del" data-deltag="${enc}" title="Tagging löschen">🗑</button>` : (ed?'':'<span class="db-ro" title="Nur Ansicht">🔒</span>');
+        h+=`<td class="dbtg-act">${acts}</td></tr>`; });
+      h+=`</tbody></table></div>`; inner.innerHTML=h;
+      inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ if(inp.readOnly) return;
+        inp.onclick=e=>e.stopPropagation();
+        inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); };
+        inp.onkeydown=e=>{ const c=+inp.dataset.i, tr=+inp.dataset.r; let go=null;
+          if(e.key==='ArrowUp') go=tr-1; else if(e.key==='ArrowDown') go=tr+1; else if(e.key==='Enter') go=e.shiftKey?tr-1:tr+1; else return;
+          e.preventDefault(); const t=inner.querySelector(`.dbt-gedit[data-r="${go}"][data-i="${c}"]`); if(t){ t.focus(); if(t.select) t.select(); } }; });
+      inner.querySelectorAll('button[data-edit]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); editTagging(decodeURIComponent(b.dataset.edit)); });
+      inner.querySelectorAll('button[data-deltag]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); const gid=decodeURIComponent(b.dataset.deltag), nm=gid.split('|').slice(5).join('|');
+        gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt die Person aus der Analyse und löscht das Video (falls vorhanden).`}).then(okc=>{ if(okc) deleteTagging(gid); }); });
+      const fb=inner.querySelector('button[data-gfis]'); if(fb) fb.onclick=e=>{ e.stopPropagation(); const r0=rs[0]; openFisEditor([r0.date,r0.venue,r0.disc,r0.gen,r0.run].join('|')); };
+    };
+    const gToggle=gid=>{ const det=body.querySelector(`.dbt-gdetail[data-for="${cssEsc(gid)}"]`), row=body.querySelector(`.dbt-grow[data-g="${cssEsc(gid)}"]`); if(!det) return;
+      const open=det.style.display==='none'; if(open) buildGroup(det.querySelector('.dbt-ginner')); det.style.display=open?'':'none';
+      if(row){ row.classList.toggle('dbt-open',open); const bt=row.querySelector('button[data-gopen]'); if(bt) bt.textContent=open?'Zuklappen':'Aufklappen'; } };
+    body.querySelectorAll('.dbt-grow').forEach(tr=> tr.onclick=e=>{ if(e.target.closest('.db-chk')) return; gToggle(tr.dataset.g); });
+    body.querySelectorAll('.dbt-gcheck').forEach(c=> c.onclick=e=>{ e.stopPropagation(); c.closest('td').querySelectorAll('.dbt-check').forEach(x=>x.checked=c.checked); dbtUpdateBulk(); });
     const byId={}; list.forEach(r=>{ byId[runId(r)]=r; });
     const wireDetail=inner=>{ if(!inner || inner.dataset.built==='1') return; const encId=inner.dataset.id, id=decodeURIComponent(encId), r=byId[id]; inner.dataset.built='1'; if(!r) return;
       const hasV=VIDS.has(id); const editable=canEditBy(r.by);
@@ -6775,9 +6843,9 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
         gtgConfirm({title:'Tagging löschen', danger:true, okLabel:'Löschen', msg:`Tagging von «${nm}» löschen? Entfernt die Person aus der Analyse und löscht das Video (falls vorhanden).`}).then(okc=>{ if(okc) deleteTagging(gid); }); };
     };
     const toggle=id=>{ const det=body.querySelector(`.dbt-detail[data-for="${cssEsc(id)}"]`), row=body.querySelector(`.dbt-row[data-id="${cssEsc(id)}"]`); if(!det) return; const open=det.style.display==='none'; if(open) wireDetail(det.querySelector('.dbt-inner')); det.style.display=open?'':'none'; if(row) row.classList.toggle('dbt-open',open); };
-    body.querySelectorAll('.dbt-row').forEach(tr=> tr.onclick=e=>{ if(e.target.closest('.db-chk')) return; if(e.target.closest('button')&&!e.target.closest('button[data-open]')) return; toggle(tr.dataset.id); });
+    body.querySelectorAll('.dbt-row:not(.dbt-grow)').forEach(tr=> tr.onclick=e=>{ if(e.target.closest('.db-chk')) return; if(e.target.closest('button')&&!e.target.closest('button[data-open]')) return; toggle(tr.dataset.id); });
     body.querySelectorAll('.dbt-check').forEach(c=> c.onclick=e=>{ e.stopPropagation(); dbtUpdateBulk(); });
-    if($('#dbtAll')){ $('#dbtAll').checked=false; $('#dbtAll').onclick=()=>{ body.querySelectorAll('.dbt-check').forEach(c=>c.checked=$('#dbtAll').checked); dbtUpdateBulk(); }; }
+    if($('#dbtAll')){ $('#dbtAll').checked=false; $('#dbtAll').onclick=()=>{ body.querySelectorAll('.dbt-check,.dbt-gcheck').forEach(c=>c.checked=$('#dbtAll').checked); dbtUpdateBulk(); }; }
     if($('#dbtDel')) $('#dbtDel').onclick=dbtDeleteSelected;
     if($('#dbtExport')) $('#dbtExport').onclick=dbtExportSelected;
     dbtUpdateBulk();
@@ -7560,7 +7628,30 @@ function readR2cfg(){ const on=$('#cmR2On')&&$('#cmR2On').checked;
   return { on, endpoint:($('#cmR2Endpoint')?.value||'').trim().replace(/\/+$/,''), bucket:($('#cmR2Bucket')?.value||'').trim(),
     base:($('#cmR2Base')?.value||'').trim(), key:($('#cmR2Key')?.value||'').trim(), secret:($('#cmR2Secret')?.value||'').trim(),
     worker:($('#cmR2Worker')?.value||'').trim().replace(/\/+$/,''), wkey:($('#cmR2Wkey')?.value||'').trim(), region:'auto' }; }
-async function workerPut(r2, key, blob, contentType){
+/* Grosse Videos: Cloudflare-Worker nehmen pro Anfrage höchstens 100 MB an (sonst «413 Payload Too Large»).
+   Darüber wird in Teilen hochgeladen (R2-Multipart über den Worker: mpu=create/part/complete). */
+const WORKER_SINGLE_MAX = 90*1024*1024, WORKER_PART = 64*1024*1024;
+async function workerCall(r2, params, body){
+  const q=new URLSearchParams(params); if(r2.wkey) q.set('key', r2.wkey);
+  const res=await fetch(`${r2.worker.replace(/\/+$/,'')}/?${q.toString()}`,{ method:'POST', headers:{'Content-Type':'text/plain'}, body: body==null?'':body });
+  const txt=await res.text().catch(()=>'');
+  if(!res.ok){ const e=new Error('Worker '+res.status+' · '+txt.slice(0,160)); e.status=res.status; throw e; }
+  try{ return JSON.parse(txt); }catch(_){ return {}; } }
+async function workerPutMultipart(r2, key, blob, contentType, onProg){
+  let up;
+  try{ up=await workerCall(r2, {mpu:'create', path:key, ct:(contentType||'application/octet-stream')}); }
+  catch(e){ if(e.status===400||e.status===404||e.status===405||e.status===413) throw new Error(`Video ist zu gross für den Upload-Server (${Math.round(blob.size/1048576)} MB, max. 90 MB pro Datei). Der Cloudflare-Worker muss aktualisiert werden (Teil-Upload) – siehe Datei «cloudflare-worker-gtg-upload.js» im Projektordner.`); throw e; }
+  if(!up || !up.uploadId) throw new Error('Upload-Server unterstützt keinen Teil-Upload (Worker aktualisieren).');
+  const parts=[]; const n=Math.ceil(blob.size/WORKER_PART);
+  try{
+    for(let i=0;i<n;i++){ const chunk=blob.slice(i*WORKER_PART, Math.min(blob.size,(i+1)*WORKER_PART));
+      let r, tries=0; for(;;){ try{ r=await workerCall(r2, {mpu:'part', path:key, uploadId:up.uploadId, part:String(i+1)}, chunk); break; } catch(e){ if(++tries>=3) throw e; await new Promise(z=>setTimeout(z,1500*tries)); } }
+      parts.push({partNumber:i+1, etag:r.etag}); if(typeof onProg==='function') onProg(i+1,n); }
+    await workerCall(r2, {mpu:'complete', path:key, uploadId:up.uploadId}, JSON.stringify(parts));
+  }catch(e){ try{ await workerCall(r2, {mpu:'abort', path:key, uploadId:up.uploadId}); }catch(_){} throw e; }
+  return true; }
+async function workerPut(r2, key, blob, contentType, onProg){
+  if(blob && blob.size>WORKER_SINGLE_MAX) return workerPutMultipart(r2, key, blob, contentType, onProg);
   // Preflight-freier Upload: POST als "einfache Anfrage" (Content-Type text/plain,
   // keine Custom-Header) -> loest KEINEN CORS-Vorabcheck (OPTIONS) aus.
   // Das behebt "Failed to fetch" bei Antivirus/Proxies, die den Vorabcheck blocken.
@@ -7653,7 +7744,7 @@ async function coachCreate(){
       let vurl;
       if(r2.on){
         cmProg(`Lade Video ${done+1}/${totalVids} zu R2: ${v.name} …`);
-        if(r2.worker) await workerPut(r2, `coach/videos/${fname}`, blob, vtype);
+        if(r2.worker) await workerPut(r2, `coach/videos/${fname}`, blob, vtype, (k,n)=>cmProg(`Lade Video ${done+1}/${totalVids} zu R2: ${v.name} · Teil ${k}/${n} (${Math.round(blob.size/1048576)} MB) …`));
         else await s3PutObject(r2, `coach/videos/${fname}`, blob, vtype);
         vurl = r2.base+`coach/videos/${fname}`;
       } else {
@@ -7739,7 +7830,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
@@ -8298,12 +8389,14 @@ applyGateOverrides();   // nachträglich bearbeitete Gate-Zeiten von Databank-L�
 applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Events anwenden
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
-window.addEventListener('beforeprint',()=>{ if(S.pdfName){ S._titlePrev=document.title; try{ document.title=S.pdfName; }catch(e){} }   // PDF-Dateiname nur während des Druckens
+window.addEventListener('beforeprint',()=>{ S._printDepth=(S._printDepth||0)+1; if(S._printDepth>1) return;   // doppelte Ereignisse (Desktop-PDF) nur einmal behandeln
+  if(S.pdfName){ S._titlePrev=document.title; try{ document.title=S.pdfName; }catch(e){} }   // PDF-Dateiname nur während des Druckens
   S._darkPrint = document.body.classList.contains('dark');   // PDF immer im hellen Design (Einstellung bleibt unverändert)
   if(S._darkPrint){ document.body.classList.remove('dark'); gtgRecolor(); }
   if(S.comp){ S.printMode=true; S._smoothPrev=S.heroSmooth; S.heroSmooth=true; try{drawHero();}catch(e){}   // im PDF immer geglättet
     if(S._darkPrint){ try{ buildLegend(); }catch(e){} try{ drawSector(); }catch(e){} try{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); }catch(e){} } } });
-window.addEventListener('afterprint',()=>{ try{ document.title = S._titlePrev || APP_TITLE; }catch(e){}
+window.addEventListener('afterprint',()=>{ S._printDepth=Math.max(0,(S._printDepth||0)-1); if(S._printDepth>0) return;
+  try{ document.title = S._titlePrev || APP_TITLE; }catch(e){}
   const wasDark=!!S._darkPrint; if(wasDark){ document.body.classList.add('dark'); S._darkPrint=false; gtgRecolor(); }
   S.printMode=false; if(S._smoothPrev!==undefined){ S.heroSmooth=S._smoothPrev; }
   if(wasDark) gtgRedrawAnalyse(); else { try{drawHero();}catch(e){} } });

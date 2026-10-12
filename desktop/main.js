@@ -1,6 +1,6 @@
 // Gate-to-Gate Desktop (Electron) – Hauptprozess
 // Fenster + Datei-Speicher für Videos auf der Festplatte.
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -123,6 +123,22 @@ ipcMain.handle('gtg:fetchText', async (_e, { url }) => {
 
 // Aktuelle App-Version (für die Anzeige in der Fusszeile).
 ipcMain.handle('gtg:appVersion', () => app.getVersion());
+
+// PDF direkt erzeugen (statt Windows-Druckdialog): übernimmt die Seitenformate aus dem CSS
+// -> Seite 1 Querformat (Hauptgrafik), Seite 2 Hochformat (Detail-Matrix).
+ipcMain.handle('gtg:printPdf', async (event, { name }) => {
+  try {
+    const wc = event.sender;
+    const data = await wc.printToPDF({ printBackground: true, preferCSSPageSize: true, margins: { marginType: 'none' } });
+    const safe = String(name || 'Gate-to-Gate').replace(/[\\/:*?"<>|]+/g, '_').slice(0, 120) || 'Gate-to-Gate';
+    const win = BrowserWindow.fromWebContents(wc);
+    const res = await dialog.showSaveDialog(win, { title: 'PDF speichern', defaultPath: path.join(app.getPath('downloads'), safe + '.pdf'), filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+    if (res.canceled || !res.filePath) return { ok: false, canceled: true };
+    await fsp.writeFile(res.filePath, data);
+    shell.openPath(res.filePath);
+    return { ok: true, path: res.filePath };
+  } catch (err) { return { ok: false, error: String((err && err.message) || err) }; }
+});
 
 // Update direkt herunterladen: passenden Installer in den Download-Ordner laden und dort anzeigen.
 ipcMain.handle('gtg:downloadUpdate', async (event) => {

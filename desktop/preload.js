@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('gtgDesktop', {
   onUpdateReady: (cb) => ipcRenderer.on('gtg:updateReady', (_e, v) => { try { cb(v); } catch (e) {} }),
   quitAndInstall: () => ipcRenderer.invoke('gtg:quitAndInstall'),
   appVersion: () => ipcRenderer.invoke('gtg:appVersion'),
+  printPdf: (name) => ipcRenderer.invoke('gtg:printPdf', { name }),
   fetchText: (url) => ipcRenderer.invoke('gtg:fetchText', { url }),
   platform: process.platform,
   version: '1.0.0'
