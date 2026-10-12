@@ -1565,6 +1565,7 @@ body.dark .dbtg-table thead th.dbtg-ath,body.dark .dbtg-table thead th.dbtg-src,
 .clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
 body.dark .clip-speed button{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
 body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
+.db-clwrap{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2794,7 +2795,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121450';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121458';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6477,7 +6478,25 @@ function dbEvents(){ const tk=dbTaggedKeys(); const out=[];
   DATA.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; if(!evVisible(e)) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
   TRAIN.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; if(!(e.skiers||[]).length && !e.hasTop) return; if(!evVisible(e)) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
   return out.sort((a,b)=> (b.e.date||'').localeCompare(a.e.date||'') || (a.e.venue||'').localeCompare(b.e.venue) || String(a.e.run).localeCompare(String(b.e.run))); }
-function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
+/* ===== Vorhandene Coach-Links: in der Events-Zeile direkt kopieren =====
+   Quelle 1: auf diesem Gerät erstellte Links (sofort). Quelle 2: Ordner coach/ im Repo (öffentliche GitHub-API,
+   alle 10 Min. neu), damit auch Links von anderen Geräten erscheinen. */
+function coachSafe(s){ return String(s).replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+function coachKeyOf(date,venue,gender){ return `${coachSafe(venue)}_${coachSafe(date)}_${gender}`; }
+function coachBase(){ const cfg=LS.get('gtg_coachcfg',{}); let b=(cfg.base||'').trim()||'https://gate-to-gate.github.io/gtg-app/'; if(!b.endsWith('/')) b+='/'; return b; }
+function coachUrlOf(k){ return coachBase()+'?coach='+encodeURIComponent(k); }
+const COACH_KNOWN={ keys:new Set(Object.keys(LS.get('gtg_coachlinks',{})||{})), at:0, loading:false };
+function coachRemember(k,url){ try{ const m=LS.get('gtg_coachlinks',{})||{}; m[k]=url||coachUrlOf(k); LS.set('gtg_coachlinks',m); }catch(e){} COACH_KNOWN.keys.add(k); }
+function coachKnownRefresh(){ if(COACH_KNOWN.loading || Date.now()-COACH_KNOWN.at<10*60*1000) return; COACH_KNOWN.loading=true;
+  const repo=((LS.get('gtg_coachcfg',{})||{}).repo||'gate-to-gate/gtg-app').trim();
+  fetch(`https://api.github.com/repos/${repo}/contents/coach`,{headers:{'Accept':'application/vnd.github+json'},cache:'no-store'})
+    .then(r=>r.ok?r.json():null).then(list=>{ COACH_KNOWN.at=Date.now(); if(!Array.isArray(list)) return; let n=0;
+      list.forEach(f=>{ if(f&&f.type==='file'&&/\.json$/i.test(f.name)){ const k=f.name.replace(/\.json$/i,''); if(!COACH_KNOWN.keys.has(k)){ COACH_KNOWN.keys.add(k); n++; } } });
+      if(n && S.view==='datenbank' && typeof renderDbEvents==='function') renderDbEvents(); })
+    .catch(()=>{}).finally(()=>{ COACH_KNOWN.loading=false; }); }
+function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t); }catch(e){}
+  return new Promise(res=>{ const i=document.createElement('textarea'); i.value=t; i.style.position='fixed'; i.style.opacity='0'; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(e){} i.remove(); res(); }); }
+function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnownRefresh();
   const q=($('#dbSearch')?.value||'').trim().toLowerCase(), fd=$('#dbDisc')?.value||'', fg=$('#dbGen')?.value||'', fm=$('#dbMode')?.value||'', fs=$('#dbSrc')?.value||'', fst=$('#dbStatus')?.value||'';
   const all=dbEvents();
   const list=all.filter(r=>{
@@ -6499,8 +6518,11 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
     const status=r.archived?'<span class="db-badge ar">archiviert</span>':'<span class="db-badge ok">aktiv</span>';
     const swBtn = `<button class="btn-mini" data-sw="${r.key}" title="Modus wechseln (Wettkampf ↔ Training)">↔ ${r.mode==='train'?'Wettkampf':'Training'}</button>`;
     const hasVid = vidEvt.has(`${e.date}|${e.venue}|${e.gender}`);
+    const _ck=coachKeyOf(e.date,e.venue,e.gender), _hasLink=COACH_KNOWN.keys.has(_ck);
     const clBtn = (r.mode!=='comp'||!r.tagged)
       ? '<span class="db-dash">—</span>'
+      : _hasLink
+        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" title="${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`:''}</span>`
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
@@ -6539,6 +6561,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return;
      body.querySelectorAll(`tr.db-sub[data-pgrp="${id}"]`).forEach(s=> s.style.display= open?'':'none'); }));
    body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
    body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
+   body.querySelectorAll('button[data-clcopy]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); copyText(b.dataset.clcopy).then(()=>gtgToast('Coach-Link kopiert.','ok')); });
    body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
    body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
      const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
@@ -7785,6 +7808,7 @@ async function coachCreate(){
   cmProg('Lade Analyse-Daten…');
   await ghPutFileRaw(cfg, `coach/${evKeySafe}.json`, ghB64enc(JSON.stringify(bundle)), 'coach bundle '+evKeySafe);
   const link=cfg.base+`?coach=${encodeURIComponent(evKeySafe)}`;
+  coachRemember(evKeySafe, link); try{ if(S.view==='datenbank') renderDbEvents(); }catch(_){}
   if($('#cmLink')) $('#cmLink').value=link; if($('#cmResult')) $('#cmResult').style.display='';
   cmProg(`✓ Fertig — ${totalVids} Video${totalVids>1?'s':''} hochgeladen. Link erstellt.`,true);
 }
@@ -7853,7 +7877,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
