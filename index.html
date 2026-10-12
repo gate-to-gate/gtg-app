@@ -2505,7 +2505,7 @@ body.dark .fis-gold{color:#e3bd55}
 <script>
 /* Flash-Schutz: wenn (noch) nicht angemeldet, Login-Overlay sofort zeigen.
    Die eigentliche Anmeldung (E-Mail+Passwort gegen die Nutzerliste) macht app.js. */
-(function(){ try{ var has=localStorage.getItem('gtg_user')||sessionStorage.getItem('gtg_user'); if(!has){ var g=document.getElementById('gateLogin'); if(g){ g.style.display='flex'; document.documentElement.style.overflow='hidden'; } } }catch(e){} })();
+(function(){ try{ var has=localStorage.getItem('gtg_user')||sessionStorage.getItem('gtg_user'); var coach=/[?&]coach=/.test(location.search); if(!has && !coach){ var g=document.getElementById('gateLogin'); if(g){ g.style.display='flex'; document.documentElement.style.overflow='hidden'; } } }catch(e){} })();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -2772,7 +2772,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121312';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121356';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3611,6 +3611,11 @@ function figStrip(){
 }
 
 /* ===== generic SVG helpers ===== */
+/* schmaler Bildschirm (Handy, Hochformat)? */
+function gtgNarrow(sel){ try{ const el=sel&&document.querySelector(sel); const w=(el&&el.clientWidth)||window.innerWidth; return w>0 && w<560; }catch(e){ return false; } }
+let _gtgLastNarrow=null;
+window.addEventListener('resize',()=>{ clearTimeout(window._gtgNarrowT); window._gtgNarrowT=setTimeout(()=>{ const nw=window.innerWidth<600; if(nw===_gtgLastNarrow) return; _gtgLastNarrow=nw;
+  try{ if(S.view==='analyse' && S.comp && $('#heroShell')){ drawHero(); drawSector(); } }catch(e){} },250); });
 function svgEl(w,h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`; }
 
 function chTheme(){ const d=document.body.classList.contains('dark');
@@ -3635,7 +3640,9 @@ const GTG_ADJ = {"2025-10-25|W|GS|1":[34],"2025-10-25|W|GS|2":[28],"2025-12-07|W
 function drawHero(){
   const T=chTheme();
   const c=S.comp, n=c.n;
-  const W=980,H=(S.printMode?440:420), ml=74,mr=20,mt=18,mb=46;
+  // Handy: schmalere Zeichenfläche, damit Schrift und Linien beim Herunterskalieren lesbar bleiben
+  const _nw=!S.printMode && gtgNarrow('#heroShell');
+  const W=_nw?520:980,H=(S.printMode?440:(_nw?420:420)), ml=_nw?58:74,mr=_nw?12:20,mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
@@ -3807,7 +3814,8 @@ function drawSector(){
   if(card) card.style.display='';
   const key=S.excludeAnom?'cleanDiff':'diff';
   const data = sui.map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
-  const W=620,H=320, ml=42,mr=12,mt=20,mb=52, iw=W-ml-mr, ih=H-mt-mb;
+  const _nw=!S.printMode && gtgNarrow('#secShell');
+  const W=_nw?440:620,H=_nw?340:320, ml=42,mr=12,mt=20,mb=52, iw=W-ml-mr, ih=H-mt-mb;
   let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v)));
   let vmax=Math.max(0.05,...all), vmin=Math.min(0,...all);
   const range=(vmax-vmin)||0.1; vmin-=range*0.06; vmax+=range*0.34;   // Kopfraum für Namens-Labels
@@ -6121,7 +6129,8 @@ function wcConnect(){
 function initWelcome(){
   const o=$('#welcome'); if(!o) return;
   const done = LS.get('gtg_onboarded','');
-  const isCoach = (typeof COACH!=='undefined' && COACH && COACH.on);
+  let isCoach = (typeof COACH!=='undefined' && COACH && COACH.on);
+  try{ if(new URLSearchParams(location.search).get('coach')) isCoach=true; }catch(e){}   // Coach-Link: Daten laden asynchron -> schon an der URL erkennen
   if(done || isCoach || (typeof GH!=='undefined' && GH.connected)){ o.style.display='none'; return; }
   o.style.display='flex';
   if($('#wcLocal')) $('#wcLocal').onclick=()=> wcClose('local');
