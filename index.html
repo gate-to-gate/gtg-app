@@ -1612,7 +1612,7 @@ body.dark .fis-gold{color:#e3bd55}
         <div class="f" style="flex:0 0 auto;min-width:0"><label>Geschlecht</label><div id="selGen" class="seg-toggle"></div></div>
         <div class="f" style="flex:1 1 auto;min-width:160px"><label>Event</label><select id="selEvt"></select></div>
         <div class="f" id="selRunField" style="flex:0 0 118px;min-width:100px"><label id="selRunLbl">Lauf</label><select id="selRun"></select></div>
-        <div class="f fsub"><label>Ansicht</label><div id="anaSub" class="seg-toggle"></div></div>
+        <div class="f fsub" style="display:none"><label>Ansicht</label><div id="anaSub" class="seg-toggle"></div></div>
       </div>
       <div id="seriesPick" class="series-pick no-print" style="display:none"></div>
       <div id="main"></div>
@@ -2772,7 +2772,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121304';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121312';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4021,7 +4021,7 @@ function formRun(){ const disc=$('#mDisc')?$('#mDisc').value:'GS'; return needsR
 function seedAthletes(){
   const map = new Map();
   DATA.forEach(e=> e.skiers.forEach(s=> { if(!map.has(s.name)) map.set(s.name,{name:s.name,nation:s.nation}); }));
-  LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); const e={name:nm,nation:a.nation||'',fis:a.fis}; if(a.color) e.color=a.color; map.set(nm,e); } });
+  LS.get('gtg_athletes',[]).forEach(a=>{ if(a&&a.name){ const nm=canonName(a.name); const e={name:nm,nation:a.nation||'',fis:a.fis}; if(a.color) e.color=a.color; if(a.u) e.u=a.u; map.set(nm,e); } });   // u (Änderungszeit) behalten, sonst gehen Farbänderungen beim Sync verloren
   // FIS-Codes & -Nationen aus der hinterlegten Tabelle einsetzen (füllt fehlende + korrigiert bekannte)
   map.forEach(e=>{ const f=fisFor(e.name); if(f) e.fis=f; const n=natFor(e.name); if(n) e.nation=n; });
   ATHLETES = [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
@@ -4074,7 +4074,7 @@ function gtgPrint(){ try{
     if(!S.comp){ gtgToast('Kein Lauf geladen – bitte zuerst in der Analyse ein Event wählen.'); return; }
   }catch(e){}
   setTimeout(()=>{ try{ window.print(); }catch(e){} }, 120); }
-function setAnaSub(sub){ S.anaSub = (sub==='verlauf')?'verlauf':(sub==='profil')?'profil':'analyse'; savePrefs();
+function setAnaSub(sub){ S.anaSub = 'analyse'; savePrefs();   // Saison-Verlauf & Athleten-Profil wurden aus dem Tool entfernt (10/2026)
   ['#anaSub','#anaSub2','#anaSub3'].forEach(id=>{ const seg=$(id); if(seg) seg.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.v===S.anaSub)); });
   const sv=S.anaSub;
   if($('#anaMain')) $('#anaMain').style.display=sv==='analyse'?'':'none';
@@ -5983,7 +5983,8 @@ function ghMergeIn(o){ if(!o) return false; let changed=false, athCh=false;
       if((TOMB.athletes[a.name]||0)>=au && TOMB.athletes[a.name]) return;
       const ex=ATHLETES.find(x=>x.name===a.name);
       if(!ex){ const e={name:a.name,nation:a.nation,fis:a.fis}; if(a.color)e.color=a.color; if(au) e.u=au; ATHLETES.push(e); athCh=true; }
-      else if(au>(+ex.u||0)){ ex.nation=a.nation; if(a.fis) ex.fis=a.fis; else delete ex.fis; if(a.color) ex.color=a.color; else delete ex.color; ex.u=au; athCh=true; } });
+      else if(au>(+ex.u||0)){ ex.nation=a.nation; if(a.fis) ex.fis=a.fis; else delete ex.fis; if(a.color) ex.color=a.color; else delete ex.color; ex.u=au; athCh=true; }
+      else if(!au && !(+ex.u||0) && a.color && a.color!==ex.color && !ex.color){ ex.color=a.color; athCh=true; } });   // ältere Stände ohne Änderungszeit: Farbe übernehmen, wenn hier keine gesetzt ist
     const athBefore=ATHLETES.length; ATHLETES=ATHLETES.filter(a=>!(TOMB.athletes[a.name] && TOMB.athletes[a.name]>=(+a.u||0))); if(ATHLETES.length!==athBefore) athCh=true;
     if(athCh){ ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); persistAthletes(); if(typeof fillAthleteSelect==='function') fillAthleteSelect(); changed=true; }
     // Läufe (Wettkampf / Training)
@@ -7682,11 +7683,10 @@ function initCoachLink(){
 $('#selEvt').onchange=refreshRun; $('#selRun').onchange=loadEvent;
 // gespeicherte Auswahl (Disziplin/Geschlecht/Ansicht) wiederherstellen
 const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.discAll) S.discAll=true; if(PREFS.gen) S.gen=PREFS.gen; if(PREFS.mode==='train'||PREFS.mode==='comp') S.mode=PREFS.mode;
-if(PREFS.anaSub==='verlauf') S.anaSub='verlauf';
 // excludeAnom: früher abschaltbar, heute immer an (alte gespeicherte Einstellung wird ignoriert)
 if(typeof PREFS.heroSmooth==='boolean') S.heroSmooth=PREFS.heroSmooth;
 if(typeof PREFS.terrain==='boolean') S.terrain=PREFS.terrain;
-let prefView=PREFS.view; if(prefView==='verlauf'){ prefView='analyse'; S.anaSub='verlauf'; }   // alte Verlauf-Ansicht -> Analyse-Unterseite
+let prefView=PREFS.view; if(prefView==='verlauf'){ prefView='analyse'; }   // alte Verlauf-Ansicht -> Analyse-Unterseite
 const startView=['tagging','analyse','workflow','sbs','datenbank'].includes(prefView)?prefView:'tagging';
 S.view=startView;
 (function(){ const ec=$('#evtChip'); if(ec){ let d; try{ d=new Date().toLocaleDateString((LS.get('gtg_lang','de')==='en')?'en-GB':'de-CH',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); }catch(e){ d=new Date().toLocaleDateString(); }
@@ -8141,7 +8141,6 @@ const TOUR=[
   {view:'tagging', sel:'.tg-data-card', title:'So taggst du', text:'Video abspielen (<b>Leertaste</b>) und an jedem Tor <b>Enter</b> drücken. Frame-genau feinjustieren mit <b>x</b>/<b>y</b> (± 1 Frame). Letztes Tor löschen mit <b>⌫</b>. Rechts füllt sich dabei die Tor-Tabelle – am Schluss <b>«✓ Speichern»</b>, und der Lauf ist sofort in Analyse & Bibliothek.'},
   {view:'tagging', sel:'#fisRow', title:'FIS-Zeit & Training', text:'Bei <b>Wettkämpfen</b> trägst du den <b>FIS-Rückstand</b> ein oder markierst die <b>Laufbestzeit</b> als Referenz. Im Modus <b>Training</b> gibt es keine FIS-Zeit – Referenz ist automatisch der <b>schnellste getaggte Lauf</b> (Gesamtzeit). <b>«Ohne FIS-Zeit»</b> brauchst du nur bei Wettkämpfen ohne offizielle Zeit.'},
   {view:'analyse', sub:'analyse', sel:'.tab[data-view="analyse"]', title:'2 · Analyse', text:'Alle getaggten Läufe werden hier gegen die <b>Laufbestzeit</b> ausgewertet – mit Hauptgrafik, Detail-Tabelle, Abschnitten und Höhenprofil.'},
-  {view:'analyse', sub:'analyse', sel:'#anaSub', title:'Drei Ansichten', text:'Oben rechts schaltest du um: <b>Analyse</b> (ein Lauf, Tor für Tor), <b>Saison-Verlauf</b> (Entwicklung über die Saison) und <b>Athleten-Profil</b> (Stärken/Schwächen nach Geländetyp, mit Radar & Mehrfach-Vergleich).'},
   {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Zeitrückstand-Grafik', text:'Die Hauptgrafik zeigt den <b>kumulierten Rückstand pro Tor</b>: oben = wenig Rückstand, unten = mehr. Alle Linien starten gemeinsam bei 0, so siehst du sofort, <b>wo</b> Zeit verloren/gewonnen wird. Klick in der Legende blendet einzelne Athlet:innen aus.'},
   {view:'analyse', sub:'analyse', sel:'#heroShell', title:'Video-Pop-up & Side-by-Side', text:'<b>Klick auf ein Tor</b> (Grafik oder Tabelle) öffnet ein Pop-up mit dem <b>Video</b> an genau dieser Stelle – mit mitlaufendem <b>Rückstands-Balken</b> (grün = Vorsprung, rot = Rückstand), <b>Zeitlupe</b>, <b>Frame-Schritt</b> und <b>Side-by-Side</b>, um zwei Läufe synchron zu vergleichen.'},
   {view:'analyse', sub:'analyse', sel:'#hmWrap', title:'Detail-Matrix', text:'Alle Tore auf einen Blick: <b>Δ pro Tor</b> und <b>Σ kumuliert</b>, farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.'},
@@ -8157,7 +8156,6 @@ const TOUR_EN=[
   {title:'How to tag', text:'Play the video (<b>Space</b>) and press <b>Enter</b> at every gate. Fine-tune frame by frame with <b>x</b>/<b>y</b> (± 1 frame). Delete the last gate with <b>⌫</b>. The gate table on the right fills up as you go – finish with <b>«✓ Save»</b> and the run is immediately in Analysis & Library.'},
   {title:'FIS time & training', text:'For <b>races</b> you enter the <b>FIS deficit</b> or mark the run as the <b>fastest run</b> (reference). In <b>Training</b> mode there is no FIS time – the reference is automatically the <b>fastest tagged run</b> (total time). You only need <b>«No FIS time»</b> for races without an official time.'},
   {title:'2 · Analysis', text:'All tagged runs are evaluated here against the <b>fastest run</b> – with main chart, detail table, sections and elevation profile.'},
-  {title:'Three views', text:'Switch at the top right: <b>Analysis</b> (one run, gate by gate), <b>Season progression</b> (development over the season) and <b>Athlete profile</b> (strengths/weaknesses by terrain, with radar & multi-comparison).'},
   {title:'Time-deficit chart', text:'The main chart shows the <b>cumulative deficit per gate</b>: top = small deficit, bottom = larger. All lines start together at 0, so you see immediately <b>where</b> time is lost or gained. Clicking the legend hides individual athletes.'},
   {title:'Video pop-up & side by side', text:'<b>Click a gate</b> (chart or table) to open a pop-up with the <b>video</b> at exactly that point – with a running <b>deficit bar</b> (green = ahead, red = behind), <b>slow motion</b>, <b>frame step</b> and <b>side by side</b> to compare two runs in sync.'},
   {title:'Detail matrix', text:'All gates at a glance: <b>Δ per gate</b> and <b>Σ cumulative</b>, colour-coded (red = slower, green = faster). Click a cell to open the video at that gate.'},
