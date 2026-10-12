@@ -2863,7 +2863,7 @@ const GTG_LANDING = 'https://gate-to-gate.github.io/gtg-app/';
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610111423';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610120711';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -8310,7 +8310,7 @@ else if(ME){ try{ gtgInitAuthUI(); }catch(e){} } else { try{ gtgShowLogin(); }ca
 })();
 // In der Desktop-App selbst keinen „Desktop herunterladen"-Hinweis zeigen, dafür die Version
 if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.display='none';
-  const _dk=GD(); if(_dk && typeof _dk.appVersion==='function'){ Promise.resolve(_dk.appVersion()).then(v=>{ const el=document.getElementById('afVer'), wrap=document.getElementById('afVerWrap'); if(el && v){ el.textContent='Gate-to-Gate Desktop · Version '+v; if(wrap) wrap.style.display=''; } }).catch(()=>{}); }
+  const _dk=GD(); if(_dk && typeof _dk.appVersion==='function'){ Promise.resolve(_dk.appVersion()).then(v=>{ const el=document.getElementById('afVer'), wrap=document.getElementById('afVerWrap'); if(el && v){ const wb=(()=>{ const m=/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(WEB_BUILD); if(!m) return ''; const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5])); const p=x=>String(x).padStart(2,'0'); return ' · Stand '+p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); })(); el.textContent='Gate-to-Gate Desktop · Version '+v+wb; if(wrap) wrap.style.display=''; } }).catch(()=>{}); }
 }
 // Desktop-App: beim Start prüfen, ob eine neuere Version vorliegt
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
