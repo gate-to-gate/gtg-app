@@ -1523,6 +1523,27 @@ body.dark .upd-bar{background:#3a2e16;border-bottom-color:#5e4a26;color:#f0cf8a}
 body.dark .upd-bar .ub-x{color:#d9b876}/* Detail-Matrix: mit dem Nachbartor verrechnete Zelle + Hinweiszeile */
 .hm-pair{outline:1.5px dashed #c98a00;outline-offset:-2px;border-radius:3px}
 .hm-note{font-size:11.5px;color:var(--muted);margin-top:8px}
+/* FIS-Rückstände bearbeiten */
+.dbt-fis{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;margin:0 0 8px}
+.dbt-fis-l{color:var(--muted)}
+.fis-gold{color:#b07a00}
+body.dark .fis-gold{color:#e3bd55}
+#fisModal .fis-body{display:block}
+#fisModal .fis-tbl td.fis-n{min-width:180px}
+.fis-intro{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.fis-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.fis-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.fis-tbl td{padding:5px 6px;border-bottom:1px solid var(--line)}
+.fis-tbl .fis-b{text-align:center;width:90px}
+.fis-tbl .fis-g{width:150px;white-space:nowrap}
+.fis-tbl .fis-gap{width:80px;height:30px;box-sizing:border-box;border:1.4px solid var(--line);border-radius:7px;padding:0 8px;font:inherit;font-size:13px;background:var(--card);color:var(--ink)}
+.fis-tbl .fis-gap:disabled{opacity:.45}
+.fis-tbl tr.fis-empty .fis-gap{border-color:#e0a000}
+.fis-tbl tr.fis-ro td{color:var(--muted)}
+.fis-tbl .fis-hint{font-size:11.5px;color:var(--muted)}
+.fis-shift{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;font-size:12.5px;line-height:2}
+.fis-shift input{width:70px;height:28px;box-sizing:border-box;border:1.4px solid var(--line);border-radius:7px;padding:0 6px;font:inherit;background:var(--card);color:var(--ink)}
+.fis-sub{font-size:11.5px;color:var(--muted);line-height:1.4}
 </style>
 </head>
 <body>
@@ -1955,7 +1976,7 @@ body.dark .upd-bar .ub-x{color:#d9b876}/* Detail-Matrix: mit dem Nachbartor verr
           <tr><th class="db-chk"><input type="checkbox" id="dbtAll" title="Alle auswählen"></th><th>Datum</th><th>Ort</th><th>Disz.</th><th>Gesch.</th><th>Lauf</th><th>Athlet</th><th>Art</th><th class="num">Tore</th><th>Video</th><th></th></tr>
         </thead><tbody id="dbtBody"></tbody></table></div>
         <div id="dbtGridBox" style="display:none">
-          <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><button class="btn-mini" id="dbtGridCsv" style="margin-left:auto">⭳ CSV (Event)</button><span id="dbtGridInfo" class="lib-count"></span></div>
+          <div class="db-filters"><label class="dbtg-lab">Event</label><select id="dbtGridEvt" class="mini" style="min-width:300px"></select><label class="dbtg-anomchk"><input type="checkbox" id="dbtGridAnom"> Nur mit Auffälligkeiten ⚠</label><button class="btn-mini" id="dbtGridFis" style="margin-left:auto" title="Laufbestzeit und FIS-Rückstände aller getaggten Läufe dieses Events bearbeiten">✎ FIS-Rückstände</button><button class="btn-mini" id="dbtGridCsv">⭳ CSV (Event)</button><span id="dbtGridInfo" class="lib-count"></span></div>
         <div class="dbtg-hint2">Tipp: <b>Enter</b> springt eine Zelle nach unten, <b>↑/↓</b> wechseln die Zeile, <b>Tab</b> nach rechts — wie in Excel. <b>Cmd/Ctrl+Z</b> macht rückgängig (mit Shift: wiederholen).</div>
           <div class="dbtg-hint"><span class="dbtg-swatch"></span> Rot markiert = <b>≥ 0.25 s</b> Abweichung zum Median des Feldes an diesem Tor — möglicher Tagging-Fehler oder nicht synchroner Videoschnitt. Nur wenn ≥ 3 Athlet:innen dieses Tor getaggt haben.</div>
           <div class="db-wrap dbtg-wrap" id="dbtGridWrap"></div>
@@ -2751,7 +2772,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610120804';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121304';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6571,6 +6592,84 @@ function dbtGatesHtml(r, enc, anom){ const figs={}; (r.figures||[]).forEach(f=>f
     return `<span class="dbt-gate${bad?' dbt-anom':''}${f?' dbt-fig':''}"${tip}><b${numStyle}>${gi+1}</b><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
   const nBad=anom?anom.filter(Boolean).length:0;
   return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
+/* ===== FIS-Rückstände nachträglich bearbeiten (pro Lauf eines Events) =====
+   Typischer Fall: die ersten Fahrer:innen sind getaggt (eine:r davon Laufbestzeit), dann fährt jemand mit
+   hoher Startnummer schneller. Hier lassen sich Laufbestzeit und alle Rückstände in einem Dialog neu setzen –
+   inkl. «alle Rückstände um x s verschieben», wenn die neue Bestzeit von einer nicht getaggten Person stammt. */
+function fisEvKey(r){ return [r.date,r.venue,r.disc,r.gen,r.run].join('|'); }
+function fisRunsOfEvent(key){ return SAVED.filter(r=>(r.mode||'comp')==='comp' && fisEvKey(r)===key).sort((x,y)=> (y.officialBest?1:0)-(x.officialBest?1:0) || ((x.officialGap??99)-(y.officialGap??99)) || String(x.name).localeCompare(y.name)); }
+function fisLabel(r){ return r.officialBest?'Laufbestzeit':(typeof r.officialGap==='number'?('+'+(+r.officialGap).toFixed(2)+' s'):'ohne FIS-Zeit'); }
+function fisApply(changes){   // changes: [{rec, best, gap}]
+  if(!changes.length) return 0; let n=0;
+  changes.forEach(({rec,best,gap})=>{ const nb=!!best, ng=nb?0:(gap==null?null:Math.round(gap*1000)/1000);
+    if(!!rec.officialBest===nb && (rec.officialGap??null)===(nb?0:ng)) return;
+    rec.officialBest=nb; rec.officialGap=ng; n++;
+    // Bibliotheks-Eintrag (Video) mitziehen, damit «Im Tagging öffnen» die neuen Werte zeigt
+    try{ _idbGet(runId(rec),'videos').then(v=>{ if(!v) return; v.officialBest=nb; v.officialGap=ng; return _idbPut(v,'videos'); }).catch(()=>{}); }catch(e){} });
+  if(!n) return 0;
+  LS.set('gtg_runs',SAVED);
+  const seen=new Set(); changes.forEach(({rec})=>{ try{ applyRun(rec); }catch(e){} seen.add(fisEvKey(rec)); });
+  ghAutoSync(); buildFilters(); if(typeof renderLibrary==='function') renderLibrary();
+  return n; }
+function openFisEditor(key, focusId){
+  const runs=fisRunsOfEvent(key); if(!runs.length){ gtgToast('Für diesen Lauf gibt es keine getaggten Wettkampf-Läufe.'); return; }
+  const p=key.split('|'); const isAdmin=!!(ME&&ME.r==='admin');
+  let m=document.getElementById('fisModal'); if(m) m.remove();
+  m=document.createElement('div'); m.id='fisModal'; m.className='modal-backdrop';
+  const rows=runs.map((r,i)=>{ const ed=canEditBy(r.by); const g=(!r.officialBest && typeof r.officialGap==='number')?(+r.officialGap).toFixed(2):'';
+    return `<tr data-i="${i}"${ed?'':' class="fis-ro"'}><td class="fis-n">${escHtml(r.name)}${ed?'':' <span class="db-ro" title="Von einer anderen Person getaggt – nur Ansicht">🔒</span>'}</td>
+      <td class="fis-b"><input type="radio" name="fisBest" value="${i}"${r.officialBest?' checked':''}${ed?'':' disabled'}></td>
+      <td class="fis-g"><input type="number" step="0.01" min="0" inputmode="decimal" class="fis-gap" value="${g}" placeholder="${r.officialBest?'—':'leer = ohne FIS-Zeit'}"${(ed&&!r.officialBest)?'':' disabled'}> s</td></tr>`; }).join('');
+  const noneChecked=!runs.some(r=>r.officialBest);
+  m.innerHTML=`<div class="modal" style="max-width:560px">
+    <div class="modal-head"><h2>FIS-Rückstände · ${escHtml(dmy(p[0]))} · ${escHtml(p[1])} · ${escHtml(p[2])} ${escHtml(p[3])} · L${escHtml(p[4])}</h2><button class="modal-x" id="fisX">✕</button></div>
+    <div class="modal-body fis-body">
+      <div class="fis-intro">Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.</div>
+      <table class="fis-tbl"><thead><tr><th>Athlet:in</th><th>Laufbestzeit</th><th>FIS-Rückstand</th></tr></thead><tbody>${rows}
+        <tr class="fis-other"><td class="fis-n"><i>jemand anderes (nicht getaggt)</i></td><td class="fis-b"><input type="radio" name="fisBest" value="-1"${noneChecked?' checked':''}></td><td class="fis-g fis-hint">alle getaggten mit Rückstand</td></tr></tbody></table>
+      <div class="fis-shift"><b>Neue Laufbestzeit von jemand anderem?</b> Sie ist
+        <input type="number" step="0.01" min="0" inputmode="decimal" id="fisShift" placeholder="0.00"> s schneller als die bisherige.
+        <button class="btn-mini" id="fisShiftBtn" type="button">Alle Rückstände anpassen</button>
+        <div class="fis-sub">Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».</div></div>
+      <div class="save-msg" id="fisMsg"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn-mini" id="fisCancel" type="button">Abbrechen</button>
+        <button class="btn-mini solid" id="fisSave" type="button">Speichern</button></div>
+    </div></div>`;
+  document.body.appendChild(m); m.style.display='flex';
+  const close=()=>{ m.remove(); };
+  m.querySelector('#fisX').onclick=close; m.querySelector('#fisCancel').onclick=close;
+  m.addEventListener('mousedown',e=>{ if(e.target===m) close(); });
+  const rowsEl=[...m.querySelectorAll('tbody tr[data-i]')];
+  const syncRadio=()=>{ const sel=+((m.querySelector('input[name=fisBest]:checked')||{}).value??-1);
+    rowsEl.forEach(tr=>{ const i=+tr.dataset.i, inp=tr.querySelector('.fis-gap'); const ed=canEditBy(runs[i].by);
+      if(i===sel){ inp.disabled=true; inp.dataset.prev=inp.value; inp.value=''; inp.placeholder='—'; }
+      else { inp.disabled=!ed; if(inp.value==='' && inp.dataset.prev) inp.value=inp.dataset.prev; inp.placeholder='leer = ohne FIS-Zeit'; }
+      tr.classList.toggle('fis-empty', i!==sel && ed && inp.value===''); }); };
+  m.querySelectorAll('input[name=fisBest]').forEach(r=> r.onchange=syncRadio);
+  m.querySelectorAll('.fis-gap').forEach(inp=> inp.oninput=()=>inp.closest('tr').classList.toggle('fis-empty', !inp.disabled && inp.value===''));
+  m.querySelector('#fisShiftBtn').onclick=()=>{ const k=parseFloat(String(m.querySelector('#fisShift').value).replace(',','.'));
+    if(!(k>0)){ m.querySelector('#fisMsg').className='save-msg warn'; m.querySelector('#fisMsg').textContent='Bitte angeben, um wie viele Sekunden die neue Laufbestzeit schneller ist.'; return; }
+    const sel=+((m.querySelector('input[name=fisBest]:checked')||{}).value??-1);
+    rowsEl.forEach(tr=>{ const i=+tr.dataset.i, inp=tr.querySelector('.fis-gap'); if(!canEditBy(runs[i].by)) return;
+      const cur = (i===sel) ? 0 : parseFloat(String(inp.value).replace(',','.'));
+      if(i===sel || isFinite(cur)){ inp.value=(Math.round(((isFinite(cur)?cur:0)+k)*100)/100).toFixed(2); } });
+    m.querySelector('input[name=fisBest][value="-1"]').checked=true; syncRadio();
+    m.querySelector('#fisMsg').className='save-msg ok'; m.querySelector('#fisMsg').textContent=`Alle Rückstände um +${k.toFixed(2)} s angepasst – prüfen und «Speichern».`; };
+  m.querySelector('#fisSave').onclick=()=>{ const sel=+((m.querySelector('input[name=fisBest]:checked')||{}).value??-1); const ch=[]; let bad=false;
+    rowsEl.forEach(tr=>{ const i=+tr.dataset.i, r=runs[i]; if(!canEditBy(r.by)) return; const v=String(tr.querySelector('.fis-gap').value).trim().replace(',','.');
+      const gap = v===''?null:parseFloat(v); if(gap!=null && !(gap>=0 && gap<60)){ bad=true; tr.classList.add('fis-empty'); return; }
+      ch.push({rec:r, best:i===sel, gap}); });
+    if(bad){ m.querySelector('#fisMsg').className='save-msg warn'; m.querySelector('#fisMsg').textContent='Rückstände müssen zwischen 0 und 60 s liegen.'; return; }
+    // nicht editierbare Laufbestzeit eines anderen Teams bleibt -> zwei Bestzeiten verhindern
+    const foreignBest=runs.some((r,i)=>!canEditBy(r.by) && r.officialBest);
+    if(foreignBest && sel>=0){ m.querySelector('#fisMsg').className='save-msg warn'; m.querySelector('#fisMsg').textContent='Die Laufbestzeit gehört zu einem Tagging einer anderen Person – nur diese Person oder ein Admin kann sie ändern.'; return; }
+    const n=fisApply(ch); close();
+    if(S.view==='datenbank' && typeof renderDatenbank==='function') renderDatenbank();
+    gtgToast(n?`FIS-Rückstände gespeichert (${n} Lauf/Läufe) – Analyse neu kalibriert.`:'Keine Änderungen.','ok'); };
+  syncRadio();
+  if(focusId){ const i=runs.findIndex(r=>runId(r)===focusId); const tr=rowsEl[i]; if(tr){ const inp=tr.querySelector('.fis-gap'); if(inp && !inp.disabled) setTimeout(()=>inp.focus(),50); } }
+}
 let GATE_UNDO=[], GATE_REDO=[];
 function gateUndoPush(id,i,oldVal,newVal){ GATE_UNDO.push({id,i,oldVal,newVal}); if(GATE_UNDO.length>200) GATE_UNDO.shift(); GATE_REDO.length=0; }
 function editTagGate(id, i, val, noUndo){
@@ -6654,7 +6753,10 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const actRow = editable
         ? `<div class="dbt-actions"><button class="btn-mini solid" data-edit="${encId}">✎ Im Tagging öffnen${hasV?' (mit Video)':''}</button>${delBtn}</div>`
         : `<div class="dbt-actions"><span class="db-ro" title="Von Admin/Wettkampf oder anderem Team erstellt – nur Ansicht.">🔒 nur Ansicht (von Admin/anderem Team)</span></div>`;
-      inner.innerHTML=`${dbtGatesHtml(r, encId, anomFor(r))}${actRow}`;
+      const fisRow = (r.mode==='comp' && !r._databank)
+        ? `<div class="dbt-fis"><span class="dbt-fis-l">FIS:</span> <b class="${r.officialBest?'fis-gold':''}">${fisLabel(r)}</b> <button class="btn-mini" data-fis="${encId}">✎ FIS-Rückstände dieses Laufs</button></div>` : '';
+      inner.innerHTML=`${fisRow}${dbtGatesHtml(r, encId, anomFor(r))}${actRow}`;
+      const fb=inner.querySelector('button[data-fis]'); if(fb) fb.onclick=e=>{ e.stopPropagation(); openFisEditor(fisEvKey(r), id); };
       if(editable){ inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.onclick=e=>e.stopPropagation();
         inp.onchange=()=>{ const gid=decodeURIComponent(inp.dataset.id), i=+inp.dataset.i, v=parseFloat(inp.value); editTagGate(gid, i, isFinite(v)?Math.round(v*1000)/1000:null); }; }); }
       else { inner.querySelectorAll('.dbt-gedit').forEach(inp=>{ inp.disabled=true; inp.readOnly=true; inp.onclick=e=>e.stopPropagation(); }); }
@@ -6960,6 +7062,7 @@ function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[])); DELETED=n
   if($('#dbtGridEvt')) $('#dbtGridEvt').onchange=renderDatenbank;
   if($('#dbtGridAnom')) $('#dbtGridAnom').onchange=renderDatenbank;
   if($('#dbtGridCsv')) $('#dbtGridCsv').onclick=exportDbtGridCsv;
+  if($('#dbtGridFis')) $('#dbtGridFis').onclick=()=>{ const k=$('#dbtGridEvt')&&$('#dbtGridEvt').value; if(k) openFisEditor(k); };
   if(!window._gateUndoBound){ window._gateUndoBound=true;
     document.addEventListener('keydown', e=>{
       if(!((e.key==='z'||e.key==='Z') && (e.metaKey||e.ctrlKey))) return;
@@ -7627,7 +7730,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
