@@ -37,3 +37,6 @@ gtg_logins.csv
 logins_supabase.csv
 Coaches_Zugaenge*.xlsx
 *.command
+
+# Einmal-Skript mit Klartext-Passwörtern (Supabase-Admins) - NIE committen!
+supabase_admins*.sql
