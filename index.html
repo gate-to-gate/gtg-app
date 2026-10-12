@@ -1554,6 +1554,17 @@ body.dark .fis-gold{color:#e3bd55}
 .dbt-ginner .dbtg-wrap{max-height:60vh;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 .dbt-ginner .dbtg-table .dbtg-act{position:sticky;right:0;background:var(--card);white-space:nowrap}
 .dbt-ginner .dbtg-table .dbtg-act .btn-mini{padding:3px 7px;margin-left:3px}
+/* Raster: fixierte Kopf-Zellen (Athlet:in / FIS / Aktionen) liegen über den Tor-Nummern */
+.dbtg-table thead th.dbtg-ath,.dbtg-table thead th.dbtg-src,.dbtg-table thead th.dbtg-act{z-index:20;background:#f4f6f9}
+body.dark .dbtg-table thead th.dbtg-ath,body.dark .dbtg-table thead th.dbtg-src,body.dark .dbtg-table thead th.dbtg-act{background:#2d3644}
+/* Video-Panel: Tempo-Schnellknöpfe */
+.clip-speed{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.clip-speed .cs-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:2px}
+.clip-speed button{font:inherit;font-size:13px;font-weight:800;min-width:46px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:9px;cursor:pointer;transition:.15s}
+.clip-speed button:hover{border-color:#c3cad4}
+.clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
+body.dark .clip-speed button{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
+body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
 </style>
 </head>
 <body>
@@ -1649,6 +1660,7 @@ body.dark .fis-gold{color:#e3bd55}
                 <div id="clipDefbarB" class="defbar"></div>
               </div>
             </div>
+            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-lab">Tempo</span><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></div>
             <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
               <button id="clipSyncPlay" type="button">▶ Beide</button>
               <button id="clipSyncBtn" type="button">An diesem Tor synchronisieren</button>
@@ -2782,7 +2794,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121424';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610121447';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7239,7 +7251,7 @@ function cvRenderPanel(){
     if($('#cvEvt')) $('#cvEvt').textContent = S.ev? `· ${S.ev.venue} · ${(isTrain()&&S.run==null)?'Training':runLong(S.mode,S.disc,S.run)}` : '';
     const host=$('#clipAth');
     if(host){
-      host.innerHTML = vids.map(v=>`<button class="cv-chip" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${(v.name||'').split(' ').slice(-1)[0]||v.name}</button>`).join('');
+      const _sn=surList(vids.map(v=>v.name||'')); host.innerHTML = vids.map((v,vi)=>`<button class="cv-chip" data-id="${encodeURIComponent(v.id)}"><span class="dot" style="background:${cvColorFor(v.name)}"></span>${escHtml(_sn[vi]||v.name)}</button>`).join('');
       host.querySelectorAll('.cv-chip').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.id); const v=vids.find(x=>x.id===id); if(!v) return; host.querySelectorAll('.cv-chip').forEach(x=>x.classList.toggle('on',x===b)); clipLoad(v, CLIPGATE||0); });
     }
     const def = vids.find(v=>v.name===(CLIPNAME||S.perGate)) || vids[0];
@@ -7413,8 +7425,8 @@ function clipChartViz(name, g){
   const dot = gv==null?'' : `<line id="clipDotLine" x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="${TH.zero}" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot" cx="${X(gi0).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${dcol}" stroke="${TH.halo}" stroke-width="2.4"/>`;
   const rawArr=s&&(s[numKey]||[]); const rv=rawArr?rawArr[gi0]:null;
   const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'var(--muted)':(rv>0.001?'var(--bad)':rv<-0.001?'var(--good)':'var(--muted)');
-  const short=name.split(' ').slice(-1)[0];
-  const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${s.name.split(' ').slice(-1)[0]}</span>`).join('');
+  const short=surOf(name);
+  const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${escHtml(surOf(s.name))}</span>`).join('');
   el.innerHTML=`<div class="clip-vlab"><span id="clipVlabDyn">Kumulierter Rückstand · <b>${short}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b></span> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
   <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rückstandskurve">${grid}${xax}${lines}${dot}</svg>
   <div class="clip-legend">${leg}</div>`;
@@ -7434,7 +7446,9 @@ function clipGoto(name, g){
   clipLoad(v, g);
 }
 function clipColorOf(nm){ const s=S.comp&&S.comp.skiers.find(x=>x.name===nm); return s?s.color:'#7a8694'; }
-function clipShort(nm){ nm=String(nm||''); const m=nm.match(/^(.+?)·L(\d+)/); if(m) return m[1].split(' ')[0]+'·L'+m[2]; return nm.split(' ').slice(-1)[0]||nm; }
+function surOf(nm){ const w=String(nm||'').trim().split(/\s+/); const up=[]; for(const x of w){ if(x && x===x.toUpperCase() && /[A-ZÄÖÜÀ-Þ]/.test(x)) up.push(x); else break; } return (up.length?up.join(' '):w[0])||String(nm||''); }
+function surList(names){ const s=names.map(surOf); return names.map((n,i)=> s.filter(x=>x===s[i]).length>1 ? s[i]+' '+(String(n).trim().split(/\s+/).slice(-1)[0]||'').charAt(0)+'.' : s[i]); }
+function clipShort(nm){ nm=String(nm||''); const m=nm.match(/^(.+?)·L(\d+)/); if(m) return m[1].split(' ')[0]+'·L'+m[2]; return surOf(nm); }
 function clipTableViz(name, g){
   const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
   if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
@@ -7489,6 +7503,15 @@ function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===n
   attachDefBar(vid, $('#clipDefbarB'), v.name);
   if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE);   // Kopf/Hervorhebung (links/rechts) aktualisieren
 }
+/* Tempo-Schnellknöpfe im Video-Panel (gilt für beide Videos, bleibt beim Video-Wechsel erhalten) */
+let CLIPRATE=(()=>{ try{ const r=+LS.get('gtg_cliprate',1); return [1,0.5,0.25].includes(r)?r:1; }catch(e){ return 1; } })();
+function clipApplyRate(){ ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(v){ try{ v.defaultPlaybackRate=CLIPRATE; v.playbackRate=CLIPRATE; }catch(e){} } });
+  document.querySelectorAll('#clipSpeed button[data-rate]').forEach(b=>b.classList.toggle('on', +b.dataset.rate===CLIPRATE)); }
+function clipSetRate(r){ CLIPRATE=[1,0.5,0.25].includes(+r)?+r:1; try{ LS.set('gtg_cliprate',CLIPRATE); }catch(e){} clipApplyRate(); }
+(function initClipSpeed(){ try{
+  document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('#clipSpeed button[data-rate]'); if(b){ e.preventDefault(); clipSetRate(b.dataset.rate); } });
+  ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(!v) return; ['loadedmetadata','play'].forEach(ev=> v.addEventListener(ev,()=>{ if(v.playbackRate!==CLIPRATE){ try{ v.playbackRate=CLIPRATE; }catch(_){} } })); });
+  clipApplyRate(); }catch(e){} })();
 function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
   if(vids) vids.classList.toggle('sbs', on);
   if(colB) colB.style.display=on?'':'none';
@@ -7830,7 +7853,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
