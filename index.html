@@ -1575,6 +1575,14 @@ body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);co
 .gl-eye .gl-eye-off{display:none}
 .gl-eye.on .gl-eye-on{display:none}
 .gl-eye.on .gl-eye-off{display:block}
+/* ⚑ im Tagging als unsicher markierte Tore – diskret */
+.dbt-flag{position:relative}
+.dbt-flag::after{content:"⚑";position:absolute;top:1px;right:3px;font-size:9px;line-height:1;color:#d0902a;pointer-events:none}
+.dbt-flag .dbt-gedit{border-color:#e7c27d}
+.dbt-flagb{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;color:#b37a1c;background:rgba(224,168,90,.14);border-radius:999px;padding:1px 7px;vertical-align:1px}
+.dbt-flagtxt{color:#b37a1c;font-weight:700}
+body.dark .dbt-flagb,body.dark .dbt-flagtxt{color:#e7b866}
+body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
 </style>
 </head>
 <body>
@@ -2809,7 +2817,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610131130';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610131432';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4898,7 +4906,8 @@ function buildRunFromTags(){
   const ts=[...TG.tags].sort((a,b)=>a.t-b.t);
   const gates=[]; for(let i=1;i<ts.length;i++) gates.push(Math.round((ts[i].t-ts[i-1].t)*1000)/1000);
   const figures=[]; ts.forEach((tag,i)=>{ if(i>0&&tag.fig) figures.push({gate:i, label:tag.fig}); });
-  return {gates, figures};
+  const unsure=[]; ts.forEach((tag,i)=>{ if(tag.unsure){ const g=Math.max(0,i-1); if(g<gates.length && !unsure.includes(g)) unsure.push(g); } });   // ⚑ im Tagging
+  return {gates, figures, unsure};
 }
 
 /* ---- save & integrate ---- */
@@ -4978,7 +4987,7 @@ function saveRun(){
   if(!date||!venue){ msg.textContent='Bitte Datum und Ort angeben.'; return; }
   if(!name){ msg.textContent='Bitte eine:n Athlet:in wählen.'; return; }
   if(TG.tags.length<2){ msg.textContent='Mindestens 2 Tags (Start + 1 Tor) nötig.'; return; }
-  const {gates,figures}=buildRunFromTags();
+  const {gates,figures,unsure}=buildRunFromTags();
   { const _id=runId({date,venue,disc,gen,run,name}); const _ex=(mode==='train'?SAVED_TRAIN:SAVED).find(r=>runId(r)===_id);
     if(_ex && !canEditBy(_ex.by)){ msg.textContent='Für diesen Lauf gibt es bereits ein Tagging von '+(gtgUser(_ex.by)?gtgUser(_ex.by).n:'einer anderen Person')+' – es kann nur von dieser Person (oder einem Admin) überschrieben werden. Lauf-Nr. oder Athlet:in prüfen.'; return; }
     TG._saveBy = (_ex&&_ex.by) || (ME&&ME.e) || null; }
@@ -4997,6 +5006,7 @@ function saveRun(){
     SAVED.push(rec); LS.set('gtg_runs',SAVED);
     fisTxt = noFis ? ' · ohne FIS-Zeit · Endrückstand aus Taggings' : (best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)'));
   }
+  if(unsure && unsure.length) rec.unsure=unsure; else delete rec.unsure;   // ⚑-Markierungen mitspeichern (Datenbank zeigt sie)
   // Ersteller:in ist oben schon gesetzt (bestehende:r Ersteller:in bleibt, auch wenn ein Admin korrigiert)
   applyRun(rec);
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
@@ -6691,13 +6701,14 @@ function dbAllTaggings(){
 function cssEsc(s){ return String(s).replace(/["\\]/g,'\\$&'); }
 function dbtGatesHtml(r, enc, anom){ const figs={}; (r.figures||[]).forEach(f=>figs[f.gate]=f.label); const gates=r.gates||[];
   if(!gates.length) return '<div class="empty">Keine Tore.</div>';
-  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi]; const bad=anom&&anom[i];
+  const _fl=DBT_FLAGS(r);
+  const cells=gates.map((g,i)=>{ const gi=i+1, f=figs[gi]; const bad=anom&&anom[i]; const fl=_fl.has(i);
     const ft=f?figType(f):''; const fc=(ft&&FIG[ft])?FIG[ft].c:''; const fname=(ft&&FIG[ft])?FIG[ft].n:'';
-    const tip = bad ? ' title="Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt"' : (f?` title="${fname} (${f})"`:'');
+    const tip = ' title="'+[bad?'Grosse Abweichung zum Feld an diesem Tor – evtl. Fehler oder nicht synchroner Videoschnitt':'', fl?'⚑ im Tagging als unsicher markiert':'', f?`${fname} (${f})`:''].filter(Boolean).join(' · ')+'"';
     const numStyle = fc?` style="color:${fc};font-weight:800"`:'';
-    return `<span class="dbt-gate${bad?' dbt-anom':''}${f?' dbt-fig':''}"${tip}><b${numStyle}>${gi+1}</b><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
+    return `<span class="dbt-gate${bad?' dbt-anom':''}${f?' dbt-fig':''}${fl?' dbt-flag':''}"${tip}><b${numStyle}>${gi+1}</b><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" value="${g!=null?(+g).toFixed(3):''}"></span>`; }).join('');
   const nBad=anom?anom.filter(Boolean).length:0;
-  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
+  return `<div style="font-size:12px;color:var(--muted)">${gates.length} Tore · Gate-to-Gate Zeiten <b>(direkt editierbar)</b>${nBad?` · <span style="color:#c0392b;font-weight:700">${nBad} auffällig</span>`:''}${_fl.size?` · <span class="dbt-flagtxt">⚑ ${_fl.size} unsicher markiert</span>`:''}:</div><div class="dbt-gates">${cells}</div>`; }
 /* ===== FIS-Rückstände nachträglich bearbeiten (pro Lauf eines Events) =====
    Typischer Fall: die ersten Fahrer:innen sind getaggt (eine:r davon Laufbestzeit), dann fährt jemand mit
    hoher Startnummer schneller. Hier lassen sich Laufbestzeit und alle Rückstände in einem Dialog neu setzen –
@@ -6776,6 +6787,7 @@ function openFisEditor(key, focusId){
   syncRadio();
   if(focusId){ const i=runs.findIndex(r=>runId(r)===focusId); const tr=rowsEl[i]; if(tr){ const inp=tr.querySelector('.fis-gap'); if(inp && !inp.disabled) setTimeout(()=>inp.focus(),50); } }
 }
+let DBT_FLAGS=r=>new Set(Array.isArray(r&&r.unsure)?r.unsure:[]);
 let GATE_UNDO=[], GATE_REDO=[];
 function gateUndoPush(id,i,oldVal,newVal){ GATE_UNDO.push({id,i,oldVal,newVal}); if(GATE_UNDO.length>200) GATE_UNDO.shift(); GATE_REDO.length=0; }
 function editTagGate(id, i, val, noUndo){
@@ -6817,6 +6829,10 @@ function applyGateOverrides(){ const ov=LS.get('gtg_gate_override',{}); if(!ov||
 function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
   const q=($('#dbtSearch')?.value||'').trim().toLowerCase(), fm=$('#dbtMode')?.value||'', fd=$('#dbtDisc')?.value||'', fg=$('#dbtGen')?.value||'', fv=$('#dbtVid')?.value||'', fdnf=$('#dbtDnf')?.value||'', fsrc=$('#dbtSrc')?.value||'';
   vdbAll().then(vlist=>{ try{ const VIDS=new Set((vlist||[]).map(v=>v.id));
+    const _vtags={}; (vlist||[]).forEach(v=>{ if(v&&Array.isArray(v.tags)) _vtags[v.id]=v.tags; });
+    const flagsFor=r=>{ if(Array.isArray(r.unsure)) return new Set(r.unsure); const tg=_vtags[runId(r)]; const s=new Set();
+      if(tg){ [...tg].sort((x,y)=>x.t-y.t).forEach((t,i)=>{ if(t&&t.unsure) s.add(Math.max(0,i-1)); }); } return s; };
+    DBT_FLAGS=flagsFor;
     const all=dbAllTaggings().filter(r=>canSeeBy(r.by));   // Coach: nur eigene + Team + Admin/Wettkampf
     // pro Lauf höchste Tor-Zahl -> DNF-Erkennung
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.gates||[]).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
@@ -6847,8 +6863,8 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const vid=hasV?'<span class="db-badge vid">✓ Video</span>':'<span class="db-badge novid">kein Video</span>';
       const src=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
       const dup=isDup(r)?'<span class="db-dup" title="Mögliches Duplikat: gleicher Athlet, Datum, Torzahl und ~Gesamtzeit">evtl. doppelt</span>':'';
-      const nA=anomFor(r).filter(Boolean).length;
-      const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
+      const nA=anomFor(r).filter(Boolean).length; const nF=DBT_FLAGS(r).size;
+      const anomBadge = (nF?`<span class="dbt-flagb" title="${nF} Tor(e) im Tagging als unsicher markiert (⚑)">⚑ ${nF}</span>`:'') + (nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'');
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
       return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
 };
@@ -6863,7 +6879,8 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const vid=nVid?`<span class="db-badge vid">✓ ${nVid}/${rs.length} Video</span>`:'<span class="db-badge novid">kein Video</span>';
       const maxG=Math.max(0,...rs.map(r=>(r.gates||[]).length));
       const nA=rs.reduce((a,r)=>a+anomFor(r).filter(Boolean).length,0);
-      const anomBadge=nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – aufklappen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
+      const nF=rs.reduce((a,r)=>a+DBT_FLAGS(r).size,0);
+      const anomBadge=(nF?`<span class="dbt-flagb" title="${nF} Tor(e) im Tagging als unsicher markiert (⚑)">⚑ ${nF}</span>`:'')+(nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – aufklappen zum Prüfen.">⚠ ${nA} auffällig</span>`:'');
       const names=rs.map(r=>String(r.name).split(' ')[0]).join(', ');
       const hidden=rs.filter(r=>canEditBy(r.by)).map(r=>`<input type="checkbox" class="dbt-check" data-id="${encodeURIComponent(runId(r))}" hidden>`).join('');
       const anyEd=rs.some(r=>canEditBy(r.by));
@@ -6878,10 +6895,10 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       h+=`<div class="dbtg-wrap"><table class="db-table dbtg-table"><thead><tr><th class="dbtg-ath">Athlet:in</th><th class="dbtg-src">FIS</th>`;
       for(let i=0;i<maxG;i++) h+=`<th class="num">${i+2}</th>`;
       h+=`<th class="dbtg-act"></th></tr></thead><tbody>`;
-      rs.forEach((r,ri)=>{ const id=runId(r), enc=encodeURIComponent(id), ed=canEditBy(r.by), an=anomFor(r);
+      rs.forEach((r,ri)=>{ const id=runId(r), enc=encodeURIComponent(id), ed=canEditBy(r.by), an=anomFor(r), fl=DBT_FLAGS(r);
         const fis=r.mode!=='comp'?'—':(r.officialBest?'<span class="fis-gold">Best</span>':(typeof r.officialGap==='number'?('+'+(+r.officialGap).toFixed(2)):'—'));
         h+=`<tr><td class="dbtg-ath" title="${escHtml(r.name)}">${escHtml(r.name)}${VIDS.has(id)?' <span title="Video vorhanden">🎬</span>':''}</td><td class="dbtg-src">${fis}</td>`;
-        for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${an[i]?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"${ed?'':' readonly tabindex="-1" title="Nur Ansicht"'}></td>`; }
+        for(let i=0;i<maxG;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${an[i]?' dbt-anom':''}${fl.has(i)?' dbt-flag':''}"${fl.has(i)?' title="⚑ im Tagging als unsicher markiert"':''}><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${enc}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"${ed?'':' readonly tabindex="-1" title="Nur Ansicht"'}></td>`; }
         const acts = (ed && !r._databank) ? `<button class="btn-mini" data-edit="${enc}" title="Im Tagging öffnen${VIDS.has(id)?' (mit Video)':''}">✎</button><button class="btn-mini del" data-deltag="${enc}" title="Tagging löschen">🗑</button>` : (ed?'':'<span class="db-ro" title="Nur Ansicht">🔒</span>');
         h+=`<td class="dbtg-act">${acts}</td></tr>`; });
       h+=`</tbody></table></div>`; inner.innerHTML=h;
@@ -7919,7 +7936,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
