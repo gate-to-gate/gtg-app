@@ -208,8 +208,6 @@ body.coach .af-dl{display:none}
 .db-store.ok{background:var(--bg);border:1px solid var(--line);color:var(--ink2)}
 .db-dup{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fff4d6;color:#9a6b00;border:1px solid #f0dca0;border-radius:5px;padding:1px 5px;margin-left:5px}
 .db-anomb{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fdecea;color:#b03a2e;border:1px solid #e79a92;border-radius:5px;padding:1px 6px;margin-left:5px;white-space:nowrap}
-.db-table tbody tr.dbt-rowanom td{background:rgba(224,65,58,.05)}
-.db-table tbody tr.dbt-rowanom td:first-child{box-shadow:inset 3px 0 0 #e0413a}
 body.dark .db-anomb{background:#3a2422;color:#f0a89f;border-color:#6a3a34}
 tr.dbt-selected td,tr.dbv-selected td{background:#eaf2ff!important}
 .tut-btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7C1F2D,#D7302A);color:#fff;border:none;border-radius:11px;padding:9px 17px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(124,31,45,.28);transition:.15s}
@@ -1566,6 +1564,7 @@ body.dark .dbtg-table thead th.dbtg-ath,body.dark .dbtg-table thead th.dbtg-src,
 body.dark .clip-speed button{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
 body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
 .db-clwrap{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+.db-table td.db-art{white-space:nowrap}   /* Art-Badges immer nebeneinander */
 </style>
 </head>
 <body>
@@ -2795,7 +2794,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610121458';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610130718';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6438,7 +6437,7 @@ function renderDbKurs(){ const body=$('#dbkBody'); if(!body) return;
   if(!total){ body.innerHTML=dbEmpty('Noch keine Kurssetzungen. Importiere PDFs über «＋ Neue Kurssetzung» oben rechts.', 8, 'file'); return; }
   if(!list.length){ body.innerHTML=dbEmpty('Keine Kurssetzung für diesen Filter.', 8, 'search'); return; }
   body.innerHTML=list.map(c=>`<tr>
-    <td>${dmy(c.date)}</td><td><b>${c.venue||''}</b></td><td>${c.disc||''}</td><td>${c.gen||''}</td><td>L${c.run}</td>
+    <td>${dmy(c.date)}</td><td><b>${c.venue||''}</b></td><td>${c.disc||''}</td><td>${genHtml(c.gen)}</td><td>L${c.run}</td>
     <td class="num">${(c.gates&&c.gates.length)||0}</td>
     <td><button class="btn-mini kpdf" data-id="${c.id}">↗ PDF öffnen</button></td>
     <td><button class="btn-mini del kdbdel" data-id="${c.id}" title="Kurssetzung löschen">✕</button></td></tr>`).join('');
@@ -6808,7 +6807,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const nA=anomFor(r).filter(Boolean).length;
       const anomBadge = nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'';
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
-      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td>${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
 };
     // Mehrere Athlet:innen im selben Event & Lauf -> eine Sammelzeile; aufgeklappt: Athlet:innen × Tore
     const gKey=r=>[r.date,r.venue,r.disc,r.gen,r.run,r.mode].join('|');
@@ -6825,7 +6824,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const names=rs.map(r=>String(r.name).split(' ')[0]).join(', ');
       const hidden=rs.filter(r=>canEditBy(r.by)).map(r=>`<input type="checkbox" class="dbt-check" data-id="${encodeURIComponent(runId(r))}" hidden>`).join('');
       const anyEd=rs.some(r=>canEditBy(r.by));
-      return `<tr class="dbt-row dbt-grow${nA?' dbt-rowanom':''}" data-g="${gid}"><td class="db-chk">${anyEd?`<input type="checkbox" class="dbt-gcheck" data-g="${gid}" title="Alle eigenen Taggings dieses Laufs auswählen">`:''}${hidden}</td><td>${dmy(r0.date)}</td><td class="db-venue">${escHtml(r0.venue)}</td><td>${r0.disc}</td><td>${genHtml(r0.gen)}</td><td>${runShort(r0.mode,r0.disc,r0.run)}</td><td><b>${rs.length} Athlet:innen</b> <span class="dbt-gnames">${escHtml(names)}</span>${anomBadge}</td><td>${art} ${src}</td><td class="num">${maxG}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-gopen="${gid}">Aufklappen</button></td></tr>`
+      return `<tr class="dbt-row dbt-grow${nA?' dbt-rowanom':''}" data-g="${gid}"><td class="db-chk">${anyEd?`<input type="checkbox" class="dbt-gcheck" data-g="${gid}" title="Alle eigenen Taggings dieses Laufs auswählen">`:''}${hidden}</td><td>${dmy(r0.date)}</td><td class="db-venue">${escHtml(r0.venue)}</td><td>${r0.disc}</td><td>${genHtml(r0.gen)}</td><td>${runShort(r0.mode,r0.disc,r0.run)}</td><td><b>${rs.length} Athlet:innen</b> <span class="dbt-gnames">${escHtml(names)}</span>${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${maxG}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-gopen="${gid}">Aufklappen</button></td></tr>`
         +`<tr class="dbt-gdetail" data-for="${gid}" style="display:none"><td colspan="11"><div class="dbt-ginner" data-g="${gid}" data-built="0"></div></td></tr>`; };
     body.innerHTML=groups.map(k=> gMap[k].length>1 ? groupHtml(k) : rowHtml(gMap[k][0])).join('');
     const buildGroup=inner=>{ if(!inner||inner.dataset.built==='1') return; inner.dataset.built='1'; const k=decodeURIComponent(inner.dataset.g), rs=(gMap[k]||[]).slice();
@@ -7018,7 +7017,7 @@ function renderDbVideos(){ const body=$('#dbvBody'); if(!body) return;
     dbvStorageBanner(list||[]);
     if($('#dbvCount')) $('#dbvCount').textContent=`${vids.length} Video${vids.length===1?'':'s'}`;
     if(!vids.length){ body.innerHTML=dbEmpty('Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).', 10, 'video'); if($('#dbvBulk'))$('#dbvBulk').style.display='none'; return; }
-    body.innerHTML=vids.map(v=>{ const enc=encodeURIComponent(v.id); return `<tr class="dbv-row"><td class="db-chk"><input type="checkbox" class="dbv-check" data-id="${enc}"></td><td>${dmy(v.date)}</td><td class="db-venue">${v.venue}</td><td>${v.disc}</td><td>${v.gen}</td><td>${runShort(v.mode||'comp',v.disc,v.run)}</td><td>${v.name}</td><td class="num">${(v.tags||[]).length}</td><td>${fmtBytes(v.vsize||0)}</td><td class="db-act"><button class="btn-mini solid" data-vedit="${enc}">✎ Öffnen</button><button class="btn-mini del" data-vdel="${enc}">Löschen</button></td></tr>`; }).join('');
+    body.innerHTML=vids.map(v=>{ const enc=encodeURIComponent(v.id); return `<tr class="dbv-row"><td class="db-chk"><input type="checkbox" class="dbv-check" data-id="${enc}"></td><td>${dmy(v.date)}</td><td class="db-venue">${v.venue}</td><td>${v.disc}</td><td>${genHtml(v.gen)}</td><td>${runShort(v.mode||'comp',v.disc,v.run)}</td><td>${v.name}</td><td class="num">${(v.tags||[]).length}</td><td>${fmtBytes(v.vsize||0)}</td><td class="db-act"><button class="btn-mini solid" data-vedit="${enc}">✎ Öffnen</button><button class="btn-mini del" data-vdel="${enc}">Löschen</button></td></tr>`; }).join('');
     body.querySelectorAll('button[data-vedit]').forEach(b=> b.onclick=()=> loadFromLib(decodeURIComponent(b.dataset.vedit)));
     body.querySelectorAll('button[data-vdel]').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.vdel), nm=id.split('|')[5];
       gtgConfirm({title:'Video löschen', danger:true, okLabel:'Löschen', msg:`Video von «${nm}» löschen? Das Tagging (Zeiten) bleibt erhalten.`})
