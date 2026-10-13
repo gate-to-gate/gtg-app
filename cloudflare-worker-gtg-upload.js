@@ -17,6 +17,7 @@
 //   POST /?mpu=part&path=…&uploadId=…&part=N&key=…  Body = Teil   -> {etag}
 //   POST /?mpu=complete&path=…&uploadId=…&key=…  Body = [{partNumber,etag}]
 //   POST /?mpu=abort&path=…&uploadId=…&key=…
+//   POST /?op=delete&prefix=coach/videos/<Link>/&key=…            -> alle Videos eines Coach-Links löschen
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -55,6 +56,20 @@ export default {
 
     const bucket = findBucket(env);
     if (!bucket) return json({ error: 'kein R2-Bucket gebunden' }, 500);
+
+    // Löschen: alle Dateien unter einem Präfix (nur innerhalb von coach/), z. B. coach/videos/Worblaufen_2026_10_14_W/
+    if (q.get('op') === 'delete') {
+      const prefix = cleanPath(q.get('prefix'));
+      if (!prefix || !prefix.startsWith('coach/') || !prefix.endsWith('/')) return json({ error: 'prefix' }, 400);
+      let deleted = 0, cursor;
+      do {
+        const res = await bucket.list({ prefix, cursor, limit: 1000 });
+        const keys = res.objects.map(o => o.key);
+        if (keys.length) { await bucket.delete(keys); deleted += keys.length; }
+        cursor = res.truncated ? res.cursor : undefined;
+      } while (cursor);
+      return json({ ok: true, deleted });
+    }
 
     const path = cleanPath(q.get('path'));
     if (!path) return json({ error: 'path' }, 400);

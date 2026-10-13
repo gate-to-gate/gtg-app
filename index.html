@@ -1565,6 +1565,8 @@ body.dark .clip-speed button{background:#2d3644;border-color:#3a4452;color:#e7eb
 body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);color:#fff}
 .db-clwrap{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
 .db-table td.db-art{white-space:nowrap}   /* Art-Badges immer nebeneinander */
+.cf-check{grid-column:1/-1;display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45;color:var(--ink2);cursor:pointer}
+.cf-check input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--red)}
 </style>
 </head>
 <body>
@@ -2779,6 +2781,10 @@ function gtgConfirm(opts){ opts=opts||{}; const m=document.getElementById('confi
   if(!m) return Promise.resolve(window.confirm(opts.msg||''));
   const t=document.getElementById('cfTitle'), mg=document.getElementById('cfMsg'), ok=document.getElementById('cfOk');
   if(t) t.textContent=opts.title||'Bestätigen'; if(mg) mg.textContent=opts.msg||'';
+  window._cfChecked=false; let cw=document.getElementById('cfCheckWrap'); if(cw) cw.remove();
+  if(opts.check && mg){ cw=document.createElement('label'); cw.id='cfCheckWrap'; cw.className='cf-check';
+    cw.innerHTML='<input type="checkbox" id="cfCheck"><span></span>'; cw.querySelector('span').textContent=opts.check;
+    mg.insertAdjacentElement('afterend',cw); cw.querySelector('input').onchange=e=>{ window._cfChecked=e.target.checked; }; }
   if(ok){ ok.textContent=opts.okLabel||'Bestätigen'; ok.className='save-btn'+(opts.danger?' danger':''); }
   m.style.display='flex';
   return new Promise(res=>{ _cfResolve=res; }); }
@@ -2794,7 +2800,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610130718';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610130731';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6493,6 +6499,27 @@ function coachKnownRefresh(){ if(COACH_KNOWN.loading || Date.now()-COACH_KNOWN.a
       list.forEach(f=>{ if(f&&f.type==='file'&&/\.json$/i.test(f.name)){ const k=f.name.replace(/\.json$/i,''); if(!COACH_KNOWN.keys.has(k)){ COACH_KNOWN.keys.add(k); n++; } } });
       if(n && S.view==='datenbank' && typeof renderDbEvents==='function') renderDbEvents(); })
     .catch(()=>{}).finally(()=>{ COACH_KNOWN.loading=false; }); }
+async function coachDeleteRemote(k){
+  const cfg=LS.get('gtg_coachcfg',{})||{}; const repo=(cfg.repo||'gate-to-gate/gtg-app').trim(), branch=(cfg.branch||'main').trim()||'main';
+  const token=(typeof GH!=='undefined'&&GH&&GH.token)||''; const out={bundle:false, videos:0, errors:[]};
+  if(token){ const H={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+    const delFile=async(path,msg)=>{ const url=`https://api.github.com/repos/${repo}/contents/${path.split('/').map(encodeURIComponent).join('/')}`;
+      const g=await fetch(url+`?ref=${encodeURIComponent(branch)}`,{headers:H,cache:'no-store'}); if(g.status===404) return false; if(!g.ok) throw new Error('GitHub '+g.status);
+      const sha=(await g.json()).sha; const d=await fetch(url,{method:'DELETE',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({message:msg,sha,branch})});
+      if(!d.ok) throw new Error('GitHub '+d.status); return true; };
+    try{ out.bundle=await delFile(`coach/${k}.json`,'coach link gelöscht '+k); }catch(e){ out.errors.push('Bundle: '+e.message); }
+    // Videos, die (ohne R2) direkt im Repo liegen
+    try{ const l=await fetch(`https://api.github.com/repos/${repo}/contents/coach/videos/${encodeURIComponent(k)}?ref=${encodeURIComponent(branch)}`,{headers:H,cache:'no-store'});
+      if(l.ok){ const files=await l.json(); for(const f of (Array.isArray(files)?files:[])){ if(f.type==='file'){ try{ if(await delFile(f.path,'coach video gelöscht')) out.videos++; }catch(e){ out.errors.push(f.name+': '+e.message); } } } } }catch(e){}
+  } else out.errors.push('kein GitHub-Token (Cloud verbinden)');
+  // Videos im Cloudflare-Speicher (R2) über den Worker
+  const r2=LS.get('gtg_r2cfg',{})||{};
+  if(r2.worker){ try{ const q=new URLSearchParams({op:'delete', prefix:`coach/videos/${k}/`}); if(r2.wkey) q.set('key',r2.wkey);
+      const r=await fetch(`${r2.worker.replace(/\/+$/,'')}/?${q}`,{method:'POST',headers:{'Content-Type':'text/plain'},body:''});
+      const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error('Worker '+r.status+(j.error?' · '+j.error:'')); out.videos+=(+j.deleted||0);
+    }catch(e){ out.errors.push('Videos (R2): '+e.message); } }
+  try{ const m=LS.get('gtg_coachlinks',{})||{}; delete m[k]; LS.set('gtg_coachlinks',m); }catch(e){} COACH_KNOWN.keys.delete(k);
+  return out; }
 function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t); }catch(e){}
   return new Promise(res=>{ const i=document.createElement('textarea'); i.value=t; i.style.position='fixed'; i.style.opacity='0'; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(e){} i.remove(); res(); }); }
 function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnownRefresh();
@@ -6565,9 +6592,16 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
    body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
      const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
      const p=k.split('|'); const lbl=`${p[1]} · ${p[2]} ${p[3]} · L${p[4]} · ${dmy(p[0])}`;
+     const _ck=coachKeyOf(p[0],p[1],p[3]); const _hasLink=COACH_KNOWN.keys.has(_ck);
      gtgConfirm({title:'Event dauerhaft löschen?', danger:true, okLabel:'Endgültig löschen',
-       msg:`«${lbl}» wird komplett gelöscht.\n\nAlle ${nTag>0?nTag+' ':''}getaggten Läufe dieses Events${nTag>0?' (inkl. Videos auf diesem Gerät)':''} werden dabei ebenfalls unwiderruflich entfernt. Dies kann nicht rückgängig gemacht werden.`})
-       .then(ok=>{ if(ok){ deleteEvent(k); renderDatenbank(); buildFilters(); gtgToast('Event gelöscht.'); } }); });
+       check: _hasLink ? `Auch den Coach-Link «${p[1]} · ${dmy(p[0])}» inkl. hochgeladener Videos löschen (gilt für alle Läufe dieses Tages – der Link funktioniert danach nicht mehr)` : null,
+       msg:`«${lbl}» wird komplett gelöscht.\n\n${nTag===1?'Der getaggte Lauf':(nTag>1?`Alle ${nTag} getaggten Läufe`:'Alle getaggten Läufe')} dieses Events${nTag>0?' (inkl. Videos auf diesem Gerät)':''} ${nTag===1?'wird':'werden'} dabei ebenfalls unwiderruflich entfernt. Dies kann nicht rückgängig gemacht werden.`})
+       .then(ok=>{ if(!ok) return; const alsoLink=_hasLink && !!window._cfChecked; deleteEvent(k); renderDatenbank(); buildFilters();
+         if(!alsoLink){ gtgToast('Event gelöscht.'); return; }
+         gtgToast('Event gelöscht · Coach-Link wird entfernt …');
+         coachDeleteRemote(_ck).then(res=>{ renderDatenbank();
+           if(res.errors.length) gtgToast('Event gelöscht. Coach-Link nur teilweise entfernt: '+res.errors.join(' · '));
+           else gtgToast(`Event und Coach-Link gelöscht${res.videos?` (${res.videos} Video${res.videos>1?'s':''})`:''}.`,'ok'); }); }); });
    body.querySelectorAll('button[data-sw]').forEach(b=> b.onclick=()=>{ const k=b.dataset.sw; const cur=dbEvents().find(x=>x.key===k); const to=cur&&cur.mode==='train'?'Wettkampf':'Training';
     const tagged=dbTaggedKeys().has(k);
     gtgConfirm({title:'Modus wechseln', okLabel:`Nach ${to}`, msg:`Dieses Event nach «${to}» verschieben?${tagged?' Alle getaggten Athleten dieses Laufs wechseln den Modus.':''}`})
