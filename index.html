@@ -1583,6 +1583,50 @@ body.dark .clip-speed button.on{background:var(--red);border-color:var(--red);co
 .dbt-flagtxt{color:#b37a1c;font-weight:700}
 body.dark .dbt-flagb,body.dark .dbt-flagtxt{color:#e7b866}
 body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
+/* ---- Handy (Hochformat): kompakter Kopf im Coach-Link, nur 2 kleine Kacheln ---- */
+@media(max-width:600px){
+  body.coach header{flex-wrap:nowrap!important;gap:6px!important;padding:6px 8px!important;margin-bottom:10px}
+  body.coach header .brand{gap:6px;min-width:0;flex:0 1 auto;margin-right:0}
+  body.coach header .logo{width:28px;height:28px}
+  body.coach header .ss-word{height:12px}
+  body.coach header .brand-sub,body.coach header .hdr-sep{display:none!important}
+  body.coach .coach-run{margin-left:auto;padding:3px 8px!important;gap:5px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  body.coach .coach-run .cr-lab{display:none}
+  body.coach .coach-run .cr-count{font-size:10px;padding:2px 7px}
+  body.coach #pdfBtn{font-size:0;gap:0;padding:0;width:38px;height:38px;justify-content:center;flex:none;border-radius:10px}
+  body.coach #pdfBtn svg{width:17px;height:17px}
+  #main .kpis{grid-template-columns:1fr 1fr!important;gap:8px;margin-bottom:10px}
+  #main .kpis .kpi:nth-child(2),#main .kpis .kpi:nth-child(n+4){display:none!important}
+  #main .kpis .kpi{padding:8px 10px}
+  #main .kpis .kpi .k-lab{font-size:9px;margin-bottom:3px}
+  #main .kpis .kpi .k-val{font-size:16px}
+  #main .kpis .kpi .k-sub{font-size:10px;margin-top:2px}
+}
+/* Handy: Video-Karte kompakt (Elemente werden per JS umplatziert, siehe cvMobileLayout) */
+@media(max-width:600px){
+  #coachVid .c-head .c-sub{display:none}
+  body.coach #main .card .c-head .c-sub{display:none}   /* Coach-Link Handy: nur Titel, ohne Untertitel */
+  #coachVid .c-head{margin-bottom:6px}
+  #coachVid .clip-chiprow{margin-bottom:8px}
+  .clip-speed{flex-wrap:nowrap;gap:5px}
+  .clip-speed .cs-lab{display:none}
+  .clip-speed button{min-width:42px}
+  .clip-speed .clip-sbsbtn{margin-left:6px;height:34px;padding:0 10px;font-size:12px}
+  .clip-main>.cv-vizswitch{align-self:flex-start;margin:12px 0 6px}
+}
+.lg-sur{display:none}
+@media(max-width:600px){
+  .lg-full{display:none}.lg-sur{display:inline}       /* Handy: nur Nachname bzw. Kurzname */
+  .legend{gap:4px 10px}
+  .legend .lg{font-size:11.5px;gap:5px;padding:2px 2px}
+  .legend .lg .bar{width:11px;height:3px}
+  .lg-best{font-size:0;padding:0 4px;margin-left:3px;line-height:14px}
+  .lg-best::before{content:'★';font-size:9px}             /* Bestzeit als Stern, damit alle in eine Zeile passen */
+  body.coach .fig-note{display:none}                         /* Coach-Link Handy: Figuren-Erklärung unter der Tabelle weg */
+  #figstrip{gap:5px!important}
+  .figpill{font-size:10.5px;padding:2px 7px;gap:4px}
+  .figpill i{width:7px;height:7px}
+}
 </style>
 </head>
 <body>
@@ -2817,7 +2861,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610131435';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610131456';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3556,7 +3600,7 @@ function render(){
         <div class="c-head">
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
             <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div>
-            <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.</div></div>
+            <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).</div></div>
           <div class="hero-ctrls no-print">
             <label class="toggle" title="Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.">
               <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
@@ -3596,8 +3640,8 @@ function render(){
         <div id="hmPrint" class="print-only"></div>
       </div>
 
-      <div class="note">
-        <b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.
+      <div class="note fig-note">
+        <b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).
       </div>
     </div>`;
 
@@ -3643,7 +3687,7 @@ function buildLegend(){
   const order=[...S.comp.skiers].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // Bestzeit immer ganz links
   order.forEach(s=>{
     const d=document.createElement('div'); d.className='lg'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
-    d.innerHTML=`<span class="bar" style="background:${s.color}"></span>${s.name}${s.isTop?'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>':''}`;
+    d.innerHTML=`<span class="bar" style="background:${s.color}"></span><span class="lg-full">${s.name}</span><span class="lg-sur">${surOf(s.name)}</span>${s.isTop?'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>':''}`;
     d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
     el.appendChild(d);
   });
@@ -3652,7 +3696,7 @@ function figStrip(){
   const el=$('#figstrip'); if(!el) return; el.innerHTML='';
   const types=uniq(S.comp.figs.map(f=>f.type));
   types.forEach(t=>{ if(!FIG[t])return; const p=document.createElement('span'); p.className='figpill';
-    p.innerHTML=`<i style="background:${FIG[t].c}"></i>${FIG[t].n}`; el.appendChild(p); });
+    p.innerHTML=`<i style="background:${FIG[t].c}"></i><span class="lg-full">${FIG[t].n}</span><span class="lg-sur">${FIG[t].n.split(/ \/ | \(/)[0]}</span>`; el.appendChild(p); });
 }
 
 /* ===== generic SVG helpers ===== */
@@ -4853,7 +4897,15 @@ function updateTaggingState(){
   const csv=$('#impTagsCsv'); if(csv){ const lab=csv.closest('label'); if(lab) lab.classList.toggle('is-disabled', dis); csv.disabled=dis; }
 }
 
-const FIGOPTS = ['','Lap1','Lap2','Lap3','Lap4','B1','B2','B3','B4','H1','H2','H3','H4','H5','H6','F1','F2','F3','K'];
+// Figuren-Auswahl: Lap/B/H/F mit Nummer. Pro Typ immer eine Nummer mehr als die höchste schon vergebene
+// (z. B. Lap5 erscheint, sobald Lap4 vergeben ist) -> beliebig viele möglich. «K» (Kuppe) gibt es nicht mehr.
+const FIGBASE = [['Lap',4],['B',4],['H',6],['F',3]];
+function figOpts(used, sel){
+  const hi={}; [...(used||[])].forEach(v=>{ String(v||'').split('+').forEach(x=>{ const m=/^(Lap|B|H|F)(\d+)$/.exec(x); if(m) hi[m[1]]=Math.max(hi[m[1]]||0,+m[2]); }); });
+  const out=['']; FIGBASE.forEach(([p,n])=>{ const N=Math.max(n,(hi[p]||0)+1); for(let k=1;k<=N;k++) out.push(p+k); });
+  [].concat(sel||[]).forEach(v=>{ if(v && !out.includes(v)) out.push(v); });   // ältere Werte (z. B. K) nicht stillschweigend verlieren
+  return out;
+}
 function renderTags(){
   TG.tags.sort((a,b)=>a.t-b.t); const fps=curFps(); const tb=$('#tagBody'); tb.innerHTML='';
   // Figuren-Vorlage übernehmen (Kurssetzung oder zuvor getaggte Athleten desselben Laufs) – nur noch leere Tags
@@ -4868,7 +4920,7 @@ function renderTags(){
     const d = prev!=null ? Math.round((tag.t-prev)*1000)/1000 : null;
     const label = 'Tor '+(i+1);   // wir taggen den Start nicht: erster Tag = Tor 1 (Referenz)
     const fp=String(tag.fig||'').split('+'); const f1=fp[0]||'', f2=fp[1]||'';
-    const optsFor=sel=>FIGOPTS.map(o=>{ const dis=o&&o!==sel&&usedFig.has(o); return `<option value="${o}"${o===sel?' selected':''}${dis?' disabled':''}>${o||'–'}</option>`; }).join('');
+    const optsFor=sel=>figOpts(usedFig,[f1,f2]).map(o=>{ const dis=o&&o!==sel&&usedFig.has(o); return `<option value="${o}"${o===sel?' selected':''}${dis?' disabled':''}>${o||'–'}</option>`; }).join('');
     const tr=document.createElement('tr');
     if(tag.unsure) tr.classList.add('unsure');
     if(TG.lastTagT!=null && Math.abs(tag.t-TG.lastTagT)<1e-6) tr.classList.add('row-new');
@@ -5434,7 +5486,11 @@ function renderCoursePreview(gates){
     <td><input class="k-offset" value="${g.offset??''}"></td>
     <td><input class="k-pitch" value="${g.pitch??''}"></td>
     <td><input class="k-angle" value="${g.angle??''}"></td>
-    <td><select class="k-fig">${FIGOPTS.map(o=>`<option value="${o}"${o===(g.fig||'')?' selected':''}>${o||'–'}</option>`).join('')}</select></td></tr>`).join('');
+    <td><select class="k-fig">${figOpts(gates.map(x=>x.fig),g.fig).map(o=>`<option value="${o}"${o===(g.fig||'')?' selected':''}>${o||'–'}</option>`).join('')}</select></td></tr>`).join('');
+  // nach Auswahl die Listen auffrischen (z. B. Lap4 gewählt -> Lap5 erscheint)
+  const kp=$('#kursPreview');
+  kp.onchange=e=>{ if(!e.target.classList.contains('k-fig')) return; const sels=[...kp.querySelectorAll('.k-fig')]; const used=sels.map(x=>x.value);
+    sels.forEach(x=>{ const v=x.value; x.innerHTML=figOpts(used,v).map(o=>`<option value="${o}"${o===v?' selected':''}>${o||'–'}</option>`).join(''); }); };
 }
 function readPreviewGates(){
   return [...$('#kursPreview').querySelectorAll('tr')].map(tr=>({
@@ -7353,6 +7409,22 @@ function cvRenderPanel(){
 /* ---- Vergrössern: Videos (Side-by-Side) oder Grafik im Vollbild-Pop-up ---- */
 // Live-Knoten (#clipLeft bzw. #clipViz) werden ins Pop-up verschoben und beim Schliessen
 // wieder an ihren Originalplatz gehängt -> Wiedergabe, Sync, Def-Balken bleiben erhalten.
+/* Handy: Video-Karte kompakt – oben nur die Athleten-Knöpfe; Side-by-Side neben die Tempo-Knöpfe,
+   Grafik/Tabelle-Umschalter direkt über die Grafik. Auf grösseren Bildschirmen zurück an den Originalplatz. */
+function cvMobileLayout(){ try{
+  const narrow=window.innerWidth<600, sbs=$('#clipSbsBtn'), sw=document.querySelector('#coachVid .cv-vizswitch'), sp=$('#clipSpeed'), viz=$('#clipViz');
+  if(narrow){
+    if(sbs && sp && sbs.parentNode!==sp) sp.appendChild(sbs);
+    if(sw && viz && viz.parentNode && sw.nextSibling!==viz) viz.parentNode.insertBefore(sw, viz);
+  } else {
+    const row=document.querySelector('#coachVid .clip-chiprow'), head=document.querySelector('#coachVid .c-head');
+    if(sbs && row && sbs.parentNode!==row) row.appendChild(sbs);
+    if(sw && head && sw.parentNode!==head) head.appendChild(sw);
+  }
+  document.body.classList.toggle('cv-narrow', narrow);
+}catch(e){} }
+window.addEventListener('resize',()=>{ clearTimeout(window._cvMobT); window._cvMobT=setTimeout(cvMobileLayout,150); });
+setTimeout(cvMobileLayout,0);
 let CLIPBIG_HOME={};
 function clipBigStash(node){ return {node, parent:node.parentNode, next:node.nextSibling}; }
 function clipBigRestoreAll(){ Object.keys(CLIPBIG_HOME).forEach(k=>{ const h=CLIPBIG_HOME[k]; if(h&&h.node&&h.parent){ if(h.next&&h.next.parentNode===h.parent) h.parent.insertBefore(h.node,h.next); else h.parent.appendChild(h.node); } }); CLIPBIG_HOME={}; }
@@ -7665,12 +7737,29 @@ function initCoach(){
   let key; try{ key=new URLSearchParams(location.search).get('coach'); }catch(e){ key=null; }
   if(!key) return false;
   document.body.classList.add('coach');
-  fetch(`coach/${encodeURIComponent(key)}.json`,{cache:'no-store'})
-    .then(r=>{ if(!r.ok) throw 0; return r.json(); })
-    .then(b=>enterCoach(b))
-    .catch(()=>{ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Coach-Link konnte nicht geladen werden — bitte den Link prüfen.', 'info')+'</div>'; });
+  coachLoadBundle(key, 0);
   return true;
 }
+/* Coach-Bundle laden. Direkt nach dem Erstellen ist es zwar im Repo, aber GitHub Pages veröffentlicht es erst
+   nach ca. 1–2 Minuten -> dann direkt aus dem Repo lesen (raw / API) und notfalls automatisch erneut versuchen. */
+function coachRepoGuess(){ try{ const h=location.hostname, seg=location.pathname.split('/').filter(Boolean);
+    if(/\.github\.io$/i.test(h)) return h.split('.')[0]+'/'+(seg[0]||h); }catch(e){} return 'gate-to-gate/gtg-app'; }
+async function coachFetchBundle(key){
+  const f=encodeURIComponent(key)+'.json', repo=coachRepoGuess();
+  const tries=[ ()=>fetch(`coach/${f}?t=${Date.now()}`,{cache:'no-store'}),
+    ()=>fetch(`https://raw.githubusercontent.com/${repo}/main/coach/${f}?t=${Date.now()}`,{cache:'no-store'}),
+    ()=>fetch(`https://api.github.com/repos/${repo}/contents/coach/${f}?ref=main`,{headers:{'Accept':'application/vnd.github.raw+json'},cache:'no-store'}) ];
+  for(const t of tries){ try{ const r=await t(); if(r.ok){ const j=await r.json(); if(j && Array.isArray(j.runs)) return j; } }catch(e){} }
+  return null; }
+function coachLoadBundle(key, attempt){
+  coachFetchBundle(key).then(b=>{
+    if(b){ enterCoach(b); return; }
+    const main=$('#main'); const maxTry=18;   // ~3 Minuten
+    if(attempt<maxTry){
+      if(main) main.innerHTML='<div class="card">'+emptyBox('Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).', 'info')+'</div>';
+      setTimeout(()=>coachLoadBundle(key, attempt+1), 10000);
+    } else if(main) main.innerHTML='<div class="card">'+emptyBox('Coach-Link konnte nicht geladen werden — bitte den Link prüfen.', 'info')+'</div>';
+  }); }
 function enterCoach(bundle){
   COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
   const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode='comp'; DATA.push(r.ev); } });
@@ -7936,7 +8025,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
@@ -8204,7 +8293,7 @@ Object.assign(I18N_EN,{
  "Gemessen wird der":"Measured is the","Ø Gate-to-Gate-Rückstand pro Tor":"Ø gate-to-gate deficit per gate","auf die Laufbestzeit (kleiner = schneller).":"to the run's best time (smaller = faster).",
  "Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.":"Positive = on average slower than the run's best time, negative = faster.",
  "Farbe":"Color","Farbe für die Diagramme wählen":"Choose a color for the charts","Auf Standardfarbe zurücksetzen":"Reset to default color",
- "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er) · K = Kuppe/Schlüsselstelle.":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3) · K = Crest/key section.",
+ "Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).":"Lap = split · B = Banana · H = Hairpin/turn · F = Flush (3).",
  "aufklappen":"expand","zuklappen":"collapse",
  "Alle":"All",
  "Keine Daten für diese Auswahl. Wähle eine andere Disziplin bzw. ein anderes Geschlecht – oder ein anderes Event.":"No data for this selection. Choose a different discipline or gender – or another event.",
