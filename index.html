@@ -2865,7 +2865,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610141151';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610141220';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4931,7 +4931,11 @@ function getFigTemplate(){
   if(ev && Array.isArray(ev.figures)) ev.figures.forEach(f=>{ if(f && f.label){ const tor=(+f.gate)+1; if(!(tor in map)) map[tor]=f.label; } });
   // 2) Kurssetzung füllt die restlichen Tore (g.no = Tor-Nummer).
   const course=COURSES[`${date}|${venue}|${disc}|${gen}|${run}`];
-  if(course && Array.isArray(course.gates)) course.gates.forEach(g=>{ if(g && g.fig && !(g.no in map)) map[g.no]=g.fig; });
+  //    Jede Figur nur EINMAL pro Lauf: steht sie schon (aus Schritt 1) an einem Tor, wird sie nicht ein zweites Mal gesetzt.
+  const used=new Set(); Object.values(map).forEach(l=>String(l).split('+').forEach(x=>{ if(x) used.add(x); }));
+  if(course && Array.isArray(course.gates)) course.gates.forEach(g=>{ if(!g || !g.fig || (g.no in map)) return;
+    const parts=String(g.fig).split('+').filter(x=>x && !used.has(x)); if(!parts.length) return;
+    map[g.no]=parts.join('+'); parts.forEach(x=>used.add(x)); });
   return map;
 }
 function flashTag(){ const b=$('#btnTag'); b.style.transform='scale(.9)'; setTimeout(()=>b.style.transform='',110); }
@@ -4983,7 +4987,8 @@ function renderTags(){
   const tpl=getFigTemplate();
   // Tag-Index i = «Tor i+1». Wir taggen ab Tor 1 (nicht den Start), die Kurssetzung zählt ab Tor 1:
   // Kurs-Tor N gehört auf «Tor N» (tag[N-1]) — daher tpl[i+1], sonst erscheint die Figur ein Tor zu spät.
-  TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ tag.fig = tpl[i+1] ? tpl[i+1] : ''; } });
+  { const have=new Set(); TG.tags.forEach(t=>{ if(t.fig) String(t.fig).split('+').forEach(x=>{ if(x) have.add(x); }); });
+    TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ const parts=String(tpl[i+1]||'').split('+').filter(x=>x && !have.has(x)); tag.fig=parts.join('+'); parts.forEach(x=>have.add(x)); } }); }
   // Bereits im Lauf vergebene Figuren (jede Figur darf nur einmal vorkommen)
   const usedFig=new Set(); TG.tags.forEach((t,idx)=>{ if(idx===0) return; String(t.fig||'').split('+').forEach(v=>{ if(v) usedFig.add(v); }); });
   TG.tags.forEach((tag,i)=>{
