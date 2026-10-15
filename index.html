@@ -461,6 +461,11 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
   .modal{max-width:94vw}
 }
 
+/* Tablet (z. B. Galaxy Tab Active, iPad hoch): Events-Tabelle ohne ART + QUELLE, damit Status & Coach-Link sichtbar bleiben */
+@media (max-width:1100px){
+  #dbSecEvents .db-table th:nth-child(6),#dbSecEvents .db-table td:nth-child(6),
+  #dbSecEvents .db-table th:nth-child(7),#dbSecEvents .db-table td:nth-child(7){display:none}
+}
 /* Legend / chips */
 .hero-ctrls{display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hero-ctrls .toggle .tg-txt small{display:none}   /* kompakt: Untertitel weg, alles einzeilig nebeneinander */
@@ -562,6 +567,10 @@ table.hm{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric
 table.hm th,table.hm td{padding:4px 7px;text-align:center;white-space:nowrap}
 table.hm thead th{position:sticky;top:0;background:#fff;z-index:5;border-bottom:2px solid var(--line);padding:8px 7px;font-size:11px}
 table.hm thead th .nat{font-size:9.5px;color:var(--muted);font-weight:600}
+/* Detail-Matrix: alle Athlet:innen-Spalten gleich breit (Tor-Spalte fix) */
+#hmWrap table.hm{table-layout:fixed}
+#hmWrap table.hm thead th.gate-c{width:112px}
+@media (max-width:700px){ #hmWrap table.hm thead th.gate-c{width:54px} }
 table.hm .gate-c{position:sticky;left:0;background:#fff;font-weight:700;z-index:4;border-right:2px solid var(--line);width:1%;white-space:nowrap}
 .gate-in{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .gate-in .g-num{min-width:20px;text-align:right;font-weight:700}
@@ -3090,7 +3099,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151104';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151229';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3931,7 +3940,7 @@ function figStrip(){
 /* schmaler Bildschirm (Handy, Hochformat)? */
 function gtgNarrow(sel){ try{ const el=sel&&document.querySelector(sel); const w=(el&&el.clientWidth)||window.innerWidth; return w>0 && w<560; }catch(e){ return false; } }
 let _gtgLastNarrow=null;
-window.addEventListener('resize',()=>{ clearTimeout(window._gtgNarrowT); window._gtgNarrowT=setTimeout(()=>{ const nw=window.innerWidth<600; if(nw===_gtgLastNarrow) return; _gtgLastNarrow=nw;
+window.addEventListener('resize',()=>{ clearTimeout(window._gtgNarrowT); window._gtgNarrowT=setTimeout(()=>{ const nw=window.innerWidth<600; const hs=$('#heroShell'), hw=hs?Math.round(Math.min(980,hs.clientWidth)/40):0; if(nw===_gtgLastNarrow && hw===window._gtgLastHW) return; _gtgLastNarrow=nw; window._gtgLastHW=hw;
   try{ if(S.view==='analyse' && S.comp && $('#heroShell')){ drawHero(); drawSector(); } }catch(e){} },250); });
 function svgEl(w,h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">`; }
 
@@ -3959,7 +3968,9 @@ function drawHero(){
   const c=S.comp, n=c.n;
   // Handy: schmalere Zeichenfläche, damit Schrift und Linien beim Herunterskalieren lesbar bleiben
   const _nw=!S.printMode && gtgNarrow('#heroShell');
-  const W=_nw?520:980,H=(S.printMode?440:(_nw?420:420)), ml=_nw?58:74,mr=_nw?12:20,mt=18,mb=46;
+  // Breite an den Container anpassen (Tablet): sonst wird die 980er-Grafik herunterskaliert und die Schrift winzig
+  const _cw=(()=>{ try{ const el=document.querySelector('#heroShell'); const w=el?el.clientWidth:0; return w>0? w : Math.max(0,(window.innerWidth||0)-80); }catch(e){ return 0; } })();   // Ansicht noch versteckt -> aus Fensterbreite schätzen
+  const W=_nw?520:(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?440:(_nw?420:(W<900?400:420))), ml=_nw?58:74,mr=_nw?12:20,mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
@@ -4000,9 +4011,9 @@ function drawHero(){
         svg+=`<path d="M${p0.x.toFixed(1)} ${p0.y.toFixed(1)} L${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L${p1.x.toFixed(1)} ${yBot} L${p0.x.toFixed(1)} ${yBot} Z" fill="${SC[bucket(pit[i])]}"/>`; }
       svg+=`<path class="hProf" d="M${top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L')}" fill="none" stroke="${T.dark?'#7d8898':'#9aa1ab'}" stroke-width="1.3"/>`;
       // Legende Steilheit (unten links, neben «Tor-Nr.»)
-      { const lab = _nw ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
+      { const lab = (_nw || (!S.printMode && W<820)) ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
         const pm=!!S.printMode, lfs=pm?7:9.5, sw=pm?10:14, shh=pm?5:7;   // im PDF kleiner (die Grafik wird dort gestreckt)
-        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(_nw?0.57:0.55) + 10; }); }
+        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(l.length<8?0.57:0.55) + 10; }); }
     }
   }
   // y gridlines
