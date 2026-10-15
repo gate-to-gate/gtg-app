@@ -1197,6 +1197,7 @@ table.hmp .g b{font-size:6.5px}
   #secCard{flex:0 0 auto;padding:5px 10px 6px}
   #secCard h2{font-size:12.5px}
   #secCard .c-head .c-sub{display:none!important}
+  #secCard .sec-readhelp{font-size:9.6px;line-height:1.45;color:var(--ink2);margin-top:2px}
   #secRow{display:flex;align-items:center;justify-content:center;gap:8mm}
   .sec-info{flex:1 1 0;max-width:70mm;font-size:9.6px;line-height:1.45;color:var(--ink2)}
   .sec-info .si-h{font-weight:800;font-size:10.5px;color:#14181f;margin-bottom:2px}
@@ -3033,7 +3034,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151022';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151028';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3794,14 +3795,10 @@ function render(){
 
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
-          <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div></div></div>
+          <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div>
+          <div class="print-only sec-readhelp">Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).</div></div></div>
         <div id="secRow">
           <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
-          <div class="print-only sec-info sec-info-r">
-            <div class="si-h">Abschnitte lesen</div>
-            <div>Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen.</div>
-            <div>Farbe = Athlet (gleich wie in der Hauptgrafik).</div>
-          </div>
         </div>
       </div>
 
@@ -6501,14 +6498,14 @@ function gtgUpdateCard(id, title, text, btnLabel, onClick){
   c.querySelector('.uc-x').onclick=()=>{ c.classList.add('out'); setTimeout(()=>c.remove(),220); };
   document.body.appendChild(c); requestAnimationFrame(()=>c.classList.add('in')); return {card:c, btn:go}; }
 function showUpdateBanner(ver, notes){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
-  gtgUpdateCard('updateBanner','Update verfügbar', updShortNotes(notes)||'Neue Funktionen und Verbesserungen sind bereit.', 'Jetzt aktualisieren', (btn,ev)=>{
+  gtgUpdateCard('updateBanner','Update verfügbar', 'Eine neue Version ist verfügbar. Bitte jetzt aktualisieren.', 'Jetzt aktualisieren', (btn,ev)=>{
     try{ const r=btn.getBoundingClientRect(); gtgConfetti(r.left+r.width/2, r.top+r.height/2); }catch(_){ try{gtgConfetti();}catch(__){} }
     btn.disabled=true; btn.textContent='Wird geladen …';
     setTimeout(()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ try{location.reload();}catch(_){} } }, 900); }); }
 function checkForUpdate(){
   if(/BUILDVER/.test(WEB_BUILD)) return;   // ungebaute Dev-Version -> nicht prüfen
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=> r.ok?r.json():null).then(j=>{
-    if(j && j.webVersion && j.webVersion!==WEB_BUILD) showUpdateBanner(j.webVersion, j.notes);
+    if(j && j.webVersion && j.webVersion!==WEB_BUILD) showUpdateBanner(j.webVersion, j.webNotes);
   }).catch(()=>{});
 }
 function initUpdateCheck(){
@@ -8855,7 +8852,7 @@ if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.dis
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
 function showDesktopUpdateBanner(cur, latest, url, notes){
   if(document.getElementById('updBanner')) return;
-  gtgUpdateCard('updBanner', `Update verfügbar · v${latest}`, updShortNotes(notes)||`Du nutzt v${cur}. Neue Funktionen und Verbesserungen sind bereit.`, 'Jetzt aktualisieren', (dl)=>{
+  gtgUpdateCard('updBanner', `Update verfügbar · v${latest}`, `Eine neue Version ist verfügbar (du nutzt v${cur}). Bitte jetzt aktualisieren.`, 'Jetzt aktualisieren', (dl)=>{
     const dk=GD();
     if(dk && typeof dk.downloadUpdate==='function'){
       dl.disabled=true; dl.textContent='Lädt …';
