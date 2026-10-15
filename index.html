@@ -1190,20 +1190,20 @@ table.hmp .g b{font-size:6.5px}
   .note{display:none!important}   /* Figuren-Note unten weg -> keine 3. Seite (steht oben im Hero-Kopf) */
   #heroCard .fig-leg-print{font-size:8.3px;color:var(--muted);margin:1px 0 0;line-height:1.3}
   #heroCard .hero-readhelp{flex:0 0 auto;display:flex!important;flex-wrap:wrap;align-items:center;gap:3px 10px;font-size:8.3px;line-height:1.35;color:var(--ink2);margin-top:4px;border-top:1px solid var(--line);padding-top:3px}
-  #heroCard .hero-readhelp .si-h{color:var(--red);font-weight:800}
+  #heroCard .hero-readhelp .si-h{color:#14181f;font-weight:800}
   #heroCard .hero-readhelp .si-row{display:inline-flex;align-items:center;gap:5px}
   #heroCard .hero-readhelp .si-dot{width:12px;height:5px;border-radius:2px;display:inline-block;flex:0 0 auto}
   /* «Zeitverlust nach Abschnitt»: unten am Rand; Chart mittig (Verhältnis 1:2), Legende links & rechts */
   #secCard{flex:0 0 auto;padding:5px 10px 6px}
-  #secCard h2{font-size:11px}
+  #secCard h2{font-size:12.5px}
   #secCard .c-head .c-sub{display:none!important}
   #secRow{display:flex;align-items:center;justify-content:center;gap:8mm}
-  .sec-info{flex:1 1 0;max-width:64mm;font-size:8.6px;line-height:1.42;color:var(--ink2)}
-  .sec-info .si-h{font-weight:800;font-size:9.5px;color:var(--red);margin-bottom:2px}
+  .sec-info{flex:1 1 0;max-width:70mm;font-size:9.6px;line-height:1.45;color:var(--ink2)}
+  .sec-info .si-h{font-weight:800;font-size:10.5px;color:#14181f;margin-bottom:2px}
   .sec-info .si-row{display:flex;align-items:center;gap:5px;margin-top:3px}
   .sec-info .si-dot{width:12px;height:5px;border-radius:2px;display:inline-block;flex:0 0 auto}
-  #secCard .chart-shell{flex:0 0 auto;width:96mm!important;max-width:96mm!important;height:48mm;margin:0!important}
-  #secCard svg.chart{max-height:48mm;width:100%;height:auto;display:block;margin:0 auto}
+  #secCard .chart-shell{flex:0 0 auto;width:112mm!important;max-width:112mm!important;height:56mm;margin:0!important}
+  #secCard svg.chart{max-height:56mm;width:100%;height:auto;display:block;margin:0 auto}
 
   /* ===== SEITE 2: Detail-Matrix (Δ pro Tor, nicht kumuliert) – Hochformat ===== */
   /* Seite 2 Hochformat: Breite explizit auf A4-Hochformat (210mm − 2×9mm Rand) fixieren,
@@ -1764,6 +1764,20 @@ body.dark .btn-mini.coach-msg{background:#22303f;color:#8fc0ee;border-color:#355
 body.dark .upd-card .uc-go{background:#e7ebf1;color:#1c2430}
 @media(max-width:600px){ .upd-card{right:12px;left:12px;bottom:14px;width:auto} }
 @media print{ .upd-card{display:none!important} }
+/* Hauptgrafik: Athleten-Legende rechtsbündig oben (neben dem Titel) */
+#heroCard .hero-head{align-items:flex-start;gap:18px;margin-bottom:6px}
+#heroCard .hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 1 auto;max-width:62%}
+#heroCard .hero-right .legend{justify-content:flex-end;gap:6px 14px}
+@media(max-width:600px){
+  #heroCard .hero-head{flex-wrap:wrap}
+  #heroCard .hero-right{max-width:100%;width:100%;align-items:flex-start}
+  #heroCard .hero-right .legend{justify-content:flex-start}
+}
+@media print{
+  #heroCard .hero-head{flex-wrap:nowrap;margin-bottom:2px}
+  #heroCard .hero-right{max-width:68%}
+  #heroCard .hero-right .legend{margin:0!important}
+}
 </style>
 </head>
 <body>
@@ -3019,7 +3033,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151014';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151022';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3755,17 +3769,19 @@ function render(){
     ${kpiHTML()}
     <div class="grid">
       <div class="card" id="heroCard">
-        <div class="c-head">
+        <div class="c-head hero-head">
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
             <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div>
             <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).</div></div>
-          <div class="hero-ctrls no-print">
-            <label class="toggle" title="Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.">
-              <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
-              <span class="tg-txt">Kurve glätten</span></label>
+          <div class="hero-right">
+            <div class="hero-ctrls no-print">
+              <label class="toggle" title="Optische Glättung der Kurve (gleitender Mittelwert über 3 Tore). Werte bleiben unverändert.">
+                <input type="checkbox" id="tgSmooth" ${S.heroSmooth?'checked':''}><span class="sw"></span>
+                <span class="tg-txt">Kurve glätten</span></label>
+            </div>
+            <div id="legend" class="legend"></div>
           </div>
         </div>
-        <div id="legend" class="legend" style="margin-bottom:10px"></div>
         <div class="chart-shell" id="heroShell"></div>
         <div id="heroNote" class="hero-note" style="display:none"></div>
         <div id="figstrip" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
@@ -3931,7 +3947,8 @@ function drawHero(){
       svg+=`<path class="hProf" d="M${top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L')}" fill="none" stroke="${T.dark?'#7d8898':'#9aa1ab'}" stroke-width="1.3"/>`;
       // Legende Steilheit (unten links, neben «Tor-Nr.»)
       { const lab = _nw ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
-        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="14" height="7" rx="2" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+18}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+= 22 + l.length*(_nw?5.4:5.2) + 10; }); }
+        const pm=!!S.printMode, lfs=pm?7:9.5, sw=pm?10:14, shh=pm?5:7;   // im PDF kleiner (die Grafik wird dort gestreckt)
+        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(_nw?0.57:0.55) + 10; }); }
     }
   }
   // y gridlines
@@ -3940,18 +3957,18 @@ function drawHero(){
   for(let k=kStart;k<=kEnd;k++){ const t=Math.round(k*tStep*100)/100;
     const isZero=Math.abs(t)<1e-9, major=Math.abs(t*2-Math.round(t*2))<1e-9; // Vielfaches von 0.5
     if(!isZero) svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${major?T.grid:T.grid2}" stroke-width="1" opacity="${major?.9:.55}"/>`;
-    svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="11" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
+    svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="${S.printMode?9.5:11}" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
   // klare 0-/Bestzeit-Linie (Referenz) – ruhig, aber deutlich; die goldene Bestzeit-Linie liegt darüber
   svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(0)}" y2="${y(0)}" stroke="${T.zero}" stroke-width="1.4" opacity=".9"/>`;
   svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
-  svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
+  svg+=`<text x="15" y="${mt+ih/2}" font-size="${S.printMode?9.5:11}" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
   // x axis ticks: bis 10 Tore jedes Tor, ab 10 jedes 5. (plus erstes & letztes)
   for(let t=1;t<=NP;t++){ let show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
     if(show && t!==NP && t!==1 && NP>10 && (x(NP)-x(t))<(_nw?30:15)) show=false;   // «50» klebt sonst an «51»
     if(!show) continue;
     svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}" opacity=".5"/>`;
-    svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${t}</text>`; }
-  svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${T.txt}">Tor-Nr.</text>`;
+    svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="${S.printMode?9.5:11}" fill="${T.txt2}">${t}</text>`; }
+  svg+=`<text x="${ml+iw/2}" y="${H-6}" text-anchor="middle" font-size="${S.printMode?9.5:11}" fill="${T.txt}">Tor-Nr.</text>`;
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
   const figByGate={}; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; (figByGate[f.gate]=figByGate[f.gate]||[]).push(f); });
