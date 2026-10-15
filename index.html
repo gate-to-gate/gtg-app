@@ -1721,6 +1721,33 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
   .clip-speed .clip-sbsbtn .sbs-txt{display:none}          /* Handy: Side-by-Side nur als Symbol */
   .clip-speed .clip-sbsbtn{padding:0 10px;gap:0}
 }
+/* Steilheit in der Matrix (gleiche Stufen wie Höhenprofil) */
+table.hm .gate-c.st0,#hmPrint table.hmp td.g.st0{box-shadow:inset 5px 0 0 #e4e6ea}
+table.hm .gate-c.st1,#hmPrint table.hmp td.g.st1{box-shadow:inset 5px 0 0 #c4c9d0}
+table.hm .gate-c.st2,#hmPrint table.hmp td.g.st2{box-shadow:inset 5px 0 0 #8f97a2}
+.hm-stlegend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:11.5px;color:var(--muted);margin:8px 0 0}
+.hm-sw{display:inline-block;width:14px;height:9px;border-radius:2px;margin-left:6px}
+.hm-sw:first-child{margin-left:0}
+.hm-sw.st0{background:#e4e6ea}.hm-sw.st1{background:#c4c9d0}.hm-sw.st2{background:#8f97a2}
+.hm-stnote{opacity:.8}
+body.dark table.hm .gate-c.st0{box-shadow:inset 5px 0 0 #3a4350}
+body.dark table.hm .gate-c.st1{box-shadow:inset 5px 0 0 #59626f}
+body.dark table.hm .gate-c.st2{box-shadow:inset 5px 0 0 #8a94a2}
+@media(max-width:600px){ .hm-stnote{display:none} }
+@media print{ .hm-stlegend{display:none!important} #hmPrint table.hmp td.g{padding-left:7px} }
+/* Tastenkürzel-Übersicht */
+.kh-help{flex:none;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink2);font:inherit;font-size:11px;font-weight:800;cursor:pointer;line-height:1;padding:0}
+.kh-help:hover{background:#2b3440;color:#fff;border-color:#2b3440}
+.kh-modal{position:fixed;inset:0;z-index:9000;background:rgba(20,24,31,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.kh-box{background:var(--card);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:520px;padding:18px 22px 20px;max-height:90vh;overflow:auto}
+.kh-head{display:flex;align-items:center;justify-content:space-between;font-size:16px;color:var(--ink);margin-bottom:6px}
+.kh-x{border:none;background:none;font-size:18px;color:var(--muted);cursor:pointer}
+.kh-sec{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.kh-row{display:flex;justify-content:space-between;gap:14px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
+.kh-row:last-of-type{border-bottom:none}
+.kh-row>span:first-child{white-space:nowrap}
+kbd{display:inline-block;min-width:18px;text-align:center;font:600 12px/1.6 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;color:var(--ink)}
+.kh-tip{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5;background:var(--bg);border-radius:10px;padding:9px 11px}
 </style>
 </head>
 <body>
@@ -1968,6 +1995,7 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
             <button class="tag-btn" id="btnTag" title="Tor taggen (Enter)">＋ Tor taggen</button>
           </div>
           <div class="kbd-hint">
+            <button type="button" class="kh-help" id="khHelpBtn" title="Alle Tastenkürzel anzeigen (?)">?</button>
             <div class="kh-title">Shortcuts</div>
             <div class="kh-grid">
               <span><b>y</b><b>x</b> 1 Frame</span>
@@ -2586,6 +2614,25 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
 </div>
 
 <!-- ===================== WILLKOMMEN (Erststart) ===================== -->
+<div id="khModal" class="kh-modal no-print" style="display:none" role="dialog" aria-label="Tastenkürzel">
+  <div class="kh-box">
+    <div class="kh-head"><b>Tastenkürzel beim Taggen</b><button type="button" id="khClose" class="kh-x" title="Schliessen (Esc)">✕</button></div>
+    <div class="kh-sec">Video</div>
+    <div class="kh-row"><span><kbd>Leertaste</kbd></span><span>Abspielen / Pause</span></div>
+    <div class="kh-row"><span><kbd>y</kbd> <kbd>x</kbd></span><span>1 Bild zurück / vor</span></div>
+    <div class="kh-row"><span><kbd>a</kbd> <kbd>s</kbd></span><span>10 Bilder zurück / vor</span></div>
+    <div class="kh-row"><span><kbd>Mausrad</kbd></span><span>Im Video vor- und zurückspulen</span></div>
+    <div class="kh-row"><span><kbd>l</kbd></span><span>Zeitlupe ein/aus</span></div>
+    <div class="kh-row"><span><kbd>z</kbd></span><span>Lupe (Ausschnitt vergrössern)</span></div>
+    <div class="kh-sec">Tags</div>
+    <div class="kh-row"><span><kbd>Enter</kbd></span><span>Tor taggen (am aktuellen Bild)</span></div>
+    <div class="kh-row"><span><kbd>⌫</kbd></span><span>Letzten Tag löschen</span></div>
+    <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd></span><span>Rückgängig</span></div>
+    <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>Z</kbd> · <kbd>Ctrl</kbd> + <kbd>Y</kbd></span><span>Wiederholen</span></div>
+    <div class="kh-row"><span><kbd>?</kbd></span><span>Diese Übersicht öffnen / schliessen</span></div>
+    <div class="kh-tip">Tipp: Erster Tag = Tor 1 (Referenz). Tags lassen sich in der Liste rechts anklicken, verschieben oder mit ⚑ als «unsicher» markieren.</div>
+  </div>
+</div>
 <div id="welcome" class="wc-overlay" style="display:none">
   <div class="wc-card">
     <div class="wc-brand">
@@ -2956,7 +3003,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150918';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150938';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3846,7 +3893,7 @@ function drawHero(){
   const _course = (typeof curCourse==='function')? curCourse() : null;
   if(_course && _course.gates){ const gts=_course.gates.filter(z=>z.type!=='Finish'); const m=Math.min(n,gts.length);
     for(let i=0;i<m;i++){ if(gts[i]&&gts[i].pitch!=null) pitchByGate[i+1]=gts[i].pitch; }
-    if(m>=3){
+    if(m>=3){ const gts=_course.gates.slice(0,NP), m=gts.length;   // Profil inkl. Ziel -> reicht bis zum letzten Tor
       // Pitch je Segment (fehlende -> Mittelwert)
       const pit=[]; for(let i=0;i<m;i++){ pit[i]=(gts[i]&&gts[i].pitch!=null)?Math.max(0,gts[i].pitch):null; }
       const known=pit.filter(v=>v!=null); const mean=known.length? known.reduce((a,b)=>a+b,0)/known.length : 25;
@@ -3869,7 +3916,6 @@ function drawHero(){
       // Legende Steilheit (unten links, neben «Tor-Nr.»)
       { const lab = _nw ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
         let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="14" height="7" rx="2" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+18}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+= 22 + l.length*(_nw?5.4:5.2) + 10; }); }
-      svg+=`<text x="${(ml+iw/2).toFixed(1)}" y="${(mt+ih-7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" letter-spacing=".05em" fill="${T.prof}" opacity=".6">HÖHENPROFIL</text>`;
     }
   }
   // y gridlines
@@ -4004,7 +4050,8 @@ function drawSector(){
   const key=S.excludeAnom?'cleanDiff':'diff';
   const data = sui.map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
   const _nw=!S.printMode && gtgNarrow('#secShell');
-  const W=_nw?440:620,H=_nw?340:320, ml=42,mr=12,mt=20,mb=52, iw=W-ml-mr, ih=H-mt-mb;
+  const STS=hmSteepOf(), hasSt=Object.keys(STS).length>0;   // Steilheit je Tor (gleiche Stufen wie Höhenprofil/Matrix)
+  const W=_nw?440:620,H=(_nw?340:320)+(hasSt?14:0), ml=42,mr=12,mt=20,mb=52+(hasSt?14:0), iw=W-ml-mr, ih=H-mt-mb;
   let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v)));
   let vmax=Math.max(0.05,...all), vmin=Math.min(0,...all);
   const range=(vmax-vmin)||0.1; vmin-=range*0.06; vmax+=range*0.34;   // Kopfraum für Namens-Labels
@@ -4036,7 +4083,18 @@ function drawSector(){
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
     svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="${T.txt2}">Tor ${a+1}–${b+1}</text>`;
+    if(hasSt){ // Anteil flach / mittel / steil im Abschnitt als kleiner Balken
+      const cnt={st0:0,st1:0,st2:0}; let tot=0; for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ cnt[q.k]++; tot++; } }
+      if(tot){ const bwS=Math.min(gw*0.62, 92), bx0=cx-bwS/2, by=H-mb+39; let xx=bx0;
+        const col=T.dark?{st0:'#3a4350',st1:'#59626f',st2:'#8a94a2'}:{st0:'#e4e6ea',st1:'#c4c9d0',st2:'#8f97a2'};
+        const pc=k=>Math.round(cnt[k]/tot*100);
+        svg+=`<g><title>flach ${pc('st0')} % · mittel ${pc('st1')} % · steil ${pc('st2')} %</title>`;
+        ['st0','st1','st2'].forEach(k=>{ const w=bwS*cnt[k]/tot; if(w>0){ svg+=`<rect x="${xx.toFixed(1)}" y="${by}" width="${w.toFixed(1)}" height="6" fill="${col[k]}"/>`; xx+=w; } });
+        svg+=`<rect x="${bx0.toFixed(1)}" y="${by}" width="${bwS.toFixed(1)}" height="6" rx="2" fill="none" stroke="${T.dark?'#4a5563':'#c9cdd3'}" stroke-width=".6"/></g>`; } }
   });
+  if(hasSt){ const ly=H-6; let lx=ml; const col=T.dark?['#3a4350','#59626f','#8a94a2']:['#e4e6ea','#c4c9d0','#8f97a2'];
+    ['flach','mittel','steil'].forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="12" height="6" rx="1.5" fill="${col[k]}"/><text x="${lx+16}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+=16+l.length*5.6+12; });
+    svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">· Steilheit im Abschnitt</text>`; }
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
     tt.innerHTML=`<div class="tt-h">${r.dataset.s.split(' ')[0]} · Tor ${r.dataset.sec}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
@@ -4050,8 +4108,12 @@ function drawSector(){
 /* ---------- sui summary cards ---------- */
 
 /* ---------- heatmap ---------- */
+// Steilheit je Tor (Kurssetzung, % -> Grad) für die Matrix: Tor t -> {cls, deg}
+function hmSteepOf(){ const out={}; try{ const cs=(typeof curCourse==='function')?curCourse():null; if(!cs||!cs.gates) return out;
+    cs.gates.forEach((g,i)=>{ if(g&&g.pitch!=null){ const d=Math.atan(Math.max(0,g.pitch)/100)*180/Math.PI; out[i+1]={d, k: d<13.5?'st0':(d<=18.9?'st1':'st2')}; } }); }catch(e){} return out; }
+const HM_STEEP_LBL={st0:'flach',st1:'mittel',st2:'steil'};
 function drawHeatmap(mode){
-  const c=S.comp, n=c.n; const cols=[c.top, ...c.skiers.filter(s=>!s.isTop)];
+  const c=S.comp, n=c.n; const cols=[c.top, ...c.skiers.filter(s=>!s.isTop)]; const STP=hmSteepOf();
   const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
   const isPair=(s,i)=> !!(s.pair && s.pair[i]>=0);
   let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(s.anom[i]||isPair(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); }));
@@ -4069,7 +4131,8 @@ function drawHeatmap(mode){
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
     const fgc=fg?(FIG[fg.type]?FIG[fg.type].c:'#888'):'';
-    h+=`<tr><td class="gate-c${fg?' has-fig':''}"${fg?` style="--figc:${fgc}" title="${fg.label}"`:''}><div class="gate-in">${fg?`<span class="fig-row" style="background:${fgc}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
+    const sp=STP[i+2]; const stTip=sp?`${HM_STEEP_LBL[sp.k]} ${sp.d.toFixed(1)}°`:'';
+    h+=`<tr><td class="gate-c${fg?' has-fig':''}${sp?' '+sp.k:''}"${fg?` style="--figc:${fgc}"`:''}${(fg||sp)?` title="${[fg&&fg.label,stTip].filter(Boolean).join(' · ')}"`:''}><div class="gate-in">${fg?`<span class="fig-row" style="background:${fgc}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
     cols.forEach(s=>{ const d=s.diff[i], anom=s.anom[i]; const da=`data-ath="${encodeURIComponent(s.name)}" data-g="${i+1}"`;
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
         h+=`<td class="hm-cell${s.isTop?' hm-top':''}" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
@@ -4079,6 +4142,7 @@ function drawHeatmap(mode){
     });
     h+=`</tr>`; }
   h+=`</tbody></table></div>`;
+  if(Object.keys(STP).length) h+=`<div class="hm-stlegend"><span class="hm-sw st0"></span>flach &lt; 13.5°<span class="hm-sw st1"></span>mittel 13.5–18.9°<span class="hm-sw st2"></span>steil &gt; 18.9°<span class="hm-stnote">· Streifen links neben der Tor-Nummer</span></div>`;
   if(nAdj && mode!=='cum') h+=`<div class="hm-note">Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.</div>`;
   $('#hmWrap').innerHTML=h;
   // Klick auf eine Zelle -> Video dieses Athleten an dieses Tor (springt zum Videobereich)
@@ -4090,7 +4154,7 @@ function drawHeatmap(mode){
 /* ---------- print-only matrix: in Spalten aufgeteilt, passt auf eine Seite ---------- */
 function heatmapPrint(){
   const el=$('#hmPrint'); if(!el) return;
-  const c=S.comp, n=c.n, cols=c.skiers.filter(s=>!s.isTop); const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
+  const c=S.comp, n=c.n, cols=c.skiers.filter(s=>!s.isTop); const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f); const STPp=hmSteepOf();
   const isAdj=(s,i)=> !!(s.anom[i] || (s.pair && s.pair[i]>=0));
   let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(isAdj(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); })); max=max||0.3;
   const colorOf=d=>{ if(d==null) return '#fff'; const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
@@ -4122,7 +4186,7 @@ function heatmapPrint(){
       cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`; t+=`<td style="background:#f6f8fa;color:#8b95a3">Ref</td><td class="cum" style="color:#555">0.00</td>`; });
       t+=`</tr>`; }
     for(let i=start;i<end;i++){ const fg=figByGate[i+1];
-      t+=`<tr><td class="g">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+2}</td>`;
+      { const sp=STPp[i+2]; t+=`<tr><td class="g${sp?' '+sp.k:''}">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+2}</td>`; }
       cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`;
         const d=s.diff[i], cu=cumCol(s)[i];
         const cc = cu==null?'':(cu<-0.001?'#1a8f5a':'#555');
@@ -5868,7 +5932,7 @@ function advanceQueue(){ if(KIDX < KQUEUE.length-1){ KIDX++; processNextCourse()
 function initKurs(){
   vdbAll('courses').then(list=>{ (list||[]).forEach(c=>COURSES[c.id]=c); return seedHostedCourses(); }).then(()=>{
     renderCourseList(); fillKScope();
-    if(S.comp){ try{ drawHero(); if(typeof updateTerrainBand==='function') updateTerrainBand(); }catch(e){} }   // Höhenprofil/Terrain nach dem (asynchronen) Laden der Kurse nachzeichnen
+    if(S.comp){ try{ drawHero(); if(typeof updateTerrainBand==='function') updateTerrainBand(); }catch(e){} try{ const hm=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(hm?hm.dataset.m:'diff'); }catch(e){} try{ drawSector(); }catch(e){} }   // Steilheit in Matrix & Abschnitten nach dem Laden der Kurse   // Höhenprofil/Terrain nach dem (asynchronen) Laden der Kurse nachzeichnen
     if(typeof renderKursAnalysis==='function'){ try{ renderKursAnalysis(); }catch(e){} }
     if(typeof renderDatenbank==='function' && S.view==='datenbank'){ try{ renderDatenbank(); }catch(e){} } });
   const today=new Date().toISOString().slice(0,10); if($('#kDate')) $('#kDate').value=today;
@@ -6049,10 +6113,15 @@ function initTagging(){
     else if(k==='l'){ e.preventDefault(); toggleSlow(); }     // Zeitlupe
     else if(e.key==='Enter'){ e.preventDefault(); addTag(); }
     else if(e.key==='Backspace'){ e.preventDefault(); if(TG.tags.length) delTag(TG.tags.length-1); }
+    else if(e.key==='?'){ e.preventDefault(); khToggle(); }
   });
+  { const hb=$('#khHelpBtn'); if(hb) hb.onclick=()=>khToggle(true); const kx=$('#khClose'); if(kx) kx.onclick=()=>khToggle(false);
+    const km=$('#khModal'); if(km) km.addEventListener('click',e=>{ if(e.target.id==='khModal') khToggle(false); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#khModal'); if(m&&m.style.display!=='none') khToggle(false); } }); }
   renderTags(); tgResetHistory();
 }
 
+function khToggle(on){ const m=$('#khModal'); if(!m) return; const show = on==null ? m.style.display==='none' : !!on; m.style.display= show?'flex':'none'; }
 /* Venue-Namen vereinheitlichen (Schreibvarianten zusammenführen) */
 // Umlaut-toleranter Schlüssel: ö/oe, ü/ue, ä/ae, ß/ss gelten als gleich (auch é→e etc.)
 function venueFold(v){ return String(v||'').toLowerCase()
@@ -7945,7 +8014,8 @@ function enterCoach(bundle){
         const p2=x=>String(x).padStart(2,'0');
         cs.innerHTML=`Stand ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())} · ${(bundle.runs||[]).length===1?'1 Lauf':(bundle.runs||[]).length+' Läufe'}`; cs.style.display=''; }
       else cs.style.display='none'; } }catch(e){}
-  const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode='comp'; DATA.push(r.ev); } });
+  const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode='comp'; DATA.push(r.ev); }
+    if(r.course && r.course.id && !COURSES[r.course.id]) COURSES[r.course.id]={...r.course, savedAt:0, _coach:true}; });   // Kurssetzung aus dem Coach-Link
   const first=runs[0]; if(!first||!first.ev) return;
   S.mode='comp'; S.discAll=false; S.disc=first.ev.discipline; S.gen=first.ev.gender;
   const ev0=first.ev, evSel=$('#selEvt'), runSel=$('#selRun');
@@ -8141,7 +8211,11 @@ async function coachCreate(){
       vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
       done++;
     }
-    runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout });
+    // Kurssetzung mitgeben (Höhenprofil, Steilheit, Figuren) – sonst fehlt sie auf den Geräten der Coaches
+    let course=null; try{ const cs=findCourseByRace(`${ev.date}|${ev.discipline}|${ev.gender}|${ev.run}`);
+      if(cs && Array.isArray(cs.gates)) course={ id:cs.id, date:cs.date, venue:cs.venue, disc:cs.disc, gen:cs.gen, run:cs.run,
+        gates:cs.gates.map(g=>({no:g.no, type:g.type, dist:g.dist, offset:g.offset, pitch:g.pitch, angle:g.angle, fig:g.fig||''})) }; }catch(e){}
+    runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout, course });
   }
   const bundle={ key:evKeySafe, date, venue, gender, title:`${venue} · ${dmy(date)}`, runs, created: Date.now() };
   cmProg('Lade Analyse-Daten…');
@@ -8217,7 +8291,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Tastenkürzel beim Taggen":"Keyboard shortcuts for tagging","Abspielen / Pause":"Play / pause","1 Bild zurück / vor":"1 frame back / forward","10 Bilder zurück / vor":"10 frames back / forward","Im Video vor- und zurückspulen":"Scrub through the video","Zeitlupe ein/aus":"Slow motion on/off","Lupe (Ausschnitt vergrössern)":"Magnifier (zoom into detail)","Tor taggen (am aktuellen Bild)":"Tag gate (at current frame)","Letzten Tag löschen":"Delete last tag","Wiederholen":"Redo","Diese Übersicht öffnen / schliessen":"Open / close this overview","Alle Tastenkürzel anzeigen (?)":"Show all shortcuts (?)","Leertaste":"Space","Mausrad":"Mouse wheel","flach":"flat","mittel":"medium","steil":"steep","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
@@ -8787,6 +8861,8 @@ window.addEventListener('afterprint',()=>{ S._printDepth=Math.max(0,(S._printDep
   const wasDark=!!S._darkPrint; if(wasDark){ document.body.classList.add('dark'); S._darkPrint=false; gtgRecolor(); }
   S.printMode=false; if(S._smoothPrev!==undefined){ S.heroSmooth=S._smoothPrev; }
   if(wasDark) gtgRedrawAnalyse(); else { try{drawHero();}catch(e){} } });
+// Offline-Zwischenspeicher (nur auf der Webseite, nicht in der Desktop-App): Seite + Coach-Daten bleiben im Funkloch verfügbar
+try{ if('serviceWorker' in navigator && location.protocol==='https:' && !(typeof GD==='function' && GD())) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 const coachMode = initCoach();   // ?coach=<key> -> gesperrte Coach-Ansicht
 if(!coachMode){ buildFilters(); switchView(startView); }   // sonst normaler Start
 
