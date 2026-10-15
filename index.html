@@ -1672,6 +1672,16 @@ body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .cli
 .db-clold{color:#b26a00;font-weight:800;font-size:11px;white-space:nowrap}
 body.dark .btn-mini.cl-upd{background:#3d3220;color:#f3c77a;border-color:#6b5428}
 body.dark .db-clold{color:#f3c77a}
+/* Coach-Link: Lauf-Wähler dezent, solange nur ein Lauf vorhanden ist */
+body.coach .coach-run.cr-hidden{display:none!important}
+.coach-run.cr-single{border:1px solid var(--line);box-shadow:none;background:var(--bg);cursor:default}
+.coach-run.cr-single select{pointer-events:none;cursor:default;color:var(--ink2);opacity:1}
+.coach-run.cr-single .cr-car{display:none}
+.coach-run.cr-single .cr-lab{color:var(--muted)}
+.coach-run.cr-single .cr-count{background:#e3e7ec;color:var(--muted)}
+body.dark .coach-run.cr-single{background:#252d38;border-color:#3a4452}
+body.dark .coach-run.cr-single .cr-count{background:#3a4452;color:#aab3bf}
+body.coach .coach-run.cr-single{box-shadow:none!important}
 </style>
 </head>
 <body>
@@ -2906,7 +2916,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150636';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150638';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7843,7 +7853,7 @@ function coachDeadBox(state){ const main=$('#main'); if(!main) return;
     ? '<b>Dieser Coach-Link wurde deaktiviert.</b><br>Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.'
     : '<b>Coach-Link nicht gefunden.</b><br>Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.';
   main.innerHTML='<div class="card">'+emptyBox(t,'info')+'</div>';
-  try{ const cw=$('#coachRunWrap'); if(cw) cw.style.display='none'; const pb=$('#pdfBtn'); if(pb) pb.style.display='none'; }catch(e){} }
+  try{ const cw=$('#coachRunWrap'); if(cw) cw.classList.add('cr-hidden'); const pb=$('#pdfBtn'); if(pb) pb.style.display='none'; }catch(e){} }
 function coachLoadBundle(key, attempt){
   coachFetchBundle(key).then(async b=>{
     if(b){ enterCoach(b); return; }
@@ -7868,6 +7878,8 @@ function enterCoach(bundle){
   const cr=$('#coachRun'); if(cr){ cr.innerHTML=runOpts; cr.value=first.run; cr.onchange=()=>{ if(runSel){ runSel.value=cr.value; } loadEvent(); }; }
   if($('#coachRunCount')) $('#coachRunCount').textContent = runs.length===1 ? '1 Lauf' : runs.length+' Läufe';
   if($('#coachRunWrap')) $('#coachRunWrap').style.display = runs.length>=1 ? '' : 'none';   // Anzahl Läufe direkt sichtbar
+  { const cw=$('#coachRunWrap'), one=runs.length<=1; if(cw){ cw.classList.toggle('cr-single', one); cw.title = one ? 'Bisher nur ein Lauf verfügbar' : 'Lauf wählen'; }
+    if(cr) cr.disabled=one; }   // nur 1 Lauf: dezent & nicht klickbar; ab 2 Läufen auffällig
   try{ document.title=`Coach · ${ev0.venue} ${dmy(ev0.date)} · ${ev0.gender==='M'?'Männer':'Frauen'}`; }catch(e){}
   S.anaSub='analyse';   // Coach-Link zeigt immer die Lauf-Analyse (nicht die gemerkte Verlauf-/Profil-Unteransicht)
   switchView('analyse'); loadEvent();
