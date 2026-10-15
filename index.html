@@ -1122,6 +1122,8 @@ table.hmp .g b{font-size:6.5px}
 #printHead .ph-meta{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
 #printHead .ph-right{text-align:right}
 #printHead .ph-brand{font-size:13px;font-weight:800;color:var(--red);letter-spacing:.08em}
+#printHead .ph-brand{line-height:0}
+#printHead .ph-ss{height:22px;width:95px;display:inline-block;overflow:visible}
 #printHead .ph-date{font-size:10.5px;color:var(--muted);margin-top:2px}
 
 @media print{
@@ -1135,12 +1137,14 @@ table.hmp .g b{font-size:6.5px}
   .print-only{display:block!important}
   #gtgToast,.modal-backdrop,#tour,#welcome,.upd-bar{display:none!important}
   body.dark{--ink:#14181f;--ink2:#3a4350;--muted:#6b7785;--line:#e6e9ee;--bg:#f4f6f9;--card:#ffffff;--good-l:#e4f5ee;--bad-l:#fdecea;--top:#9aa3af}   /* Rückfall, falls «beforeprint» nicht greift */
-  #printHead{display:flex!important;border-bottom:2px solid var(--red);padding-bottom:5px;margin-bottom:8px}
+  #printHead{display:flex!important;border-bottom:1px solid rgba(218,41,28,.35);padding-bottom:6px;margin-bottom:8px}   /* dezente Linie */
   #printHead .ph-logo{width:24px;height:24px}
   #printHead .ph-left{gap:9px}
   #printHead .ph-title{font-size:14px}
   #printHead .ph-meta{font-size:10px;margin-top:0}
   #printHead .ph-brand{font-size:11px}
+  #printHead .ph-ss{height:16px;width:69px}
+  #printHead .ph-date{margin-top:3px}
   #printHead .ph-date{font-size:9px;margin-top:0}
   .grid{gap:8px}
   .card{box-shadow:none!important;border:none!important;break-inside:avoid;page-break-inside:avoid}   /* keine Rahmenlinien um die Grafiken im PDF */
@@ -1217,8 +1221,9 @@ table.hmp .g b{font-size:6.5px}
   #hmPrint[data-cols="1"] table.hmp .g b{font-size:calc(var(--hmpfs,9px) - 0.5px)}
   #hmPrint[data-cols="1"] table.hmp th:not(.g):not(.sp),#hmPrint[data-cols="1"] table.hmp td:not(.g):not(.sp){width:auto}
   #hmPrint .hmp-legend{margin:7mm auto 0;max-width:150mm;font-size:9px;color:#444;line-height:1.5}
-  #hmPrint .hmp-legend>div{margin:2px 0}
-  #hmPrint .hmp-legend .hl-k{display:inline-block;min-width:74px;font-weight:800;color:#1c2430}
+  #hmPrint .hmp-legend{background:#f6f8fa;border-radius:8px;padding:8px 12px}
+  #hmPrint .hmp-legend>div{margin:3px 0;position:relative;padding-left:92px}   /* Begriff links, Erklärung sauber eingerückt */
+  #hmPrint .hmp-legend .hl-k{position:absolute;left:0;top:0;width:86px;font-weight:800;color:#1c2430}
   table.hmp td{outline:none!important}   /* keine Anomalie-Markierung im PDF */
   .note{margin-top:8px;font-size:9px}
 }
@@ -1666,6 +1671,11 @@ body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .cli
   table.hm .gate-in{justify-content:center}
   table.hm .gate-c.has-fig .g-num{background:var(--figc);color:#fff;border-radius:5px;padding:1px 4px;min-width:16px;text-align:center}
 }
+.btn-mini.cl-upd{background:#fff4e0;color:#9a5b00;border-color:#f0c77a;font-weight:800}
+.btn-mini.cl-upd:hover{background:#ffe9c2}
+.db-clold{color:#b26a00;font-weight:800;font-size:11px;white-space:nowrap}
+body.dark .btn-mini.cl-upd{background:#3d3220;color:#f3c77a;border-color:#6b5428}
+body.dark .db-clold{color:#f3c77a}
 </style>
 </head>
 <body>
@@ -1725,7 +1735,7 @@ body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .cli
         </svg>
         <div><div class="ph-title">Gate-to-Gate Analyse</div><div class="ph-meta" id="printHeadMeta">—</div></div>
       </div>
-      <div class="ph-right"><div class="ph-brand">SWISS-SKI</div><div class="ph-date" id="printHeadDate"></div></div>
+      <div class="ph-right"><div class="ph-brand"><svg class="ph-ss" viewBox="-0.9 -0.9 136.7 31.7" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Swiss-Ski"><path d="M 45.167,4.504 44.854,4.344 44.541,4.264 44.306,4.025 44.072,3.786 43.915,3.467 43.759,3.148 l 0,-0.398 0.078,-0.478 0.078,-0.558 0.235,-0.478 0.313,-0.399 0.391,-0.319 0.47,-0.239 0.47,-0.16 0.548,-0.08 0.313,0 0.391,0.08 0.313,0.16 0.235,0.239 0.235,0.239 0.156,0.319 0.078,0.319 0,0.319 0,0.558 -0.157,0.558 -0.235,0.478 -0.313,0.398 -0.391,0.319 -0.391,0.239 -0.548,0.159 -0.47,0.08 -0.391,0 z" fill="#e3001b"/><path d="m 38.515,29.532 4.304,-20.565 3.443,0 -4.304,20.565 -3.443,0 z" fill="#e3001b"/><path d="m 28.107,29.532 -0.782,-13.391 -0.157,-2.312 0,-1.754 -0.783,1.833 -1.096,2.312 -6.496,13.311 -2.348,0 -0.313,-20.565 2.348,0 -0.078,12.833 -0.078,4.464 0.861,-1.993 1.174,-2.391 6.261,-12.913 2.504,0 0.704,12.913 0.078,2.471 0.078,1.833 0.704,-1.833 1.017,-2.551 5.478,-12.833 2.348,0 -9,20.565 -2.426,0 z" fill="#e3001b"/><path d="m 5.412,29.851 -0.783,0 L 3.847,29.771 3.142,29.612 2.438,29.372 1.734,28.974 1.108,28.575 0.56,28.017 0.09,27.38 0.012,27.22 l 1.096,-1.036 0.156,0.239 0.313,0.558 0.391,0.478 0.47,0.319 0.548,0.319 0.548,0.239 0.626,0.08 0.548,0.08 0.704,0.08 0.861,-0.08 0.861,-0.239 0.861,-0.319 0.704,-0.558 0.548,-0.558 0.313,-0.398 0.157,-0.399 0.156,-0.398 0.157,-0.398 0.078,-0.478 0,-0.558 -0.078,-0.797 L 9.873,22.677 9.56,22.039 9.168,21.482 8.621,20.923 7.995,20.365 6.664,19.329 5.334,18.293 4.786,17.655 4.238,17.097 3.769,16.38 3.377,15.663 3.221,14.866 3.064,13.909 3.142,13.351 3.221,12.793 3.377,12.235 3.612,11.677 3.847,11.199 4.16,10.801 4.551,10.402 4.942,10.003 5.334,9.685 5.803,9.366 6.273,9.127 6.742,8.967 7.838,8.648 l 1.096,-0.08 0.704,0 0.704,0.08 0.626,0.16 0.704,0.239 0.626,0.319 0.548,0.399 0.47,0.558 0.469,0.558 0.078,0.16 -1.096,0.956 -0.078,-0.239 -0.313,-0.478 -0.391,-0.399 -0.47,-0.319 -0.47,-0.319 -0.47,-0.16 -0.548,-0.159 -0.548,-0.08 -0.548,0 -0.861,0.08 -0.783,0.159 -0.782,0.319 -0.626,0.478 -0.548,0.558 -0.391,0.717 -0.235,0.717 -0.078,0.478 0,0.478 0,0.638 0.157,0.638 0.235,0.558 0.391,0.478 0.391,0.478 0.548,0.478 1.174,1.036 1.487,1.116 0.704,0.638 0.626,0.717 0.548,0.717 0.391,0.797 0.157,0.478 0.156,0.478 0.078,0.478 0,0.558 -0.078,0.638 -0.078,0.638 -0.156,0.558 -0.235,0.558 -0.313,0.558 -0.313,0.478 -0.391,0.399 -0.391,0.398 -0.47,0.319 -0.47,0.319 -0.548,0.319 -0.548,0.16 -0.548,0.239 -0.548,0.08 -0.626,0.08 -0.548,0 z" fill="#e3001b"/><path d="m 52.367,29.851 -1.643,0 -1.565,-0.239 -0.782,-0.239 -0.783,-0.239 -0.704,-0.239 -0.704,-0.398 1.8,-3.906 0.939,0.558 1.017,0.398 1.096,0.319 0.626,0.08 0.548,0 0.548,0 0.548,-0.08 0.469,-0.159 0.47,-0.239 0.391,-0.239 0.313,-0.399 0.156,-0.478 0.078,-0.558 0,-0.398 -0.157,-0.319 -0.157,-0.398 -0.313,-0.319 -0.313,-0.398 -0.47,-0.399 -1.252,-0.797 -1.252,-0.957 -0.626,-0.558 -0.548,-0.558 -0.47,-0.638 -0.391,-0.797 -0.235,-0.877 -0.078,-0.956 0,-0.717 0.157,-0.717 0.156,-0.717 0.235,-0.638 0.235,-0.558 0.391,-0.638 0.391,-0.478 0.469,-0.478 0.47,-0.399 0.626,-0.398 0.626,-0.319 0.704,-0.319 0.704,-0.239 0.783,-0.16 0.861,-0.08 0.861,0 1.565,0.08 1.409,0.239 0.704,0.16 0.626,0.239 0.704,0.239 0.626,0.319 -1.722,3.746 -0.861,-0.478 -0.939,-0.398 -1.096,-0.239 -1.096,-0.08 -0.704,0.08 -0.626,0.08 -0.469,0.239 -0.391,0.239 -0.235,0.319 -0.235,0.319 -0.078,0.319 -0.078,0.398 0.078,0.478 0.235,0.399 0.235,0.398 0.313,0.398 0.861,0.638 0.783,0.558 1.409,0.956 0.704,0.558 0.548,0.638 0.548,0.717 0.391,0.797 0.156,0.398 0.157,0.478 0.078,0.558 0,0.558 0,0.797 -0.156,0.797 -0.235,0.717 -0.313,0.638 -0.313,0.638 -0.47,0.558 -0.47,0.558 -0.47,0.478 -0.626,0.399 -0.626,0.398 -0.626,0.319 -0.704,0.239 -0.626,0.159 -0.783,0.159 -0.704,0.08 -0.704,0 z" fill="#e3001b"/><path d="m 68.175,29.851 -1.644,0 -1.643,-0.239 -0.861,-0.159 -0.783,-0.16 -0.783,-0.239 -0.704,-0.319 1.878,-5.022 0.861,0.478 1.017,0.398 1.017,0.319 1.017,0.08 0.548,-0.08 0.47,0 0.47,-0.159 0.313,-0.16 0.313,-0.159 0.235,-0.319 0.156,-0.319 0,-0.398 0,-0.239 -0.078,-0.319 -0.235,-0.239 -0.235,-0.239 -0.704,-0.558 -1.096,-0.717 -1.174,-0.877 -0.626,-0.558 -0.47,-0.558 -0.469,-0.638 -0.391,-0.717 -0.235,-0.797 -0.078,-0.956 0.078,-0.877 0.078,-0.797 0.235,-0.797 0.235,-0.717 0.391,-0.638 0.391,-0.638 0.47,-0.558 0.548,-0.478 0.548,-0.478 0.705,-0.399 0.704,-0.319 0.704,-0.239 0.783,-0.239 0.861,-0.16 0.861,-0.08 0.861,0 1.722,0.08 1.565,0.16 1.565,0.398 1.487,0.478 -1.878,4.862 -0.861,-0.478 -0.939,-0.398 -1.095,-0.319 -1.096,-0.08 -0.548,0.08 -0.47,0.08 -0.391,0.159 -0.313,0.16 -0.156,0.239 -0.235,0.239 -0.078,0.239 0,0.239 0.078,0.398 0.078,0.319 0.235,0.239 0.313,0.319 0.783,0.558 0.861,0.558 1.33,0.877 0.626,0.558 0.548,0.638 0.47,0.638 0.391,0.797 0.235,0.877 0.078,0.478 0.078,0.478 -0.078,0.956 -0.157,0.877 -0.235,0.797 -0.313,0.797 -0.391,0.638 -0.548,0.638 -0.469,0.558 -0.626,0.478 -0.626,0.398 -0.704,0.399 -0.783,0.239 -0.704,0.239 -0.783,0.239 -0.861,0.08 -0.783,0.08 -0.861,0 z" fill="#e3001b"/><path d="m 112.704,29.532 -2.661,-7.333 -1.174,1.674 0,5.659 -8.374,0 0,-28.695 8.374,0 0,14.906 3.991,-7.174 9.939,0 -6.026,8.529 6.183,12.434 -10.252,0 z" fill="#e3001b"/><path d="m 87.505,29.851 -1.722,0 -1.722,-0.159 -1.722,-0.239 -1.643,-0.399 1.017,-5.659 1.017,0.398 1.174,0.239 1.095,0.239 1.174,0.08 0.469,-0.08 0.391,0 0.313,-0.159 0.313,-0.159 0.235,-0.16 0.157,-0.159 0.078,-0.239 0.078,-0.319 -0.078,-0.319 -0.078,-0.239 -0.157,-0.239 -0.235,-0.159 -0.548,-0.319 -0.548,-0.159 -1.487,-0.478 -0.783,-0.319 -0.783,-0.398 -0.783,-0.558 -0.626,-0.638 -0.548,-0.717 -0.391,-0.877 -0.157,-0.478 -0.156,-0.478 -0.078,-0.558 0,-0.558 0,-0.797 0.157,-0.718 0.156,-0.717 0.313,-0.717 0.313,-0.638 0.47,-0.638 0.47,-0.558 0.548,-0.558 0.705,-0.478 0.704,-0.399 0.782,-0.319 0.861,-0.319 0.939,-0.239 0.939,-0.16 1.096,-0.159 1.096,0 1.565,0.08 1.643,0.159 1.643,0.239 1.722,0.319 -0.939,5.261 -1.096,-0.319 -1.174,-0.239 -1.096,-0.159 -1.252,-0.08 -0.704,0.08 -0.313,0.159 -0.235,0.08 -0.156,0.159 -0.156,0.239 0,0.159 -0.078,0.239 0.078,0.239 0.078,0.239 0.235,0.319 0.469,0.239 0.47,0.239 1.331,0.399 1.017,0.398 1.017,0.399 0.861,0.558 0.783,0.558 0.391,0.399 0.313,0.319 0.235,0.478 0.235,0.399 0.157,0.478 0.156,0.558 0.078,0.558 0,0.638 0,0.956 -0.157,0.877 -0.235,0.877 -0.313,0.717 -0.47,0.717 -0.469,0.638 -0.548,0.638 -0.626,0.478 -0.704,0.478 -0.783,0.399 -0.861,0.398 -0.861,0.239 -0.939,0.239 -1.017,0.159 -1.017,0.08 -1.095,0 z" fill="#e3001b"/><path d="m 129.139,7.214 -0.939,-0.239 -0.783,-0.239 -0.704,-0.478 -0.548,-0.478 -0.391,-0.638 -0.235,-0.717 -0.078,-0.717 0,-0.717 0.235,-0.638 0.391,-0.638 0.47,-0.558 0.704,-0.478 0.783,-0.319 1.017,-0.239 1.096,-0.08 1.095,0.08 0.939,0.16 0.783,0.319 0.704,0.478 0.47,0.478 0.391,0.638 0.235,0.717 0.078,0.797 -0.078,0.797 -0.235,0.717 -0.391,0.558 -0.548,0.558 -0.704,0.399 -0.782,0.319 -0.939,0.159 -1.017,0.08 -1.017,-0.08 z" fill="#e3001b"/><path d="m 125.625,8.563 0,20.969 9.062,0 0,-20.969 z" fill="#ffffff"/><path d="m 125.625,8.563 0,20.969 9.062,0 0,-7 -1.094,0 0,2.688 -2.344,0 0,-2.688 -2.656,0 0,-2.312 2.656,0 0,-2.719 2.344,0 0,2.719 1.094,0 0,-11.656 -9.062,0 z" fill="#e3001b"/></svg></div><div class="ph-date" id="printHeadDate"></div></div>
     </div>
     <div id="anaMain">
       <div class="filters" id="filters">
@@ -2900,7 +2910,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150618';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150628';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4237,6 +4247,25 @@ function gtgPrintCss(){ let out='';
       for(const ir of [...r.cssRules]){ if(ir.type!==6) out+=ir.cssText+'\n'; } } } }
   return out; }
 let _gtgPdfBusy=false;
+/* SVG-Grafiken in der PDF-Kopie in scharfe Bilder umwandeln: html2canvas rastert SVGs sonst in
+   Bildschirm-Auflösung und ohne die Druck-CSS (Linienstärken) -> blass/unscharf, v. a. auf dem Mac. */
+const _SVGPROPS=['stroke','stroke-width','stroke-dasharray','stroke-dashoffset','stroke-opacity','stroke-linecap','stroke-linejoin','fill','fill-opacity','opacity','font-size','font-weight','font-family','letter-spacing','text-anchor','dominant-baseline','visibility','display'];
+async function gtgSvgToImg(d){ const win=d.defaultView; const K=3;
+  const svgs=[...d.querySelectorAll('svg')].filter(v=>{ const r=v.getBoundingClientRect(); return r.width>=60 && r.height>=30 && !(v.parentElement && v.parentElement.closest('svg')); });
+  await Promise.all(svgs.map(svg=>new Promise(res=>{ try{
+    const r=svg.getBoundingClientRect(), cs0=win.getComputedStyle(svg); const cl=svg.cloneNode(true);
+    const src=[...svg.querySelectorAll('*')], dst=[...cl.querySelectorAll('*')];
+    src.forEach((el,i)=>{ const cs=win.getComputedStyle(el), t=dst[i]; if(!t) return; let st='';
+      _SVGPROPS.forEach(p=>{ const v=cs.getPropertyValue(p); if(v!=='' && v!=null) st+=p+':'+v+';'; }); t.setAttribute('style',st); });
+    cl.setAttribute('xmlns','http://www.w3.org/2000/svg'); cl.removeAttribute('class'); cl.removeAttribute('style');
+    cl.setAttribute('width',Math.round(r.width*K)); cl.setAttribute('height',Math.round(r.height*K));
+    cl.setAttribute('style','font-family:'+cs0.getPropertyValue('font-family')+';color:'+cs0.getPropertyValue('color'));
+    const img=d.createElement('img');
+    img.style.cssText=`width:${r.width}px;height:${r.height}px;display:block;margin:${cs0.margin};flex:0 0 auto`;
+    img.onload=()=>{ svg.replaceWith(img); res(); }; img.onerror=()=>res();
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl));
+  }catch(e){ res(); } })));
+}
 async function gtgDirectPdf(){
   if(_gtgPdfBusy) return; _gtgPdfBusy=true;
   const ov=document.createElement('div'); ov.id='gtgPdfBusy'; ov.className='no-print'; ov.setAttribute('data-html2canvas-ignore','true');
@@ -4266,11 +4295,14 @@ async function gtgDirectPdf(){
         let bottom=0; [...d.querySelectorAll('#anaMain #main>.grid>*')].forEach(el=>{ const r=el.getBoundingClientRect(); if(r.height>0) bottom=Math.max(bottom,r.bottom); });
         const pr=hero.parentElement.getBoundingClientRect();
         const h=Math.max(200, wrR.bottom-padB-bottom-6); fix(hero, pr.width||wrR.width-60, h); }
+      return gtgSvgToImg(d);
     };
-    const opt={scale:2, backgroundColor:'#ffffff', logging:false, useCORS:true, windowWidth:W1, scrollX:0, scrollY:-window.scrollY};
-    const c1=await window.html2canvas(wrap,{...opt, onclone:d=>prep(d,1)});
+    // hohe Auflösung (3×), aber unter der Canvas-Grenze von Safari (~16 Mio. Pixel) bleiben
+    const scFor=el=>{ const r=el.getBoundingClientRect(); const w=Math.max(W1, r.width), h=Math.max(r.height, 600); return Math.max(1.5, Math.min(3, Math.sqrt(15e6/(w*h)))); };
+    const opt={backgroundColor:'#ffffff', logging:false, useCORS:true, windowWidth:W1, scrollX:0, scrollY:-window.scrollY};
+    const c1=await window.html2canvas(wrap,{...opt, scale:Math.min(3, Math.sqrt(15e6/(W1*Math.round(210*PX)))), onclone:d=>prep(d,1)});
     const hm=document.querySelector('#hmCard');
-    const c2=hm ? await window.html2canvas(hm,{...opt, onclone:d=>prep(d,2)}) : null;
+    const c2=hm ? await window.html2canvas(hm,{...opt, scale:scFor(hm), onclone:d=>prep(d,2)}) : null;
     const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
     const put=(c,pw,ph)=>{ let w=pw, h=pw*c.height/c.width; if(h>ph){ h=ph; w=ph*c.width/c.height; }
       pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',(pw-w)/2,0,w,h); };
@@ -5182,6 +5214,8 @@ function saveRun(){
   const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Tore)${fisTxt}`;
   msg.className='save-msg ok'; msg.textContent = baseMsg + (TG.file?' · Video wird gesichert…':'.');
   clearTagDraft();   // erfolgreich gespeichert -> Entwurf verwerfen
+  try{ if(mode==='comp'){ const _ck=coachKeyOf(date,venue,gen); if(COACH_KNOWN.keys.has(_ck)){ const _st=coachOutdated(date,venue,gen);
+      if(_st) setTimeout(()=>gtgToast(`Coach-Link ${venue} · ${dmy(date)}: ${coachOutdatedText(_st)}. Datenbank → Events → «↻ Aktualisieren» (gleicher Link).`,'warn'),900); } } }catch(_){}
   saveVideoToLib(rec).then(st=>{ if(typeof renderLibrary==='function') renderLibrary();
     if(!TG.file){ msg.className='save-msg ok'; msg.textContent=baseMsg+'.'; return; }
     if(st && st.saved){ msg.className='save-msg ok'; msg.textContent=baseMsg+' · Video in Bibliothek gespeichert.'; }
@@ -6679,6 +6713,25 @@ function coachBase(){ const cfg=LS.get('gtg_coachcfg',{}); let b=(cfg.base||'').
 function coachUrlOf(k){ return coachBase()+'?coach='+encodeURIComponent(k); }
 const COACH_KNOWN={ keys:new Set(Object.keys(LS.get('gtg_coachlinks',{})||{})), at:0, loading:false };
 function coachRemember(k,url){ try{ const m=LS.get('gtg_coachlinks',{})||{}; m[k]=url||coachUrlOf(k); LS.set('gtg_coachlinks',m); }catch(e){} COACH_KNOWN.keys.add(k); }
+/* Inhalt der veröffentlichten Coach-Links merken (Läufe + Anzahl Athlet:innen), um «veraltet» zu erkennen
+   – z. B. wenn nach dem Erstellen Lauf 2 oder weitere Athlet:innen getaggt wurden. */
+const COACH_CONTENT=(()=>{ try{ return LS.get('gtg_coachcontent',{})||{}; }catch(e){ return {}; } })();
+const _ccLoading=new Set();
+function coachContentSet(k, runs){ COACH_CONTENT[k]={runs, at:Date.now()}; try{ LS.set('gtg_coachcontent',COACH_CONTENT); }catch(e){} }
+function coachContentOf(bundleRuns){ return (bundleRuns||[]).map(r=>({run:String(r.run), disc:(r.ev&&r.ev.discipline)||'', n:((r.ev&&r.ev.skiers)||[]).length})); }
+function coachContentLoad(k){ const c=COACH_CONTENT[k]; if(_ccLoading.has(k) || (c && Date.now()-c.at<10*60*1000)) return; _ccLoading.add(k);
+  coachFetchBundle(k).then(b=>{ if(b&&Array.isArray(b.runs)){ const old=JSON.stringify((COACH_CONTENT[k]||{}).runs||null); coachContentSet(k, coachContentOf(b.runs));
+      if(old!==JSON.stringify(COACH_CONTENT[k].runs) && S.view==='datenbank' && typeof renderDbEvents==='function') renderDbEvents(); }
+    else if(c){ c.at=Date.now(); } }).catch(()=>{}).finally(()=>_ccLoading.delete(k)); }
+// Was fehlt im Coach-Link gegenüber dem aktuellen Stand? -> null (aktuell / unbekannt) oder {miss:[Lauf-Nr.], more:bool}
+function coachOutdated(date, venue, gender){ const k=coachKeyOf(date,venue,gender); const c=COACH_CONTENT[k]; if(!c||!Array.isArray(c.runs)) return null;
+  const have=new Map(c.runs.map(r=>[(r.disc||'')+'|'+r.run, r.n]));
+  const cur=DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train'&&!(typeof isDeleted==='function'&&isDeleted(e)));
+  const miss=[]; let more=false;
+  cur.forEach(e=>{ const n=(e.skiers||[]).length; const h=have.has(e.discipline+'|'+e.run)?have.get(e.discipline+'|'+e.run):have.get('|'+e.run);
+    if(h===undefined) miss.push(String(e.run)); else if(n>h) more=true; });
+  return (miss.length||more)? {miss:[...new Set(miss)].sort(), more} : null; }
+function coachOutdatedText(st){ if(!st) return ''; return st.miss.length ? `Lauf ${st.miss.join(' & ')} fehlt im Coach-Link` : 'Neue Athlet:innen fehlen im Coach-Link'; }
 function coachKnownRefresh(){ if(COACH_KNOWN.loading || Date.now()-COACH_KNOWN.at<10*60*1000) return; COACH_KNOWN.loading=true;
   const repo=((LS.get('gtg_coachcfg',{})||{}).repo||'gate-to-gate/gtg-app').trim();
   fetch(`https://api.github.com/repos/${repo}/contents/coach`,{headers:{'Accept':'application/vnd.github+json'},cache:'no-store'})
@@ -6732,10 +6785,12 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const swBtn = `<button class="btn-mini" data-sw="${r.key}" title="Modus wechseln (Wettkampf ↔ Training)">↔ ${r.mode==='train'?'Wettkampf':'Training'}</button>`;
     const hasVid = vidEvt.has(`${e.date}|${e.venue}|${e.gender}`);
     const _ck=coachKeyOf(e.date,e.venue,e.gender), _hasLink=COACH_KNOWN.keys.has(_ck);
+    if(_hasLink && r.mode==='comp') coachContentLoad(_ck);
+    const _old=(_hasLink && r.mode==='comp') ? coachOutdated(e.date,e.venue,e.gender) : null;
     const clBtn = (r.mode!=='comp'||!r.tagged)
       ? '<span class="db-dash">—</span>'
       : _hasLink
-        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" title="${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`:''}</span>`
+        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" title="${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?(_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`):''}</span>`
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
@@ -6759,12 +6814,13 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
     const anyCL=g.rows.some(r=> r.mode==='comp' && r.tagged && vidEvt.has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
+    const _gOld = (g.rows[0].mode==='comp' && COACH_KNOWN.keys.has(coachKeyOf(e.date,e.venue,e.gender))) ? coachOutdated(e.date,e.venue,e.gender) : null;
     html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}${zeb}" data-grp="${id}">`
       +`<td>${dmy(e.date)}</td><td class="db-venue db-vflex"><span class="db-chev">▸</span><span class="db-vcol"><span class="db-vname">${escHtml(e.venue)}</span>${gcl?`<span class="db-by" title="Erstellt von ${escHtml(gcl)}">${escHtml(gcl)}</span>`:''}</span></td>`
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
       +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
-      +`<td>${anyCL?'<span class="db-clind" title="Coach-Link in diesem Event verfügbar – zum Erstellen aufklappen">↗ Coach-Link</span>':'<span class="db-dash">—</span>'}</td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
+      +`<td>${_gOld?`<span class="db-clold" title="${escHtml(coachOutdatedText(_gOld))} – aufklappen und «↻ Aktualisieren» klicken">⚠ Link aktualisieren</span>`:(anyCL?'<span class="db-clind" title="Coach-Link in diesem Event verfügbar – zum Erstellen aufklappen">↗ Coach-Link</span>':'<span class="db-dash">—</span>')}</td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
     g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}${zeb}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
    });
    body.innerHTML=html;
@@ -8087,7 +8143,7 @@ async function coachCreate(){
   cmProg('Lade Analyse-Daten…');
   await ghPutFileRaw(cfg, `coach/${evKeySafe}.json`, ghB64enc(JSON.stringify(bundle)), 'coach bundle '+evKeySafe);
   const link=cfg.base+`?coach=${encodeURIComponent(evKeySafe)}`;
-  coachRemember(evKeySafe, link); try{ if(S.view==='datenbank') renderDbEvents(); }catch(_){}
+  coachRemember(evKeySafe, link); coachContentSet(evKeySafe, coachContentOf(runs)); try{ if(S.view==='datenbank') renderDbEvents(); }catch(_){}
   if($('#cmLink')) $('#cmLink').value=link; if($('#cmResult')) $('#cmResult').style.display='';
   cmProg(`✓ Fertig — ${totalVids} Video${totalVids>1?'s':''} hochgeladen. Link erstellt.`,true);
 }
@@ -8156,7 +8212,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Synchronisieren":"Sync","PDF wird erstellt …":"Creating PDF …","PDF direkt erstellen ging nicht – Druckdialog wird geöffnet («Als PDF speichern» wählen).":"Could not create the PDF directly – opening the print dialog (choose «Save as PDF»).","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","PDF wird erstellt …":"Creating PDF …","PDF direkt erstellen ging nicht – Druckdialog wird geöffnet («Als PDF speichern» wählen).":"Could not create the PDF directly – opening the print dialog (choose «Save as PDF»).","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
