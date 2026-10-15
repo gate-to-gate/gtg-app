@@ -1197,14 +1197,34 @@ table.hmp .g b{font-size:6.5px}
   #secCard{flex:0 0 auto;padding:5px 10px 6px}
   #secCard h2{font-size:12.5px}
   #secCard .c-head .c-sub{display:none!important}
+  #secRow{justify-content:center;gap:9mm;align-items:center}
+  #secSum{flex:0 0 98mm;max-width:98mm}
+  #secSum .ss-dnf{color:#8a919c;font-weight:700}
+  #secSum .ss-card{background:#f6f7f9;border-radius:3mm;padding:3.2mm 3.8mm 3mm;color:#14181f}
+  #secSum .ss-h{font-size:7.4px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#6b7380;margin-bottom:1.6mm}
+  #secSum .ss-h2{margin-top:3mm}
+  #secSum .ss-tab{width:100%;border-collapse:collapse;font-size:9.4px;font-variant-numeric:tabular-nums}
+  #secSum .ss-tab th{font-size:7.2px;font-weight:700;color:#8a919c;text-align:left;padding:0 1.4mm 1.2mm 0;text-transform:uppercase;letter-spacing:.05em}
+  #secSum .ss-tab td{padding:1.15mm 1.4mm 1.15mm 0;border-top:.6px solid #e3e6ea;white-space:nowrap}
+  #secSum .ss-tab .r{text-align:right;padding-right:3mm}
+  #secSum .ss-tot{font-weight:800}
+  #secSum .ss-dot{display:inline-block;width:2.2mm;height:2.2mm;border-radius:50%;margin-right:1.6mm;vertical-align:-.2mm}
+  #secSum .ss-chip{display:inline-block;padding:.3mm 1.6mm;border-radius:1.6mm;font-weight:700;font-size:8.6px}
+  #secSum .ss-chip i{font-style:normal;font-weight:600;opacity:.85;margin-left:.6mm}
+  #secSum .ss-g{background:#f0f7f2;color:#4f8a63}
+  #secSum .ss-r{background:#fbf1f0;color:#b86a62}
+  #secSum .ss-n{background:#f1f2f4;color:#7a828d}
+  #secSum .ss-msg{margin:0;padding:0;list-style:none;font-size:9px;line-height:1.42;color:#2b3440}
+  #secSum .ss-msg li{position:relative;padding-left:3.2mm;margin-top:.9mm}
+  #secSum .ss-msg li:before{content:"";position:absolute;left:0;top:1.35mm;width:1.4mm;height:1.4mm;border-radius:50%;background:#D9A400}
   #secCard .sec-readhelp{font-size:9.6px;line-height:1.45;color:var(--ink2);margin-top:2px}
   #secRow{display:flex;align-items:center;justify-content:center;gap:8mm}
   .sec-info{flex:1 1 0;max-width:70mm;font-size:9.6px;line-height:1.45;color:var(--ink2)}
   .sec-info .si-h{font-weight:800;font-size:10.5px;color:#14181f;margin-bottom:2px}
   .sec-info .si-row{display:flex;align-items:center;gap:5px;margin-top:3px}
   .sec-info .si-dot{width:12px;height:5px;border-radius:2px;display:inline-block;flex:0 0 auto}
-  #secCard .chart-shell{flex:0 0 auto;width:112mm!important;max-width:112mm!important;height:56mm;margin:0!important}
-  #secCard svg.chart{max-height:56mm;width:100%;height:auto;display:block;margin:0 auto}
+  #secCard .chart-shell{flex:0 0 auto;width:122mm!important;max-width:122mm!important;height:60mm;margin:0!important}
+  #secCard svg.chart{max-height:60mm;width:100%;height:auto;display:block;margin:0 auto}
 
   /* ===== SEITE 2: Detail-Matrix (Δ pro Tor, nicht kumuliert) – Hochformat ===== */
   /* Seite 2 Hochformat: Breite explizit auf A4-Hochformat (210mm − 2×9mm Rand) fixieren,
@@ -3034,7 +3054,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151028';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151033';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3799,6 +3819,7 @@ function render(){
           <div class="print-only sec-readhelp">Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).</div></div></div>
         <div id="secRow">
           <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
+          <div class="print-only" id="secSum"></div>
         </div>
       </div>
 
@@ -4070,6 +4091,50 @@ function updateTerrainBand(){ /* Terrain-Band entfernt */ }
 /* ---------- per-gate diverging bars ---------- */
 
 /* ---------- sector analysis ---------- */
+// Druck/PDF: Zusammenfassung neben «Zeitverlust nach Abschnitt» – Mini-Tabelle + Kernaussagen
+function secSummary(data, secs, STS, hasSt, worst){
+  const el=$('#secSum'); if(!el) return;
+  const f=v=> v==null?'–':((v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2));
+  const nmOf=s=> String(s.name||'').split(' ')[0];
+  const esc=t=> String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const rows=data.map(d=>{ const idx=d.vals.map((v,i)=>({v,i})).filter(o=>o.v!=null);
+    if(!idx.length) return null;
+    const tot=idx.reduce((a,o)=>a+o.v,0);
+    const best=idx.reduce((a,o)=>o.v<a.v?o:a), weak=idx.reduce((a,o)=>o.v>a.v?o:a);
+    const pos=idx.reduce((a,o)=>a+(o.v>0?o.v:0),0);
+    return {d, nm:nmOf(d.s), col:d.s.color, tot, best, weak, pos, idx, dnf:!!d.s.dnf}; }).filter(Boolean);
+  if(!rows.length){ el.innerHTML=''; return; }
+  rows.sort((a,b)=>(a.dnf-b.dnf)||(a.tot-b.tot));
+  const fin=rows.filter(r=>!r.dnf);
+  const secLbl=i=> 'S'+(i+1);
+  const cc=v=> v<=-0.005?'ss-g':(v>=0.005?'ss-r':'ss-n');   // grün nur bei minus, rot nur bei plus, sonst neutral
+  const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
+    for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
+    const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? ({st0:'flach',st1:'mittel',st2:'steil'})[k] : 'gemischt'; };
+  // Tabelle
+  let h='<div class="ss-card"><div class="ss-h">Übersicht pro Athlet</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>Stärkster</th><th>Schwächster</th></tr></thead><tbody>';
+  rows.forEach(r=>{ h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
+    (r.dnf?`<td class="r ss-tot ss-dnf">DNF</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
+    `<td><span class="ss-chip ${cc(r.best.v)}">${secLbl(r.best.i)} <i>${f(r.best.v)}</i></span></td>`+
+    `<td><span class="ss-chip ${cc(r.weak.v)}">${secLbl(r.weak.i)} <i>${f(r.weak.v)}</i></span></td></tr>`; });
+  h+='</tbody></table>';
+  // Kernaussagen (max. 3)
+  const msgs=[];
+  { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
+    let wi=worst; if(wi<0){ wi=tl.reduce((m,v,i)=>v>tl[m]?i:m,0); if(!(tl[wi]>0.15)) wi=-1; }
+    if(wi>=0 && fin.length>1){ const [a,b]=secs[wi]; const st=steepTxt(wi);
+      msgs.push(`Am meisten Zeit verliert das Team in <b>${secLbl(wi)}</b> (Tor ${a+1}–${b+1}${st?', '+st:''}).`); } }
+  const top=fin[0];
+  if(top){ const mx=Math.max(...top.idx.map(o=>Math.abs(o.v)));
+    msgs.push(mx<=0.25 ? `<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${mx<0.1?'0.10':mx.toFixed(2)} s.`
+                       : `<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), stark in ${secLbl(top.best.i)}.`); }
+  let conc=null; fin.forEach(r=>{ if(r.pos>0.3 && r.weak.v>0){ const sh=r.weak.v/r.pos; if(sh>=0.4 && (!conc||sh>conc.sh)) conc={r,sh}; } });
+  if(conc && conc.r!==top){ const st=steepTxt(conc.r.weak.i);
+    msgs.push(`<b>${esc(conc.r.nm)}</b> verliert ${Math.round(conc.sh*100)} % des Rückstands in ${secLbl(conc.r.weak.i)}${st&&st!=='gemischt'?' ('+st+')':''}.`); }
+  if(msgs.length) h+='<div class="ss-h ss-h2">Kernaussagen</div><ul class="ss-msg">'+msgs.slice(0,3).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+  h+='</div>';
+  el.innerHTML=h;
+}
 function drawSector(){
   const T=chTheme();
   const c=S.comp; const secs=c.sectors; const sui=c.sui;
@@ -4130,6 +4195,7 @@ function drawSector(){
     ['flach','mittel','steil'].forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="12" height="6" rx="1.5" fill="${col[k]}"/><text x="${lx+16}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+=16+l.length*5.6+12; });
     svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">· Steilheit im Abschnitt</text>`; }
   svg+='</svg>'; $('#secShell').innerHTML=svg;
+  try{ secSummary(data, secs, STS, hasSt, worst); }catch(e){ const el=$('#secSum'); if(el) el.innerHTML=''; }
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
     tt.innerHTML=`<div class="tt-h">${r.dataset.s.split(' ')[0]} · Tor ${r.dataset.sec}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
     const br=r.getBoundingClientRect(); tt.style.opacity=1; tt.style.left=(br.left+br.width/2)+'px'; tt.style.top=(br.top-6)+'px';
