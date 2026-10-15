@@ -1143,7 +1143,7 @@ table.hmp .g b{font-size:6.5px}
   #printHead .ph-brand{font-size:11px}
   #printHead .ph-date{font-size:9px;margin-top:0}
   .grid{gap:8px}
-  .card{box-shadow:none;border:1px solid var(--line);break-inside:avoid;page-break-inside:avoid}
+  .card{box-shadow:none!important;border:none!important;break-inside:avoid;page-break-inside:avoid}   /* keine Rahmenlinien um die Grafiken im PDF */
 
   /* ===== SEITE 1: Hauptgrafik + drei kleinere Grafiken ===== */
   #anaVerlauf,.ana-subbar{display:none!important}  /* im PDF immer die Analyse-Hauptseite */
@@ -1166,6 +1166,7 @@ table.hmp .g b{font-size:6.5px}
   #heroShell{height:100%}
   #heroShell svg.chart{width:100%;height:100%;max-height:100%}
   #heroShell path{stroke-width:2.6px}
+  #heroShell path.hTop{stroke-width:1.7px}   /* Bestzeit-Linie im PDF etwas feiner */
   .note{display:none!important}   /* Figuren-Note unten weg -> keine 3. Seite (steht oben im Hero-Kopf) */
   #heroCard .fig-leg-print{font-size:8.3px;color:var(--muted);margin:1px 0 0;line-height:1.3}
   #heroCard .hero-readhelp{flex:0 0 auto;display:flex!important;flex-wrap:wrap;align-items:center;gap:3px 10px;font-size:8.3px;line-height:1.35;color:var(--ink2);margin-top:4px;border-top:1px solid var(--line);padding-top:3px}
@@ -1658,6 +1659,12 @@ body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .cli
   #clipSbsBar[style*="flex"]{display:grid!important;grid-template-columns:auto 1fr auto;gap:8px;width:100%;max-width:420px;margin:10px auto 0}
   #clipSbsBar .clip-bigbtn{display:none}
   #clipSbsBar button{padding:0 12px;font-size:12.5px}
+}
+@media(max-width:600px){
+  /* Matrix/Tabelle Handy: keine Figuren-Spalte – Tor-Nummer in der Farbe der Figur (Legende oben) */
+  table.hm .fig-row{display:none}
+  table.hm .gate-in{justify-content:center}
+  table.hm .gate-c.has-fig .g-num{background:var(--figc);color:#fff;border-radius:5px;padding:1px 4px;min-width:16px;text-align:center}
 }
 </style>
 </head>
@@ -2893,7 +2900,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150610';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150618';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3860,7 +3867,7 @@ function drawHero(){
       const area=smoothMono(sg)+` L ${sg[sg.length-1].x.toFixed(1)} ${y0.toFixed(1)} L ${sg[0].x.toFixed(1)} ${y0.toFixed(1)} Z`;
       svg+=`<path class="hFocusFill" d="${area}" fill="url(#hFocusGrad)" stroke="none"/>`; }); }
     // farbige Linie
-    svg+=`<path d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
+    svg+=`<path${s.isTop?' class="hTop"':''} d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
     // Trainings-Serien: Lauf-Nr. an das Linienende (wenn derselbe Athlet mehrere Läufe hat)
     if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
       if(PVs[li]!=null){ const LX=x(li+1), LY=y(PVs[li]);
@@ -3998,7 +4005,8 @@ function drawHeatmap(mode){
   cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${fmt(0)}</td>`);
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
-    h+=`<tr><td class="gate-c"><div class="gate-in">${fg?`<span class="fig-row" style="background:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
+    const fgc=fg?(FIG[fg.type]?FIG[fg.type].c:'#888'):'';
+    h+=`<tr><td class="gate-c${fg?' has-fig':''}"${fg?` style="--figc:${fgc}" title="${fg.label}"`:''}><div class="gate-in">${fg?`<span class="fig-row" style="background:${fgc}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
     cols.forEach(s=>{ const d=s.diff[i], anom=s.anom[i]; const da=`data-ath="${encodeURIComponent(s.name)}" data-g="${i+1}"`;
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
         h+=`<td class="hm-cell" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
