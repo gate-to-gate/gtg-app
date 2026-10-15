@@ -1141,6 +1141,37 @@ table.hmp .g b{font-size:6.5px}
 #printHead .ph-ss{height:22px;width:95px;display:inline-block;overflow:visible}
 #printHead .ph-date{font-size:10.5px;color:var(--muted);margin-top:2px}
 
+/* Abschnitts-Übersicht (Tabelle + Kernaussagen) – Bildschirm; Druck-Grössen im @media print */
+#secRow{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+#secRow #secShell{flex:1 1 520px;margin:0!important}
+#secSum{flex:0 1 400px;min-width:300px}
+#secSum:empty{display:none}
+#secSum .ss-card{background:#f6f7f9;border-radius:14px;padding:16px 18px 14px;color:var(--ink)}
+#secSum .ss-h{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+#secSum .ss-h2{margin-top:14px}
+#secSum .ss-tab{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+#secSum .ss-tab th{font-size:10px;font-weight:700;color:var(--muted);text-align:left;padding:0 8px 6px 0;text-transform:uppercase;letter-spacing:.05em}
+#secSum .ss-tab td{padding:7px 8px 7px 0;border-top:1px solid #e3e6ea;white-space:nowrap}
+#secSum .ss-tab .r{text-align:right;padding-right:14px}
+#secSum .ss-tot{font-weight:800}
+#secSum .ss-dnf{color:var(--muted);font-weight:700}
+#secSum .ss-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:-.5px}
+#secSum .ss-chip{display:inline-block;padding:2px 8px;border-radius:7px;font-weight:700;font-size:12px}
+#secSum .ss-chip i{font-style:normal;font-weight:600;opacity:.85;margin-left:3px}
+#secSum .ss-g{background:#f0f7f2;color:#4f8a63}
+#secSum .ss-r{background:#fbf1f0;color:#b86a62}
+#secSum .ss-n{background:#f1f2f4;color:#7a828d}
+#secSum .ss-msg{margin:0;padding:0;list-style:none;font-size:12.5px;line-height:1.45;color:var(--ink2)}
+#secSum .ss-msg li{position:relative;padding-left:14px;margin-top:5px}
+#secSum .ss-msg li:before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:#D9A400}
+@media screen{
+  body.dark #secSum .ss-card{background:#1f2631}
+  body.dark #secSum .ss-tab td{border-top-color:#39424f}
+  body.dark #secSum .ss-g{background:rgba(79,138,99,.16);color:#8cc29f}
+  body.dark #secSum .ss-r{background:rgba(184,106,98,.16);color:#e0a29b}
+  body.dark #secSum .ss-n{background:rgba(255,255,255,.06);color:#9aa6b4}
+}
+@media (max-width:700px){ #secSum{flex:1 1 100%;min-width:0} #secSum .ss-tab{font-size:12px} #secSum .ss-chip{font-size:11px;padding:2px 6px} }
 @media print{
   @page{size:A4 landscape;margin:0}   /* margin:0 unterdrückt die Browser-Kopf-/Fusszeile (file://-Pfad, Datum) */
   @page matrix{size:A4 portrait;margin:0}   /* Seite 2 (Detail-Matrix) im Hochformat -> mehr Tore untereinander */
@@ -1197,7 +1228,9 @@ table.hmp .g b{font-size:6.5px}
   #secCard{flex:0 0 auto;padding:5px 10px 6px}
   #secCard h2{font-size:12.5px}
   #secCard .c-head .c-sub{display:none!important}
-  #secRow{justify-content:center;gap:9mm;align-items:center}
+  #secRow{justify-content:center;gap:9mm;align-items:center;flex-wrap:nowrap}
+  #secRow #secShell{flex:0 0 auto}
+  #secSum{min-width:0}
   #secSum{flex:0 0 98mm;max-width:98mm}
   #secSum .ss-dnf{color:#8a919c;font-weight:700}
   #secSum .ss-card{background:#f6f7f9;border-radius:3mm;padding:3.2mm 3.8mm 3mm;color:#14181f}
@@ -3054,7 +3087,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151033';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151036';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3819,7 +3852,7 @@ function render(){
           <div class="print-only sec-readhelp">Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).</div></div></div>
         <div id="secRow">
           <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
-          <div class="print-only" id="secSum"></div>
+          <div id="secSum"></div>
         </div>
       </div>
 
