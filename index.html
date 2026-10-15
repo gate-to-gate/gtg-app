@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Swiss-Ski · Gate-to-Gate Analyse</title>
+<meta name="description" content="Swiss-Ski Gate-to-Gate Analyse – Tor-für-Tor-Auswertung mit Videos für Coaches.">
+<!-- Link-Vorschau (Teams, WhatsApp, iMessage …) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Swiss-Ski">
+<meta property="og:title" content="Gate-to-Gate Analyse · Swiss-Ski">
+<meta property="og:description" content="Tor-für-Tor-Auswertung mit Videos – Coach-Link öffnen.">
+<meta property="og:image" content="https://gate-to-gate.github.io/gtg-app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Icon für «Zum Home-Bildschirm» (iPhone/Android) -->
+<link rel="apple-touch-icon" sizes="180x180" href="https://gate-to-gate.github.io/gtg-app/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://gate-to-gate.github.io/gtg-app/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Gate-to-Gate">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRjA0NTNBIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0IyMTQxOSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMTYiIGZpbGw9InVybCgjZykiLz4KICA8cG9seWxpbmUgcG9pbnRzPSIxMjgsMTk2IDIzMiwxNTAgMjg4LDIxNCAzODQsMTY4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMTQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgb3BhY2l0eT0iMC45NSIvPgogIDxnIGZpbGw9IiNmZmZmZmYiPgogICAgPGNpcmNsZSBjeD0iMTI4IiBjeT0iMTk2IiByPSIxNyIvPgogICAgPGNpcmNsZSBjeD0iMzg0IiBjeT0iMTY4IiByPSIxNyIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSIyMzIiIGN5PSIxNTAiIHI9IjExIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjgiLz4KICA8Y2lyY2xlIGN4PSIyODgiIGN5PSIyMTQiIHI9IjExIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjgiLz4KICA8dGV4dCB4PSIyNTYiIHk9IjM4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBIZWx2ZXRpY2EsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiIGZvbnQtc2l6ZT0iMTUwIiBsZXR0ZXItc3BhY2luZz0iLTYiIGZpbGw9IiNmZmZmZmYiPkcyRzwvdGV4dD4KPC9zdmc+Cg==">
 <style>
 :root{
@@ -1696,6 +1711,15 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
   body.coach .coach-stand{margin:-2px 2px 8px;font-size:11px}
 }
 @media print{ .hm-ref,.coach-stand{display:none!important} }
+/* Bild-für-Bild-Knöpfe */
+.clip-speed .cs-frame button{display:inline-flex;align-items:center;justify-content:center}
+.clip-speed .cs-frame button:active{background:#2b3440;color:#fff}
+@media(max-width:600px){
+  .clip-speed{gap:6px}
+  .clip-speed .cs-seg button{min-width:36px}
+  .clip-speed .clip-sbsbtn .sbs-txt{display:none}          /* Handy: Side-by-Side nur als Symbol */
+  .clip-speed .clip-sbsbtn{padding:0 10px;gap:0}
+}
 </style>
 </head>
 <body>
@@ -1776,7 +1800,7 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
         </div>
         <div class="clip-chiprow">
           <div id="clipAth" class="clip-chips"></div>
-          <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg>Side-by-Side</button>
+          <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg><span class="sbs-txt">Side-by-Side</span></button>
         </div>
         <div class="clip-main">
           <div class="clip-left" id="clipLeft">
@@ -1792,7 +1816,7 @@ body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-w
                 <div id="clipDefbarB" class="defbar"></div>
               </div>
             </div>
-            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-lab">Tempo</span><span class="cs-seg"><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></span></div>
+            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-seg cs-frame" role="group" aria-label="Bild für Bild"><button type="button" data-fstep="-1" title="1 Bild zurück" aria-label="1 Bild zurück"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.8v12.4a.8.8 0 0 1-1.2.7L9.6 12.7a.8.8 0 0 1 0-1.4l8.2-6.2a.8.8 0 0 1 1.2.7z"/></svg></button><button type="button" data-fstep="1" title="1 Bild vor" aria-label="1 Bild vor"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.8v12.4a.8.8 0 0 0 1.2.7l8.2-6.2a.8.8 0 0 0 0-1.4L6.2 5.1A.8.8 0 0 0 5 5.8z"/></svg></button></span><span class="cs-lab">Tempo</span><span class="cs-seg"><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></span></div>
             <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
               <button id="clipSyncPlay" type="button">▶ Beide</button>
               <button id="clipSyncBtn" type="button"><span class="lg-full">An diesem Tor synchronisieren</span><span class="lg-sur">Synchronisieren</span></button>
@@ -2931,7 +2955,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150701';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150716';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3722,8 +3746,8 @@ function render(){
 
   const _safe=(fn,label)=>{ try{ fn(); }catch(err){ try{ console.error('[GtG render] '+label, err); }catch(_){} } };
   _safe(buildLegend,'buildLegend'); _safe(drawHero,'drawHero'); _safe(drawSector,'drawSector');
-  _safe(()=>drawHeatmap(COACH.on?'cum':'diff'),'drawHeatmap'); _safe(figStrip,'figStrip');
-  if(COACH.on && $('#hmMode')){ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.m==='cum')); }
+  _safe(()=>drawHeatmap('diff'),'drawHeatmap'); _safe(figStrip,'figStrip');   // Matrix startet überall mit «Δ pro Tor» (auch im Coach-Link)
+  if($('#hmMode')){ $('#hmMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x.dataset.m==='diff')); }
   _safe(drawCourseViz,'drawCourseViz');
   _safe(cvRenderPanel,'cvRenderPanel');
 }
@@ -6695,6 +6719,16 @@ async function coachDeleteRemote(k){
     }catch(e){ out.errors.push('Videos (R2): '+e.message); } }
   try{ const m=LS.get('gtg_coachlinks',{})||{}; delete m[k]; LS.set('gtg_coachlinks',m); }catch(e){} COACH_KNOWN.keys.delete(k);
   return out; }
+/* Fertige Nachricht zum Teilen des Coach-Links (für Teams/WhatsApp) */
+function coachShareText(date, venue, gender, url){
+  const k=coachKeyOf(date,venue,gender), c=COACH_CONTENT[k];
+  let runs=(c&&Array.isArray(c.runs)&&c.runs.length)? c.runs.map(r=>({run:r.run, disc:r.disc}))
+    : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train').map(e=>({run:e.run, disc:e.discipline}));
+  const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / ');
+  const nums=[...new Set(runs.map(r=>String(r.run)))].sort();
+  const lauf= nums.length ? (nums.length===1?'Lauf '+nums[0]:'Lauf '+nums.slice(0,-1).join(', ')+' & '+nums[nums.length-1]) : '';
+  const g = gender==='W'?'Frauen':gender==='M'?'Männer':gender;
+  return `Gate-to-Gate · ${venue} · ${dmy(date)} · ${[discs,g].filter(Boolean).join(' ')}${lauf?' · '+lauf:''}\n${url}`; }
 function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t); }catch(e){}
   return new Promise(res=>{ const i=document.createElement('textarea'); i.value=t; i.style.position='fixed'; i.style.opacity='0'; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(e){} i.remove(); res(); }); }
 function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnownRefresh();
@@ -6725,7 +6759,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const clBtn = (r.mode!=='comp'||!r.tagged)
       ? '<span class="db-dash">—</span>'
       : _hasLink
-        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" title="${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?(_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`):''}</span>`
+        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" data-clkey="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}" title="Kopiert eine fertige Nachricht mit Link: ${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?(_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`):''}</span>`
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
@@ -6765,7 +6799,9 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
      body.querySelectorAll(`tr.db-sub[data-pgrp="${id}"]`).forEach(s=> s.style.display= open?'':'none'); }));
    body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
    body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
-   body.querySelectorAll('button[data-clcopy]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); copyText(b.dataset.clcopy).then(()=>gtgToast('Coach-Link kopiert.','ok')); });
+   body.querySelectorAll('button[data-clcopy]').forEach(b=> b.onclick=e=>{ e.stopPropagation(); const kk=(b.dataset.clkey||'').split('|');
+     const txt= kk.length===3 ? coachShareText(kk[0],kk[1],kk[2],b.dataset.clcopy) : b.dataset.clcopy;
+     copyText(txt).then(()=>gtgToast('Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.','ok')); });
    body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
    body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
      const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
@@ -7679,10 +7715,12 @@ function clipChartViz(name, g){
     const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
     const path=pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
     lines+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${emph?3.4:1.6}" opacity="${emph?1:.4}" stroke-linejoin="round"/>`; });
-  const s=series.find(x=>x.name===name); const gi0=Math.max(0,Math.min(n-1,g-1)); const gv=s&&PV(s)[gi0];
+  const s=series.find(x=>x.name===name); const atStart=!(g>=1); const gi0=Math.max(0,Math.min(n-1,g-1)); const gv=atStart?null:(s&&PV(s)[gi0]);   // Tor 1 = Start/Referenz (0.00), Kurve beginnt bei Tor 2
   const dcol=s&&s.isTop?'#C28E00':((s&&s.color)||'#e0413a');
-  const dot = gv==null?'' : `<line id="clipDotLine" x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="${TH.zero}" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot" cx="${X(gi0).toFixed(1)}" cy="${Y(gv).toFixed(1)}" r="7" fill="${dcol}" stroke="${TH.halo}" stroke-width="2.4"/>`;
-  const rawArr=s&&(s[numKey]||[]); const rv=rawArr?rawArr[gi0]:null;
+  const gvp = gv!=null ? gv : (s && PV(s)[gi0]!=null ? PV(s)[gi0] : null);   // Position auch am Start anlegen (dann ausgeblendet)
+  const hid = atStart ? ' style="display:none"' : '';
+  const dot = gvp==null?'' : `<line id="clipDotLine"${hid} x1="${X(gi0).toFixed(1)}" y1="${mt}" x2="${X(gi0).toFixed(1)}" y2="${(mt+ih).toFixed(1)}" stroke="${TH.zero}" stroke-dasharray="3 3" opacity=".55"/><circle id="clipDot"${hid} cx="${X(gi0).toFixed(1)}" cy="${Y(gvp).toFixed(1)}" r="7" fill="${dcol}" stroke="${TH.halo}" stroke-width="2.4"/>`;
+  const rawArr=s&&(s[numKey]||[]); const rv=atStart?0:(rawArr?rawArr[gi0]:null);
   const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'var(--muted)':(rv>0.001?'var(--bad)':rv<-0.001?'var(--good)':'var(--muted)');
   const short=surOf(name);
   const legOrder=[...series].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // wie Hauptlegende: Bestzeit zuerst
@@ -7693,10 +7731,11 @@ function clipChartViz(name, g){
   const svg=el.querySelector('svg'); if(svg) svg.onclick=e=>{ const r=svg.getBoundingClientRect(); const relx=(e.clientX-r.left)/Math.max(1,r.width); const vbx=relx*W; let i=Math.round((vbx-ml)/iw*(n-1)); i=Math.max(0,Math.min(n-1,i)); clipGoto(CLIPNAME, i+1); };
   CLIP_MOVECELL=null;
   CLIP_MOVEDOT=function(gInt){ const gi=Math.max(0,Math.min(n-1,gInt-1)); const s2=series.find(x=>x.name===CLIPNAME); if(!s2) return; const yv=PV(s2)[gi];
-    const dEl=el.querySelector('#clipDot'), lEl=el.querySelector('#clipDotLine');
+    const dEl=el.querySelector('#clipDot'), lEl=el.querySelector('#clipDotLine'); const st0=!(gInt>=1);
+    if(dEl) dEl.style.display=st0?'none':''; if(lEl) lEl.style.display=st0?'none':'';
     if(yv!=null && dEl){ dEl.setAttribute('cx',X(gi).toFixed(1)); dEl.setAttribute('cy',Y(yv).toFixed(1)); }
     if(lEl){ lEl.setAttribute('x1',X(gi).toFixed(1)); lEl.setAttribute('x2',X(gi).toFixed(1)); }
-    const ra=s2[numKey]||[]; const rv2=ra[gi]; const dyn=el.querySelector('#clipVlabDyn');
+    const ra=s2[numKey]||[]; const rv2=st0?0:ra[gi]; const dyn=el.querySelector('#clipVlabDyn');
     if(dyn){ const vv=rv2==null?'—':((rv2>0?'+':'')+(+rv2).toFixed(2)+' s'); const cc=rv2==null?'var(--muted)':(rv2>0.001?'var(--bad)':rv2<-0.001?'var(--good)':'var(--muted)'); dyn.innerHTML=`Kumulierter Rückstand · <b>${short}</b> · Tor ${gInt+1}: <b style="color:${cc}">${vv}</b>`; } };
 }
 function clipGoto(name, g){
@@ -7767,9 +7806,18 @@ function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===n
 let CLIPRATE=(()=>{ try{ const r=+LS.get('gtg_cliprate',1); return [1,0.5,0.25].includes(r)?r:1; }catch(e){ return 1; } })();
 function clipApplyRate(){ ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(v){ try{ v.defaultPlaybackRate=CLIPRATE; v.playbackRate=CLIPRATE; }catch(e){} } });
   document.querySelectorAll('#clipSpeed button[data-rate]').forEach(b=>b.classList.toggle('on', +b.dataset.rate===CLIPRATE)); }
+/* Bild für Bild: ein Frame vor/zurück (pausiert das Video; im gekoppelten Side-by-Side folgt das rechte Video) */
+function clipFps(){ try{ const v=(CVVIDS||[]).find(x=>x.name===CLIPNAME); const f=+(v&&v.fps); return (f>=10&&f<=240)?f:(typeof curFps==='function'&&!COACH.on?curFps():30); }catch(e){ return 30; } }
+function clipStep(dir){ const v=$('#clipVideo'); if(!v||!v.src) return; try{ v.pause(); }catch(e){}
+  const b=$('#clipVideoB'); if(b && CLIPSBS){ try{ b.pause(); }catch(e){} }
+  const fps=clipFps(); const t=Math.max(0, Math.min((v.duration||1e9)-0.001, (v.currentTime||0) + dir/fps));
+  try{ v.currentTime=t; }catch(e){}
+  if(b && CLIPSBS && CLIPSYNC && CLIPSYNC.on){ try{ b.currentTime=Math.max(0, t-CLIPSYNC.delta); }catch(e){} }
+  const sp=$('#clipSyncPlay'); if(sp && CLIPSBS) sp.textContent='▶ Beide'; }
 function clipSetRate(r){ CLIPRATE=[1,0.5,0.25].includes(+r)?+r:1; try{ LS.set('gtg_cliprate',CLIPRATE); }catch(e){} clipApplyRate(); }
 (function initClipSpeed(){ try{
-  document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('#clipSpeed button[data-rate]'); if(b){ e.preventDefault(); clipSetRate(b.dataset.rate); } });
+  document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('#clipSpeed button[data-rate]'); if(b){ e.preventDefault(); clipSetRate(b.dataset.rate); }
+    const fb=e.target.closest && e.target.closest('#clipSpeed button[data-fstep]'); if(fb){ e.preventDefault(); clipStep(+fb.dataset.fstep); } });
   ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(!v) return; ['loadedmetadata','play'].forEach(ev=> v.addEventListener(ev,()=>{ if(v.playbackRate!==CLIPRATE){ try{ v.playbackRate=CLIPRATE; }catch(_){} } })); });
   clipApplyRate(); }catch(e){} })();
 function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
@@ -8065,7 +8113,7 @@ async function coachCreate(){
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
       { const pv=PREVV.get(v.id), ks=v.vsize||(v.video&&v.video.size)||0;
         if(pv && pv.size && ks && pv.size===ks && String(pv.url||'').endsWith('coach/videos/'+fname)){
-          vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size });
+          vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size, fps: v.fps||pv.fps||undefined });
           done++; skipped++; cmProg(`Video ${done}/${totalVids} unverändert – übersprungen: ${v.name}`); continue; } }
       // Video-Bytes beschaffen: im Browser aus IndexedDB (v.video), auf dem Desktop von der Festplatte
       let blob=v.video;
@@ -8084,7 +8132,7 @@ async function coachCreate(){
         await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
         vurl = cfg.base+`coach/videos/${fname}`;
       }
-      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size });
+      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
       done++;
     }
     runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout });
@@ -8107,7 +8155,8 @@ function initCoachLink(){
     }
     cmProg('Fehler: '+m,false);
   }).finally(()=>{ $('#cmGo').disabled=false; }); };
-  if($('#cmCopy'))$('#cmCopy').onclick=()=>{ const i=$('#cmLink'); if(!i)return; i.select(); try{document.execCommand('copy');}catch(e){} try{ navigator.clipboard&&navigator.clipboard.writeText(i.value); }catch(e){} cmProg('Link kopiert.',true); };
+  if($('#cmCopy'))$('#cmCopy').onclick=()=>{ const i=$('#cmLink'); if(!i)return; let txt=i.value; try{ const kk=(COACHLINK.key||'').split('|'); if(kk.length===3) txt=coachShareText(kk[0],kk[1],kk[2],i.value); }catch(e){}
+    copyText(txt); cmProg('Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.',true); };
   if($('#cmR2On'))$('#cmR2On').onchange=e=>{ if($('#cmR2Box')) $('#cmR2Box').style.display = e.target.checked?'':'none'; };
 }
 
@@ -8162,7 +8211,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
