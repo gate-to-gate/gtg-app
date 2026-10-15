@@ -1751,6 +1751,19 @@ kbd{display:inline-block;min-width:18px;text-align:center;font:600 12px/1.6 ui-m
 .btn-mini.coach-msg{background:#fff;color:#1f6fb2;border-color:#9cc3e6}
 .btn-mini.coach-msg:hover{background:#eaf3fb}
 body.dark .btn-mini.coach-msg{background:#22303f;color:#8fc0ee;border-color:#35506b}
+/* Update-Hinweis: schwebende Karte unten rechts */
+.upd-card{position:fixed;right:22px;bottom:22px;z-index:9500;width:360px;max-width:calc(100vw - 32px);display:flex;gap:13px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(20,24,31,.22);padding:15px 14px 15px 15px;opacity:0;transform:translateY(14px);transition:opacity .25s,transform .25s}
+.upd-card.in{opacity:1;transform:none}.upd-card.out{opacity:0;transform:translateY(10px)}
+.upd-card .uc-ic{flex:none;width:42px;height:42px;line-height:0}
+.upd-card .uc-body{flex:1;min-width:0}
+.upd-card .uc-t{font-weight:800;font-size:14.5px;color:var(--ink)}
+.upd-card .uc-s{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:3px}
+.upd-card .uc-go{margin-top:11px;display:inline-flex;align-items:center;justify-content:center;background:#2b3440;color:#fff;border:none;border-radius:10px;padding:9px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.upd-card .uc-go:hover{background:#1c2430}.upd-card .uc-go:disabled{opacity:.8;cursor:default}
+.upd-card .uc-x{flex:none;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1}
+body.dark .upd-card .uc-go{background:#e7ebf1;color:#1c2430}
+@media(max-width:600px){ .upd-card{right:12px;left:12px;bottom:14px;width:auto} }
+@media print{ .upd-card{display:none!important} }
 </style>
 </head>
 <body>
@@ -3006,7 +3019,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150959';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610151014';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4083,12 +4096,10 @@ function drawSector(){
       let ty=(v>=0?y(v):y(0))-5, inside=false;
       if(ty-tl < 2 && v>=0 && h>tl+8){ ty=y(v)+6; inside=true; }   // oben kein Platz -> weiss im Balken
       svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${nm}</text>`; 
-      // Abschnitts-Rückstand dezent im Balken (unten, weiss) – nur wenn der Balken hoch & breit genug ist
-      if(h>=17 && bw>=16){ const vy = v>=0 ? y(0)-6 : y(v)-6, room=bw-4;
-        let txt=(v>0?'+':'')+v.toFixed(2), fs=9.5; const wOf=(t,f)=>t.length*f*0.6;
-        if(wOf(txt,fs)>room) fs=Math.max(7.5, room/(txt.length*0.6));
-        if(wOf(txt,fs)>room){ txt=v.toFixed(2); fs=Math.max(7, Math.min(9.5, room/(txt.length*0.6))); }   // zu schmal: ohne «+»
-        if(wOf(txt,fs)<=room+1) svg+=`<text x="${bxc}" y="${vy}" text-anchor="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="#fff" opacity=".88" style="font-variant-numeric:tabular-nums">${txt}</text>`; } }
+      // Abschnitts-Rückstand dezent im Balken – senkrecht (wie die Namen), unten im Balken, weiss
+      { const txt=(v>0?'+':'')+v.toFixed(2), fs=Math.min(10, Math.max(8, bw*0.42)), need=txt.length*fs*0.62+10;
+        if(h>=need && bw>=12){ const vy = v>=0 ? y(0)-5 : y(v)-5;
+          svg+=`<text x="${bxc}" y="${vy}" transform="rotate(-90 ${bxc} ${vy})" text-anchor="start" dominant-baseline="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="#fff" opacity=".9" style="font-variant-numeric:tabular-nums">${txt}</text>`; } } }
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
     svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="${T.txt2}">Tor ${a+1}–${b+1}</text>`;
@@ -6461,24 +6472,26 @@ function gtgConfetti(x,y){
     setTimeout(()=>{ try{c.remove();}catch(_){} }, 1500);
   }catch(e){}
 }
-function showUpdateBanner(ver){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
-  const b=document.createElement('div'); b.id='updateBanner'; b.className='upd-banner';
-  const sparkle='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.6 4.3 4.3 1.6-4.3 1.6L12 14.3l-1.6-4.3L6.1 8.4l4.3-1.6z"/><path d="M19 14l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9L16.4 16.6l1.9-.7z"/></svg>';
-  const refresh='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 4.5V10H15"/></svg>';
-  b.innerHTML='<span class="upd-ico">'+sparkle+'</span><span class="upd-txt">Update verfügbar – bitte aktualisieren</span>'
-    +'<button id="updReload" type="button">'+refresh+'Jetzt aktualisieren</button>'
-    +'<button id="updDismiss" type="button" class="upd-x" title="Später">✕</button>';
-  document.body.appendChild(b);
-  b.querySelector('#updReload').onclick=(ev)=>{
-    try{ const r=(ev.currentTarget||ev.target).getBoundingClientRect(); gtgConfetti(r.left+r.width/2, r.top+r.height/2); }catch(_){ gtgConfetti(); }
-    setTimeout(()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ try{location.reload();}catch(_){} } }, 950);
-  };
-  b.querySelector('#updDismiss').onclick=()=>{ b.remove(); };
-}
+/* ---- Update-Hinweis als schwebende Karte unten rechts (Web & Desktop) ---- */
+const UPD_ICON='<svg viewBox="0 0 64 64" width="42" height="42" aria-hidden="true"><defs><linearGradient id="updIcG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7302A"/><stop offset="1" stop-color="#7C1F2D"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#updIcG)"/><g fill="#fff"><rect x="17" y="16" width="4" height="32" rx="2"/><rect x="43" y="16" width="4" height="32" rx="2"/><path d="M17 20 Q32 27 47 20 L47 30 Q32 37 17 30 Z"/></g><circle cx="32" cy="25" r="2.2" fill="#B4232A"/></svg>';
+function updShortNotes(notes){ try{ let t=String(notes||'').replace(/^NEU\s*[\d.]+\s*[–-]\s*/,''); const i=t.search(/\.\s/); if(i>0) t=t.slice(0,i+1); return t.length>140? t.slice(0,137).replace(/\s+\S*$/,'')+' …' : t; }catch(e){ return ''; } }
+function gtgUpdateCard(id, title, text, btnLabel, onClick){
+  const old=document.getElementById(id); if(old) old.remove();
+  const c=document.createElement('div'); c.id=id; c.className='upd-card no-print'; c.setAttribute('role','status');
+  c.innerHTML=`<div class="uc-ic">${UPD_ICON}</div><div class="uc-body"><div class="uc-t"></div><div class="uc-s"></div><button type="button" class="uc-go"></button></div><button type="button" class="uc-x" title="Schliessen" aria-label="Schliessen">✕</button>`;
+  c.querySelector('.uc-t').textContent=title; const sEl=c.querySelector('.uc-s'); if(text) sEl.textContent=text; else sEl.remove();
+  const go=c.querySelector('.uc-go'); go.textContent=btnLabel; go.onclick=ev=>onClick(go,ev);
+  c.querySelector('.uc-x').onclick=()=>{ c.classList.add('out'); setTimeout(()=>c.remove(),220); };
+  document.body.appendChild(c); requestAnimationFrame(()=>c.classList.add('in')); return {card:c, btn:go}; }
+function showUpdateBanner(ver, notes){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
+  gtgUpdateCard('updateBanner','Update verfügbar', updShortNotes(notes)||'Neue Funktionen und Verbesserungen sind bereit.', 'Jetzt aktualisieren', (btn,ev)=>{
+    try{ const r=btn.getBoundingClientRect(); gtgConfetti(r.left+r.width/2, r.top+r.height/2); }catch(_){ try{gtgConfetti();}catch(__){} }
+    btn.disabled=true; btn.textContent='Wird geladen …';
+    setTimeout(()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ try{location.reload();}catch(_){} } }, 900); }); }
 function checkForUpdate(){
   if(/BUILDVER/.test(WEB_BUILD)) return;   // ungebaute Dev-Version -> nicht prüfen
   fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=> r.ok?r.json():null).then(j=>{
-    if(j && j.webVersion && j.webVersion!==WEB_BUILD) showUpdateBanner(j.webVersion);
+    if(j && j.webVersion && j.webVersion!==WEB_BUILD) showUpdateBanner(j.webVersion, j.notes);
   }).catch(()=>{});
 }
 function initUpdateCheck(){
@@ -8314,7 +8327,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","⧉ Link":"⧉ Link","💬 Nachricht":"💬 Message","Link kopiert.":"Link copied.","Tastenkürzel beim Taggen":"Keyboard shortcuts for tagging","Abspielen / Pause":"Play / pause","1 Bild zurück / vor":"1 frame back / forward","10 Bilder zurück / vor":"10 frames back / forward","Im Video vor- und zurückspulen":"Scrub through the video","Zeitlupe ein/aus":"Slow motion on/off","Lupe (Ausschnitt vergrössern)":"Magnifier (zoom into detail)","Tor taggen (am aktuellen Bild)":"Tag gate (at current frame)","Letzten Tag löschen":"Delete last tag","Wiederholen":"Redo","Diese Übersicht öffnen / schliessen":"Open / close this overview","Alle Tastenkürzel anzeigen (?)":"Show all shortcuts (?)","Leertaste":"Space","Mausrad":"Mouse wheel","flach":"flat","mittel":"medium","steil":"steep","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Update verfügbar":"Update available","Neue Funktionen und Verbesserungen sind bereit.":"New features and improvements are ready.","Wird geladen …":"Loading …","Neu starten & installieren":"Restart & install","Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.":"Downloaded – a restart installs it. Your data is kept.","Schliessen":"Close","⧉ Link":"⧉ Link","💬 Nachricht":"💬 Message","Link kopiert.":"Link copied.","Tastenkürzel beim Taggen":"Keyboard shortcuts for tagging","Abspielen / Pause":"Play / pause","1 Bild zurück / vor":"1 frame back / forward","10 Bilder zurück / vor":"10 frames back / forward","Im Video vor- und zurückspulen":"Scrub through the video","Zeitlupe ein/aus":"Slow motion on/off","Lupe (Ausschnitt vergrössern)":"Magnifier (zoom into detail)","Tor taggen (am aktuellen Bild)":"Tag gate (at current frame)","Letzten Tag löschen":"Delete last tag","Wiederholen":"Redo","Diese Übersicht öffnen / schliessen":"Open / close this overview","Alle Tastenkürzel anzeigen (?)":"Show all shortcuts (?)","Leertaste":"Space","Mausrad":"Mouse wheel","flach":"flat","mittel":"medium","steil":"steep","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
@@ -8823,37 +8836,22 @@ if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.dis
 }
 // Desktop-App: beim Start prüfen, ob eine neuere Version vorliegt
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
-function showDesktopUpdateBanner(cur, latest, url){
+function showDesktopUpdateBanner(cur, latest, url, notes){
   if(document.getElementById('updBanner')) return;
-  const b=document.createElement('div'); b.id='updBanner'; b.className='upd-bar no-print';
-  b.innerHTML=`<span>Neue Version <b>v${latest}</b> verfügbar — du nutzt v${cur}.</span>`+
-    `<button class="ub-dl" type="button">Update herunterladen</button>`+
-    `<button class="ub-x" title="Ausblenden">✕</button>`;
-  document.body.insertBefore(b, document.body.firstChild);
-  const dl=b.querySelector('.ub-dl');
-  dl.onclick=()=>{ const dk=GD();
+  gtgUpdateCard('updBanner', `Update verfügbar · v${latest}`, updShortNotes(notes)||`Du nutzt v${cur}. Neue Funktionen und Verbesserungen sind bereit.`, 'Jetzt aktualisieren', (dl)=>{
+    const dk=GD();
     if(dk && typeof dk.downloadUpdate==='function'){
-      dl.disabled=true; dl.textContent='Lädt…';
-      if(typeof dk.onUpdateProgress==='function' && !dl._progBound){ dl._progBound=true; dk.onUpdateProgress(pct=>{ if(dl.disabled) dl.textContent = pct>=100?'Installer öffnet…':('Lädt… '+pct+' %'); }); }
-      Promise.resolve(dk.downloadUpdate()).then(r=>{
-        if(r && r.ok){ dl.textContent='Installer geöffnet ✓'; }
-        else { dl.disabled=false; dl.textContent='Erneut versuchen'; }
-      }).catch(()=>{ dl.disabled=false; dl.textContent='Erneut versuchen'; });
-    } else { window.open(url||'https://github.com/gate-to-gate/gtg-app/releases/latest','_blank','noopener'); }
-  };
-  b.querySelector('.ub-x').onclick=()=>{ LS.set('gtg_update_dismissed', latest); b.remove(); };
+      dl.disabled=true; dl.textContent='Lädt …';
+      if(typeof dk.onUpdateProgress==='function' && !dl._progBound){ dl._progBound=true; dk.onUpdateProgress(pct=>{ if(dl.disabled) dl.textContent = pct>=100?'Installer öffnet …':('Lädt … '+pct+' %'); }); }
+      Promise.resolve(dk.downloadUpdate()).then(r=>{ if(r && r.ok){ dl.textContent='Installer geöffnet ✓'; } else { dl.disabled=false; dl.textContent='Erneut versuchen'; } })
+        .catch(()=>{ dl.disabled=false; dl.textContent='Erneut versuchen'; });
+    } else { window.open(url||'https://github.com/gate-to-gate/gtg-app/releases/latest','_blank','noopener'); } });
 }
 // Update-bereit-Banner (Windows: electron-updater lädt im Hintergrund differenziell = nur geänderte Teile)
 function showUpdateReadyBanner(v){
   const ex=document.getElementById('updBanner'); if(ex) ex.remove();
   if(document.getElementById('updReadyBanner')) return;
-  const b=document.createElement('div'); b.id='updReadyBanner'; b.className='upd-bar no-print';
-  b.innerHTML=`<span>Update ${v?('v'+v+' '):''}heruntergeladen — bereit zur Installation.</span>`+
-    `<button class="ub-dl" type="button">Jetzt neu starten &amp; installieren</button>`+
-    `<button class="ub-x" title="Später">Später</button>`;
-  document.body.insertBefore(b, document.body.firstChild);
-  b.querySelector('.ub-dl').onclick=()=>{ const dk=GD(); if(dk&&typeof dk.quitAndInstall==='function') dk.quitAndInstall(); };
-  b.querySelector('.ub-x').onclick=()=>b.remove();
+  gtgUpdateCard('updReadyBanner', `Update ${v?('v'+v+' '):''}bereit`, 'Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.', 'Neu starten & installieren', ()=>{ const dk=GD(); if(dk&&typeof dk.quitAndInstall==='function') dk.quitAndInstall(); });
 }
 (function checkDesktopUpdate(){
   const dk=GD(); if(!dk) return;
@@ -8864,7 +8862,7 @@ function showUpdateReadyBanner(v){
   Promise.resolve(dk.checkUpdate()).then(r=>{
     if(!r || !r.latest) return;
     if(cmpVer(r.latest, r.current)>0 && LS.get('gtg_update_dismissed')!==r.latest){
-      showDesktopUpdateBanner(r.current, r.latest, r.url || 'https://github.com/gate-to-gate/gtg-app/releases/latest');
+      showDesktopUpdateBanner(r.current, r.latest, r.url || 'https://github.com/gate-to-gate/gtg-app/releases/latest', r.notes);
     }
   }).catch(()=>{});
 })();
