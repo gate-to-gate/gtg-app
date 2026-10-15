@@ -1682,6 +1682,20 @@ body.coach .coach-run.cr-hidden{display:none!important}
 body.dark .coach-run.cr-single{background:#252d38;border-color:#3a4452}
 body.dark .coach-run.cr-single .cr-count{background:#3a4452;color:#aab3bf}
 body.coach .coach-run.cr-single{box-shadow:none!important}
+/* Feinschliff 15.10. */
+.clip-chips .cv-chip.on{border-color:#2b3440;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+body.dark .clip-chips .cv-chip.on{border-color:#cfd6e0}
+.clip-leg-star{color:#C28E00;font-size:.9em}
+.coach-stand{display:none}
+body.coach .coach-stand{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin:-4px 2px 8px;text-align:right}
+.hm-ref{display:none}
+@media(max-width:600px){
+  table.hm .hm-top{display:none}   /* Handy: Bestzeit-Spalte (nur 0.00) weglassen */
+  .hm-ref{display:block;font-size:12px;color:var(--muted);margin:0 0 8px}
+  .hm-ref b{color:var(--ink)}
+  body.coach .coach-stand{margin:-2px 2px 8px;font-size:11px}
+}
+@media print{ .hm-ref,.coach-stand{display:none!important} }
 </style>
 </head>
 <body>
@@ -1753,6 +1767,7 @@ body.coach .coach-run.cr-single{box-shadow:none!important}
         <div class="f fsub" style="display:none"><label>Ansicht</label><div id="anaSub" class="seg-toggle"></div></div>
       </div>
       <div id="seriesPick" class="series-pick no-print" style="display:none"></div>
+      <div id="coachStand" class="coach-stand" style="display:none"></div>
       <div id="main"></div>
       <div id="coachVid" class="card no-print" style="display:none">
         <div class="c-head"><div><h2>Video <span id="cvEvt" class="cv-evt"></span></h2>
@@ -2916,7 +2931,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150638';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150701';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3840,7 +3855,8 @@ function drawHero(){
   svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
   svg+=`<text x="15" y="${mt+ih/2}" font-size="11" fill="${T.txt}" transform="rotate(-90 15 ${mt+ih/2})" text-anchor="middle">Rückstand kumuliert (s) — langsamer ↓</text>`;
   // x axis ticks: bis 10 Tore jedes Tor, ab 10 jedes 5. (plus erstes & letztes)
-  for(let t=1;t<=NP;t++){ const show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
+  for(let t=1;t<=NP;t++){ let show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
+    if(show && t!==NP && t!==1 && NP>10 && (x(NP)-x(t))<(_nw?30:15)) show=false;   // «50» klebt sonst an «51»
     if(!show) continue;
     svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}" opacity=".5"/>`;
     svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="${T.txt2}">${t}</text>`; }
@@ -3984,8 +4000,10 @@ function drawSector(){
     data.forEach(d=>{ const v=d.vals[si]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
       svg+=`<rect class="sb" data-s="${d.s.name}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
       // Athletenname vertikal, immer NACH OBEN (auch bei Abwärtsbalken) -> keine Kollision mit den S-/Tor-Labels unten
-      const bxc=bx+(bw-2)/2, ty=(v>=0?y(v):y(0))-5, nm=d.s.name.split(' ')[0];
-      svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="start" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${d.s.color}">${nm}</text>`; }
+      const bxc=bx+(bw-2)/2, nm=d.s.name.split(' ')[0], tl=nm.length*7.2+4;   // geschätzte Textlänge (vertikal)
+      let ty=(v>=0?y(v):y(0))-5, inside=false;
+      if(ty-tl < 2 && v>=0 && h>tl+8){ ty=y(v)+6; inside=true; }   // oben kein Platz -> weiss im Balken
+      svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${nm}</text>`; }
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
     svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="${T.txt2}">Tor ${a+1}–${b+1}</text>`;
@@ -4013,22 +4031,22 @@ function drawHeatmap(mode){
   const colorOf=(d,anom)=>{ if(d==null) return _blank; if(anom) return _blank;
     const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
     return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:_zero; };
-  let h=`<div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
-  cols.forEach(s=> h+=`<th>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
+  let h=`<div class="hm-ref">Referenz (Bestzeit, Δ = 0.00): <b>${escHtml(c.top.name)}</b>${c.top.nation?' · '+escHtml(c.top.nation):''}</div><div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
+  cols.forEach(s=> h+=`<th${s.isTop?' class="hm-top"':''}>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
   h+=`</tr></thead><tbody>`;
   // Start = Tor 1 (Referenz, alle 0.00)
   h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Ref</span></div></td>`;
-  cols.forEach(s=> h+=`<td class="hm-cell" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${fmt(0)}</td>`);
+  cols.forEach(s=> h+=`<td class="hm-cell${s.isTop?' hm-top':''}" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${fmt(0)}</td>`);
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
     const fgc=fg?(FIG[fg.type]?FIG[fg.type].c:'#888'):'';
     h+=`<tr><td class="gate-c${fg?' has-fig':''}"${fg?` style="--figc:${fgc}" title="${fg.label}"`:''}><div class="gate-in">${fg?`<span class="fig-row" style="background:${fgc}">${fg.label}</span>`:''}<span class="g-num">${i+2}</span></div></td>`;
     cols.forEach(s=>{ const d=s.diff[i], anom=s.anom[i]; const da=`data-ath="${encodeURIComponent(s.name)}" data-g="${i+1}"`;
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
-        h+=`<td class="hm-cell" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
+        h+=`<td class="hm-cell${s.isTop?' hm-top':''}" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
       else { const pr=isPair(s,i);
         const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:'');
-        h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?'':fmt(d)}</td>`; }
+        h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}${s.isTop?' hm-top':''}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?'':fmt(d)}</td>`; }
     });
     h+=`</tr>`; }
   h+=`</tbody></table></div>`;
@@ -7651,9 +7669,11 @@ function clipChartViz(name, g){
     grid+=`<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="${zero?TH.axis:TH.grid}" stroke-width="1"${zero?' stroke-dasharray="3 3"':''}/>`;
     grid+=`<text x="${ml-5}" y="${(+y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="${TH.txt2}">${vv>0?'+':''}${vv.toFixed(st<1?2:1)}</text>`; }
   // dezente X-Achse (Tornummern = i+2)
-  let xax=''; const xstep=Math.max(1,Math.ceil(n/6));
-  for(let i=0;i<n;i+=xstep){ xax+=`<text x="${X(i).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="middle" font-size="10" fill="${TH.txt2}">${i+2}</text>`; }
-  xax+=`<text x="${(W-mr).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="end" font-size="9" fill="${TH.txt2}">Tor</text>`;
+  let xax=''; const lastT=n+1, st10=n>40?10:5;   // Tornummer = Index + 2; Ticks wie Hauptgrafik (runde Tore + erstes/letztes)
+  const tks=[2]; for(let t=st10;t<lastT;t+=st10) if(t>2) tks.push(t); tks.push(lastT);
+  const tkf=tks.filter((t,k)=> k===0 || t===lastT || (X(lastT-2)-X(t-2)>=34 && X(t-2)-X(tks[0]-2)>=26));
+  tkf.forEach(t=>{ xax+=`<text x="${X(t-2).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="middle" font-size="10" fill="${TH.txt2}">${t}</text>`; });
+  xax+=`<text x="${(ml-5).toFixed(1)}" y="${(mt+ih+15).toFixed(1)}" text-anchor="end" font-size="9" fill="${TH.txt2}">Tor</text>`;
   let lines='';
   series.forEach(s=>{ const a=PV(s); const pts=[]; for(let i=0;i<n;i++){ if(a[i]!=null) pts.push([i,a[i]]); } if(!pts.length) return;
     const emph=s.name===name; const col=s.isTop?'#C28E00':(s.color||'#888');
@@ -7665,7 +7685,8 @@ function clipChartViz(name, g){
   const rawArr=s&&(s[numKey]||[]); const rv=rawArr?rawArr[gi0]:null;
   const val=rv==null?'—':((rv>0?'+':'')+(+rv).toFixed(2)+' s'); const vc=rv==null?'var(--muted)':(rv>0.001?'var(--bad)':rv<-0.001?'var(--good)':'var(--muted)');
   const short=surOf(name);
-  const leg=series.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${escHtml(surOf(s.name))}</span>`).join('');
+  const legOrder=[...series].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // wie Hauptlegende: Bestzeit zuerst
+  const leg=legOrder.map(s=>`<span class="clip-leg${s.name===name?' on':''}"><i style="background:${s.isTop?'#C28E00':(s.color||'#888')}"></i>${escHtml(surOf(s.name))}${s.isTop?' <span class="clip-leg-star">★</span>':''}</span>`).join('');
   el.innerHTML=`<div class="clip-vlab"><span id="clipVlabDyn">Kumulierter Rückstand · <b>${short}</b> · Tor ${g+1}: <b style="color:${vc}">${val}</b></span> <span class="clip-hint">· Tipp: anderes Tor anklicken</span></div>
   <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rückstandskurve">${grid}${xax}${lines}${dot}</svg>
   <div class="clip-legend">${leg}</div>`;
@@ -7866,6 +7887,10 @@ function coachLoadBundle(key, attempt){
   }); }
 function enterCoach(bundle){
   COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
+  try{ const cs=$('#coachStand'); if(cs){ if(bundle.created){ const d=new Date(bundle.created);
+        const p2=x=>String(x).padStart(2,'0');
+        cs.innerHTML=`Stand ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())} · ${(bundle.runs||[]).length===1?'1 Lauf':(bundle.runs||[]).length+' Läufe'}`; cs.style.display=''; }
+      else cs.style.display='none'; } }catch(e){}
   const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode='comp'; DATA.push(r.ev); } });
   const first=runs[0]; if(!first||!first.ev) return;
   S.mode='comp'; S.discAll=false; S.disc=first.ev.discipline; S.gen=first.ev.gender;
@@ -8030,12 +8055,18 @@ async function coachCreate(){
   const plan=[]; let totalVids=0;
   evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)); plan.push({ev,vids}); totalVids+=vids.length; });
   if(!totalVids){ cmProg('Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).',false); return; }
-  const runs=[]; let done=0;
+  const runs=[]; let done=0, skipped=0;
+  // bereits veröffentlichter Stand: unveränderte Videos (gleiche Datei & Grösse) nicht erneut hochladen
+  const PREVV=new Map(); try{ cmProg('Prüfe bestehenden Coach-Link…'); const ob=await coachFetchBundle(evKeySafe); ((ob&&ob.runs)||[]).forEach(r=>(r.videos||[]).forEach(x=>{ if(x&&x.id) PREVV.set(x.id,x); })); }catch(e){}
   for(const {ev,vids} of plan){
     const vout=[];
     for(const v of vids){
       const ext=(v.vname&&v.vname.includes('.'))? (v.vname.split('.').pop().replace(/[^a-z0-9]/gi,'').slice(0,4)||'mp4') : 'mp4';
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
+      { const pv=PREVV.get(v.id), ks=v.vsize||(v.video&&v.video.size)||0;
+        if(pv && pv.size && ks && pv.size===ks && String(pv.url||'').endsWith('coach/videos/'+fname)){
+          vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size });
+          done++; skipped++; cmProg(`Video ${done}/${totalVids} unverändert – übersprungen: ${v.name}`); continue; } }
       // Video-Bytes beschaffen: im Browser aus IndexedDB (v.video), auf dem Desktop von der Festplatte
       let blob=v.video;
       if(!blob && v.onDisk){ const dk=GD(); if(dk&&typeof dk.getVideo==='function'){ try{ const res=await dk.getVideo(v.id); if(res&&res.buffer) blob=new Blob([res.buffer],{type:v.vtype||'video/mp4'}); }catch(_){} } }
@@ -8053,12 +8084,12 @@ async function coachCreate(){
         await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
         vurl = cfg.base+`coach/videos/${fname}`;
       }
-      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl });
+      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size });
       done++;
     }
     runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout });
   }
-  const bundle={ key:evKeySafe, date, venue, gender, title:`${venue} · ${dmy(date)}`, runs };
+  const bundle={ key:evKeySafe, date, venue, gender, title:`${venue} · ${dmy(date)}`, runs, created: Date.now() };
   cmProg('Lade Analyse-Daten…');
   await ghPutFileRaw(cfg, `coach/${evKeySafe}.json`, ghB64enc(JSON.stringify(bundle)), 'coach bundle '+evKeySafe);
   const link=cfg.base+`?coach=${encodeURIComponent(evKeySafe)}`;
