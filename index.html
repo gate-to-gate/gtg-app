@@ -2910,7 +2910,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150628';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150633';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4235,7 +4235,7 @@ function gtgPrint(){ try{
    Die Druck-Darstellung (@media print) wird in einer Kopie der Seite angewendet, jede Seite als Bild
    gerendert (html2canvas) und zu einem PDF zusammengesetzt (jsPDF). Bibliotheken werden erst beim Klick geladen. */
 function gtgDirectPdfOk(){ try{ const ua=navigator.userAgent||''; if(/iPhone|iPad|iPod|Android|Mobile/i.test(ua)) return false;
-    if(navigator.maxTouchPoints>1 && /Macintosh/.test(ua)) return false;   // iPad im Desktop-Modus
+    if(/Macintosh|Mac OS X/.test(ua)) return false;   // Mac (und iPad im Desktop-Modus): Druckdialog -> Vektor-PDF in bester Qualität
     return window.innerWidth>=700; }catch(e){ return false; } }
 function gtgLoadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(); s.onerror=()=>rej(new Error('Laden fehlgeschlagen')); document.head.appendChild(s); }); }
 async function gtgPdfLibs(){
