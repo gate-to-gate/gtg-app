@@ -40,3 +40,6 @@ Coaches_Zugaenge*.xlsx
 
 # Einmal-Skript mit Klartext-Passwörtern (Supabase-Admins) - NIE committen!
 supabase_admins*.sql
+
+# nicht mehr benötigt (Vorschau-Seiten pro Link wurden verworfen)
+404.html

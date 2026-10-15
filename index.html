@@ -2955,7 +2955,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150716';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150723';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6720,15 +6720,16 @@ async function coachDeleteRemote(k){
   try{ const m=LS.get('gtg_coachlinks',{})||{}; delete m[k]; LS.set('gtg_coachlinks',m); }catch(e){} COACH_KNOWN.keys.delete(k);
   return out; }
 /* Fertige Nachricht zum Teilen des Coach-Links (für Teams/WhatsApp) */
-function coachShareText(date, venue, gender, url){
+function coachTitleOf(date, venue, gender, runsIn){
   const k=coachKeyOf(date,venue,gender), c=COACH_CONTENT[k];
-  let runs=(c&&Array.isArray(c.runs)&&c.runs.length)? c.runs.map(r=>({run:r.run, disc:r.disc}))
-    : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train').map(e=>({run:e.run, disc:e.discipline}));
+  let runs= runsIn || ((c&&Array.isArray(c.runs)&&c.runs.length)? c.runs.map(r=>({run:r.run, disc:r.disc}))
+    : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train').map(e=>({run:e.run, disc:e.discipline})));
   const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / ');
   const nums=[...new Set(runs.map(r=>String(r.run)))].sort();
   const lauf= nums.length ? (nums.length===1?'Lauf '+nums[0]:'Lauf '+nums.slice(0,-1).join(', ')+' & '+nums[nums.length-1]) : '';
   const g = gender==='W'?'Frauen':gender==='M'?'Männer':gender;
-  return `Gate-to-Gate · ${venue} · ${dmy(date)} · ${[discs,g].filter(Boolean).join(' ')}${lauf?' · '+lauf:''}\n${url}`; }
+  return `${venue} · ${dmy(date)} · ${[discs,g].filter(Boolean).join(' ')}${lauf?' · '+lauf:''}`; }
+function coachShareText(date, venue, gender, url){ return `Gate-to-Gate · ${coachTitleOf(date,venue,gender)}\n${url}`; }
 function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t); }catch(e){}
   return new Promise(res=>{ const i=document.createElement('textarea'); i.value=t; i.style.position='fixed'; i.style.opacity='0'; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(e){} i.remove(); res(); }); }
 function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnownRefresh();
