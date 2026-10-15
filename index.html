@@ -3003,7 +3003,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150948';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150951';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6834,7 +6834,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const clBtn = (r.mode!=='comp'||!r.tagged)
       ? '<span class="db-dash">—</span>'
       : _hasLink
-        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" data-clkey="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}" title="Kopiert eine fertige Nachricht mit Link: ${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${hasVid?(_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)">↻</button>`):''}</span>`
+        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clcopy="${escHtml(coachUrlOf(_ck))}" data-clkey="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}" title="Kopiert eine fertige Nachricht mit Link: ${escHtml(coachUrlOf(_ck))}">⧉ Link kopieren</button>${_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}" title="${hasVid?'Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)':'Daten des Coach-Links aktualisieren – die Videos bleiben wie veröffentlicht (liegen auf einem anderen Gerät)'}">↻</button>`}</span>`
       : (hasVid
           ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
@@ -8177,15 +8177,20 @@ async function coachCreate(){
   const all=await vdbAll();
   const evs=DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train');
   if(!evs.length){ cmProg('Kein Event mit Daten gefunden.',false); return; }
+  // bereits veröffentlichter Stand: unveränderte Videos (gleiche Datei & Grösse) nicht erneut hochladen;
+  // Videos, die nur auf einem anderen Gerät liegen, werden aus dem veröffentlichten Link übernommen
+  const PREVV=new Map(), PREVRUN={}; try{ cmProg('Prüfe bestehenden Coach-Link…'); const ob=await coachFetchBundle(evKeySafe);
+    ((ob&&ob.runs)||[]).forEach(r=>{ const rk=((r.ev&&r.ev.discipline)||'')+'|'+r.run; PREVRUN[rk]=r.videos||[]; (r.videos||[]).forEach(x=>{ if(x&&x.id) PREVV.set(x.id,x); }); }); }catch(e){}
   const plan=[]; let totalVids=0;
-  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)); plan.push({ev,vids}); totalVids+=vids.length; });
+  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk));
+    const have=new Set(vids.map(v=>v.id)); (PREVRUN[ev.discipline+'|'+ev.run]||[]).forEach(pv=>{ if(pv && pv.id && !have.has(pv.id)) vids.push({__prev:pv}); });
+    plan.push({ev,vids}); totalVids+=vids.length; });
   if(!totalVids){ cmProg('Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).',false); return; }
   const runs=[]; let done=0, skipped=0;
-  // bereits veröffentlichter Stand: unveränderte Videos (gleiche Datei & Grösse) nicht erneut hochladen
-  const PREVV=new Map(); try{ cmProg('Prüfe bestehenden Coach-Link…'); const ob=await coachFetchBundle(evKeySafe); ((ob&&ob.runs)||[]).forEach(r=>(r.videos||[]).forEach(x=>{ if(x&&x.id) PREVV.set(x.id,x); })); }catch(e){}
   for(const {ev,vids} of plan){
     const vout=[];
     for(const v of vids){
+      if(v.__prev){ vout.push(v.__prev); done++; skipped++; cmProg(`Video ${done}/${totalVids} vom anderen Gerät übernommen: ${v.__prev.name}`); continue; }
       const ext=(v.vname&&v.vname.includes('.'))? (v.vname.split('.').pop().replace(/[^a-z0-9]/gi,'').slice(0,4)||'mp4') : 'mp4';
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
       { const pv=PREVV.get(v.id), ks=v.vsize||(v.video&&v.video.size)||0;
