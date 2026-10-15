@@ -1620,8 +1620,8 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
   .legend{gap:4px 10px}
   .legend .lg{font-size:11.5px;gap:5px;padding:2px 2px}
   .legend .lg .bar{width:11px;height:3px}
-  .lg-best{font-size:0;padding:0 4px;margin-left:3px;line-height:14px}
-  .lg-best::before{content:'★';font-size:9px}             /* Bestzeit als Stern, damit alle in eine Zeile passen */
+  .lg-best{font-size:0;padding:0;margin-left:3px;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;vertical-align:middle}
+  .lg-best::before{content:'';width:10px;height:10px;background:#a9801a;-webkit-mask:var(--star) center/contain no-repeat;mask:var(--star) center/contain no-repeat}             /* Bestzeit als Stern, damit alle in eine Zeile passen */
   body.coach .fig-note{display:none}                         /* Coach-Link Handy: Figuren-Erklärung unter der Tabelle weg */
   #figstrip{gap:5px!important}
   .figpill{font-size:10.5px;padding:2px 7px;gap:4px}
@@ -1631,6 +1631,34 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
 #gtgPdfBusy .gpb-box{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 22px;font-weight:700;color:var(--ink);box-shadow:0 12px 30px -12px rgba(0,0,0,.3)}
 #gtgPdfBusy .gpb-spin{width:20px;height:20px;border-radius:50%;border:3px solid #f1d3cf;border-top-color:var(--red);animation:gpbspin .8s linear infinite}
 @keyframes gpbspin{to{transform:rotate(360deg)}}
+/* ===== Video-Panel: ruhige, neutrale Bedienelemente (statt Rot) ===== */
+:root{--star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'/%3E%3C/svg%3E")}
+.cv-evt{color:var(--muted);font-weight:700}
+.clip-speed{gap:10px}
+.clip-speed .cs-seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.clip-speed .cs-seg button{border:none;border-radius:0;background:transparent;min-width:44px;height:34px;color:var(--ink2)}
+.clip-speed .cs-seg button+button{border-left:1px solid var(--line)}
+.clip-speed .cs-seg button.on{background:#2b3440;color:#fff}
+.clip-speed .cs-seg button:hover:not(.on){background:#e9edf2}
+.clip-sbsbtn{height:36px;border-radius:10px;padding:0 13px}
+.clip-sbsbtn.on,.clip-speed .clip-sbsbtn.on,.clip-sbsbtn.on:hover{background:#2b3440;border-color:#2b3440;color:#fff}
+.cv-vizswitch button.on{background:#2b3440;color:#fff}
+.clip-sbsbar{display:none;gap:8px}
+.clip-sbsbar button{height:36px;border-radius:10px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.clip-sbsbar #clipSyncPlay{background:#2b3440;border-color:#2b3440;color:#fff;min-width:96px}
+.clip-sbsbar #clipSyncPlay:hover{background:#1c2430}
+body.dark .clip-speed .cs-seg{border-color:#3a4452;background:#232b36}
+body.dark .clip-speed .cs-seg button{background:transparent;color:#cfd6e0;border-color:#3a4452}
+body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .clip-speed .clip-sbsbtn.on,body.dark .cv-vizswitch button.on,body.dark .clip-sbsbar #clipSyncPlay{background:#e7ebf1;border-color:#e7ebf1;color:#1c2430}
+@media(max-width:600px){
+  .clip-speed{gap:8px}
+  .clip-speed .cs-seg button{min-width:40px;height:36px}
+  .clip-speed .clip-sbsbtn{margin-left:0;height:36px}
+  /* Side-by-Side-Steuerung: eine saubere Zeile – Play gross, daneben Sync und Lösen */
+  #clipSbsBar[style*="flex"]{display:grid!important;grid-template-columns:auto 1fr auto;gap:8px;width:100%;max-width:420px;margin:10px auto 0}
+  #clipSbsBar .clip-bigbtn{display:none}
+  #clipSbsBar button{padding:0 12px;font-size:12.5px}
+}
 </style>
 </head>
 <body>
@@ -1704,7 +1732,7 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
       <div id="seriesPick" class="series-pick no-print" style="display:none"></div>
       <div id="main"></div>
       <div id="coachVid" class="card no-print" style="display:none">
-        <div class="c-head"><div><h2>Video <span id="cvEvt" style="color:var(--red)"></span></h2>
+        <div class="c-head"><div><h2>Video <span id="cvEvt" class="cv-evt"></span></h2>
           <div class="c-sub"><b>Klick auf ein Tor</b> in der Grafik oben (oder in der Detail-Tabelle) springt hier im Video an genau die Stelle.</div></div>
           <div class="cv-vizswitch"><button id="cvVizChart" class="on" type="button">Grafik</button><button id="cvVizTable" type="button">Tabelle</button></div>
         </div>
@@ -1726,10 +1754,10 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
                 <div id="clipDefbarB" class="defbar"></div>
               </div>
             </div>
-            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-lab">Tempo</span><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></div>
+            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-lab">Tempo</span><span class="cs-seg"><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></span></div>
             <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
               <button id="clipSyncPlay" type="button">▶ Beide</button>
-              <button id="clipSyncBtn" type="button">An diesem Tor synchronisieren</button>
+              <button id="clipSyncBtn" type="button"><span class="lg-full">An diesem Tor synchronisieren</span><span class="lg-sur">Synchronisieren</span></button>
               <button id="clipSyncOff" type="button">Lösen</button>
               <button id="clipBigBtn" type="button" class="clip-bigbtn" title="Vergrössern (Vollbild)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>Vergrössern</button>
             </div>
@@ -2865,7 +2893,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610141220';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150610';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7763,7 +7791,12 @@ function clipSyncAtGate(gInt){ const av=$('#clipVideo'), bv=$('#clipVideoB'); if
   av.ontimeupdate=()=>{ if(!CLIPSYNC.on) return; const target=av.currentTime-CLIPSYNC.delta; if(isFinite(target)&&Math.abs(bv.currentTime-target)>0.09){ try{ bv.currentTime=Math.max(0,target); }catch(e){} } };
   gtgToast('An Tor '+(gInt+1)+' synchronisiert.','ok'); }
 function clipSyncPlayToggle(){ const av=$('#clipVideo'), bv=$('#clipVideoB'); if(!av||!bv) return; const btn=$('#clipSyncPlay');
-  if(av.paused){ av.play(); bv.play(); if(btn) btn.textContent='⏸ Beide'; }
+  // iPhone/iPad: es darf nur EIN Video mit Ton gleichzeitig laufen – sonst stoppt iOS das erste.
+  // Darum läuft das rechte Video stumm; klappt es trotzdem nicht, beide stumm erneut starten.
+  if(av.paused || bv.paused){ bv.muted=true;
+    const go=v=>{ try{ const p=v.play(); return (p&&p.catch)? p.catch(()=>null) : Promise.resolve(); }catch(e){ return Promise.resolve(); } };
+    Promise.all([go(av),go(bv)]).then(()=>{ if(av.paused||bv.paused){ av.muted=true; bv.muted=true; go(av); go(bv); } });
+    if(btn) btn.textContent='⏸ Beide'; }
   else { av.pause(); bv.pause(); if(btn) btn.textContent='▶ Beide'; } }
 function clipSyncOff(){ CLIPSYNC.on=false; const av=$('#clipVideo'); if(av) av.ontimeupdate=null; const btn=$('#clipSyncPlay'); if(btn) btn.textContent='▶ Beide'; }
 function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } clipSyncOff(); }
@@ -8115,7 +8148,7 @@ const I18N_EN={
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","PDF wird erstellt …":"Creating PDF …","PDF direkt erstellen ging nicht – Druckdialog wird geöffnet («Als PDF speichern» wählen).":"Could not create the PDF directly – opening the print dialog (choose «Save as PDF»).","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Synchronisieren":"Sync","PDF wird erstellt …":"Creating PDF …","PDF direkt erstellen ging nicht – Druckdialog wird geöffnet («Als PDF speichern» wählen).":"Could not create the PDF directly – opening the print dialog (choose «Save as PDF»).","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
