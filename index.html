@@ -1185,7 +1185,8 @@ table.hmp .g b{font-size:6.5px}
   #heroShell{height:100%}
   #heroShell svg.chart{width:100%;height:100%;max-height:100%}
   #heroShell path{stroke-width:2.6px}
-  #heroShell path.hTop{stroke-width:1.7px}   /* Bestzeit-Linie im PDF etwas feiner */
+  #heroShell path.hTop{stroke-width:1.7px}
+  #heroShell path.hProf{stroke-width:1.2px}   /* Bestzeit-Linie im PDF etwas feiner */
   .note{display:none!important}   /* Figuren-Note unten weg -> keine 3. Seite (steht oben im Hero-Kopf) */
   #heroCard .fig-leg-print{font-size:8.3px;color:var(--muted);margin:1px 0 0;line-height:1.3}
   #heroCard .hero-readhelp{flex:0 0 auto;display:flex!important;flex-wrap:wrap;align-items:center;gap:3px 10px;font-size:8.3px;line-height:1.35;color:var(--ink2);margin-top:4px;border-top:1px solid var(--line);padding-top:3px}
@@ -2955,7 +2956,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610150751';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610150918';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3850,20 +3851,24 @@ function drawHero(){
       const pit=[]; for(let i=0;i<m;i++){ pit[i]=(gts[i]&&gts[i].pitch!=null)?Math.max(0,gts[i].pitch):null; }
       const known=pit.filter(v=>v!=null); const mean=known.length? known.reduce((a,b)=>a+b,0)/known.length : 25;
       for(let i=0;i<m;i++) if(pit[i]==null) pit[i]=mean;
-      const pMin=Math.min(...pit), pMax=Math.max(...pit), pRange=(pMax-pMin)||1;
-      // Steilheit übertreiben: Abweichung vom Mittel verstärken -> flach wird flacher, steil wird steiler
-      const K=2.4; const drop=pit.map(p=> Math.max(0.5, mean + (p-mean)*K));
+      // Höhenprofil wie im GPS-Tool: echte Höhe (Torabstand × Gefälle, sonst Steilheit leicht überhöht),
+      // Fläche je Abschnitt nach Steilheit grau abgestuft: flach < 13.5°, mittel 13.5–18.9°, steil > 18.9°
+      const deg=p=> Math.atan((p||0)/100)*180/Math.PI;   // Kurssetzung: Gefälle in %
+      const dists=gts.slice(0,m).map(g=> (g&&g.dist!=null&&g.dist>0)?g.dist:null); const haveDist=dists.filter(v=>v!=null).length>=m*0.7;
+      const dAvg=haveDist? dists.filter(v=>v!=null).reduce((a,b)=>a+b,0)/dists.filter(v=>v!=null).length : 1;
+      const drop=pit.map((p,i)=> haveDist ? (dists[i]||dAvg)*Math.sin(Math.atan(p/100)) : Math.max(0.5, mean + (p-mean)*2.4));
       const e=[0]; for(let i=1;i<m;i++){ e[i]=e[i-1]-drop[i]; }
       const eMin=Math.min(...e), span=(Math.max(...e)-eMin)||1;
-      const yTop = mt + ih*0.28;
-      const top=[]; for(let i=0;i<m;i++){ const t=(e[i]-eMin)/span; top.push({x:x(i+1), y: yTop + (1-t)*(mt+ih-yTop)}); }
-      // Fläche als gerade Polylinie (ehrliche Winkel, keine Rundung)
-      const topStr='M'+top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L');
-      svg+=`<path d="${topStr} L ${x(m).toFixed(1)} ${(mt+ih)} L ${x(1).toFixed(1)} ${(mt+ih)} Z" fill="${T.prof}" opacity=".08"/>`;
-      // Linie in Segmenten, eingefärbt nach Steilheit: flach = hell, steil = dunkel + etwas dicker
-      for(let i=1;i<m;i++){ const p0=top[i-1], p1=top[i]; const t=(pit[i]-pMin)/pRange;
-        const g=Math.round(178-72*t); const col=`rgb(${g+18},${g+26},${g+38})`; const wseg=(1+1.7*t).toFixed(2);
-        svg+=`<line x1="${p0.x.toFixed(1)}" y1="${p0.y.toFixed(1)}" x2="${p1.x.toFixed(1)}" y2="${p1.y.toFixed(1)}" stroke="${col}" stroke-width="${wseg}" opacity=".55" stroke-linecap="round"/>`; }
+      const yTop = mt + ih*0.30, yBot=mt+ih;
+      const top=[]; for(let i=0;i<m;i++){ const t=(e[i]-eMin)/span; top.push({x:x(i+1), y: yTop + (1-t)*(yBot-yTop)}); }
+      const SC = T.dark ? ['rgba(255,255,255,.035)','rgba(255,255,255,.075)','rgba(255,255,255,.13)'] : ['#f1f2f4','#e2e4e8','#cfd2d8'];
+      const bucket=p=>{ const d=deg(p); return d<13.5?0:(d<=18.9?1:2); };
+      for(let i=1;i<m;i++){ const p0=top[i-1], p1=top[i];
+        svg+=`<path d="M${p0.x.toFixed(1)} ${p0.y.toFixed(1)} L${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L${p1.x.toFixed(1)} ${yBot} L${p0.x.toFixed(1)} ${yBot} Z" fill="${SC[bucket(pit[i])]}"/>`; }
+      svg+=`<path class="hProf" d="M${top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L')}" fill="none" stroke="${T.dark?'#7d8898':'#9aa1ab'}" stroke-width="1.3"/>`;
+      // Legende Steilheit (unten links, neben «Tor-Nr.»)
+      { const lab = _nw ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
+        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="14" height="7" rx="2" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+18}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+= 22 + l.length*(_nw?5.4:5.2) + 10; }); }
       svg+=`<text x="${(ml+iw/2).toFixed(1)}" y="${(mt+ih-7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" letter-spacing=".05em" fill="${T.prof}" opacity=".6">HÖHENPROFIL</text>`;
     }
   }
