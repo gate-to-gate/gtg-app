@@ -354,6 +354,7 @@ body.dark .tag-cloud-hint{background:#3a2e16;border-color:#5a481f;color:#e0b45a}
 .series-pick .sp-title{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .series-pick .sp-quick{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
 .series-pick .sp-qbtn{border:1.3px solid var(--line);background:#fff;border-radius:6px;padding:3px 9px;font:inherit;font-size:10.5px;font-weight:650;color:var(--muted);cursor:pointer}
+.series-pick .sp-qbtn:disabled{opacity:.45;cursor:not-allowed}
 .series-pick .sp-qbtn:hover{border-color:#c3cad4;color:var(--ink2)}
 .series-pick .sp-grid{display:flex;flex-wrap:wrap;gap:6px 10px}
 .series-pick .sp-athrow{display:flex;align-items:center;gap:6px;min-width:0}
@@ -3147,7 +3148,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161336';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161401';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3678,7 +3679,8 @@ function renderSeriesPick(all, laufs){
   let h=`<div class="sp-row sp-row-top"><span class="sp-lab">${EN?'Quick select':'Schnellauswahl'}</span><div class="sp-quick">`
     +`<button class="sp-qbtn" data-q="all">${EN?'All':'Alle'}</button><button class="sp-qbtn" data-q="none">${EN?'None':'Keine'}</button><span class="sp-sep"></span>`
     + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">${EN?'Run':'Lauf'} ${l}</button>`).join('')
-    +`<span class="sp-sep"></span><button class="sp-qbtn" data-q="best">${EN?'Best run each':'Bester Lauf je Athlet:in'}</button><button class="sp-qbtn" data-q="last">${EN?'Last run each':'Letzter Lauf je Athlet:in'}</button>`
+    +(()=>{ const multi=[...byAth.values()].some(r=>r.length>1); const dis=multi?'':` disabled title="${EN?'Each athlete has only one run – nothing to choose.':'Jede Person hat nur einen Lauf – hier gibt es nichts auszuwählen.'}"`;
+        return `<span class="sp-sep"></span><button class="sp-qbtn" data-q="best"${dis}>${EN?'Best run each':'Bester Lauf je Athlet:in'}</button><button class="sp-qbtn" data-q="last"${dis}>${EN?'Last run each':'Letzter Lauf je Athlet:in'}</button>`; })()
     +`</div><span class="sp-count">${nSel} / ${all.length} ${EN?'runs':'Läufe'}</span></div>`
     +`<div class="sp-row"><span class="sp-lab">${EN?'Reference':'Referenz'}</span><div class="sp-refseg"><button class="sp-rbtn${S.trainRef!=='own'?' on':''}" data-ref="all">${EN?'Fastest run (all)':'Schnellster Lauf (alle)'}</button><button class="sp-rbtn${S.trainRef==='own'?' on':''}" data-ref="own">${EN?'Own best run':'Eigener bester Lauf'}</button></div></div>`
     +ownAthRow(all)
@@ -3696,7 +3698,7 @@ function renderSeriesPick(all, laufs){
     const k=cb.dataset.k; if(cb.checked) S.trainSel.picked.add(k); else S.trainSel.picked.delete(k);
     renderSeriesPick(all,laufs); loadTrainEvent(all); });
   sp.querySelectorAll('.sp-qbtn').forEach(b=> b.onclick=()=>{
-    const q=b.dataset.q;
+    const q=b.dataset.q; const _before=[...S.trainSel.picked].sort().join(',');
     if(q==='all') all.forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run)));
     else if(q==='none') S.trainSel.picked.clear();
     else if(/^L\d+$/.test(q)){ S.trainSel.picked.clear(); all.filter(s=>+s.run===+q.slice(1)).forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run))); }
@@ -3705,6 +3707,7 @@ function renderSeriesPick(all, laufs){
         if(q==='last') pick=list.reduce((a,b)=>(+b.run)>(+a.run)?b:a);
         else { const fin=list.filter(x=>trTotal(x)!=null); pick= fin.length? fin.reduce((a,b)=>trTotal(b)<trTotal(a)?b:a) : list[0]; }
         S.trainSel.picked.add(seriesKey(pick.name,pick.run)); }); }
+    if([...S.trainSel.picked].sort().join(',')===_before && typeof gtgToast==='function') gtgToast(LANG==='en'?'Selection unchanged – these runs are already selected.':'Auswahl unverändert – genau diese Läufe sind schon gewählt.');
     renderSeriesPick(all,laufs); loadTrainEvent(all); });
   sp.querySelectorAll('.sp-rbtn').forEach(b=> b.onclick=()=>{ S.trainRef=b.dataset.ref; renderSeriesPick(all,laufs); loadTrainEvent(all); });
   sp.querySelectorAll('.sp-obtn').forEach(b=> b.onclick=()=>{ S.trainOwnAth=b.dataset.ath; renderSeriesPick(all,laufs); loadTrainEvent(all); });
