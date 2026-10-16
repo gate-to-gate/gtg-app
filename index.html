@@ -493,6 +493,26 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
 #rbrCard .rbr-gap{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 @media (max-width:700px){ #rbrCard .rbr-row{grid-template-columns:1fr auto} #rbrCard .rbr-runs{grid-column:1 / -1;grid-row:2} }
 @media print{ #rbrCard{display:none!important} }
+/* Serien-Auswahl (Training): klare Zeilen mit Beschriftung links */
+.series-pick{padding:10px 14px}
+.series-pick .sp-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-top:1px solid var(--line)}
+.series-pick .sp-row:first-child{border-top:none;padding-top:2px}
+.series-pick .sp-lab{flex:0 0 112px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.series-pick .sp-row .sp-quick{margin-left:0;flex:1 1 auto;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.series-pick .sp-sep{width:1px;height:16px;background:var(--line);margin:0 3px}
+.series-pick .sp-count{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.series-pick .sp-row-ath{align-items:flex-start}
+.series-pick .sp-row-ath .sp-lab{padding-top:8px}
+.series-pick .sp-grid{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:8px}
+.series-pick .sp-athrow{display:flex;align-items:center;gap:8px;border:1.3px solid var(--line);border-radius:10px;padding:5px 7px 5px 10px;background:var(--bg);opacity:.62;transition:.12s}
+.series-pick .sp-athrow.on{opacity:1;background:var(--card);border-color:color-mix(in srgb, var(--athc) 45%, var(--line))}
+.series-pick .sp-athname{display:inline-flex;align-items:center;gap:6px;font-size:11.5px}
+.series-pick .sp-adot{width:8px;height:8px;border-radius:50%;background:var(--athc);flex:none}
+.series-pick .sp-chip{padding:3px 7px}
+.series-pick .sp-ownnote{font-size:11.5px;color:var(--muted)}
+body.dark .series-pick .sp-athrow{background:#1f2732;border-color:#3a4452}
+body.dark .series-pick .sp-athrow.on{background:#252d39}
+@media (max-width:700px){ .series-pick .sp-row{flex-wrap:wrap;gap:6px} .series-pick .sp-lab{flex:1 1 100%} .series-pick .sp-row-ath .sp-lab{padding-top:0} .series-pick .sp-count{margin-left:0} }
 /* Legend / chips */
 .hero-ctrls{display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hero-ctrls .toggle .tg-txt small{display:none}   /* kompakt: Untertitel weg, alles einzeilig nebeneinander */
@@ -3127,7 +3147,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161324';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161328';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3635,9 +3655,11 @@ function ownAthCandidates(all){ const m=new Map(); (all||[]).filter(s=>S.trainSe
   return {ok:[...m.entries()].filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(e=>e[0]), single:[...m.entries()].filter(([,n])=>n<2).map(e=>e[0])}; }
 function ownAthRow(all){
   if(S.trainRef!=='own') return '';
-  const EN=LANG==='en', c=ownAthCandidates(all), sur=n=>escHtml(String(n).split(' ')[0]);
+  const EN=LANG==='en', c=ownAthCandidates(all);
+  const _cnt={}; uniq((all||[]).map(x=>x.name)).forEach(n=>{ const k=String(n).split(' ')[0]; _cnt[k]=(_cnt[k]||0)+1; });
+  const sur=n=>{ const p=String(n).split(' '); return escHtml(_cnt[p[0]]>1&&p[1]? p[0]+' '+p[1].charAt(0)+'.' : p[0]); };
   if(S.trainOwnAth!=='__all' && !c.ok.includes(S.trainOwnAth)) S.trainOwnAth = c.ok[0]||'__all';
-  let h=`<div class="sp-ref sp-own"><span class="sp-reflab">${EN?'Athlete':'Athlet:in'}</span>`;
+  let h=`<div class="sp-row sp-own"><span class="sp-lab">${EN?'Compare':'Vergleich für'}</span>`;
   if(!c.ok.length) h+=`<span class="sp-ownnote">${EN?'Select at least 2 runs of the same athlete.':'Mindestens 2 Läufe derselben Person anhaken.'}</span>`;
   else { h+='<div class="sp-refseg">'+c.ok.map(n=>`<button class="sp-rbtn sp-obtn${S.trainOwnAth===n?' on':''}" data-ath="${escHtml(n)}">${sur(n)}</button>`).join('')
       +(c.ok.length>1?`<button class="sp-rbtn sp-obtn${S.trainOwnAth==='__all'?' on':''}" data-ath="__all">${EN?'All':'Alle'}</button>`:'')+'</div>'; }
@@ -3648,26 +3670,31 @@ function renderSeriesPick(all, laufs){
   if(!all.length){ sp.innerHTML=''; return; }
   const byAth=new Map();
   all.forEach(s=>{ if(!byAth.has(s.name)) byAth.set(s.name,[]); byAth.get(s.name).push(+s.run); });
-  let h='<div class="sp-head"><span class="sp-title">Serien (Athlet · Lauf)</span>'
-    +'<div class="sp-quick"><button class="sp-qbtn" data-q="all">Alle</button><button class="sp-qbtn" data-q="none">Keine</button>'
-    + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">Nur Lauf ${l}</button>`).join('')
-    +`<button class="sp-qbtn" data-q="best">${LANG==='en'?'Best run each':'Bester Lauf je Athlet:in'}</button><button class="sp-qbtn" data-q="last">${LANG==='en'?'Last run each':'Letzter Lauf je Athlet:in'}</button>`
-    +'</div></div>'
-    +`<div class="sp-ref"><span class="sp-reflab">${LANG==='en'?'Reference':'Referenz'}</span><div class="sp-refseg"><button class="sp-rbtn${S.trainRef!=='own'?' on':''}" data-ref="all">${LANG==='en'?'Fastest run (all)':'Schnellster Lauf (alle)'}</button><button class="sp-rbtn${S.trainRef==='own'?' on':''}" data-ref="own">${LANG==='en'?'Own best run':'Eigener bester Lauf'}</button></div></div>`
+  const EN=LANG==='en';
+  // Kurzname: Nachname; bei gleichem Nachnamen zusätzlich Vorname-Initial (z. B. SUTER J. / SUTER C.)
+  const surCnt={}; [...byAth.keys()].forEach(n=>{ const s0=String(n).split(' ')[0]; surCnt[s0]=(surCnt[s0]||0)+1; });
+  const shortOf=n=>{ const p=String(n).split(' '); return surCnt[p[0]]>1 && p[1] ? p[0]+' '+p[1].charAt(0)+'.' : p[0]; };
+  const nSel=all.filter(s=>S.trainSel.picked.has(seriesKey(s.name,s.run))).length;
+  let h=`<div class="sp-row sp-row-top"><span class="sp-lab">${EN?'Quick select':'Schnellauswahl'}</span><div class="sp-quick">`
+    +`<button class="sp-qbtn" data-q="all">${EN?'All':'Alle'}</button><button class="sp-qbtn" data-q="none">${EN?'None':'Keine'}</button><span class="sp-sep"></span>`
+    + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">${EN?'Run':'Lauf'} ${l}</button>`).join('')
+    +`<span class="sp-sep"></span><button class="sp-qbtn" data-q="best">${EN?'Best run each':'Bester Lauf je Athlet:in'}</button><button class="sp-qbtn" data-q="last">${EN?'Last run each':'Letzter Lauf je Athlet:in'}</button>`
+    +`</div><span class="sp-count">${nSel} / ${all.length} ${EN?'runs':'Läufe'}</span></div>`
+    +`<div class="sp-row"><span class="sp-lab">${EN?'Reference':'Referenz'}</span><div class="sp-refseg"><button class="sp-rbtn${S.trainRef!=='own'?' on':''}" data-ref="all">${EN?'Fastest run (all)':'Schnellster Lauf (alle)'}</button><button class="sp-rbtn${S.trainRef==='own'?' on':''}" data-ref="own">${EN?'Own best run':'Eigener bester Lauf'}</button></div></div>`
     +ownAthRow(all)
-    +'<div class="sp-grid">';
-  [...byAth.entries()].forEach(([name,runs])=>{
-    const sur=String(name).split(' ')[0];
-    h+=`<div class="sp-athrow"><div class="sp-athname" title="${escHtml(name)}">${escHtml(sur)}</div><div class="sp-laufs">`;
+    +`<div class="sp-row sp-row-ath"><span class="sp-lab">${EN?'Runs':'Läufe'}</span><div class="sp-grid">`;
+  [...byAth.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([name,runs])=>{
+    const col=athColor(name,false); const anyOn=runs.some(r=>S.trainSel.picked.has(seriesKey(name,r)));
+    h+=`<div class="sp-athrow${anyOn?' on':''}" style="--athc:${col}"><div class="sp-athname" title="${escHtml(name)}"><i class="sp-adot"></i>${escHtml(shortOf(name))}</div><div class="sp-laufs">`;
     runs.sort((a,b)=>a-b).forEach(r=>{ const k=seriesKey(name,r); const on=S.trainSel.picked.has(k);
       h+=`<label class="sp-chip${on?' on':''}"><input type="checkbox" data-k="${escHtml(k)}"${on?' checked':''}> L${r}</label>`; });
     h+='</div></div>';
   });
-  h+='</div>';
+  h+='</div></div>';
   sp.innerHTML=h;
   sp.querySelectorAll('input[type=checkbox]').forEach(cb=> cb.onchange=()=>{
     const k=cb.dataset.k; if(cb.checked) S.trainSel.picked.add(k); else S.trainSel.picked.delete(k);
-    const ch=cb.closest('.sp-chip'); if(ch) ch.classList.toggle('on',cb.checked); loadTrainEvent(all); });
+    renderSeriesPick(all,laufs); loadTrainEvent(all); });
   sp.querySelectorAll('.sp-qbtn').forEach(b=> b.onclick=()=>{
     const q=b.dataset.q;
     if(q==='all') all.forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run)));
@@ -3714,7 +3741,10 @@ function loadTrainEvent(all){
   const sel = all.filter(s=> S.trainSel.picked.has(seriesKey(s.name,s.run)));
   if(!sel.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.', 'chart')+'</div>'; return; }
   // Serien -> eindeutige Einträger «Nachname·L<Lauf>» (eigene Farbe je Serie über athColor)
-  const skiers = sel.map(s=>{ const sur=String(s.name).split(' ')[0];
+  const _sc={}; uniq(all.map(x=>x.name)).forEach(n=>{ const k=String(n).split(' ')[0]; _sc[k]=(_sc[k]||0)+1; });
+  const _short=n=>{ const p=String(n).split(' '); return _sc[p[0]]>1&&p[1]? p[0]+' '+p[1].charAt(0)+'.' : p[0]; };   // gleicher Nachname -> Initial (z. B. SUTER J. / SUTER C.)
+  S.trShort=_short;
+  const skiers = sel.map(s=>{ const sur=_short(s.name);
     return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run}; });
   // Figuren der Sektion zusammenführen
   const evsF=TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e));
@@ -4012,7 +4042,7 @@ function trStats(){
   return {by, fastest, imp, con, nRuns:ser.length};
 }
 function trainKpiHTML(){
-  const c=S.comp, top=c.top, st=trStats(), EN=LANG==='en', sur=n=>String(n||'').split(' ')[0];
+  const c=S.comp, top=c.top, st=trStats(), EN=LANG==='en', sur=n=>(S.trShort?S.trShort(n):String(n||'').split(' ')[0]);
   const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
   const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
   const icClock='<circle cx="8" cy="8" r="6.2"/><path d="M8 4.6V8l2.3 1.4"/>';
@@ -4038,7 +4068,7 @@ function trainKpiHTML(){
 // Karte «Lauf für Lauf»: pro Athlet:in die Gesamtzeiten der Läufe, Trend, bester Lauf, Abstand zur Gruppenbesten
 function trainRunsHTML(){
   const st=trStats(); if(!st.by.size) return '';
-  const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>String(n||'').split(' ')[0];
+  const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>(S.trShort?S.trShort(n):String(n||'').split(' ')[0]);
   const rows=[...st.by.entries()].map(([nm,l])=>{ const fin=l.filter(x=>x.total!=null); const best=fin.length?fin.reduce((a,b)=>b.total<a.total?b:a):null; return {nm,l,best}; })
     .sort((a,b)=> (a.best?a.best.total:1e9)-(b.best?b.best.total:1e9));
   let h=`<div class="card" id="rbrCard"><div class="c-head"><div><h2>${EN?'Run by run':'Lauf für Lauf'}</h2>
