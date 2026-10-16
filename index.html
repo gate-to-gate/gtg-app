@@ -3148,7 +3148,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161401';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161438';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3631,9 +3631,9 @@ function trainSectionSeries(date,venue){
   const out=[];
   evs.forEach(e=> (e.skiers||[]).forEach(s=>{ if(!canSeeBy(s.by)) return;   // Serien anderer Teams nicht zeigen
     out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run, by:s.by||null}); }));
-  // sortiert nach Athlet, dann Lauf
+  // sortiert nach Athlet, dann Lauf; doppelte Serien (gleiche Person + Lauf) nur einmal
   out.sort((a,b)=> a.name.localeCompare(b.name) || (+a.run)-(+b.run));
-  return out;
+  const seen=new Set(); return out.filter(x=>{ const k=x.name+'|'+x.run; if(seen.has(k)) return false; seen.add(k); return true; });
 }
 function refreshTrainSeries(){
   const sp=$('#seriesPick'), rf=$('#selRunField');
@@ -8388,7 +8388,11 @@ function enterCoach(bundle){
       else cs.style.display='none'; } }catch(e){}
   try{ Object.entries(bundle.colors||{}).forEach(([nm,col])=>{ if(!nm||!col) return; const a=ATHLETES.find(x=>x.name===nm); if(a) a.color=col; else ATHLETES.push({name:nm, color:col}); }); }catch(e){}   // Farben wie in der Analyse
   const isTr=bundle.mode==='train';
-  const runs=bundle.runs||[]; runs.forEach(r=>{ if(r.ev){ r.ev.mode=isTr?'train':'comp'; (isTr?TRAIN:DATA).push(r.ev); }
+  const runs=bundle.runs||[];
+  // Coach-Link zeigt nur den Inhalt des Links: lokal vorhandene Kopien desselben Events (z. B. auf dem eigenen Gerät getaggt) entfernen -> keine doppelten Läufe
+  { const tgt=isTr?TRAIN:DATA; const ks=new Set(runs.filter(r=>r.ev).map(r=>[r.ev.date,r.ev.venue,r.ev.discipline,r.ev.gender,String(r.ev.run)].join('|')));
+    for(let i=tgt.length-1;i>=0;i--){ const e=tgt[i]; if(ks.has([e.date,e.venue,e.discipline,e.gender,String(e.run)].join('|'))) tgt.splice(i,1); } }
+  runs.forEach(r=>{ if(r.ev){ r.ev.mode=isTr?'train':'comp'; (isTr?TRAIN:DATA).push(r.ev); }
     if(r.course && r.course.id && !COURSES[r.course.id]) COURSES[r.course.id]={...r.course, savedAt:0, _coach:true}; });   // Kurssetzung aus dem Coach-Link
   const first=runs[0]; if(!first||!first.ev) return;
   if(isTr) return enterCoachTrain(bundle, first);
