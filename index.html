@@ -156,12 +156,14 @@ td.clip-hi{transition:outline-color .15s}
 .clipbig:not(.clipbig-full) .clipbig-body #clipViz{max-width:1150px}
 /* Coach-Pop-up (ganze Karte): kompakt, Video gross */
 .clipbig.clipbig-full .clipbig-body{align-items:flex-start;padding-top:4px}
-.clipbig.clipbig-full #coachVid{width:100%;max-width:1240px;margin:0;max-height:none;align-self:flex-start}
+.clipbig.clipbig-full #coachVid{width:100%;max-width:min(1720px,97vw);margin:0;max-height:none;align-self:flex-start}
 .clipbig.clipbig-full #coachVid .c-head .c-sub{display:none}
 .clipbig.clipbig-full #coachVid .clip-main{align-items:flex-start;gap:14px}
-.clipbig.clipbig-full #coachVid .clip-left{flex:1 1 66%}
-.clipbig.clipbig-full #coachVid .clip-viz{flex:1 1 34%;margin-top:0}
-.clipbig.clipbig-full #coachVid .clip-videowrap video{width:100%;height:auto;max-height:74vh;background:#000;border-radius:10px}
+.clipbig.clipbig-full #coachVid .clip-left{flex:1 1 72%}
+.clipbig.clipbig-full #coachVid .clip-viz{flex:1 1 28%;margin-top:0;min-width:260px}
+.clipbig.clipbig-full #coachVid .clip-videowrap video{width:100%;height:auto;max-height:78vh;background:#000;border-radius:10px}
+.clipbig.clipbig-full .clipbig-body{padding-top:0}
+@media (min-width:1100px){ .clipbig.clipbig-full{padding:10px 14px 12px} .clipbig.clipbig-full .clipbig-head{margin-bottom:8px} }
 @media(max-width:760px){ .clipbig:not(.clipbig-full) .clipbig-body .clip-vids{flex-direction:column} }
 .clip-selb{width:100%;height:34px;box-sizing:border-box;margin-bottom:6px;font:inherit;font-size:12.5px;font-weight:700;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
 .clip-alabel{display:none}
@@ -3148,7 +3150,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161531';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161544';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5602,6 +5604,7 @@ function saveRun(){
   saveVideoToLib(rec).then(st=>{ if(typeof renderLibrary==='function') renderLibrary();
     if(!TG.file){ msg.className='save-msg ok'; msg.textContent=baseMsg+'.'; return; }
     if(st && st.saved){ msg.className='save-msg ok'; msg.textContent=baseMsg+' · Video in Bibliothek gespeichert.'; }
+    else if(st && st.kept){ msg.className='save-msg warn'; msg.textContent=baseMsg+' · Video NICHT gespeichert (bestehendes Video behalten).'; }
     else if(st && st.quota){ msg.className='save-msg warn'; msg.textContent='⚠ Speicher voll: die Zeiten sind gespeichert, aber das Video passte nicht mehr. Bitte aufräumen (Datenbank → Videos, «Grösste zuerst» löschen) oder «Speicher maximieren», dann das Video erneut laden und speichern.'; if(typeof gtgToast==='function') gtgToast('Speicher voll – Video nicht gespeichert.','warn'); if(typeof updateStorageMeter==='function') updateStorageMeter(); }
     else { msg.className='save-msg warn'; const em=(st&&st.err&&(st.err.message||String(st.err)))||''; msg.textContent=baseMsg+' · Hinweis: Das Video konnte nicht gespeichert werden.'+(em?(' — '+em):''); if(typeof gtgToast==='function'&&em) gtgToast('Video-Fehler: '+em,'warn'); }
   }).catch(()=>{ if(typeof renderLibrary==='function') renderLibrary(); });
@@ -5814,7 +5817,17 @@ function saveVideoToLib(rec){
     name:rec.name,nation:rec.nation,fis:fisOf(rec.name), officialBest:rec.officialBest, officialGap:rec.officialGap,
     fps:curFps(), tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), figures:rec.figures,
     video:TG.file, vname:TG.file.name||'video', vsize:TG.file.size||0, savedAt:Date.now() };
-  return vdbPut(v).then(()=>({saved:true})).catch(err=>({saved:false, quota:isQuotaErr(err), err}));
+  const doPut=()=> vdbPut(v).then(()=>({saved:true})).catch(err=>({saved:false, quota:isQuotaErr(err), err}));
+  // Warnung: Training und Wettkampf mit gleicher Athlet:in/Tag/Ort/Disziplin/Lauf-Nr. teilen sich dieselbe Video-Kennung
+  return vdbGet(v.id).then(ex=>{
+    if(!ex || !(ex.video||ex.onDisk)) return doPut();
+    const exTrain = ex.mode ? ex.mode==='train' : vidIsTrain(ex);
+    if(exTrain === (v.mode==='train')) return doPut();   // gleicher Modus -> normales Überschreiben (z. B. neu getaggt)
+    const EN=LANG==='en', other = exTrain ? (EN?'training':'Trainings') : (EN?'competition':'Wettkampf'), now = v.mode==='train' ? (EN?'training':'Trainings') : (EN?'competition':'Wettkampf');
+    return gtgConfirm({ title: EN?'Replace video?':'Video ersetzen?', danger:true, okLabel: EN?'Replace video':'Video ersetzen', cancelLabel: EN?'Keep old video':'Altes Video behalten',
+      msg: EN ? `For ${rec.name} there is already a ${other} video for the same day, venue, discipline and run number (${rec.venue} · ${dmy(rec.date)} · ${rec.disc} · run ${rec.run}).\n\nSaving replaces it with this ${now} video. The gate times of both stay saved.\n\nTip: use a different run number to keep both videos.`
+               : `Für ${rec.name} gibt es am selben Tag, Ort, in derselben Disziplin und mit derselben Lauf-Nr. bereits ein ${other}-Video (${rec.venue} · ${dmy(rec.date)} · ${rec.disc} · Lauf ${rec.run}).\n\nBeim Speichern wird es durch dieses ${now}-Video ersetzt. Die Tor-Zeiten beider bleiben gespeichert.\n\nTipp: Mit einer anderen Lauf-Nr. bleiben beide Videos erhalten.` })
+      .then(ok=> ok ? doPut() : {saved:false, kept:true}); }).catch(()=>doPut());
 }
 function fmtSize(b){ return b>1e6? (b/1e6).toFixed(0)+' MB' : Math.max(1,Math.round(b/1e3))+' KB'; }
 function libGapVal(r){ return r.officialBest?0 : (typeof r.officialGap==='number'?r.officialGap:9e9); }
@@ -8119,7 +8132,7 @@ function openClip(name, g, source){
   const v=vids.find(x=>x.name===name)||vids[0];
   const host=$('#clipAth'); if(host) host.querySelectorAll('.cv-chip').forEach(b=> b.classList.toggle('on', decodeURIComponent(b.dataset.id)===v.id));
   clipLoad(v, g);
-  if(COACH.on && typeof clipPopOpen==='function'){ clipPopOpen(); }   // Coach-Link: Pop-up mit allen Funktionen
+  if(typeof clipPopOpen==='function'){ clipPopOpen(); }   // Coach-Link UND Analyse: Pop-up mit allen Funktionen (kein Scrollen nach unten)
   else { try{ (panel||$('#clipViz')).scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
 }
 function cvVizSwitchUI(){ const cb=$('#cvVizChart'), tb=$('#cvVizTable'); if(cb) cb.classList.toggle('on',CV_SRC!=='table'); if(tb) tb.classList.toggle('on',CV_SRC==='table'); }
