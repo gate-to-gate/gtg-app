@@ -221,6 +221,9 @@ body.coach .af-dl{display:none}
 .db-store{margin:8px 0;padding:10px 13px;border-radius:10px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .db-store.warn{background:#fdecea;border:1px solid #f5c6c0;color:#b23b30}
 .db-store.ok{background:var(--bg);border:1px solid var(--line);color:var(--ink2)}
+body.dark .db-store.warn{background:#3d2020;border-color:#6a3a34;color:#f0a89f}
+.seg-toggle:empty{display:none}
+.f:has(> .seg-toggle:empty){display:none}
 .db-dup{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fff4d6;color:#9a6b00;border:1px solid #f0dca0;border-radius:5px;padding:1px 5px;margin-left:5px}
 .db-anomb{font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:#fdecea;color:#b03a2e;border:1px solid #e79a92;border-radius:5px;padding:1px 6px;margin-left:5px;white-space:nowrap}
 body.dark .db-anomb{background:#3a2422;color:#f0a89f;border-color:#6a3a34}
@@ -3100,7 +3103,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610160650';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161149';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4159,7 +4162,8 @@ function secSummary(data, secs, STS, hasSt, worst){
     const tot=idx.reduce((a,o)=>a+o.v,0);
     const best=idx.reduce((a,o)=>o.v<a.v?o:a), weak=idx.reduce((a,o)=>o.v>a.v?o:a);
     const pos=idx.reduce((a,o)=>a+(o.v>0?o.v:0),0);
-    return {d, nm:nmOf(d.s), col:d.s.color, tot, best, weak, pos, idx, dnf:!!d.s.dnf}; }).filter(Boolean);
+    return {d, nm:nmOf(d.s), col:d.s.color, tot, best, weak, pos, idx, dnf:!!d.s.dnf}; }).filter(Boolean)
+    .filter(r=> !(r.d.s.isTop || (S.comp&&S.comp.top&&r.d.s.name===S.comp.top.name)));   // Laufbeste:r (Referenz = 0) gehört nicht in die Übersicht
   if(!rows.length){ el.innerHTML=''; return; }
   rows.sort((a,b)=>(a.dnf-b.dnf)||(a.tot-b.tot));
   const fin=rows.filter(r=>!r.dnf);
@@ -4331,7 +4335,7 @@ function heatmapPrint(){
     el.style.setProperty('--hmppad', pad);
   }
   const cumCol=s=> S.excludeAnom ? s.cumClean : s.cumRaw;   // gleiche Werte wie Hauptgrafik und Bildschirm-Matrix
-  const cumTxt=v=> v==null?'':(v>0?'+':(v<0?'−':''))+Math.abs(v).toFixed(2);
+  const cumTxt=v=> v==null?'':(Math.abs(v)<0.005?'+':(v>0?'+':'−'))+Math.abs(v).toFixed(2);
   let blocks='';
   for(let cI=0;cI<ncol;cI++){ const start=cI*per, end=Math.min(n,start+per); if(start>=end) continue;
     // Kopf: zwei Zeilen — Name über beiden Spalten, darunter Δ (pro Tor) und Σ (kumuliert)
@@ -4360,7 +4364,7 @@ function heatmapPrint(){
     +`<div><span class="hl-k">Σ&nbsp;(kumuliert)</span> aufsummierter Rückstand bis zu diesem Tor – der laufende Gesamtrückstand gegenüber der Laufbestzeit.</div>`
     +(nAdj?`<div><span class="hl-k">Grau</span> Δ-Werte in Grau zählen nicht einzeln in Σ: Ausreisser (nicht gewertet) oder mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt).</div>`:'')
     +`</div>`;
-  el.innerHTML=`<div class="hmp-note">Laufbestzeit (Referenz, Δ = 0.00): <b>${c.top.name}</b> · ${c.top.nation||''}</div><div class="hmp-grid">${blocks}</div>${legend}`;
+  el.innerHTML=`<div class="hmp-note">${LANG==='en'?'Fastest run (reference, Δ = 0.00)':'Laufbestzeit (Referenz, Δ = 0.00)'}: <b>${escHtml(c.top.name)}</b> · ${escHtml(c.top.nation||'')}</div><div class="hmp-grid">${blocks}</div>${legend}`;
 }
 
 /* alle Linien auf 0 starten lassen; Start-Offset linear über die ersten k Tore ausgleichen (kosmetisch, Endwert bleibt) */
@@ -7572,7 +7576,7 @@ function dbvStorageBanner(all){ const el=$('#dbvStore'); if(!el) return;
 }
 /* ---------- Datenbank: Athlet:innen (CRUD) ---------- */
 let DBA_EDIT=null;
-function athTagCount(name){ return [...SAVED,...SAVED_TRAIN].filter(r=>r.name===name).length; }
+function athTagCount(name){ try{ return [...(DATA||[]),...(TRAIN||[])].filter(e=>e&&e.skiers&&e.skiers.some(k=>k.name===name)).length; }catch(e){ return [...SAVED,...SAVED_TRAIN].filter(r=>r.name===name).length; } }   // alle Läufe (auch Databank)
 function fillDbaNat(cur){ const sel=$('#dbaNatSel'); if(!sel) return; sel.innerHTML='<option value="">Nation</option>'+allNations().map(n=>`<option value="${n}">${n}</option>`).join(''); if(cur) sel.value=cur; }
 function renderDbAthletes(){
   const body=$('#dbaBody'); if(!body) return;
