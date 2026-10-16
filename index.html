@@ -466,6 +466,7 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
   #dbSecEvents .db-table th:nth-child(6),#dbSecEvents .db-table td:nth-child(6),
   #dbSecEvents .db-table th:nth-child(7),#dbSecEvents .db-table td:nth-child(7){display:none}
 }
+.tap-tip{position:fixed;z-index:3000;background:#14181f;color:#fff;font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.3);pointer-events:none;animation:tcpop .2s ease}
 /* Legend / chips */
 .hero-ctrls{display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hero-ctrls .toggle .tg-txt small{display:none}   /* kompakt: Untertitel weg, alles einzeilig nebeneinander */
@@ -1238,7 +1239,7 @@ table.hmp .g b{font-size:6.5px}
   #heroShell{height:100%}
   #heroShell svg.chart{width:100%;height:100%;max-height:100%}
   #heroShell path{stroke-width:2.6px}
-  #heroShell path.hTop{stroke-width:1.7px}
+  #heroShell path.hTop{stroke-width:1.5px}
   #heroShell path.hProf{stroke-width:1.2px}   /* Bestzeit-Linie im PDF etwas feiner */
   .note{display:none!important}   /* Figuren-Note unten weg -> keine 3. Seite (steht oben im Hero-Kopf) */
   #heroCard .fig-leg-print{font-size:8.3px;color:var(--muted);margin:1px 0 0;line-height:1.3}
@@ -1299,7 +1300,7 @@ table.hmp .g b{font-size:6.5px}
   /* Abstand zwischen den Athleten (Zwischenspalte, ohne Rahmen) */
   #hmPrint table.hmp .sp{width:20px;border:none!important;background:#fff!important;padding:0}
   /* Kopf: Name über Δ+Σ, darunter kleine Δ/Σ-Beschriftung */
-  #hmPrint table.hmp thead th.ath{border-bottom:none}
+  #hmPrint table.hmp thead th.ath{border-bottom:none;font-size:6.6px;letter-spacing:-.01em;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #hmPrint table.hmp thead th.sub{font-weight:700;color:var(--muted);font-size:8px;padding-top:0}
   #hmPrint table.hmp td.cum,#hmPrint table.hmp th.cum{font-variant-numeric:tabular-nums}
   #hmPrint table.hmp td.cum{font-weight:700;background:#fff}
@@ -3099,7 +3100,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610151229';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610160648';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3484,7 +3485,7 @@ const EMPTY_ICONS={
 function emptyBox(text, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<div class="empty"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg><div class="et">${text}</div></div>`; }
 function dbEmpty(text, cols, icon){ const p=EMPTY_ICONS[icon]||EMPTY_ICONS.info; return `<tr><td colspan="${cols}" class="db-empty"><span class="dbe"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${p}</svg>${text}</span></td></tr>`; }
 const bounds = d => d==='SL' ? [0.6,1.3] : d==='GS' ? [0.9,1.8] : d==='SG' ? [1.0,3.5] : d==='DH' ? [1.2,5.5] : [0.6,1.8];
-const fmt = (v,dp=2)=> v==null?'–':(v>=0?'+':'')+v.toFixed(dp);
+const fmt = (v,dp=2)=>{ if(v==null) return '–'; if(Math.abs(v)<0.5*Math.pow(10,-dp)) v=0; return (v>=0?'+':'')+v.toFixed(dp); };   // kein «-0.00»
 const fmt0 = (v,dp=2)=> v==null?'–':v.toFixed(dp);
 const figType = lbl => (lbl||'').trim().charAt(0).toUpperCase();
 
@@ -4011,7 +4012,7 @@ function drawHero(){
         svg+=`<path d="M${p0.x.toFixed(1)} ${p0.y.toFixed(1)} L${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L${p1.x.toFixed(1)} ${yBot} L${p0.x.toFixed(1)} ${yBot} Z" fill="${SC[bucket(pit[i])]}"/>`; }
       svg+=`<path class="hProf" d="M${top.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L')}" fill="none" stroke="${T.dark?'#7d8898':'#9aa1ab'}" stroke-width="1.3"/>`;
       // Legende Steilheit (unten links, neben «Tor-Nr.»)
-      { const lab = (_nw || (!S.printMode && W<820)) ? ['flach','mittel','steil'] : ['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°'];
+      { const _e=LANG==='en'; const lab = (_nw || (!S.printMode && W<820)) ? (_e?['flat','medium','steep']:['flach','mittel','steil']) : (_e?['flat < 13.5°','medium 13.5–18.9°','steep > 18.9°']:['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°']);
         const pm=!!S.printMode, lfs=pm?7:9.5, sw=pm?10:14, shh=pm?5:7;   // im PDF kleiner (die Grafik wird dort gestreckt)
         let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(l.length<8?0.57:0.55) + 10; }); }
     }
@@ -4065,7 +4066,7 @@ function drawHero(){
     if(seg.length) segs.push(seg);
     const dpath=segs.map(sg=>smoothMono(sg)).join(' ');
     const isFocus = !!focusName && !s.isTop && s.name===focusName;
-    const w=s.isTop?2.2:2.2, dash = s.isTop?'stroke-dasharray="2 2.5"':'';   // Bestzeit: fein & dicht gestrichelt
+    const w=s.isTop?1.6:2.2, dash = '';   // Bestzeit: feine durchgezogene Linie
     const lineCol = s.isTop ? '#C28E00' : col;   // Bestzeit: durchgezogen, minim dunkleres Gelb
     // Fokus-Füllung (nur gewählter Athlet): sanfter Farbverlauf zwischen Linie und Bestzeit — nicht im PDF
     if(isFocus){ segs.forEach(sg=>{ if(sg.length<2) return;
@@ -4100,20 +4101,28 @@ function drawHero(){
     } else { _hn.style.display='none'; _hn.innerHTML=''; } }
   // interactivity
   const shell=$('#heroShell'), svgN=shell.querySelector('svg'), hg=shell.querySelector('#hg'), hov=shell.querySelector('#hov'), hgm=shell.querySelector('#hgm');
-  hov.addEventListener('mousemove',ev=>{
+  const _heroMove=ev=>{
     const pt=localPt(svgN,ev); let t=Math.round(1+(pt.x-ml)/iw*(NP-1)); t=Math.max(1,Math.min(NP,t));
     const px=x(t); hg.setAttribute('x1',px); hg.setAttribute('x2',px); hg.setAttribute('opacity','.55');
     series.forEach((s,i)=>{ const dot=hgm.children[i]; const vp=pv(s)[t-1]; if(vp!=null){ dot.setAttribute('cx',px); dot.setAttribute('cy',y(vp)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); });
     const valAt=s=> t===1?0:s[key][t-2];
     const rows=series.filter(s=>valAt(s)!=null).sort((a,b)=>valAt(a)-valAt(b)).map(s=>{
       const col=s.color;
-      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?' · Bestzeit':''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
+      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?(LANG==='en'?' · best time':' · Bestzeit'):''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
     const fg=c.figs.filter(f=>f.gate===t-1).map(f=>f.label).join(' · ');
     const pit=pitchByGate[t];
-    tt.innerHTML=`<div class="tt-h">Tor ${t}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% Gefälle`:''}</div>${rows}`;
+    tt.innerHTML=`<div class="tt-h">${LANG==='en'?'Gate':'Tor'} ${t}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% ${LANG==='en'?'pitch':'Gefälle'}`:''}</div>${rows}`;
     showTT(svgN,px,mt+10);
-  });
-  hov.addEventListener('mouseleave',()=>{ tt.style.opacity=0; hg.setAttribute('opacity','0'); [...hgm.children].forEach(dot=>dot.setAttribute('opacity','0')); });
+  };
+  const _heroHide=()=>{ tt.style.opacity=0; hg.setAttribute('opacity','0'); [...hgm.children].forEach(dot=>dot.setAttribute('opacity','0')); };
+  hov.addEventListener('mousemove',_heroMove);
+  hov.addEventListener('mouseleave',()=>{ if(Date.now()-(window._heroTouchT||0)<1500) return; _heroHide(); });   // nach Antippen: emuliertes mouseleave ignorieren
+  // Tablet/Handy: mit dem Finger seitlich über die Grafik fahren zeigt die Werte (senkrecht wird weiter gescrollt)
+  hov.style.touchAction='pan-y';
+  hov.addEventListener('pointermove',ev=>{ if(ev.pointerType==='touch' || ev.pointerType==='pen'){ clearTimeout(window._heroTT); _heroMove(ev); } });
+  hov.addEventListener('pointerdown',ev=>{ if(ev.pointerType==='touch' || ev.pointerType==='pen'){ window._heroTouchT=Date.now(); clearTimeout(window._heroTT); _heroMove(ev); } });
+  hov.addEventListener('pointerup',ev=>{ if(ev.pointerType==='touch' || ev.pointerType==='pen'){ window._heroTouchT=Date.now(); clearTimeout(window._heroTT); window._heroTT=setTimeout(_heroHide,3000); } });
+  hov.addEventListener('pointercancel',()=>{ clearTimeout(window._heroTT); window._heroTT=setTimeout(_heroHide,1200); });
   // Klick auf einen Punkt -> Video DIESES Athleten an dieser Stelle laden
   hov.addEventListener('click',ev=>{ const pt=localPt(svgN,ev); let t=Math.round(1+(pt.x-ml)/iw*(NP-1)); t=Math.max(1,Math.min(NP,t));
     // nächstgelegene Athleten-Linie an der Klick-Höhe bestimmen (auf der dargestellten, evtl. geglätteten Linie)
@@ -4141,6 +4150,7 @@ function updateTerrainBand(){ /* Terrain-Band entfernt */ }
 // Druck/PDF: Zusammenfassung neben «Zeitverlust nach Abschnitt» – Mini-Tabelle + Kernaussagen
 function secSummary(data, secs, STS, hasSt, worst){
   const el=$('#secSum'); if(!el) return;
+  const EN=LANG==='en', MIX=EN?'mixed':'gemischt';
   const f=v=> v==null?'–':((v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2));
   const nmOf=s=> String(s.name||'').split(' ')[0];
   const esc=t=> String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -4157,9 +4167,9 @@ function secSummary(data, secs, STS, hasSt, worst){
   const cc=v=> v<=-0.005?'ss-g':(v>=0.005?'ss-r':'ss-n');   // grün nur bei minus, rot nur bei plus, sonst neutral
   const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
     for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
-    const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? ({st0:'flach',st1:'mittel',st2:'steil'})[k] : 'gemischt'; };
+    const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? (EN?{st0:'flat',st1:'medium',st2:'steep'}:{st0:'flach',st1:'mittel',st2:'steil'})[k] : MIX; };
   // Tabelle
-  let h='<div class="ss-card"><div class="ss-h">Übersicht pro Athlet</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>Stärkster</th><th>Schwächster</th></tr></thead><tbody>';
+  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>${EN?'Best':'Stärkster'}</th><th>${EN?'Weakest':'Schwächster'}</th></tr></thead><tbody>`;
   rows.forEach(r=>{ h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
     (r.dnf?`<td class="r ss-tot ss-dnf">DNF</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
     `<td><span class="ss-chip ${cc(r.best.v)}">${secLbl(r.best.i)} <i>${f(r.best.v)}</i></span></td>`+
@@ -4170,15 +4180,17 @@ function secSummary(data, secs, STS, hasSt, worst){
   { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
     let wi=worst; if(wi<0){ wi=tl.reduce((m,v,i)=>v>tl[m]?i:m,0); if(!(tl[wi]>0.15)) wi=-1; }
     if(wi>=0 && fin.length>1){ const [a,b]=secs[wi]; const st=steepTxt(wi);
-      msgs.push(`Am meisten Zeit verliert das Team in <b>${secLbl(wi)}</b> (Tor ${a+1}–${b+1}${st?', '+st:''}).`); } }
+      msgs.push(EN?`The team loses the most time in <b>${secLbl(wi)}</b> (gates ${a+1}–${b+1}${st?', '+st:''}).`:`Am meisten Zeit verliert das Team in <b>${secLbl(wi)}</b> (Tor ${a+1}–${b+1}${st?', '+st:''}).`); } }
   const top=fin[0];
   if(top){ const mx=Math.max(...top.idx.map(o=>Math.abs(o.v)));
-    msgs.push(mx<=0.25 ? `<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${mx<0.1?'0.10':mx.toFixed(2)} s.`
-                       : `<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), stark in ${secLbl(top.best.i)}.`); }
+    const _pm=mx<0.1?'0.10':mx.toFixed(2);
+    msgs.push(mx<=0.25 ? (EN?`<b>${esc(top.nm)}</b> most consistent – within ±${_pm} s in every section.`:`<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${_pm} s.`)
+                       : (EN?`<b>${esc(top.nm)}</b> with the smallest total deficit (${f(top.tot)} s), best in ${secLbl(top.best.i)}.`:`<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), am besten in ${secLbl(top.best.i)}.`)); }
   let conc=null; fin.forEach(r=>{ if(r.pos>0.3 && r.weak.v>0){ const sh=r.weak.v/r.pos; if(sh>=0.4 && (!conc||sh>conc.sh)) conc={r,sh}; } });
   if(conc && conc.r!==top){ const st=steepTxt(conc.r.weak.i);
-    msgs.push(`<b>${esc(conc.r.nm)}</b> verliert ${Math.round(conc.sh*100)} % des Rückstands in ${secLbl(conc.r.weak.i)}${st&&st!=='gemischt'?' ('+st+')':''}.`); }
-  if(msgs.length) h+='<div class="ss-h ss-h2">Kernaussagen</div><ul class="ss-msg">'+msgs.slice(0,3).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+    const _sx=st&&st!==MIX?' ('+st+')':'';
+    msgs.push(EN?`<b>${esc(conc.r.nm)}</b> loses ${Math.round(conc.sh*100)} % of the deficit in ${secLbl(conc.r.weak.i)}${_sx}.`:`<b>${esc(conc.r.nm)}</b> verliert ${Math.round(conc.sh*100)} % des Rückstands in ${secLbl(conc.r.weak.i)}${_sx}.`); }
+  if(msgs.length) h+='<div class="ss-h ss-h2">'+(EN?'Key messages':'Kernaussagen')+'</div><ul class="ss-msg">'+msgs.slice(0,3).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -4234,13 +4246,13 @@ function drawSector(){
       if(tot){ const bwS=Math.min(gw*0.62, 92), bx0=cx-bwS/2, by=H-mb+39; let xx=bx0;
         const col=T.dark?{st0:'#3a4350',st1:'#59626f',st2:'#8a94a2'}:{st0:'#e4e6ea',st1:'#c4c9d0',st2:'#8f97a2'};
         const pc=k=>Math.round(cnt[k]/tot*100);
-        svg+=`<g><title>flach ${pc('st0')} % · mittel ${pc('st1')} % · steil ${pc('st2')} %</title>`;
+        svg+=`<g><title>${LANG==='en'?`flat ${pc('st0')} % · medium ${pc('st1')} % · steep ${pc('st2')} %`:`flach ${pc('st0')} % · mittel ${pc('st1')} % · steil ${pc('st2')} %`}</title>`;
         ['st0','st1','st2'].forEach(k=>{ const w=bwS*cnt[k]/tot; if(w>0){ svg+=`<rect x="${xx.toFixed(1)}" y="${by}" width="${w.toFixed(1)}" height="6" fill="${col[k]}"/>`; xx+=w; } });
         svg+=`<rect x="${bx0.toFixed(1)}" y="${by}" width="${bwS.toFixed(1)}" height="6" rx="2" fill="none" stroke="${T.dark?'#4a5563':'#c9cdd3'}" stroke-width=".6"/></g>`; } }
   });
   if(hasSt){ const ly=H-6; let lx=ml; const col=T.dark?['#3a4350','#59626f','#8a94a2']:['#e4e6ea','#c4c9d0','#8f97a2'];
-    ['flach','mittel','steil'].forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="12" height="6" rx="1.5" fill="${col[k]}"/><text x="${lx+16}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+=16+l.length*5.6+12; });
-    svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">· Steilheit im Abschnitt</text>`; }
+    (LANG==='en'?['flat','medium','steep']:['flach','mittel','steil']).forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="12" height="6" rx="1.5" fill="${col[k]}"/><text x="${lx+16}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+=16+l.length*5.6+12; });
+    svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">${LANG==='en'?'· steepness in section':'· Steilheit im Abschnitt'}</text>`; }
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   try{ secSummary(data, secs, STS, hasSt, worst); }catch(e){ const el=$('#secSum'); if(el) el.innerHTML=''; }
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
@@ -4258,7 +4270,8 @@ function drawSector(){
 // Steilheit je Tor (Kurssetzung, % -> Grad) für die Matrix: Tor t -> {cls, deg}
 function hmSteepOf(){ const out={}; try{ const cs=(typeof curCourse==='function')?curCourse():null; if(!cs||!cs.gates) return out;
     cs.gates.forEach((g,i)=>{ if(g&&g.pitch!=null){ const d=Math.atan(Math.max(0,g.pitch)/100)*180/Math.PI; out[i+1]={d, k: d<13.5?'st0':(d<=18.9?'st1':'st2')}; } }); }catch(e){} return out; }
-const HM_STEEP_LBL={st0:'flach',st1:'mittel',st2:'steil'};
+const HM_STEEP_LBL_DE={st0:'flach',st1:'mittel',st2:'steil'}, HM_STEEP_LBL_EN={st0:'flat',st1:'medium',st2:'steep'};
+const HM_STEEP_LBL=new Proxy({}, {get:(_,k)=> (LANG==='en'?HM_STEEP_LBL_EN:HM_STEEP_LBL_DE)[k]});
 function drawHeatmap(mode){
   const c=S.comp, n=c.n; const cols=[c.top, ...c.skiers.filter(s=>!s.isTop)]; const STP=hmSteepOf();
   const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
@@ -4289,7 +4302,7 @@ function drawHeatmap(mode){
     });
     h+=`</tr>`; }
   h+=`</tbody></table></div>`;
-  if(Object.keys(STP).length) h+=`<div class="hm-stlegend"><span class="hm-sw st0"></span>flach &lt; 13.5°<span class="hm-sw st1"></span>mittel 13.5–18.9°<span class="hm-sw st2"></span>steil &gt; 18.9°<span class="hm-stnote">· Streifen links neben der Tor-Nummer</span></div>`;
+  if(Object.keys(STP).length) h+=`<div class="hm-stlegend"><span class="hm-sw st0"></span>${LANG==='en'?'flat':'flach'} &lt; 13.5°<span class="hm-sw st1"></span>${LANG==='en'?'medium':'mittel'} 13.5–18.9°<span class="hm-sw st2"></span>${LANG==='en'?'steep':'steil'} &gt; 18.9°<span class="hm-stnote">${LANG==='en'?'· stripe left of the gate number':'· Streifen links neben der Tor-Nummer'}</span></div>`;
   if(nAdj && mode!=='cum') h+=`<div class="hm-note">Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.</div>`;
   $('#hmWrap').innerHTML=h;
   // Klick auf eine Zelle -> Video dieses Athleten an dieses Tor (springt zum Videobereich)
@@ -4324,7 +4337,7 @@ function heatmapPrint(){
     // Kopf: zwei Zeilen — Name über beiden Spalten, darunter Δ (pro Tor) und Σ (kumuliert)
     let t=`<table class="hmp"><thead><tr><th class="g" rowspan="2">Tor</th>`;
     cols.forEach((s,ci)=>{ if(ci>0) t+=`<th class="sp" rowspan="2"></th>`;
-      t+=`<th colspan="2" class="ath">${s.name.split(' ')[0].slice(0,4)}</th>`; });
+      t+=`<th colspan="2" class="ath" title="${escHtml(s.name)}">${escHtml(s.name.split(' ')[0])}</th>`; });   // voller Nachname (kleiner), nicht mehr auf 4 Zeichen gekürzt
     t+=`</tr><tr>`;
     cols.forEach(()=> t+=`<th class="sub">Δ</th><th class="sub cum">Σ</th>`);
     t+=`</tr></thead><tbody>`;
@@ -4474,7 +4487,7 @@ function gtgRedrawAnalyse(){ const _s=fn=>{ try{ fn(); }catch(e){} };
   _s(()=>{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); });
   _s(figStrip); }
 function gtgThemeRefresh(){ try{ gtgRecolor();
-    if(S.view!=='analyse') return;
+    if(S.view!=='analyse'){ window._gtgThemeDirty=true; return; }
     if(S.anaSub==='verlauf'){ if(typeof renderVerlauf==='function') renderVerlauf(); }
     else if(S.anaSub==='profil'){ if(typeof renderProfil==='function') renderProfil(); }
     else gtgRedrawAnalyse();
@@ -4507,7 +4520,22 @@ function setAnaSub(sub){ S.anaSub = 'analyse'; savePrefs();   // Saison-Verlauf 
   if(sv==='verlauf'||sv==='profil'){ try{ const sec=sv==='verlauf'?$('#anaVerlauf'):$('#anaProfil'); const bn=sec&&sec.querySelector('.beta-note');
     if(bn){ bn.classList.remove('flash'); void bn.offsetWidth; bn.classList.add('flash'); } }catch(e){} }
 }
+/* Touch-Geräte: Erklärungen (title) bei KPI-Kacheln & Info-Elementen per Antippen als Sprechblase zeigen */
+(function(){ let bub=null, tmr=null;
+  const hide=()=>{ if(bub){ bub.remove(); bub=null; } clearTimeout(tmr); };
+  document.addEventListener('pointerup',ev=>{ if(ev.pointerType!=='touch' && ev.pointerType!=='pen') return;
+    const el=ev.target && ev.target.closest && ev.target.closest('.kpi[title], .kpi [title], [data-taptip]');
+    if(!el){ hide(); return; }
+    const txt=el.getAttribute('data-taptip')||el.getAttribute('title'); if(!txt) return;
+    hide(); bub=document.createElement('div'); bub.className='tap-tip'; bub.textContent=txt; document.body.appendChild(bub);
+    const r=el.getBoundingClientRect(), bw=Math.min(300, window.innerWidth-24); bub.style.maxWidth=bw+'px';
+    const bh=bub.offsetHeight; let top=r.bottom+8; if(top+bh>window.innerHeight-8) top=Math.max(8,r.top-bh-8);
+    bub.style.left=Math.max(12,Math.min(window.innerWidth-bub.offsetWidth-12, r.left+r.width/2-bub.offsetWidth/2))+'px'; bub.style.top=top+'px';
+    tmr=setTimeout(hide,5000); }, true);
+  window.addEventListener('scroll',hide,{passive:true});
+})();
 function switchView(v){ S.view=v; savePrefs();
+  if(v==='analyse' && window._gtgThemeDirty){ window._gtgThemeDirty=false; setTimeout(()=>{ try{ gtgThemeRefresh(); }catch(e){} },30); }   // Design wurde in anderer Ansicht umgeschaltet -> Analyse neu zeichnen
   document.querySelectorAll('#tabs .tab').forEach(b=> b.classList.toggle('on', b.dataset.view===v));
   const wb=$('#wfBtn'); if(wb) wb.classList.toggle('on', v==='workflow');
   const sb=$('#sbsBtn'); if(sb) sb.classList.toggle('on', v==='sbs');
@@ -8375,7 +8403,9 @@ async function coachCreate(){
     let course=null; try{ const cs=findCourseByRace(`${ev.date}|${ev.discipline}|${ev.gender}|${ev.run}`);
       if(cs && Array.isArray(cs.gates)) course={ id:cs.id, date:cs.date, venue:cs.venue, disc:cs.disc, gen:cs.gen, run:cs.run,
         gates:cs.gates.map(g=>({no:g.no, type:g.type, dist:g.dist, offset:g.offset, pitch:g.pitch, angle:g.angle, fig:g.fig||''})) }; }catch(e){}
-    runs.push({ run:ev.run, ev: JSON.parse(JSON.stringify(ev)), videos:vout, course });
+    // Datenschutz: keine Ersteller-E-Mails ins öffentliche Coach-Bundle (by / E-Mail-Felder entfernen)
+    const evPub=JSON.parse(JSON.stringify(ev)); (function strip(o){ if(Array.isArray(o)) o.forEach(strip); else if(o&&typeof o==='object'){ ['by','byEmail','email','createdBy'].forEach(k=>{ if(k in o) delete o[k]; }); Object.values(o).forEach(strip); } })(evPub);
+    runs.push({ run:ev.run, ev: evPub, videos:vout, course });
   }
   // eigene Athletenfarben (Datenbank → Athlet:innen) mitgeben, damit der Coach-Link gleich aussieht wie die Analyse
   const colors={}; try{ runs.forEach(r=>((r.ev&&r.ev.skiers)||[]).forEach(sk=>{ const c=athCustomColor(sk.name); if(c) colors[sk.name]=c; })); }catch(e){}
@@ -8426,7 +8456,7 @@ const I18N_EN={
  // Navigation / Bereiche
  "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
  "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
- "Tagging Tor für Tor":"Tagging gate by gate","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
+ "Tagging Tor für Tor":"Tagging gate by gate",", nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).":", down = gained. Colour = athlete (same as in the main chart).","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
  "Swiss-Ski · Gate-to-Gate Analyse":"Swiss-Ski · Gate-to-Gate Analysis","Gate-to-Gate · Rückstand":"Gate-to-Gate · deficit",
  // Filter / Labels
  "Art":"Type","Disziplin":"Discipline","Geschlecht":"Gender","Männer":"Men","Frauen":"Women",
