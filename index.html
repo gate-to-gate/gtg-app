@@ -3148,7 +3148,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161521';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161531';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7121,7 +7121,10 @@ function coachOutdated(date, venue, gender, mode){ const k=coachKeyOf(date,venue
   cur.forEach(e=>{ const n=(e.skiers||[]).length; const h=have.has(e.discipline+'|'+e.run)?have.get(e.discipline+'|'+e.run):have.get('|'+e.run);
     if(h===undefined) miss.push(String(e.run)); else if(n>h) more=true; });
   return (miss.length||more)? {miss:[...new Set(miss)].sort(), more} : null; }
-function coachTrainEvs(date,venue,gender){ return TRAIN.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&(e.skiers||[]).length&&!(typeof isDeleted==='function'&&isDeleted(e))); }
+function coachTrainEvs(date,venue,gender){ return TRAIN.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&(e.skiers||[]).length&&!(typeof isDeleted==='function'&&isDeleted(e))&&(typeof evVisible!=='function'||evVisible(e))); }
+// Video-Datensatz gehört zum Training? (ältere Videos ohne «mode»: über das gespeicherte Tagging zuordnen)
+function vidIsTrain(v){ if(!v) return false; if(v.mode==='train') return true; if(v.mode==='comp') return false;
+  try{ return (SAVED_TRAIN||[]).some(r=>runId(r)===v.id) && !(SAVED||[]).some(r=>runId(r)===v.id); }catch(e){ return false; } }
 function coachOutdatedText(st){ if(!st) return ''; return st.miss.length ? `Lauf ${st.miss.join(' & ')} fehlt im Coach-Link` : 'Neue Athlet:innen fehlen im Coach-Link'; }
 function coachKnownRefresh(){ if(COACH_KNOWN.loading || Date.now()-COACH_KNOWN.at<10*60*1000) return; COACH_KNOWN.loading=true;
   const repo=((LS.get('gtg_coachcfg',{})||{}).repo||'gate-to-gate/gtg-app').trim();
@@ -7180,8 +7183,8 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
   if(!list.length){ body.innerHTML=dbEmpty('Keine Events für diesen Filter.', 11, 'search'); return; }
   vdbAll().then(vlist=>{
    // Events (nach Ort/Datum/Geschlecht), für die lokal mind. ein Video vorliegt -> nur dann Coach-Link möglich
-   const vidEvt=new Set((vlist||[]).map(v=>`${v.date}|${v.venue}|${v.gen}`));
-   const vidEvtT=new Set((vlist||[]).filter(v=>v.mode==='train').map(v=>`${v.date}|${v.venue}|${v.gen}`));
+   const vidEvt=new Set((vlist||[]).filter(v=>!vidIsTrain(v)).map(v=>`${v.date}|${v.venue}|${v.gen}`));
+   const vidEvtT=new Set((vlist||[]).filter(v=>vidIsTrain(v)).map(v=>`${v.date}|${v.venue}|${v.gen}`));
    // Zellen RUN … Aktionen (für Einzel- und Unterzeilen identisch)
    // Coach-Link-Zelle (ein Link pro Ort · Datum · Geschlecht) – steht in der Event-Zeile, nicht in jedem Lauf
    const clFor=(r)=>{ const e=r.e;
@@ -7223,7 +7226,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const nArch=g.rows.filter(r=>r.archived).length;
     const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
-    const anyCL=g.rows.some(r=> r.mode==='comp' && r.tagged && vidEvt.has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
+    const anyCL=g.rows.some(r=> r.tagged && (r.mode==='train'?vidEvtT:vidEvt).has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
     const _gm=g.rows[0].mode==='train'?'train':'comp';
     const _gOld = COACH_KNOWN.keys.has(coachKeyOf(e.date,e.venue,e.gender,_gm)) ? coachOutdated(e.date,e.venue,e.gender,_gm) : null;
     html+=`<tr class="db-grp${nArch===nRuns?' db-arch':''}${zeb}" data-grp="${id}">`
@@ -7249,7 +7252,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
    body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
      const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
      const p=k.split('|'); const lbl=`${p[1]} · ${p[2]} ${p[3]} · L${p[4]} · ${dmy(p[0])}`;
-     const _ck=coachKeyOf(p[0],p[1],p[3]); const _hasLink=COACH_KNOWN.keys.has(_ck);
+     const _ck=coachKeyOf(p[0],p[1],p[3], r&&r.mode==='train'?'train':'comp'); const _hasLink=COACH_KNOWN.keys.has(_ck);
      gtgConfirm({title:'Event dauerhaft löschen?', danger:true, okLabel:'Endgültig löschen',
        check: _hasLink ? `Auch den Coach-Link «${p[1]} · ${dmy(p[0])}» inkl. hochgeladener Videos löschen (gilt für alle Läufe dieses Tages – der Link funktioniert danach nicht mehr)` : null,
        msg:`«${lbl}» wird komplett gelöscht.\n\n${nTag===1?'Der getaggte Lauf':(nTag>1?`Alle ${nTag} getaggten Läufe`:'Alle getaggten Läufe')} dieses Events${nTag>0?' (inkl. Videos auf diesem Gerät)':''} ${nTag===1?'wird':'werden'} dabei ebenfalls unwiderruflich entfernt. Dies kann nicht rückgängig gemacht werden.`})
@@ -7938,7 +7941,7 @@ function cvVideosForCurrent(){
     if(isTrain() && S.run==null && S.trainSel && S.trainSel.picked){
       const picks=S.trainSel.picked;
       vdbAll().then(list=>{
-        const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && (r.video||r.onDisk) && picks.has(r.name+'|'+r.run));
+        const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && (r.video||r.onDisk) && picks.has(r.name+'|'+r.run) && vidIsTrain(r));
         // stabile Reihenfolge wie im Panel
         vids.sort((a,b)=> String(a.name).localeCompare(String(b.name)) || ((+a.run)-(+b.run)));
         res(vids.map(r=>{ const sur=(S.trShort?S.trShort(r.name):String(r.name).split(' ')[0]);
@@ -7947,7 +7950,7 @@ function cvVideosForCurrent(){
       return;
     }
     vdbAll().then(list=>{
-      const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && String(r.run)===String(S.run) && (r.video||r.onDisk));
+      const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && String(r.run)===String(S.run) && (r.video||r.onDisk) && vidIsTrain(r)===isTrain());
       res(vids.map(r=>({ id:r.id, name:r.name, nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk })));
     }).catch(()=>res([]));
   });
@@ -8389,6 +8392,7 @@ function enterCoach(bundle){
   try{ Object.entries(bundle.colors||{}).forEach(([nm,col])=>{ if(!nm||!col) return; const a=ATHLETES.find(x=>x.name===nm); if(a) a.color=col; else ATHLETES.push({name:nm, color:col}); }); }catch(e){}   // Farben wie in der Analyse
   const isTr=bundle.mode==='train';
   const runs=bundle.runs||[];
+  try{ runs.forEach(r=>{ if(r.ev){ const k=evKey(r.ev); ARCHIVED.delete(k); DELETED.delete(k); } }); }catch(e){}   // lokal archiviert/gelöscht -> im Coach-Link trotzdem zeigen (nur im Speicher)
   // Coach-Link zeigt nur den Inhalt des Links: lokal vorhandene Kopien desselben Events (z. B. auf dem eigenen Gerät getaggt) entfernen -> keine doppelten Läufe
   { const tgt=isTr?TRAIN:DATA; const ks=new Set(runs.filter(r=>r.ev).map(r=>[r.ev.date,r.ev.venue,r.ev.discipline,r.ev.gender,String(r.ev.run)].join('|')));
     for(let i=tgt.length-1;i>=0;i--){ const e=tgt[i]; if(ks.has([e.date,e.venue,e.discipline,e.gender,String(e.run)].join('|'))) tgt.splice(i,1); } }
@@ -8575,7 +8579,7 @@ async function coachCreate(){
   const PREVV=new Map(), PREVRUN={}; try{ cmProg('Prüfe bestehenden Coach-Link…'); const ob=await coachFetchBundle(evKeySafe);
     ((ob&&ob.runs)||[]).forEach(r=>{ const rk=((r.ev&&r.ev.discipline)||'')+'|'+r.run; PREVRUN[rk]=r.videos||[]; (r.videos||[]).forEach(x=>{ if(x&&x.id) PREVV.set(x.id,x); }); }); }catch(e){}
   const plan=[]; let totalVids=0;
-  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)&&((r.mode==='train')===isTr));
+  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)&&(vidIsTrain(r)===isTr));
     const have=new Set(vids.map(v=>v.id)); (PREVRUN[ev.discipline+'|'+ev.run]||[]).forEach(pv=>{ if(pv && pv.id && !have.has(pv.id)) vids.push({__prev:pv}); });
     plan.push({ev,vids}); totalVids+=vids.length; });
   if(!totalVids){ cmProg('Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).',false); return; }
