@@ -3104,7 +3104,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161205';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161213';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3975,7 +3975,7 @@ function drawHero(){
   const _nw=!S.printMode && gtgNarrow('#heroShell');
   // Breite an den Container anpassen (Tablet): sonst wird die 980er-Grafik herunterskaliert und die Schrift winzig
   const _cw=(()=>{ try{ const el=document.querySelector('#heroShell'); const w=el?el.clientWidth:0; return w>0? w : Math.max(0,(window.innerWidth||0)-80); }catch(e){ return 0; } })();   // Ansicht noch versteckt -> aus Fensterbreite schätzen
-  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?440:(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=_nw?12:20,mt=18,mb=46;
+  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?440:600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=_nw?12:20,mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
