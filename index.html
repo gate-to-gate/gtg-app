@@ -470,6 +470,28 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
   #dbSecEvents .db-table th:nth-child(7),#dbSecEvents .db-table td:nth-child(7){display:none}
 }
 .tap-tip{position:fixed;z-index:3000;background:#14181f;color:#fff;font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.3);pointer-events:none;animation:tcpop .2s ease}
+/* Training: Referenz-Umschalter + Karte «Lauf für Lauf» */
+.series-pick .sp-ref{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
+.series-pick .sp-reflab{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.series-pick .sp-refseg{display:inline-flex;background:var(--bg);border:1.3px solid var(--line);border-radius:8px;padding:2px;gap:2px}
+.series-pick .sp-rbtn{border:none;background:none;font:inherit;font-size:11.5px;font-weight:700;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer}
+.series-pick .sp-rbtn.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,24,31,.12)}
+#rbrCard .rbr{display:flex;flex-direction:column}
+#rbrCard .rbr-row{display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+#rbrCard .rbr-row:first-child{border-top:none}
+#rbrCard .rbr-ath{display:flex;align-items:center;gap:8px;font-size:13px}
+#rbrCard .rbr-dot{width:10px;height:10px;border-radius:50%;flex:none}
+#rbrCard .rbr-runs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#rbrCard .rbr-run{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+#rbrCard .rbr-run i{font-style:normal;font-size:10.5px;font-weight:800;color:var(--muted)}
+#rbrCard .rbr-run.best{border-color:#D9A400;background:rgba(217,164,0,.1)}
+#rbrCard .rbr-run.dnf{color:var(--muted)}
+#rbrCard .rbr-star{color:#D9A400}
+#rbrCard .rbr-tr{font-size:13px;font-weight:900;width:12px;text-align:center}
+#rbrCard .rbr-tr.up{color:var(--good)} #rbrCard .rbr-tr.dn{color:var(--bad)} #rbrCard .rbr-tr.eq{color:var(--muted)}
+#rbrCard .rbr-gap{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:700px){ #rbrCard .rbr-row{grid-template-columns:1fr auto} #rbrCard .rbr-runs{grid-column:1 / -1;grid-row:2} }
+@media print{ #rbrCard{display:none!important} }
 /* Legend / chips */
 .hero-ctrls{display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hero-ctrls .toggle .tg-txt small{display:none}   /* kompakt: Untertitel weg, alles einzeilig nebeneinander */
@@ -3104,7 +3126,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161227';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610161310';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3615,7 +3637,10 @@ function renderSeriesPick(all, laufs){
   let h='<div class="sp-head"><span class="sp-title">Serien (Athlet · Lauf)</span>'
     +'<div class="sp-quick"><button class="sp-qbtn" data-q="all">Alle</button><button class="sp-qbtn" data-q="none">Keine</button>'
     + laufs.map(l=>`<button class="sp-qbtn" data-q="L${l}">Nur Lauf ${l}</button>`).join('')
-    +'</div></div><div class="sp-grid">';
+    +`<button class="sp-qbtn" data-q="best">${LANG==='en'?'Best run each':'Bester Lauf je Athlet:in'}</button><button class="sp-qbtn" data-q="last">${LANG==='en'?'Last run each':'Letzter Lauf je Athlet:in'}</button>`
+    +'</div></div>'
+    +`<div class="sp-ref"><span class="sp-reflab">${LANG==='en'?'Reference':'Referenz'}</span><div class="sp-refseg"><button class="sp-rbtn${S.trainRef!=='own'?' on':''}" data-ref="all">${LANG==='en'?'Fastest run (all)':'Schnellster Lauf (alle)'}</button><button class="sp-rbtn${S.trainRef==='own'?' on':''}" data-ref="own">${LANG==='en'?'Own best run':'Eigener bester Lauf'}</button></div></div>`
+    +'<div class="sp-grid">';
   [...byAth.entries()].forEach(([name,runs])=>{
     const sur=String(name).split(' ')[0];
     h+=`<div class="sp-athrow"><div class="sp-athname" title="${escHtml(name)}">${escHtml(sur)}</div><div class="sp-laufs">`;
@@ -3633,7 +3658,35 @@ function renderSeriesPick(all, laufs){
     if(q==='all') all.forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run)));
     else if(q==='none') S.trainSel.picked.clear();
     else if(/^L\d+$/.test(q)){ S.trainSel.picked.clear(); all.filter(s=>+s.run===+q.slice(1)).forEach(s=>S.trainSel.picked.add(seriesKey(s.name,s.run))); }
+    else if(q==='best'||q==='last'){ S.trainSel.picked.clear(); const g=new Map(); all.forEach(s=>{ if(!g.has(s.name)) g.set(s.name,[]); g.get(s.name).push(s); });
+      g.forEach(list=>{ let pick;
+        if(q==='last') pick=list.reduce((a,b)=>(+b.run)>(+a.run)?b:a);
+        else { const fin=list.filter(x=>trTotal(x)!=null); pick= fin.length? fin.reduce((a,b)=>trTotal(b)<trTotal(a)?b:a) : list[0]; }
+        S.trainSel.picked.add(seriesKey(pick.name,pick.run)); }); }
     renderSeriesPick(all,laufs); loadTrainEvent(all); });
+  sp.querySelectorAll('.sp-rbtn').forEach(b=> b.onclick=()=>{ S.trainRef=b.dataset.ref; renderSeriesPick(all,laufs); loadTrainEvent(all); });
+}
+// Gesamtzeit einer Trainings-Serie (nur wenn vollständig getaggt), sonst null (DNF/unvollständig)
+function trTotal(s){ const g=(s&&s.gates)||[]; const v=g.filter(x=>typeof x==='number'&&x>0); if(!v.length) return null;
+  const n=Math.max(...((window._trMaxGates&&[window._trMaxGates])||[g.length]), g.length); if(v.length < n*0.95) return null; return v.reduce((a,b)=>a+b,0); }
+// Farbe aufhellen (Mischung mit Weiss): f=0 -> Originalfarbe, f=1 -> weiss
+function shadeHex(hex,f){ try{ const h=String(hex).replace('#',''); const n=h.length===3? h.split('').map(c=>c+c).join(''):h;
+  const r=parseInt(n.slice(0,2),16), g=parseInt(n.slice(2,4),16), b=parseInt(n.slice(4,6),16);
+  const m=v=>Math.round(v+(255-v)*f).toString(16).padStart(2,'0'); return '#'+m(r)+m(g)+m(b); }catch(e){ return hex; } }
+// Referenz «eigener bester Lauf»: jede Serie wird gegen den besten Lauf DERSELBEN Person gerechnet.
+// Ergebnis ist ein normales comp-Objekt: Referenzlinie (0) = «Eigener Bestlauf», die Bestläufe selbst entfallen.
+function trainOwnRefComp(ev, cAll){
+  const groups=new Map(); ev.skiers.forEach(sk=>{ const b=sk._base||String(sk.name).split('·L')[0]; if(!groups.has(b)) groups.set(b,[]); groups.get(b).push(sk); });
+  const out=[];
+  groups.forEach(list=>{ if(list.length<2) return;
+    const ev2=Object.assign({}, ev, {skiers:list.map(x=>Object.assign({},x,{fastest:false}))}); recomputeEvent(ev2); ev2.nGates=ev.nGates;
+    const c2=compute(ev2); c2.skiers.forEach(k=>{ if(!k.isTop){ k._ownBest = c2.top.name; out.push(k); } }); });
+  const n=cAll.n, z=new Array(n).fill(0);
+  const top=Object.assign({}, cAll.top, {name: LANG==='en'?'Own best run':'Eigener Bestlauf', isTop:true, sui:true, diff:z.slice(), cleanDiff:z.slice(), anom:new Array(n).fill(false), pair:new Array(n).fill(-1),
+    cumRaw:z.slice(), cumClean:z.slice(), cumRawDisp:z.slice(), cumCleanDisp:z.slice(), finalRaw:0, finalClean:0, dnf:false, lastReal:n-1});
+  top.color=athColor(top.name,true);
+  const skiers=[top, ...out];
+  return Object.assign({}, cAll, {top, skiers, sui:skiers.filter(k=>k.sui), _ownRef:true});
 }
 function loadTrainEvent(all){
   if(!S.evtKey){ return; }
@@ -3653,7 +3706,10 @@ function loadTrainEvent(all){
     skiers,hasSUI:false,hasTop:false};
   recomputeEvent(ev);
   S.ev=ev; S.run=null; S.hidden=new Set();
+  window._trMaxGates=Math.max(0,...sel.map(s=>(s.gates||[]).length));
+  S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null})); S.trSeries.forEach(x=> x.total=trTotal(x));
   S.comp=compute(ev);
+  if(S.trainRef==='own'){ try{ S.comp=trainOwnRefComp(ev, S.comp); }catch(e){ try{ console.error('[GtG] own ref',e); }catch(_){} } }
   // Farbe je Athlet: Läufe desselben Athleten teilen eine Farbe, unterschieden durch die
   // Lauf-Nr. direkt an der Linie. Top (Bestzeit) bleibt Gold.
   const baseCount={}; S.comp.skiers.forEach(s=>{ const b=String(s.name).split('·L')[0]; baseCount[b]=(baseCount[b]||0)+1; });
@@ -3661,6 +3717,10 @@ function loadTrainEvent(all){
   const baseFull={}; skiers.forEach(x=>{ baseFull[String(x.name).split('·L')[0]] = x._base; });
   S.comp.skiers.forEach(s=>{ const p=String(s.name).split('·L'); const b=p[0]; s._lauf=p[1]||''; s._dup=baseCount[b]>1;
     s._cn = baseFull[b]||b; if(!s.isTop){ s.color = athColor(s._cn, false); } });
+  // Läufe desselben Athleten: gleiche Farbe in Abstufungen (erster Lauf hell, letzter kräftig)
+  { const byB={}; S.comp.skiers.forEach(s=>{ if(s.isTop||!s._dup) return; (byB[s._cn]=byB[s._cn]||[]).push(s); });
+    Object.values(byB).forEach(list=>{ list.sort((a,b)=>(+a._lauf)-(+b._lauf)); const k=list.length;
+      list.forEach((s,i)=>{ const f = k<=1?0 : 0.58*(1-i/(k-1)); s.color=shadeHex(s.color, f); }); }); }
   S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
   S.wfAth=S.perGate; S.heroFocus='';
   const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
@@ -3842,7 +3902,7 @@ function render(){
       <div class="card" id="heroCard">
         <div class="c-head hero-head">
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
-            <div class="c-sub">Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.</div>
+            <div class="c-sub">${c._ownRef?(LANG==='en'?'Cumulative deficit on each athlete\'s <b>own best run</b> (= 0). Lower = slower.':'Kumulierter Rückstand auf den <b>eigenen besten Lauf</b> der Athlet:in (= 0). Tiefer = langsamer.'):`Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.`}</div>
             <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).</div></div>
           <div class="hero-right">
             <div class="hero-ctrls no-print">
@@ -3863,6 +3923,7 @@ function render(){
         </div>
       </div>
 
+      ${(S.ev&&S.ev.mode==='train'&&S.trSeries)?trainRunsHTML():''}
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
           <div class="c-sub">Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.</div>
@@ -3902,6 +3963,7 @@ function render(){
 
 /* ---------- KPIs ---------- */
 function kpiHTML(){
+  if(S.ev && S.ev.mode==='train' && S.trSeries) return trainKpiHTML();
   const c=S.comp, top=c.top, best=bestSui();
   // biggest single time loss among SUI
   let bigLoss={v:-9}; c.sui.filter(s=>!(c.top&&s.name===c.top.name)).forEach(s=> (S.excludeAnom?s.cleanDiff:s.diff).forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
@@ -3923,6 +3985,58 @@ function kpiHTML(){
   </div>`;
 }
 
+function trStats(){
+  const ser=S.trSeries||[]; const by=new Map(); ser.forEach(x=>{ if(!by.has(x.name)) by.set(x.name,[]); by.get(x.name).push(x); });
+  by.forEach(l=>l.sort((a,b)=>a.run-b.run));
+  const fin=ser.filter(x=>x.total!=null); const fastest=fin.length? fin.reduce((a,b)=>b.total<a.total?b:a):null;
+  let imp=null; by.forEach((l,nm)=>{ const f=l.filter(x=>x.total!=null); if(f.length<2) return; const a=f[0], z=f[f.length-1]; const d=z.total-a.total; if(!imp||d<imp.d) imp={nm,a,z,d}; });
+  let con=null; by.forEach((l,nm)=>{ const f=l.filter(x=>x.total!=null); if(f.length<2) return; const m=f.reduce((s,x)=>s+x.total,0)/f.length; const sd=Math.sqrt(f.reduce((s,x)=>s+(x.total-m)**2,0)/f.length); if(!con||sd<con.sd) con={nm,sd,k:f.length}; });
+  return {by, fastest, imp, con, nRuns:ser.length};
+}
+function trainKpiHTML(){
+  const c=S.comp, top=c.top, st=trStats(), EN=LANG==='en', sur=n=>String(n||'').split(' ')[0];
+  const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
+  const icClock='<circle cx="8" cy="8" r="6.2"/><path d="M8 4.6V8l2.3 1.4"/>';
+  const icFlag='<path d="M4 14.2V2"/><path d="M4 2.7c3-1.4 5 1 8-.2V8c-3 1.2-5-1.2-8 .2z"/>';
+  const icPeople='<circle cx="6" cy="6" r="2.2"/><path d="M2.4 13.4c0-2 1.7-3.2 3.6-3.2s3.6 1.2 3.6 3.2"/><path d="M11 5.6a2.1 2.1 0 0 1 .2 4.2M13.6 13.4c0-1.6-.9-2.6-2.2-3"/>';
+  const icUp='<path d="M1.6 11.6l4.8-4.8 2.8 2.8 4.8-4.8"/><path d="M14.4 4.8v3.8h-3.8"/>';
+  const icTarget='<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.6"/>';
+  const own=!!c._ownRef;
+  const f=st.fastest;
+  const refCard = own
+    ? `<div class="kpi gold" data-taptip="${EN?'Each run is compared with the same athlete’s best run.':'Jeder Lauf wird mit dem besten Lauf derselben Person verglichen.'}" title="${EN?'Each run is compared with the same athlete’s best run.':'Jeder Lauf wird mit dem besten Lauf derselben Person verglichen.'}"><div class="k-lab">${I(icStar)}${EN?'Reference':'Referenz'}</div><div class="k-val" style="font-size:15px">${EN?'Own best run':'Eigener Bestlauf'}</div><div class="k-sub">${EN?'per athlete = 0.00':'je Athlet:in = 0.00'}</div></div>`
+    : `<div class="kpi gold" title="${EN?'Fastest fully tagged run of this training = reference (0.00).':'Schnellster vollständig getaggter Lauf dieses Trainings = Referenz (0.00).'}"><div class="k-lab">${I(icStar)}${EN?'Fastest run':'Schnellster Lauf'}</div><div class="k-val" style="font-size:15px">${f?sur(f.name)+' · L'+f.run:escHtml(top.name)}</div><div class="k-sub">${f?(EN?'Total ':'Gesamt ')+f.total.toFixed(2)+' s':(EN?'Reference 0.00':'Referenz 0.00')}</div></div>`;
+  const imp=st.imp, con=st.con;
+  return `<div class="kpis">
+    ${refCard}
+    <div class="kpi" title="${EN?'Average gate-to-gate time of the reference run (plausible values only).':'Durchschnittliche Tor-zu-Tor-Zeit des Referenzlaufs (nur plausible Werte).'}"><div class="k-lab">${I(icClock)}${EN?'Ø time / gate':'Ø Zeit / Tor'}</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">${EN?'reference run':'Referenzlauf'}</div></div>
+    <div class="kpi"><div class="k-lab">${I(icFlag)}${EN?'Gates':'Tore'}</div><div class="k-val">${c.n}</div><div class="k-sub">${c.figs.length} ${EN?'marked figures':'markierte Figuren'}</div></div>
+    <div class="kpi" title="${EN?'Athletes and runs in the current selection.':'Athlet:innen und Läufe in der aktuellen Auswahl.'}"><div class="k-lab">${I(icPeople)}${EN?'Athletes':'Athlet:innen'}</div><div class="k-val">${st.by.size}</div><div class="k-sub">${st.nRuns} ${EN?(st.nRuns===1?'run':'runs'):(st.nRuns===1?'Lauf':'Läufe')}</div></div>
+    <div class="kpi" title="${EN?'Biggest change of total time from the first to the last fully tagged run of one athlete.':'Grösste Veränderung der Gesamtzeit vom ersten zum letzten vollständig getaggten Lauf einer Person.'}"><div class="k-lab">${I(icUp)}${EN?'Biggest improvement':'Grösste Verbesserung'}</div><div class="k-val" style="color:${imp&&imp.d<0?'var(--good)':'var(--ink)'}">${imp?(imp.d<0?'−':'+')+Math.abs(imp.d).toFixed(2):'–'}<small> s</small></div><div class="k-sub">${imp?sur(imp.nm)+' · L'+imp.a.run+' → L'+imp.z.run:(EN?'min. 2 runs needed':'mind. 2 Läufe nötig')}</div></div>
+    <div class="kpi" title="${EN?'Smallest spread (standard deviation) of total times across an athlete’s runs.':'Kleinste Streuung (Standardabweichung) der Gesamtzeiten über die Läufe einer Person.'}"><div class="k-lab">${I(icTarget)}${EN?'Most consistent':'Konstantester'}</div><div class="k-val" style="font-size:15px">${con?sur(con.nm):'–'}</div><div class="k-sub">${con?'±'+con.sd.toFixed(2)+' s · '+con.k+' '+(EN?'runs':'Läufe'):(EN?'min. 2 runs needed':'mind. 2 Läufe nötig')}</div></div>
+  </div>`;
+}
+// Karte «Lauf für Lauf»: pro Athlet:in die Gesamtzeiten der Läufe, Trend, bester Lauf, Abstand zur Gruppenbesten
+function trainRunsHTML(){
+  const st=trStats(); if(!st.by.size) return '';
+  const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>String(n||'').split(' ')[0];
+  const rows=[...st.by.entries()].map(([nm,l])=>{ const fin=l.filter(x=>x.total!=null); const best=fin.length?fin.reduce((a,b)=>b.total<a.total?b:a):null; return {nm,l,best}; })
+    .sort((a,b)=> (a.best?a.best.total:1e9)-(b.best?b.best.total:1e9));
+  let h=`<div class="card" id="rbrCard"><div class="c-head"><div><h2>${EN?'Run by run':'Lauf für Lauf'}</h2>
+    <div class="c-sub">${EN?'Total time per run relative to the fastest run of the training. ↓ green = faster than the previous run, ↑ red = slower. ★ = own best run.':'Gesamtzeit je Lauf relativ zum schnellsten Lauf des Trainings. ↓ grün = schneller als der Lauf davor, ↑ rot = langsamer. ★ = eigener bester Lauf.'}</div></div></div><div class="rbr">`;
+  rows.forEach(r=>{ const col=athColor(r.nm,false);
+    h+=`<div class="rbr-row"><div class="rbr-ath"><span class="rbr-dot" style="background:${col}"></span><b>${escHtml(sur(r.nm))}</b></div><div class="rbr-runs">`;
+    let prev=null;
+    r.l.forEach(x=>{ const isB=r.best&&x===r.best;
+      let tr=''; if(prev!=null && x.total!=null){ const d=x.total-prev; tr= Math.abs(d)<0.005?'<span class="rbr-tr eq">=</span>':(d<0?`<span class="rbr-tr up" title="${(d).toFixed(2)} s">↓</span>`:`<span class="rbr-tr dn" title="+${d.toFixed(2)} s">↑</span>`); }
+      const val = x.total==null? 'DNF' : (g0!=null? ((x.total-g0)<0.005?'±0.00':'+'+(x.total-g0).toFixed(2)) : x.total.toFixed(2));
+      h+=`${tr}<span class="rbr-run${isB?' best':''}${x.total==null?' dnf':''}"><i>L${x.run}</i>${val}${isB?' <span class="rbr-star">★</span>':''}</span>`;
+      if(x.total!=null) prev=x.total; });
+    h+=`</div><div class="rbr-gap">${r.best&&g0!=null?((r.best.total-g0)<0.005?(EN?'fastest':'schnellste:r'):(EN?'best ':'bester ')+'+'+(r.best.total-g0).toFixed(2)+' s'):'–'}</div></div>`; });
+  h+='</div></div>';
+  return h;
+}
 /* ---------- legend ---------- */
 function buildLegend(){
   const el=$('#legend'); el.innerHTML='';
@@ -4030,7 +4144,7 @@ function drawHero(){
     svg+=`<text x="${ml-11}" y="${y(t)+4}" text-anchor="end" font-size="${S.printMode?9.5:11}" font-weight="${isZero?800:400}" fill="${isZero?T.txt:T.txt2}">${t>0?'+':''}${t.toFixed(2)}</text>`; }
   // klare 0-/Bestzeit-Linie (Referenz) – ruhig, aber deutlich; die goldene Bestzeit-Linie liegt darüber
   svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(0)}" y2="${y(0)}" stroke="${T.zero}" stroke-width="1.4" opacity=".9"/>`;
-  svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">BESTZEIT</text>`;
+  svg+=`<text x="${W-mr-2}" y="${y(0)-4}" text-anchor="end" font-size="8.5" font-weight="800" letter-spacing=".06em" fill="${T.gold}">${c._ownRef?(LANG==='en'?'OWN BEST RUN':'EIGENER BESTLAUF'):'BESTZEIT'}</text>`;
   { const yx=_nw?10:15, yfs=S.printMode?9.5:(_nw?9.5:11); svg+=`<text x="${yx}" y="${mt+ih/2}" font-size="${yfs}" fill="${T.txt}" transform="rotate(-90 ${yx} ${mt+ih/2})" text-anchor="middle">${LANG==='en'?'Cumulative deficit (s) — slower ↓':'Rückstand kumuliert (s) — langsamer ↓'}</text>`; }
   // x axis ticks: bis 10 Tore jedes Tor, ab 10 jedes 5. (plus erstes & letztes)
   for(let t=1;t<=NP;t++){ let show=(NP<=10)||(t===1)||(t%5===0)||(t===NP);
@@ -4207,14 +4321,22 @@ function drawSector(){
   if(!secs || secs.length<2){ if(card) card.style.display='none'; return; }
   if(card) card.style.display='';
   const key=S.excludeAnom?'cleanDiff':'diff';
-  const data = sui.map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
+  let data = sui.filter(s=>!(c._ownRef&&s.isTop)).map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
+  // Training mit vielen Serien: pro Athlet:in nur der beste Lauf als Balken, feiner Strich = Spannweite aller Läufe
+  const _trAgg = !!(S.ev && S.ev.mode==='train' && !c._ownRef && data.filter(d=>!d.s.isTop).length>=6);
+  if(_trAgg){ const g=new Map(); data.forEach(d=>{ const b=d.s._cn||String(d.s.name).split('·L')[0]; if(!g.has(b)) g.set(b,[]); g.get(b).push(d); });
+    data=[...g.values()].map(list=>{ const fin=list.filter(d=>!d.s.dnf); const best=(fin.length?fin:list).reduce((a,b)=> (b.s.finalClean<a.s.finalClean?b:a));
+      const rng=secs.map((_,si)=>{ const v=list.map(d=>d.vals[si]).filter(x=>x!=null); return v.length>1?[Math.min(...v),Math.max(...v)]:null; });
+      return {s:best.s, vals:best.vals, rng, n:list.length}; }); }
+  { const sub=document.querySelector('#secCard .c-sub'); if(sub){ if(!sub.dataset.orig) sub.dataset.orig=sub.innerHTML;
+      sub.innerHTML = _trAgg ? (LANG==='en'?'Training: per athlete the <b>best run</b> as bar; the thin line shows the range of all runs (best to worst).':'Training: pro Athlet:in der <b>beste Lauf</b> als Balken, der feine Strich zeigt die Spannweite aller Läufe (bester bis schlechtester).') : sub.dataset.orig; } }
   const _nw=!S.printMode && gtgNarrow('#secShell');
   const STS=hmSteepOf(), hasSt=Object.keys(STS).length>0;   // Steilheit je Tor (gleiche Stufen wie Höhenprofil/Matrix)
   const W=_nw?440:620,H=(_nw?340:320)+(hasSt?14:0), ml=42,mr=12,mt=20,mb=52+(hasSt?14:0), iw=W-ml-mr, ih=H-mt-mb;
-  let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v)));
+  let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v))); data.forEach(d=> (d.rng||[]).forEach(r=> r && all.push(r[0],r[1])));
   let vmax=Math.max(0.05,...all), vmin=Math.min(0,...all);
   const range=(vmax-vmin)||0.1; vmin-=range*0.06; vmax+=range*0.34;   // Kopfraum für Namens-Labels
-  const ng=secs.length, gw=iw/ng, bw=Math.min(28,gw/(sui.length+0.6));
+  const ng=secs.length, gw=iw/ng, bw=Math.min(28,gw/(data.length+0.6));
   const y=v=> mt+(vmax-v)/(vmax-vmin)*ih;
   // klar schlechtester Abschnitt (grösster Netto-Verlust übers SUI-Team) – nur wenn deutlich
   const secTot = secs.map((_,si)=> data.reduce((sum,d)=> sum + (d.vals[si]>0?d.vals[si]:0), 0));
@@ -4231,12 +4353,14 @@ function drawSector(){
     svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="${T.txt2}">${fmt(t)}</text>`;});
   secs.forEach(([a,b],si)=>{
     const cx=ml+gw*si+gw/2;
-    const totW=bw*sui.length; let bx=cx-totW/2;
+    const totW=bw*data.length; let bx=cx-totW/2;
     data.forEach(d=>{ const v=d.vals[si]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
       svg+=`<rect class="sb" data-s="${d.s.name}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
       // Athletenname vertikal, immer NACH OBEN (auch bei Abwärtsbalken) -> keine Kollision mit den S-/Tor-Labels unten
       const bxc=bx+(bw-2)/2, nm=d.s.name.split(' ')[0], tl=nm.length*7.2+4;   // geschätzte Textlänge (vertikal)
-      let ty=(v>=0?y(v):y(0))-5, inside=false;
+      const _rg=d.rng&&d.rng[si];
+      if(_rg){ const ya=y(_rg[1]), yb=y(_rg[0]); svg+=`<line x1="${bxc}" x2="${bxc}" y1="${ya}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${ya}" y2="${ya}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${yb}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/>`; }
+      let ty=Math.min((v>=0?y(v):y(0)), _rg?y(_rg[1]):1e9)-5, inside=false;
       if(ty-tl < 2 && v>=0 && h>tl+8){ ty=y(v)+6; inside=true; }   // oben kein Platz -> weiss im Balken
       svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${nm}</text>`; 
       // Abschnitts-Rückstand dezent im Balken – senkrecht (wie die Namen), unten im Balken, weiss
