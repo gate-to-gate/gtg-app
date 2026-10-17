@@ -3150,7 +3150,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610161544';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610171857';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7173,7 +7173,7 @@ function coachTitleOf(date, venue, gender, runsIn, mode){
   let runs= runsIn || ((c&&Array.isArray(c.runs)&&c.runs.length)? c.runs.map(r=>({run:r.run, disc:r.disc}))
     : (mode==='train'?coachTrainEvs(date,venue,gender):DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train')).map(e=>({run:e.run, disc:e.discipline})));
   if(mode==='train'){ const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / '); const g = gender==='W'?'Frauen':gender==='M'?'Männer':gender;
-    const n=[...new Set(runs.map(r=>String(r.run)))].length; return `${venue} · ${dmy(date)} · Training ${[discs,g].filter(Boolean).join(' ')}${n?' · '+n+(n===1?' Lauf':' Läufe'):''}`; }
+    return `${venue} · ${dmy(date)} · Training ${[discs,g].filter(Boolean).join(' ')}`; }   // Training: keine Lauf-Angabe (Link enthält alle Läufe, auch spätere)
   const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / ');
   const nums=[...new Set(runs.map(r=>String(r.run)))].sort();
   const lauf= nums.length ? (nums.length===1?'Lauf '+nums[0]:'Lauf '+nums.slice(0,-1).join(', ')+' & '+nums[nums.length-1]) : '';
@@ -8400,7 +8400,7 @@ function enterCoach(bundle){
   COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
   try{ const cs=$('#coachStand'); if(cs){ if(bundle.created){ const d=new Date(bundle.created);
         const p2=x=>String(x).padStart(2,'0');
-        cs.innerHTML=`Stand ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())} · ${(bundle.runs||[]).length===1?'1 Lauf':(bundle.runs||[]).length+' Läufe'}`; cs.style.display=''; }
+        cs.innerHTML=`Stand ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())}${bundle.mode==='train'?'':' · '+((bundle.runs||[]).length===1?'1 Lauf':(bundle.runs||[]).length+' Läufe')}`; cs.style.display=''; }
       else cs.style.display='none'; } }catch(e){}
   try{ Object.entries(bundle.colors||{}).forEach(([nm,col])=>{ if(!nm||!col) return; const a=ATHLETES.find(x=>x.name===nm); if(a) a.color=col; else ATHLETES.push({name:nm, color:col}); }); }catch(e){}   // Farben wie in der Analyse
   const isTr=bundle.mode==='train';
