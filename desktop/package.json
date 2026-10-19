@@ -1,7 +1,7 @@
 {
   "name": "gtg-desktop",
   "productName": "Gate-to-Gate",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Gate-to-Gate Analyse – Desktop-App (Videos auf der Festplatte)",
   "author": "Swiss-Ski",
   "license": "UNLICENSED",
@@ -18,13 +18,43 @@
   "build": {
     "appId": "ch.swiss-ski.gatetogate",
     "productName": "Gate-to-Gate",
-    "publish": [ { "provider": "github", "owner": "gate-to-gate", "repo": "gtg-app" } ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "gate-to-gate",
+        "repo": "gtg-app"
+      }
+    ],
     "afterPack": "afterPack.js",
-    "files": [ "main.js", "preload.js", "renderer/**" ],
-    "directories": { "output": "dist" },
-    "mac": { "target": [ "dmg" ], "category": "public.app-category.sports", "icon": "build/icon.png", "identity": null, "artifactName": "Gate-to-Gate-mac.${ext}" },
-    "win": { "target": [ "nsis" ], "icon": "build/icon.ico", "artifactName": "Gate-to-Gate-win.${ext}" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "perMachine": false }
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.sports",
+      "icon": "build/icon.png",
+      "identity": null,
+      "artifactName": "Gate-to-Gate-mac.${ext}"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Gate-to-Gate-win.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    }
   },
   "dependencies": {
     "electron-updater": "^6.3.9"
