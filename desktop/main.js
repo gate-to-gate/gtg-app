@@ -182,6 +182,12 @@ function createWindow() {
     }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  // Das App-Fenster darf nie auf eine fremde Seite wechseln (Schutz, falls ein Link/Skript navigiert): extern -> Standardbrowser
+  win.webContents.on('will-navigate', (e, url) => {
+    if (/^file:/i.test(url)) return;
+    e.preventDefault();
+    if (/^https?:/i.test(url)) { try { shell.openExternal(url); } catch (_) {} }
+  });
   if (process.platform === 'win32') win.webContents.once('did-finish-load', () => setupWinUpdater(win));
   // externe Links (GitHub, Cloudflare-Anleitung usw.) im Standardbrowser öffnen
   win.webContents.setWindowOpenHandler(({ url }) => {

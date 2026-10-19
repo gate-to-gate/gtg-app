@@ -3150,7 +3150,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610171957';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610190618';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3557,7 +3557,7 @@ let DELETED=new Set();    // dauerhaft gelöschte Event-Keys (überall ausgeblen
 function evKey(e){ return `${e.date}|${e.venue}|${e.discipline}|${e.gender}|${e.run}`; }
 function genHtml(g){ g=g||''; return `<span class="gsex ${g==='W'?'w':(g==='M'?'m':'')}">${g}</span>`; }   // W pink, M dunkelblau
 function isArchived(e){ return ARCHIVED.has(evKey(e)); }
-function isDeleted(e){ return DELETED.has(evKey(e)); }
+function isDeleted(e){ const k=evKey(e); return DELETED.has(k) || DELETED.has(k+(e&&e.mode==='train'?'|T':'|C')); }   // '|T'/'|C' = nur Training bzw. nur Wettkampf gelöscht
 /* Disziplin-Filter: «Alle» (S.discAll) zeigt alle Disziplinen; S.disc bleibt immer eine echte Disziplin. */
 function discMatch(e){ return S.discAll || (e&&e.discipline===S.disc); }
 
@@ -3565,7 +3565,7 @@ function discMatch(e){ return S.discAll || (e&&e.discipline===S.disc); }
 function evLabel(e){ return `${dmy(e.date)} · ${e.venue}`; }
 function dmy(iso){ const [y,m,d]=iso.split('-'); return `${d}.${m}.${y}`; }
 function uniq(a){ return [...new Set(a)]; }
-function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 function segFill(sel, vals, lab, cur, onPick){
   const el=$(sel); el.innerHTML='';
@@ -3644,9 +3644,13 @@ function refreshTrainSeries(){
   const [date,venue]=S.evtKey.split('|');
   if(S.discAll){ const te=TRAIN.find(e=> e.gender===S.gen && e.date===date && e.venue===venue && !isDeleted(e) && evVisible(e)); if(te) S.disc=te.discipline; }   // «Alle»: reale Disziplin dieses Ortes/Datums
   const all=trainSectionSeries(date,venue);
+  window._trMaxGates=Math.max(0,...all.map(s=>(s.gates||[]).length));
   const secKey=[S.disc,S.gen,S.evtKey].join('|');
+  const _keys=all.map(s=>seriesKey(s.name,s.run));
   if(!S.trainSel || S.trainSel.sectionKey!==secKey){
-    S.trainSel={ sectionKey:secKey, picked:new Set(all.map(s=>seriesKey(s.name,s.run))) };   // Default: alle Serien
+    S.trainSel={ sectionKey:secKey, picked:new Set(_keys), known:new Set(_keys) };   // Default: alle Serien
+  } else {   // neu hinzugekommene Serien (z. B. nach dem Taggen / Aktualisieren) automatisch anwählen
+    const kn=S.trainSel.known||new Set(_keys); _keys.forEach(k=>{ if(!kn.has(k)){ S.trainSel.picked.add(k); kn.add(k); } }); S.trainSel.known=kn;
   }
   const laufs=uniq(all.map(s=>+s.run)).sort((a,b)=>a-b);
   renderSeriesPick(all, laufs);
@@ -3659,8 +3663,7 @@ function ownAthCandidates(all){ const m=new Map(); (all||[]).filter(s=>S.trainSe
 function ownAthRow(all){
   if(S.trainRef!=='own') return '';
   const EN=LANG==='en', c=ownAthCandidates(all);
-  const _cnt={}; uniq((all||[]).map(x=>x.name)).forEach(n=>{ const k=String(n).split(' ')[0]; _cnt[k]=(_cnt[k]||0)+1; });
-  const sur=n=>{ const p=String(n).split(' '); return escHtml(_cnt[p[0]]>1&&p[1]? p[0]+' '+p[1].charAt(0)+'.' : p[0]); };
+  const _shn=mkShortNames((all||[]).map(x=>x.name)); const sur=n=>escHtml(_shn(n));
   if(S.trainOwnAth!=='__all' && !c.ok.includes(S.trainOwnAth)) S.trainOwnAth = c.ok[0]||'__all';
   let h=`<div class="sp-row sp-own"><span class="sp-lab">${EN?'Compare':'Vergleich für'}</span>`;
   if(!c.ok.length) h+=`<span class="sp-ownnote">${EN?'Select at least 2 runs of the same athlete.':'Mindestens 2 Läufe derselben Person anhaken.'}</span>`;
@@ -3675,8 +3678,7 @@ function renderSeriesPick(all, laufs){
   all.forEach(s=>{ if(!byAth.has(s.name)) byAth.set(s.name,[]); byAth.get(s.name).push(+s.run); });
   const EN=LANG==='en';
   // Kurzname: Nachname; bei gleichem Nachnamen zusätzlich Vorname-Initial (z. B. SUTER J. / SUTER C.)
-  const surCnt={}; [...byAth.keys()].forEach(n=>{ const s0=String(n).split(' ')[0]; surCnt[s0]=(surCnt[s0]||0)+1; });
-  const shortOf=n=>{ const p=String(n).split(' '); return surCnt[p[0]]>1 && p[1] ? p[0]+' '+p[1].charAt(0)+'.' : p[0]; };
+  const _shn=mkShortNames([...byAth.keys()]); const shortOf=n=>_shn(n);
   const nSel=all.filter(s=>S.trainSel.picked.has(seriesKey(s.name,s.run))).length;
   let h=`<div class="sp-row sp-row-top"><span class="sp-lab">${EN?'Quick select':'Schnellauswahl'}</span><div class="sp-quick">`
     +`<button class="sp-qbtn" data-q="all">${EN?'All':'Alle'}</button><button class="sp-qbtn" data-q="none">${EN?'None':'Keine'}</button><span class="sp-sep"></span>`
@@ -3718,6 +3720,10 @@ function renderSeriesPick(all, laufs){
 function trTotal(s){ const g=(s&&s.gates)||[]; const v=g.filter(x=>typeof x==='number'&&x>0); if(!v.length) return null;
   const n=Math.max(...((window._trMaxGates&&[window._trMaxGates])||[g.length]), g.length); if(v.length < n*0.95) return null; return v.reduce((a,b)=>a+b,0); }
 // Farbe aufhellen (Mischung mit Weiss): f=0 -> Originalfarbe, f=1 -> weiss
+function applyTrainShades(comp){ if(!comp||!Array.isArray(comp.skiers)) return;
+  const byB={}; comp.skiers.forEach(s=>{ if(s.isTop||!s._dup) return; (byB[s._cn]=byB[s._cn]||[]).push(s); });
+  Object.values(byB).forEach(list=>{ list.sort((a,b)=>(+a._lauf)-(+b._lauf)); const k=list.length;
+    list.forEach((s,i)=>{ const f = k<=1?0 : 0.58*(1-i/(k-1)); s.color=shadeHex(s.color, f); }); }); }
 function shadeHex(hex,f){ try{ const h=String(hex).replace('#',''); const n=h.length===3? h.split('').map(c=>c+c).join(''):h;
   const r=parseInt(n.slice(0,2),16), g=parseInt(n.slice(2,4),16), b=parseInt(n.slice(4,6),16);
   const m=v=>Math.round(v+(255-v)*f).toString(16).padStart(2,'0'); return '#'+m(r)+m(g)+m(b); }catch(e){ return hex; } }
@@ -3746,8 +3752,7 @@ function loadTrainEvent(all){
   const sel = all.filter(s=> S.trainSel.picked.has(seriesKey(s.name,s.run)));
   if(!sel.length){ if($('#main')) $('#main').innerHTML='<div class="card">'+emptyBox('Keine Serie gewählt — oben mindestens eine Athlet·Lauf-Serie anhaken.', 'chart')+'</div>'; return; }
   // Serien -> eindeutige Einträger «Nachname·L<Lauf>» (eigene Farbe je Serie über athColor)
-  const _sc={}; uniq(all.map(x=>x.name)).forEach(n=>{ const k=String(n).split(' ')[0]; _sc[k]=(_sc[k]||0)+1; });
-  const _short=n=>{ const p=String(n).split(' '); return _sc[p[0]]>1&&p[1]? p[0]+' '+p[1].charAt(0)+'.' : p[0]; };   // gleicher Nachname -> Initial (z. B. SUTER J. / SUTER C.)
+  const _short=mkShortNames(all.map(x=>x.name));   // gleicher Nachname -> Initial (z. B. SUTER J. / SUTER C.)
   S.trShort=_short;
   const skiers = sel.map(s=>{ const sur=_short(s.name);
     return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run}; });
@@ -3758,8 +3763,8 @@ function loadTrainEvent(all){
     figures:[...fmap.entries()].map(([gate,label])=>({gate,label})).sort((a,b)=>a.gate-b.gate),
     skiers,hasSUI:false,hasTop:false};
   recomputeEvent(ev);
-  S.ev=ev; S.run=null; S.hidden=new Set();
-  window._trMaxGates=Math.max(0,...sel.map(s=>(s.gates||[]).length));
+  S.ev=ev; S.run=null; { const _sk=[date,venue,S.disc,S.gen].join('|'), _h=(S._hidSec===_sk&&S.hidden)||new Set(); S._hidSec=_sk; S.hidden=new Set([..._h].filter(n=>skiers.some(s=>s.name===n))); }   // ausgeblendete Serien bleiben ausgeblendet, solange sie gewählt sind
+  window._trMaxGates=Math.max(0,...(all||sel).map(s=>(s.gates||[]).length));   // «vollständig» am ganzen Abschnitt messen, nicht an der Auswahl
   S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null})); S.trSeries.forEach(x=> x.total=trTotal(x));
   S.comp=compute(ev);
   if(S.trainRef==='own'){ try{ S.comp=trainOwnRefComp(ev, S.comp); }catch(e){ try{ console.error('[GtG] own ref',e); }catch(_){} } }
@@ -3771,15 +3776,14 @@ function loadTrainEvent(all){
   S.comp.skiers.forEach(s=>{ const p=String(s.name).split('·L'); const b=p[0]; s._lauf=p[1]||''; s._dup=baseCount[b]>1;
     s._cn = baseFull[b]||b; if(!s.isTop){ s.color = athColor(s._cn, false); } });
   // Läufe desselben Athleten: gleiche Farbe in Abstufungen (erster Lauf hell, letzter kräftig)
-  { const byB={}; S.comp.skiers.forEach(s=>{ if(s.isTop||!s._dup) return; (byB[s._cn]=byB[s._cn]||[]).push(s); });
-    Object.values(byB).forEach(list=>{ list.sort((a,b)=>(+a._lauf)-(+b._lauf)); const k=list.length;
-      list.forEach((s,i)=>{ const f = k<=1?0 : 0.58*(1-i/(k-1)); s.color=shadeHex(s.color, f); }); }); }
+  applyTrainShades(S.comp);
   S.perGate = S.comp.skiers.find(s=>!s.isTop)?.name || S.comp.skiers[0]?.name;
   S.wfAth=S.perGate; S.heroFocus='';
   const nAth=uniq(sel.map(s=>s.name)).length, nRun=uniq(sel.map(s=>+s.run)).length;
-  const selLbl = `${sel.length} Serien · ${nAth} Athlet:innen · ${nRun} Läufe`;
-  const phM=$('#printHeadMeta'); if(phM) phM.textContent=`${evLabel(ev)} · ${discName(S.disc)} · ${S.gen==='M'?'Männer':'Frauen'} · Training · ${selLbl}`;
-  const phD=$('#printHeadDate'); if(phD){ try{ phD.textContent='Erstellt '+new Date().toLocaleDateString('de-CH'); }catch(e){} }
+  const _EN=LANG==='en';
+  const selLbl = _EN? `${sel.length} series · ${nAth} athletes · ${nRun} ${nRun===1?'run':'runs'}` : `${sel.length} Serien · ${nAth} Athlet:innen · ${nRun} ${nRun===1?'Lauf':'Läufe'}`;
+  const phM=$('#printHeadMeta'); if(phM) phM.textContent=`${evLabel(ev)} · ${discName(S.disc)} · ${S.gen==='M'?(_EN?'Men':'Männer'):(_EN?'Women':'Frauen')} · Training · ${selLbl}`;
+  const phD=$('#printHeadDate'); if(phD){ try{ phD.textContent=(LANG==='en'?'Created ':'Erstellt ')+new Date().toLocaleDateString('de-CH'); }catch(e){} }
   S.pdfName = `GtG_${ev.venue}_${S.disc}_${S.gen}_Training_${ev.date}`;
   render();
 }
@@ -3805,8 +3809,8 @@ function loadEvent(){
   S.perGate = bestSui()?.name || S.comp.sui.find(s=>s.complete>=0.85)?.name || S.comp.sui[0]?.name || S.comp.skiers.find(s=>!s.isTop)?.name;
   S.wfAth = S.perGate; S.heroFocus='';   // Hervorheben startet ohne Auswahl
   const runLbl = runLong(S.mode,S.disc,S.run);
-  const phM=$('#printHeadMeta'); if(phM) phM.textContent = `${evLabel(S.ev)} · ${discName(S.disc)} · ${S.gen==='M'?'Männer':'Frauen'} · ${runLbl}`;
-  const phD=$('#printHeadDate'); if(phD){ try{ phD.textContent='Erstellt '+new Date().toLocaleDateString('de-CH'); }catch(e){} }
+  const phM=$('#printHeadMeta'); if(phM) phM.textContent = `${evLabel(S.ev)} · ${discName(S.disc)} · ${S.gen==='M'?(LANG==='en'?'Men':'Männer'):(LANG==='en'?'Women':'Frauen')} · ${runLbl}`;
+  const phD=$('#printHeadDate'); if(phD){ try{ phD.textContent=(LANG==='en'?'Created ':'Erstellt ')+new Date().toLocaleDateString('de-CH'); }catch(e){} }
   S.pdfName = `GtG_${S.ev.venue}_${S.disc}_${S.gen}_Lauf${S.run}_${S.ev.date}`;   // Dateiname nur fürs PDF (wird beim Drucken gesetzt)
   render();
 }
@@ -3924,7 +3928,7 @@ function compute(ev){
   return {n, top:skiers.find(s=>s.isTop), skiers, sui, figs, sectors, med, disc:ev.discipline};
 }
 function bestSui(){ if(!S.comp) return null; const sui=S.comp.sui; if(!sui.length) return null;
-  const full=sui.filter(s=>s.complete>=0.85);
+  const full=sui.filter(s=>!s.dnf && s.complete>=0.85);
   if(full.length) return [...full].sort((a,b)=>a.finalClean-b.finalClean)[0];   // Finisher: kleinster Endrückstand
   // niemand komplett -> fairster Vergleich über Ø Rückstand pro getaggtem Tor (nicht der, der am frühesten ausfiel)
   const avgDiff=s=>{ const d=(s.cleanDiff||[]).filter(v=>v!=null); return d.length? d.reduce((x,y)=>x+y,0)/d.length : 1e9; };
@@ -3955,7 +3959,7 @@ function render(){
       <div class="card" id="heroCard">
         <div class="c-head hero-head">
           <div><h2>Zeitrückstand auf die Bestzeit — kumuliert</h2>
-            <div class="c-sub">${c._ownRef?(LANG==='en'?'Cumulative deficit on each athlete\'s <b>own best run</b> (= 0). Lower = slower.':'Kumulierter Rückstand auf den <b>eigenen besten Lauf</b> der Athlet:in (= 0). Tiefer = langsamer.'):`Kumulierter Rückstand auf <b>${c.top.name}</b> (= 0). Tiefer = langsamer.`}</div>
+            <div class="c-sub">${c._ownRef?(LANG==='en'?'Cumulative deficit on each athlete\'s <b>own best run</b> (= 0). Lower = slower.':'Kumulierter Rückstand auf den <b>eigenen besten Lauf</b> der Athlet:in (= 0). Tiefer = langsamer.'):`Kumulierter Rückstand auf <b>${escHtml(c.top.name)}</b> (= 0). Tiefer = langsamer.`}</div>
             <div class="fig-leg-print print-only"><b>Figuren:</b> Lap = Zwischenzeit · B = Banane · H = Hairpin/Wende · F = Flush (3er).</div></div>
           <div class="hero-right">
             <div class="hero-ctrls no-print">
@@ -4029,12 +4033,12 @@ function kpiHTML(){
   const icPeople='<circle cx="6" cy="6" r="2.2"/><path d="M2.4 13.4c0-2 1.7-3.2 3.6-3.2s3.6 1.2 3.6 3.2"/><path d="M11 5.6a2.1 2.1 0 0 1 .2 4.2M13.6 13.4c0-1.6-.9-2.6-2.2-3"/>';
   const icDown='<path d="M1.6 4.8l4.8 4.8 2.8-2.8 4.8 4.8"/><path d="M14.4 11.6v-3.8h-3.8"/>';
   return `<div class="kpis">
-    <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Lauf berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">${I(icStar)}Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${top.name}</div><div class="k-sub">${top.nation} · Referenz 0.00</div></div>
+    <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Lauf berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">${I(icStar)}Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${escHtml(top.name)}</div><div class="k-sub">${top.nation?escHtml(top.nation)+' · ':''}Referenz 0.00</div></div>
     <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">${I(icClock)}Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
     <div class="kpi" title="Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps)."><div class="k-lab">${I(icFlag)}Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
-    <div class="kpi" title="Beste:r Schweizer:in in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">${I(icMedal)}Bester SUI</div><div class="k-val" style="font-size:15px">${best?best.name.split(' ')[0]:'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
+    <div class="kpi" title="Beste:r Schweizer:in in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">${I(icMedal)}Bester SUI</div><div class="k-val" style="font-size:15px">${best?escHtml(surOf(best.name)):'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
     <div class="kpi" title="Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind."><div class="k-lab">${I(icPeople)}SUI Athlet:innen</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
-    <div class="kpi" title="Grösster Einzel-Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">${I(icDown)}Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?bigLoss.name.split(' ')[0]+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
+    <div class="kpi" title="Grösster Einzel-Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">${I(icDown)}Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?escHtml(surOf(bigLoss.name))+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
   </div>`;
 }
 
@@ -4042,12 +4046,12 @@ function trStats(){
   const ser=S.trSeries||[]; const by=new Map(); ser.forEach(x=>{ if(!by.has(x.name)) by.set(x.name,[]); by.get(x.name).push(x); });
   by.forEach(l=>l.sort((a,b)=>a.run-b.run));
   const fin=ser.filter(x=>x.total!=null); const fastest=fin.length? fin.reduce((a,b)=>b.total<a.total?b:a):null;
-  let imp=null; by.forEach((l,nm)=>{ const f=l.filter(x=>x.total!=null); if(f.length<2) return; const a=f[0], z=f[f.length-1]; const d=z.total-a.total; if(!imp||d<imp.d) imp={nm,a,z,d}; });
+  let imp=null, impPair=false; by.forEach((l,nm)=>{ const f=l.filter(x=>x.total!=null); if(f.length<2) return; const a=f[0], z=f[f.length-1]; const d=z.total-a.total; impPair=true; if(d<0 && (!imp||d<imp.d)) imp={nm,a,z,d}; });
   let con=null; by.forEach((l,nm)=>{ const f=l.filter(x=>x.total!=null); if(f.length<2) return; const m=f.reduce((s,x)=>s+x.total,0)/f.length; const sd=Math.sqrt(f.reduce((s,x)=>s+(x.total-m)**2,0)/f.length); if(!con||sd<con.sd) con={nm,sd,k:f.length}; });
-  return {by, fastest, imp, con, nRuns:ser.length};
+  return {by, fastest, imp, impPair, con, nRuns:ser.length};
 }
 function trainKpiHTML(){
-  const c=S.comp, top=c.top, st=trStats(), EN=LANG==='en', sur=n=>(S.trShort?S.trShort(n):String(n||'').split(' ')[0]);
+  const c=S.comp, top=c.top, st=trStats(), EN=LANG==='en', sur=n=>escHtml(S.trShort?S.trShort(n):surOf(n||''));
   const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
   const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
   const icClock='<circle cx="8" cy="8" r="6.2"/><path d="M8 4.6V8l2.3 1.4"/>';
@@ -4066,14 +4070,14 @@ function trainKpiHTML(){
     <div class="kpi" title="${EN?'Average gate-to-gate time of the reference run (plausible values only).':'Durchschnittliche Tor-zu-Tor-Zeit des Referenzlaufs (nur plausible Werte).'}"><div class="k-lab">${I(icClock)}${EN?'Ø time / gate':'Ø Zeit / Tor'}</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">${EN?'reference run':'Referenzlauf'}</div></div>
     <div class="kpi"><div class="k-lab">${I(icFlag)}${EN?'Gates':'Tore'}</div><div class="k-val">${c.n}</div><div class="k-sub">${c.figs.length} ${EN?'marked figures':'markierte Figuren'}</div></div>
     <div class="kpi" title="${EN?'Athletes and runs in the current selection.':'Athlet:innen und Läufe in der aktuellen Auswahl.'}"><div class="k-lab">${I(icPeople)}${EN?'Athletes':'Athlet:innen'}</div><div class="k-val">${st.by.size}</div><div class="k-sub">${st.nRuns} ${EN?(st.nRuns===1?'run':'runs'):(st.nRuns===1?'Lauf':'Läufe')}</div></div>
-    <div class="kpi" title="${EN?'Biggest change of total time from the first to the last fully tagged run of one athlete.':'Grösste Veränderung der Gesamtzeit vom ersten zum letzten vollständig getaggten Lauf einer Person.'}"><div class="k-lab">${I(icUp)}${EN?'Biggest improvement':'Grösste Verbesserung'}</div><div class="k-val" style="color:${imp&&imp.d<0?'var(--good)':'var(--ink)'}">${imp?(imp.d<0?'−':'+')+Math.abs(imp.d).toFixed(2):'–'}<small> s</small></div><div class="k-sub">${imp?sur(imp.nm)+' · L'+imp.a.run+' → L'+imp.z.run:(EN?'min. 2 runs needed':'mind. 2 Läufe nötig')}</div></div>
-    <div class="kpi" title="${EN?'Smallest spread (standard deviation) of total times across an athlete’s runs.':'Kleinste Streuung (Standardabweichung) der Gesamtzeiten über die Läufe einer Person.'}"><div class="k-lab">${I(icTarget)}${EN?'Most consistent':'Konstantester'}</div><div class="k-val" style="font-size:15px">${con?sur(con.nm):'–'}</div><div class="k-sub">${con?'±'+con.sd.toFixed(2)+' s · '+con.k+' '+(EN?'runs':'Läufe'):(EN?'min. 2 runs needed':'mind. 2 Läufe nötig')}</div></div>
+    <div class="kpi" title="${EN?'Biggest change of total time from the first to the last fully tagged run of one athlete.':'Grösste Veränderung der Gesamtzeit vom ersten zum letzten vollständig getaggten Lauf einer Person.'}"><div class="k-lab">${I(icUp)}${EN?'Biggest improvement':'Grösste Verbesserung'}</div><div class="k-val" style="color:${imp&&imp.d<0?'var(--good)':'var(--ink)'}">${imp?(imp.d<0?'−':'+')+Math.abs(imp.d).toFixed(2):'–'}<small> s</small></div><div class="k-sub">${imp?sur(imp.nm)+' · L'+imp.a.run+' → L'+imp.z.run:(st.impPair?(EN?'no improvement':'keine Verbesserung'):(EN?'min. 2 runs needed':'mind. 2 Läufe nötig'))}</div></div>
+    <div class="kpi" title="${EN?'Smallest spread (standard deviation) of total times across an athlete’s runs.':'Kleinste Streuung (Standardabweichung) der Gesamtzeiten über die Läufe einer Person.'}"><div class="k-lab">${I(icTarget)}${EN?'Most consistent':'Konstanteste:r'}</div><div class="k-val" style="font-size:15px">${con?sur(con.nm):'–'}</div><div class="k-sub">${con?'±'+con.sd.toFixed(2)+' s · '+con.k+' '+(EN?'runs':'Läufe'):(EN?'min. 2 runs needed':'mind. 2 Läufe nötig')}</div></div>
   </div>`;
 }
 // Karte «Lauf für Lauf»: pro Athlet:in die Gesamtzeiten der Läufe, Trend, bester Lauf, Abstand zur Gruppenbesten
 function trainRunsHTML(){
   const st=trStats(); if(!st.by.size) return '';
-  const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>(S.trShort?S.trShort(n):String(n||'').split(' ')[0]);
+  const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>(S.trShort?S.trShort(n):surOf(n||''));
   const rows=[...st.by.entries()].map(([nm,l])=>{ const fin=l.filter(x=>x.total!=null); const best=fin.length?fin.reduce((a,b)=>b.total<a.total?b:a):null; return {nm,l,best}; })
     .sort((a,b)=> (a.best?a.best.total:1e9)-(b.best?b.best.total:1e9));
   let h=`<div class="card" id="rbrCard"><div class="c-head"><div><h2>${EN?'Run by run':'Lauf für Lauf'}</h2>
@@ -4096,7 +4100,7 @@ function buildLegend(){
   const order=[...S.comp.skiers].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // Bestzeit immer ganz links
   order.forEach(s=>{
     const d=document.createElement('div'); d.className='lg'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
-    d.innerHTML=`<span class="bar" style="background:${s.color}"></span><span class="lg-full">${s.name}</span><span class="lg-sur">${surOf(s.name)}</span>${s.isTop?'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>':''}`;
+    d.innerHTML=`<span class="bar" style="background:${s.color}"></span><span class="lg-full">${escHtml(s.name)}</span><span class="lg-sur">${surOf(s.name)}</span>${s.isTop?'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>':''}`;
     d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
     el.appendChild(d);
   });
@@ -4267,7 +4271,8 @@ function drawHero(){
   const _hn=$('#heroNote');
   if(_hn){ if(_anom.length && !S.printMode){
       const tore=_anom.map(a=>`Tor ${a.g+1}`).join(', ');
-      _hn.innerHTML=`<span class="hn-ic">⚠</span><b>Auffällige Stelle${_anom.length>1?'n':''}:</b> ${tore}. Hier wurden damals für das versendete PDF manuelle Anpassungen gemacht — angezeigt sind die Original-Taggings.`;
+      _hn.innerHTML= LANG==='en' ? `<span class="hn-ic">⚠</span><b>Notable spot${_anom.length>1?'s':''}:</b> ${tore}. Manual adjustments were made here for the PDF that was sent out — the original taggings are shown.`
+        : `<span class="hn-ic">⚠</span><b>Auffällige Stelle${_anom.length>1?'n':''}:</b> ${tore}. Hier wurden damals für das versendete PDF manuelle Anpassungen gemacht — angezeigt sind die Original-Taggings.`;
       _hn.style.display='';
     } else { _hn.style.display='none'; _hn.innerHTML=''; } }
   // interactivity
@@ -4279,7 +4284,7 @@ function drawHero(){
     const valAt=s=> t===1?0:s[key][t-2];
     const rows=series.filter(s=>valAt(s)!=null).sort((a,b)=>valAt(a)-valAt(b)).map(s=>{
       const col=s.color;
-      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${s.name.split(' ')[0]}${s.isTop?(LANG==='en'?' · best time':' · Bestzeit'):''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
+      return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${escHtml(surOf(s.name))}${s.isTop?(LANG==='en'?' · best time':' · Bestzeit'):''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
     const fg=c.figs.filter(f=>f.gate===t-1).map(f=>f.label).join(' · ');
     const pit=pitchByGate[t];
     tt.innerHTML=`<div class="tt-h">${LANG==='en'?'Gate':'Tor'} ${t}${fg?' · '+fg:''}${pit!=null?` · ${Math.round(pit)}% ${LANG==='en'?'pitch':'Gefälle'}`:''}</div>${rows}`;
@@ -4322,8 +4327,8 @@ function updateTerrainBand(){ /* Terrain-Band entfernt */ }
 function secSummary(data, secs, STS, hasSt, worst){
   const el=$('#secSum'); if(!el) return;
   const EN=LANG==='en', MIX=EN?'mixed':'gemischt';
-  const f=v=> v==null?'–':((v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(2));
-  const nmOf=s=> String(s.name||'').split(' ')[0];
+  const f=v=> v==null?'–':(Math.abs(v)<0.005?'+0.00':(v>0?'+':'−')+Math.abs(v).toFixed(2));
+  const nmOf=s=> surOf(s.name||'');
   const esc=t=> String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const rows=data.map(d=>{ const idx=d.vals.map((v,i)=>({v,i})).filter(o=>o.v!=null);
     if(!idx.length) return null;
@@ -4354,9 +4359,10 @@ function secSummary(data, secs, STS, hasSt, worst){
     if(wi>=0 && fin.length>1){ const [a,b]=secs[wi]; const st=steepTxt(wi);
       msgs.push(EN?`The team loses the most time in <b>${secLbl(wi)}</b> (gates ${a+1}–${b+1}${st?', '+st:''}).`:`Am meisten Zeit verliert das Team in <b>${secLbl(wi)}</b> (Tor ${a+1}–${b+1}${st?', '+st:''}).`); } }
   const top=fin[0];
-  if(top){ const mx=Math.max(...top.idx.map(o=>Math.abs(o.v)));
+  if(top){ const mxOf=r=>Math.max(...r.idx.map(o=>Math.abs(o.v))); const mx=mxOf(top);
     const _pm=mx<0.1?'0.10':mx.toFixed(2);
-    msgs.push(mx<=0.25 ? (EN?`<b>${esc(top.nm)}</b> most consistent – within ±${_pm} s in every section.`:`<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${_pm} s.`)
+    const _most=fin.every(r=> r===top || mxOf(r)>=mx-0.005);   // «am konstantesten» nur, wenn wirklich niemand konstanter ist
+    msgs.push((mx<=0.25 && _most) ? (EN?`<b>${esc(top.nm)}</b> most consistent – within ±${_pm} s in every section.`:`<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${_pm} s.`)
                        : (EN?`<b>${esc(top.nm)}</b> with the smallest total deficit (${f(top.tot)} s), best in ${secLbl(top.best.i)}.`:`<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), am besten in ${secLbl(top.best.i)}.`)); }
   let conc=null; fin.forEach(r=>{ if(r.pos>0.3 && r.weak.v>0){ const sh=r.weak.v/r.pos; if(sh>=0.4 && (!conc||sh>conc.sh)) conc={r,sh}; } });
   if(conc && conc.r!==top){ const st=steepTxt(conc.r.weak.i);
@@ -4408,14 +4414,14 @@ function drawSector(){
     const cx=ml+gw*si+gw/2;
     const totW=bw*data.length; let bx=cx-totW/2;
     data.forEach(d=>{ const v=d.vals[si]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
-      svg+=`<rect class="sb" data-s="${d.s.name}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
+      svg+=`<rect class="sb" data-s="${escHtml(d.s.name)}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
       // Athletenname vertikal, immer NACH OBEN (auch bei Abwärtsbalken) -> keine Kollision mit den S-/Tor-Labels unten
-      const bxc=bx+(bw-2)/2, nm=d.s.name.split(' ')[0], tl=nm.length*7.2+4;   // geschätzte Textlänge (vertikal)
+      const bxc=bx+(bw-2)/2, nm=surOf(d.s.name), tl=nm.length*7.2+4;   // geschätzte Textlänge (vertikal)
       const _rg=d.rng&&d.rng[si];
       if(_rg){ const ya=y(_rg[1]), yb=y(_rg[0]); svg+=`<line x1="${bxc}" x2="${bxc}" y1="${ya}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${ya}" y2="${ya}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${yb}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/>`; }
       let ty=Math.min((v>=0?y(v):y(0)), _rg?y(_rg[1]):1e9)-5, inside=false;
       if(ty-tl < 2 && v>=0 && h>tl+8){ ty=y(v)+6; inside=true; }   // oben kein Platz -> weiss im Balken
-      svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${nm}</text>`; 
+      svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${escHtml(nm)}</text>`; 
       // Abschnitts-Rückstand dezent im Balken – senkrecht (wie die Namen), unten im Balken, weiss
       { const txt=(v>0?'+':'')+v.toFixed(2), fs=Math.min(10, Math.max(8, bw*0.42)), need=txt.length*fs*0.62+10;
         if(h>=need && bw>=12){ const vy = v>=0 ? y(0)-5 : y(v)-5;
@@ -4438,10 +4444,10 @@ function drawSector(){
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   try{ secSummary(data, secs, STS, hasSt, worst); }catch(e){ const el=$('#secSum'); if(el) el.innerHTML=''; }
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
-    tt.innerHTML=`<div class="tt-h">${r.dataset.s.split(' ')[0]} · Tor ${r.dataset.sec}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
+    tt.innerHTML=`<div class="tt-h">${escHtml(surOf(r.dataset.s))} · Tor ${String(r.dataset.sec).replace('-','–')}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
     const br=r.getBoundingClientRect(); tt.style.opacity=1; tt.style.left=(br.left+br.width/2)+'px'; tt.style.top=(br.top-6)+'px';
   }));
-  $('#secShell').addEventListener('mouseleave',()=> tt.style.opacity=0);
+  $('#secShell').onmouseleave=()=> tt.style.opacity=0;
 }
 
 /* ---------- rhythm bars ---------- */
@@ -4456,7 +4462,7 @@ const HM_STEEP_LBL_DE={st0:'flach',st1:'mittel',st2:'steil'}, HM_STEEP_LBL_EN={s
 const HM_STEEP_LBL=new Proxy({}, {get:(_,k)=> (LANG==='en'?HM_STEEP_LBL_EN:HM_STEEP_LBL_DE)[k]});
 function drawHeatmap(mode){
   const c=S.comp, n=c.n; const cols=[c.top, ...c.skiers.filter(s=>!s.isTop)]; const STP=hmSteepOf();
-  const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f);
+  const figByGate={}; c.figs.forEach(f=>{ const o=figByGate[f.gate]; figByGate[f.gate]= o? Object.assign({},o,{label:o.label+' · '+f.label}) : f; });
   const isPair=(s,i)=> !!(s.pair && s.pair[i]>=0);
   let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(s.anom[i]||isPair(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); }));
   max=max||0.3;
@@ -4464,8 +4470,8 @@ function drawHeatmap(mode){
   const colorOf=(d,anom)=>{ if(d==null) return _blank; if(anom) return _blank;
     const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
     return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:_zero; };
-  let h=`<div class="hm-ref">Referenz (Bestzeit, Δ = 0.00): <b>${escHtml(c.top.name)}</b>${c.top.nation?' · '+escHtml(c.top.nation):''}</div><div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
-  cols.forEach(s=> h+=`<th${s.isTop?' class="hm-top"':''}>${s.name.split(' ')[0]}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
+  let h=`<div class="hm-ref">${LANG==='en'?'Reference (best time, Δ = 0.00)':'Referenz (Bestzeit, Δ = 0.00)'}: <b>${escHtml(c.top.name)}</b>${c.top.nation?' · '+escHtml(c.top.nation):''}</div><div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
+  cols.forEach(s=> h+=`<th${s.isTop?' class="hm-top"':''}>${escHtml(surOf(s.name))}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${s.nation}</div></th>`);
   h+=`</tr></thead><tbody>`;
   // Start = Tor 1 (Referenz, alle 0.00)
   h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Ref</span></div></td>`;
@@ -4479,7 +4485,7 @@ function drawHeatmap(mode){
       if(mode==='cum'){ const v=S.excludeAnom?s.cumClean[i]:s.cumRaw[i];
         h+=`<td class="hm-cell${s.isTop?' hm-top':''}" ${da} style="background:${colorOf(v,false)}">${v==null?'':fmt(v)}</td>`; }
       else { const pr=isPair(s,i);
-        const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:'');
+        const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?(LANG==='en'?`Combined with gate ${s.pair[i]+2} (tagging shifted by one gate) – together ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`):'');
         h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}${s.isTop?' hm-top':''}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?'':fmt(d)}</td>`; }
     });
     h+=`</tr>`; }
@@ -4496,7 +4502,7 @@ function drawHeatmap(mode){
 /* ---------- print-only matrix: in Spalten aufgeteilt, passt auf eine Seite ---------- */
 function heatmapPrint(){
   const el=$('#hmPrint'); if(!el) return;
-  const c=S.comp, n=c.n, cols=c.skiers.filter(s=>!s.isTop); const figByGate={}; c.figs.forEach(f=> figByGate[f.gate]=f); const STPp=hmSteepOf();
+  const c=S.comp, n=c.n, cols=c.skiers.filter(s=>!s.isTop); const figByGate={}; c.figs.forEach(f=>{ const o=figByGate[f.gate]; figByGate[f.gate]= o? Object.assign({},o,{label:o.label+' · '+f.label}) : f; }); const STPp=hmSteepOf();
   const isAdj=(s,i)=> !!(s.anom[i] || (s.pair && s.pair[i]>=0));
   let max=0, nAdj=0; cols.forEach(s=> s.diff.forEach((d,i)=>{ if(d==null) return; if(isAdj(s,i)){ nAdj++; return; } max=Math.max(max,Math.abs(d)); })); max=max||0.3;
   const colorOf=d=>{ if(d==null) return '#fff'; const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
@@ -4519,7 +4525,7 @@ function heatmapPrint(){
     // Kopf: zwei Zeilen — Name über beiden Spalten, darunter Δ (pro Tor) und Σ (kumuliert)
     let t=`<table class="hmp"><thead><tr><th class="g" rowspan="2">Tor</th>`;
     cols.forEach((s,ci)=>{ if(ci>0) t+=`<th class="sp" rowspan="2"></th>`;
-      t+=`<th colspan="2" class="ath" title="${escHtml(s.name)}">${escHtml(s.name.split(' ')[0])}</th>`; });   // voller Nachname (kleiner), nicht mehr auf 4 Zeichen gekürzt
+      t+=`<th colspan="2" class="ath" title="${escHtml(s.name)}">${escHtml(surOf(s.name))}</th>`; });   // voller Nachname (kleiner), nicht mehr auf 4 Zeichen gekürzt
     t+=`</tr><tr>`;
     cols.forEach(()=> t+=`<th class="sub">Δ</th><th class="sub cum">Σ</th>`);
     t+=`</tr></thead><tbody>`;
@@ -4537,7 +4543,12 @@ function heatmapPrint(){
       t+=`</tr>`; }
     t+=`</tbody></table>`; blocks+=`<div class="hmp-col">${t}</div>`;
   }
-  const legend=`<div class="hmp-legend">`
+  const legend= LANG==='en' ? `<div class="hmp-legend">`
+    +`<div><span class="hl-k">Δ&nbsp;(per&nbsp;gate)</span> Time difference at this gate vs. the fastest run – «+» slower, «−» faster. Colour: <b style="color:#c0392b">red = slower</b>, <b style="color:#1a8f5a">green = faster</b> (the stronger, the bigger the difference).</div>`
+    +`<div><span class="hl-k">Σ&nbsp;(cumulative)</span> summed deficit up to this gate – the running total deficit vs. the fastest run.</div>`
+    +(nAdj?`<div><span class="hl-k">Grey</span> Δ values in grey do not count individually in Σ: outliers (not counted) or combined with the neighbouring gate (tagging shifted by one gate).</div>`:'')
+    +`</div>`
+   : `<div class="hmp-legend">`
     +`<div><span class="hl-k">Δ&nbsp;(pro&nbsp;Tor)</span> Zeitdifferenz an diesem Tor gegenüber der Laufbestzeit – «+» langsamer, «−» schneller. Farbe: <b style="color:#c0392b">rot = langsamer</b>, <b style="color:#1a8f5a">grün = schneller</b> (je kräftiger, desto grösser der Unterschied).</div>`
     +`<div><span class="hl-k">Σ&nbsp;(kumuliert)</span> aufsummierter Rückstand bis zu diesem Tor – der laufende Gesamtrückstand gegenüber der Laufbestzeit.</div>`
     +(nAdj?`<div><span class="hl-k">Grau</span> Δ-Werte in Grau zählen nicht einzeln in Σ: Ausreisser (nicht gewertet) oder mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt).</div>`:'')
@@ -4661,7 +4672,8 @@ function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e)
   const b=$('#darkBtn'); if(b) b.onclick=()=>{ setDark(!document.body.classList.contains('dark')); gtgThemeRefresh(); }; }
 /* Linienfarben der geladenen Analyse neu bestimmen (hell/dunkel) */
 function gtgRecolor(){ try{ const c=S.comp; if(!c||!Array.isArray(c.skiers)) return;
-    c.skiers.forEach(s=>{ s.color = athColor(s._cn||s.name, s.isTop); }); }catch(e){} }
+    c.skiers.forEach(s=>{ s.color = athColor(s._cn||s.name, s.isTop); });
+    if(S.ev&&S.ev.mode==='train') applyTrainShades(c); }catch(e){} }
 /* Analyse-Grafiken neu zeichnen, ohne die Ansicht neu aufzubauen (Video-Panel, Auswahl bleiben) */
 function gtgRedrawAnalyse(){ const _s=fn=>{ try{ fn(); }catch(e){} };
   if(!S.comp || !$('#heroShell')) return;
@@ -4684,8 +4696,8 @@ function gtgPrint(){ try{
     setTimeout(async()=>{ try{ window.dispatchEvent(new Event('beforeprint')); document.body.classList.add('gtg-printing');
         await new Promise(r=>setTimeout(r,250));
         const r=await dk.printPdf(S.pdfName||document.title);
-        if(r && !r.ok && !r.canceled) gtgToast('PDF konnte nicht erstellt werden: '+(r.error||'unbekannter Fehler'));
-      }catch(e){ gtgToast('PDF konnte nicht erstellt werden.'); }
+        if(r && !r.ok && !r.canceled) gtgToast((LANG==='en'?'PDF could not be created: ':'PDF konnte nicht erstellt werden: ')+(r.error||(LANG==='en'?'unknown error':'unbekannter Fehler')));
+      }catch(e){ gtgToast(LANG==='en'?'PDF could not be created.':'PDF konnte nicht erstellt werden.'); }
       finally{ document.body.classList.remove('gtg-printing'); window.dispatchEvent(new Event('afterprint')); } }, 120);
     return; }
   setTimeout(()=>{ try{ window.print(); }catch(e){} }, 120); }
@@ -4717,6 +4729,7 @@ function setAnaSub(sub){ S.anaSub = 'analyse'; savePrefs();   // Saison-Verlauf 
   window.addEventListener('scroll',hide,{passive:true});
 })();
 function switchView(v){ S.view=v; savePrefs();
+  if(v!=='sbs' && typeof sbsPauseAll==='function'){ try{ sbsPauseAll(); }catch(e){} }   // Video-Vergleich nicht im Hintergrund weiterlaufen lassen
   if(v==='analyse' && window._gtgThemeDirty){ window._gtgThemeDirty=false; setTimeout(()=>{ try{ gtgThemeRefresh(); }catch(e){} },30); }   // Design wurde in anderer Ansicht umgeschaltet -> Analyse neu zeichnen
   document.querySelectorAll('#tabs .tab').forEach(b=> b.classList.toggle('on', b.dataset.view===v));
   const wb=$('#wfBtn'); if(wb) wb.classList.toggle('on', v==='workflow');
@@ -4908,7 +4921,7 @@ function vlInsight(data){
   if(tav.length>=2){ const s=[...tav].sort((x,y)=>x.avg-y.avg); const best=s[0],worst=s[s.length-1];
     terr=`<div style="margin-top:6px">Stärkstes Terrain: <b style="color:${best.color}">${best.label}</b> (Ø ${(best.avg>=0?'+':'')}${best.avg.toFixed(3)} s/Tor) · schwächstes: <b style="color:${worst.color}">${worst.label}</b> (Ø ${(worst.avg>=0?'+':'')}${worst.avg.toFixed(3)} s/Tor).</div>`; }
   else terr=`<div style="margin-top:6px;color:var(--muted)">Terrain-Auswertung: für mehr Tiefe Kurssetzungen zu den Rennen hinterlegen (Datenbank → Kurssetzung).</div>`;
-  const nameShort=VL.ath.split(' ')[0];
+  const nameShort=surOf(VL.ath);
   host.innerHTML=`<div><b>${nameShort}</b> ${trend}.</div>${terr}
     <div style="margin-top:6px;color:var(--muted)">Basis: ${data.length} Läufe · Ø Rückstand pro Tor auf die jeweilige Laufbestzeit.</div>`;
 }
@@ -5006,7 +5019,7 @@ function renderProfil(){
     selB.innerHTML='<option value="">＋ Vergleich hinzufügen …</option>'+avail.map(n=>`<option value="${n}">${n} (${natOf(n)||'?'})</option>`).join('');
     selB.value=''; }
   const chipsEl=$('#pfCompareChips');
-  if(chipsEl){ chipsEl.innerHTML = PF.compare.length? PF.compare.map((n,i)=>`<span class="pf-cmp-chip" style="border-color:${PF_PAL[i%PF_PAL.length]}"><span class="dot" style="background:${PF_PAL[i%PF_PAL.length]}"></span>${n.split(' ')[0]}<button class="pf-cmp-x" data-n="${n}" title="Entfernen">✕</button></span>`).join('') : '<span class="pf-cmp-empty">Kein Vergleich — oben hinzufügen (mehrere möglich)</span>';
+  if(chipsEl){ chipsEl.innerHTML = PF.compare.length? PF.compare.map((n,i)=>`<span class="pf-cmp-chip" style="border-color:${PF_PAL[i%PF_PAL.length]}"><span class="dot" style="background:${PF_PAL[i%PF_PAL.length]}"></span>${escHtml(surOf(n))}<button class="pf-cmp-x" data-n="${n}" title="Entfernen">✕</button></span>`).join('') : '<span class="pf-cmp-empty">Kein Vergleich — oben hinzufügen (mehrere möglich)</span>';
     chipsEl.querySelectorAll('.pf-cmp-x').forEach(b=> b.onclick=()=>{ PF.compare=PF.compare.filter(x=>x!==b.dataset.n); renderProfil(); }); }
   const seas=vlSeasons(); const ssel=$('#pfSeason');
   if(ssel){ if(VL.season && VL.season!=='' && !seas.includes(VL.season)) VL.season='';
@@ -5042,14 +5055,14 @@ function renderProfil(){
   // Terrain-Fingerabdruck (Radar) + Werte-Tabelle
   const cats4=VL_CATS.filter(c=>c.need);
   const radar=profilRadar(cats4, series);
-  const legend = cmp.length? ' — '+series.map(s=>`<span style="color:${s.color}">■</span> ${s.name.split(' ')[0]}`).join(' vs. ') : '';
+  const legend = cmp.length? ' — '+series.map(s=>`<span style="color:${s.color}">■</span> ${escHtml(surOf(s.name))}`).join(' vs. ') : '';
   h+=`<div class="pf-sec"><b>Terrain-Fingerabdruck</b> · Ø Rückstand pro Tor auf die Laufbestzeit${legend}</div>`;
   h+=`<div class="pf-explain">Vier Achsen = Geländetypen. Je <b>weiter aussen</b>, desto <b>schneller</b> (kleinerer Rückstand/Tor); <b>Delle nach innen</b> = Schwäche. Zahlen rechts: Ø Rückstand/Tor auf die Laufbestzeit — <span style="color:var(--good)">− schneller</span>, <span style="color:var(--bad)">+ langsamer</span>.</div>`;
   if(radar){
     const gcols=`grid-template-columns:1fr repeat(${series.length},minmax(56px,1fr))`;
     const vc=v=> v==null?'var(--muted)':(v>0?'var(--bad)':'var(--good)');
     h+=`<div class="pf-radarwrap"><div class="pf-radar">${radar}</div><div class="pf-vtab">`;
-    h+=`<div class="pf-vrow pf-vhead" style="${gcols}"><span>Terrain</span>`+series.map(s=>`<span style="color:${series.length>1?s.color:'var(--ink2)'}">${series.length>1?s.name.split(' ')[0]:'Ø s/Tor'}</span>`).join('')+`</div>`;
+    h+=`<div class="pf-vrow pf-vhead" style="${gcols}"><span>Terrain</span>`+series.map(s=>`<span style="color:${series.length>1?s.color:'var(--ink2)'}">${series.length>1?escHtml(surOf(s.name)):'Ø s/Tor'}</span>`).join('')+`</div>`;
     cats4.forEach(c=>{ h+=`<div class="pf-vrow" style="${gcols}"><span><span class="dot" style="background:${c.color}"></span>${c.label}</span>`
       +series.map(s=>{ const v=s.agg[c.key]; return `<span style="color:${vc(v)}">${v==null?'–':pfFmt(v)}</span>`; }).join('')+`</div>`; });
     h+=`</div></div>`;
@@ -5081,7 +5094,7 @@ function initProfil(){
 let SBS={A:null,B:null,offset:0,raf:0,playing:false};
 function sbsFillPickers(){ if(!$('#sbsSelA')) return;
   vdbAll().then(all=>{ all.sort((a,b)=> (b.savedAt||0)-(a.savedAt||0));
-    const opt=r=>`<option value="${r.id}">${r.name} · ${r.venue} ${r.disc} ${r.gen} ${runLong(r.mode||'comp', r.disc, r.run)}</option>`;
+    const opt=r=>`<option value="${escHtml(r.id)}">${escHtml(r.name)} · ${escHtml(r.venue)} ${r.disc} ${r.gen} ${runLong(r.mode||'comp', r.disc, r.run)}</option>`;
     const base='<option value="">— Video wählen —</option>'; const curA=$('#sbsSelA').value, curB=$('#sbsSelB').value;
     $('#sbsSelA').innerHTML=base+all.map(opt).join(''); $('#sbsSelB').innerHTML=base+all.map(opt).join('');
     if(curA) $('#sbsSelA').value=curA; if(curB) $('#sbsSelB').value=curB;
@@ -5090,10 +5103,12 @@ function sbsFillPickers(){ if(!$('#sbsSelA')) return;
 function sbsLoad(which,id){ const v=$('#sbsVid'+which), nm=$('#sbsName'+which);
   if(SBS[which]&&SBS[which].url){ try{URL.revokeObjectURL(SBS[which].url);}catch(e){} }
   if(!id){ SBS[which]=null; if(v){ v.removeAttribute('src'); try{v.load();}catch(e){} } if(nm) nm.textContent='Video '+which; sbsUpdateHint(); return; }
-  vdbGet(id).then(r=>{ if(!r) return; const url=URL.createObjectURL(r.video); if(v) v.src=url;
+  SBS[which]=null; SBS.offset=0;   // neues Paar: alte Synchronisation verwerfen
+  vdbGet(id).then(r=>{ if(!r) return; const sel=$('#sbsSel'+which); if(sel && sel.value!==id) return;   // inzwischen anderes Video gewählt
+    const url=URL.createObjectURL(r.video); if(v){ v.src=url; v.playbackRate=parseFloat(($('#sbsSpeed')||{}).value)||1; }
     SBS[which]={rec:r, tags:(r.tags||[]).map(t=>t.t).sort((a,b)=>a-b), fps:r.fps||30, url};
     if(nm) nm.textContent=`${r.name} · ${r.venue} ${runLong(r.mode||'comp', r.disc, r.run)}`;
-    if(v) v.onloadedmetadata=()=>{ sbsUpdateHint(); sbsRender(); };
+    if(v) v.onloadedmetadata=()=>{ try{ v.playbackRate=parseFloat(($('#sbsSpeed')||{}).value)||1; }catch(e){} sbsUpdateHint(); sbsRender(); };
   });
 }
 function sbsUpdateHint(){ const a=SBS.A,b=SBS.B, h=$('#sbsHint'); if(!h) return;
@@ -5124,6 +5139,7 @@ function initSbs(){
   if($('#sbsSelB')) $('#sbsSelB').onchange=e=>sbsLoad('B',e.target.value);
   if($('#sbsSync')) $('#sbsSync').onclick=sbsSync;
   if($('#sbsPlay')) $('#sbsPlay').onclick=sbsPlay;
+  if($('#sbsVidA')) $('#sbsVidA').onended=sbsPauseAll;
   if($('#sbsBack1')) $('#sbsBack1').onclick=()=>sbsStep(-1);
   if($('#sbsFwd1')) $('#sbsFwd1').onclick=()=>sbsStep(1);
   if($('#sbsBack10')) $('#sbsBack10').onclick=()=>sbsStep(-10);
@@ -5519,7 +5535,7 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   const target = rec.mode==='train'? TRAIN : DATA;
   let ev = target.find(e=>e.date===rec.date&&e.venue===rec.venue&&e.discipline===rec.disc&&e.gender===rec.gen&&String(e.run)===String(rec.run));
   if(!ev){ ev={date:rec.date,venue:rec.venue,discipline:rec.disc,gender:rec.gen,run:rec.run,mode:rec.mode||'comp',nGates:0,figures:[],skiers:[],hasSUI:false,hasTop:false}; target.push(ev); }
-  try{ const dk=evKey(ev); if(DELETED.has(dk)){ DELETED.delete(dk); LS.set('gtg_deleted',[...DELETED]); } }catch(e){}
+  try{ const dk=evKey(ev), dm=dk+(ev.mode==='train'?'|T':'|C'); if(DELETED.has(dk)||DELETED.has(dm)){ DELETED.delete(dk); DELETED.delete(dm); LS.set('gtg_deleted',[...DELETED]); } }catch(e){}
   ev.skiers = ev.skiers.filter(s=>s.name!==rec.name);
   ev.skiers.push({name:rec.name, nation:(natFor(rec.name)||rec.nation), fastest:false, gates:rec.gates.slice(),
     officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
@@ -5760,19 +5776,19 @@ if(typeof window!=='undefined' && !window._vdbRejGuard){ window._vdbRejGuard=tru
   window.addEventListener('unhandledrejection', e=>{ try{ const m=String((e&&e.reason&&(e.reason.message||e.reason))||'');
     if(/IndexedDB|nicht verfügbar|blockiert/i.test(m)){ e.preventDefault(); } }catch(_){} }); }
 function vdbOpen(){ return new Promise((res,rej)=>{ if(VDB.db) return res(VDB.db);
-  if(VDB.failed) return rej(new Error('IndexedDB nicht verfügbar'));   // einmal gescheitert -> nicht endlos neu versuchen (Anzeige nie blockieren)
-  let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ VDB.failed=true; return rej(e); }
-  let done=false; const fin=(ok,val)=>{ if(done) return; done=true; clearTimeout(to); if(ok){ res(val); } else { VDB.failed=true; rej(val); } };
+  if(VDB.failed && Date.now()-VDB.failed<20000) return rej(new Error('IndexedDB nicht verfügbar'));   // nach 20 s erneut versuchen (nicht für die ganze Sitzung sperren)   // einmal gescheitert -> nicht endlos neu versuchen (Anzeige nie blockieren)
+  let r; try{ r=indexedDB.open('gtg_video_lib',4); }catch(e){ VDB.failed=Date.now(); return rej(e); }
+  let done=false; const fin=(ok,val)=>{ if(done) return; done=true; clearTimeout(to); if(ok){ res(val); } else { VDB.failed=Date.now(); rej(val); } };
   const to=setTimeout(()=>fin(false,new Error('IndexedDB-Timeout')), 3000);   // hängt das Öffnen (z. B. blockiert), nach 3 s aufgeben statt ewig warten
   r.onupgradeneeded=e=>{ const db=e.target.result;
     if(!db.objectStoreNames.contains('videos')) db.createObjectStore('videos',{keyPath:'id'});
     if(!db.objectStoreNames.contains('courses')) db.createObjectStore('courses',{keyPath:'id'});
     if(!db.objectStoreNames.contains('kurspdf')) db.createObjectStore('kurspdf',{keyPath:'id'});
     if(!db.objectStoreNames.contains('backups')) db.createObjectStore('backups',{keyPath:'id'}); };
-  r.onsuccess=e=>{ VDB.db=e.target.result; fin(true,VDB.db); };
+  r.onsuccess=e=>{ VDB.db=e.target.result; VDB.failed=0; fin(true,VDB.db); };   // auch ein verspätetes Öffnen wird noch genutzt
   r.onerror=()=>fin(false, r.error||new Error('IndexedDB-Fehler'));
   r.onblocked=()=>fin(false, new Error('IndexedDB blockiert (andere Registerkarte offen?)')); }); }
-function _idbPut(rec,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(rec); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); })); }
+function _idbPut(rec,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(rec); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new DOMException('Speichern abgebrochen (Speicher voll?)','QuotaExceededError')); })); }
 function _idbGet(id,store){ return vdbOpen().then(db=>new Promise((res,rej)=>{ const rq=db.transaction(store,'readonly').objectStore(store).get(id); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); })); }
 function vdbPut(rec,store='videos'){
   const dk=GD();
@@ -5803,7 +5819,7 @@ function vdbGet(id,store='videos'){
   });
 }
 function vdbDel(id,store='videos'){
-  const idbDel=()=>vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }));
+  const idbDel=()=>vdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error||new Error('abort')); }));
   const dk=GD();
   if(dk && store==='videos'){ return Promise.resolve(dk.deleteVideo(id)).catch(()=>{}).then(idbDel); }
   return idbDel();
@@ -5923,9 +5939,9 @@ function renderLibrary(){
       const dnfBadge = isDnf? `<span class="li-badge dnf" title="Nur ${Math.max(0,nt-1)} von ${Math.max(0,mx-1)} Toren getaggt – vermutlich DNF">DNF</span>` : '';
       const runLbl = runLong(r.mode||'comp', r.disc, r.run);
       return `<div class="lib-item${isDnf?' li-dnf':''}">
-        <div class="li-name">${r.name}${dnfBadge}${gaps}</div>
+        <div class="li-name">${escHtml(r.name)}${dnfBadge}${gaps}</div>
         <div class="li-meta">
-          <div><b>${r.venue}</b> · ${dmy(r.date)}</div>
+          <div><b>${escHtml(r.venue)}</b> · ${dmy(r.date)}</div>
           <div>${r.disc} ${r.gen} · ${runLbl} · ${(r.tags?.length||0)} Tags · ${fmtSize(r.vsize||0)}</div>
         </div>
         <div class="lib-actions"><button class="btn-mini load" data-id="${r.id}">▶ Laden</button><button class="btn-mini del" data-id="${r.id}" title="löschen">✕</button></div>
@@ -6073,7 +6089,7 @@ function renderCourseList(){
   if(!all.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Noch keine Kurse gespeichert. Importiere ein Kurssetzungs-PDF («＋ Neu»).', 'gate')+'</div>'; return; }
   if(!list.length){ grid.innerHTML='<div style="grid-column:1/-1">'+emptyBox('Keine Kurse für diesen Filter.', 'search')+'</div>'; return; }
   grid.innerHTML=list.map(r=>{ const hasTag=DATA.some(e=>e.date===r.date&&e.discipline===r.disc&&e.gender===r.gen&&e.run===r.run&&e.hasTop);
-    return `<div class="lib-item"><div class="li-name">${r.venue}${hasTag?' <span class="li-badge gold">+ Tagging</span>':''}</div>
+    return `<div class="lib-item"><div class="li-name">${escHtml(r.venue)}${hasTag?' <span class="li-badge gold">+ Tagging</span>':''}</div>
     <div class="li-meta"><div>${dmy(r.date)}</div><div>${r.disc} ${r.gen} · Lauf ${r.run}</div><div>${r.gates.length} Tore</div></div>
     <div class="lib-actions"><button class="btn-mini kload" data-id="${r.id}">Bearbeiten</button><button class="btn-mini del kdel" data-id="${r.id}">✕</button></div></div>`; }).join('');
   grid.querySelectorAll('.kload').forEach(b=> b.onclick=()=>loadCourse(b.dataset.id));
@@ -6136,7 +6152,7 @@ function drawSingleBars(items,W,H){
     if(it.v!=null){ const Y=it.v>=0?y(it.v):y(0); const h=Math.abs(y(it.v)-y(0));
       svg+=`<rect x="${cx-bw/2}" y="${Y}" width="${bw}" height="${Math.max(h,.6)}" rx="3" fill="${it.color}" opacity=".92"/>`;
       svg+=`<text x="${cx}" y="${it.v>=0?Y-5:Y+h+13}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${it.color}">${(it.v>=0?'+':'')}${it.v.toFixed(3)}</text>`; }
-    svg+=`<text x="${cx}" y="${H-mb+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${nmC}">${it.name.split(' ')[0]}</text>`;
+    svg+=`<text x="${cx}" y="${H-mb+16}" text-anchor="middle" font-size="10" font-weight="700" fill="${nmC}">${escHtml(surOf(it.name))}</text>`;
     svg+=`<text x="${cx}" y="${H-mb+28}" text-anchor="middle" font-size="8.5" fill="${toC}">${it.n} Tore</text>`;
   });
   svg+=`<text x="${W-mr}" y="${mt-2}" text-anchor="end" font-size="10.5" fill="var(--bad)">▲ langsamer</text>`;
@@ -6189,7 +6205,7 @@ function renderKursAnalysis(){
   const items=athletes.map(a=>{ const fp=a.pts.filter(matchFilt); return {name:a.name,color:a.color,n:fp.length, v:fp.length?fp.reduce((s,p)=>s+p.diff,0)/fp.length:null}; });
   const nGatesFilt=athletes.length? Math.max(...athletes.map(a=>a.pts.filter(matchFilt).length)) : 0;
   const toggles=`<div class="ktoggle">`+allAth.map(a=>`<button class="ktog${KHIDDEN.has(a.name)?' off':''}" data-name="${a.name}"><span class="dot" style="background:${a.color}"></span>${a.name}</button>`).join('')
-    + (lowData.length? `<span class="ktog-note">Wenig Daten (ausgeblendet): ${lowData.map(a=>a.name.split(' ')[0]+' '+a.pts.length).join(', ')} Tore</span>`:'') + `</div>`;
+    + (lowData.length? `<span class="ktog-note">Wenig Daten (ausgeblendet): ${lowData.map(a=>escHtml(surOf(a.name))+' '+a.pts.length).join(', ')} Tore</span>`:'') + `</div>`;
   const chipGroup=(label,cats,key)=>`<div class="kf-group"><span class="kf-lab">${label}</span>${cats.map(c=>`<button class="kf-chip${KFILT[key].has(c)?' on':''}" data-set="${key}" data-cat="${c}">${c}</button>`).join('')}</div>`;
   const filters=`<div class="kf-bar">
     ${chipGroup('Steilheit',PITCH_CATS,'pitch')}
@@ -6212,8 +6228,8 @@ function renderKursAnalysis(){
     const filtTxt=(allP&&allC)?'alle Tore':fp.join(' + ');
     ins=`<div class="kins">
       <div>Gemessen wird der <b>Ø Gate-to-Gate-Rückstand pro Tor</b> auf die Laufbestzeit (kleiner = schneller).</div>`
-      + (s.length>1? `<div style="margin-top:5px"><b style="color:${best.color}">${best.name.split(' ')[0]}</b> ist am schnellsten (${f3(best.v)} s/Tor), <b style="color:${worst.color}">${worst.name.split(' ')[0]}</b> am langsamsten (${f3(worst.v)} s/Tor).</div>`
-        : `<div style="margin-top:5px"><b style="color:${best.color}">${best.name.split(' ')[0]}</b>: ${f3(best.v)} s/Tor.</div>`)
+      + (s.length>1? `<div style="margin-top:5px"><b style="color:${best.color}">${escHtml(surOf(best.name))}</b> ist am schnellsten (${f3(best.v)} s/Tor), <b style="color:${worst.color}">${escHtml(surOf(worst.name))}</b> am langsamsten (${f3(worst.v)} s/Tor).</div>`
+        : `<div style="margin-top:5px"><b style="color:${best.color}">${escHtml(surOf(best.name))}</b>: ${f3(best.v)} s/Tor.</div>`)
       + `<div style="margin-top:5px;color:var(--muted)">Positiv = im Schnitt langsamer als die Laufbestzeit, negativ = schneller.</div></div>`; }
   const radar = (athletes.length) ? drawRadar(athletes) : emptyBox('Kein Athlet ausgewählt.','chart');
   const spiderHTML = `${toggles}${profile}
@@ -6328,8 +6344,12 @@ function initKurs(){
 // Ort aus Dateinamen erkennen: erst bekannte Orte, sonst erstes plausibles Wort als neuer Ort.
 const VENUE_STOP=new Set('gtg csv pdf mp4 mov avi mkv video clip copy kopie draft entwurf final finale finals wc ec world cup worldcup weltcup europacup europa fis men women herren damen frauen ladies mixed gs sl sg dh ac giant slalom super superg downhill riesenslalom abfahrt run lauf rennen race quali qualifikation kurssetzung coursesetting course setting training ski night nacht day tag section'.split(' '));
 function detectVenueToken(tokens){
-  const venues=[...new Set(DATA.map(e=>e.venue))];
-  const athFirst=new Set((typeof ATHLETES!=='undefined'?ATHLETES:[]).map(a=>String(a.name).split(' ')[0].toLowerCase()));   // bekannte Nachnamen
+  const venues=[...new Set([...DATA,...(typeof TRAIN!=='undefined'?TRAIN:[])].map(e=>e.venue).filter(Boolean))];
+  const athFirst=new Set((typeof ATHLETES!=='undefined'?ATHLETES:[]).flatMap(a=>surOf(a.name).toLowerCase().split(' ')));   // bekannte Nachnamen (auch Doppelnamen)
+  // 0) mehrteilige Orte («Beaver_Creek», «Kranjska_Gora», «Val_d_Isere», «St_Moritz»): 4/3/2 Tokens zusammen prüfen
+  { const known=new Map(); venues.forEach(v=>known.set(venueFold(v),v)); Object.entries(ALIAS_FOLD).forEach(([k,v])=>{ if(!known.has(k)) known.set(k,v); });
+    for(let w=4; w>=2; w--) for(let i=1;i+w<=tokens.length;i++){ const part=tokens.slice(i,i+w); if(part.some(t=>/\d/.test(t))) continue;
+      const v=known.get(venueFold(part.join(''))); if(v) return {isNew:!venues.includes(v), value:v}; } }
   const skip=(t,idx)=>{ const nt=venueFold(t);
     if(idx===0) return true;                       // erster Token = Athletenname (steht im Dateinamen immer zuerst)
     if(/\d/.test(t)) return true;                  // Datum / Lauf-Nr / Zahlen
@@ -6826,15 +6846,16 @@ function updShortNotes(notes){ try{ let t=String(notes||'').replace(/^NEU\s*[\d.
 function gtgUpdateCard(id, title, text, btnLabel, onClick){
   const old=document.getElementById(id); if(old) old.remove();
   const c=document.createElement('div'); c.id=id; c.className='upd-card no-print'; c.setAttribute('role','status');
-  c.innerHTML=`<div class="uc-ic">${UPD_ICON}</div><div class="uc-body"><div class="uc-t"></div><div class="uc-s"></div><button type="button" class="uc-go"></button></div><button type="button" class="uc-x" title="Schliessen" aria-label="Schliessen">✕</button>`;
+  c.innerHTML=`<div class="uc-ic">${UPD_ICON}</div><div class="uc-body"><div class="uc-t"></div><div class="uc-s"></div><button type="button" class="uc-go"></button></div><button type="button" class="uc-x" title="${LANG==='en'?'Close':'Schliessen'}" aria-label="${LANG==='en'?'Close':'Schliessen'}">✕</button>`;
   c.querySelector('.uc-t').textContent=title; const sEl=c.querySelector('.uc-s'); if(text) sEl.textContent=text; else sEl.remove();
   const go=c.querySelector('.uc-go'); go.textContent=btnLabel; go.onclick=ev=>onClick(go,ev);
   c.querySelector('.uc-x').onclick=()=>{ c.classList.add('out'); setTimeout(()=>c.remove(),220); };
   document.body.appendChild(c); requestAnimationFrame(()=>c.classList.add('in')); return {card:c, btn:go}; }
 function showUpdateBanner(ver, notes){ if(UPDATE_SHOWN) return; UPDATE_SHOWN=true;
-  gtgUpdateCard('updateBanner','Update verfügbar', 'Eine neue Version ist verfügbar. Bitte jetzt aktualisieren.', 'Jetzt aktualisieren', (btn,ev)=>{
+  const EN=LANG==='en';
+  gtgUpdateCard('updateBanner',EN?'Update available':'Update verfügbar', EN?'A new version is available. Please update now.':'Eine neue Version ist verfügbar. Bitte jetzt aktualisieren.', EN?'Update now':'Jetzt aktualisieren', (btn,ev)=>{
     try{ const r=btn.getBoundingClientRect(); gtgConfetti(r.left+r.width/2, r.top+r.height/2); }catch(_){ try{gtgConfetti();}catch(__){} }
-    btn.disabled=true; btn.textContent='Wird geladen …';
+    btn.disabled=true; btn.textContent=EN?'Loading …':'Wird geladen …';
     setTimeout(()=>{ try{ const u=new URL(location.href); u.searchParams.set('v', ver||Date.now()); location.replace(u.toString()); }catch(e){ try{location.reload();}catch(_){} } }, 900); }); }
 function checkForUpdate(){
   if(/BUILDVER/.test(WEB_BUILD)) return;   // ungebaute Dev-Version -> nicht prüfen
@@ -7104,8 +7125,8 @@ function openKursPdf(id){
 }
 function dbTaggedKeys(){ const s=new Set(); const kf=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; SAVED.forEach(r=>s.add(kf(r))); SAVED_TRAIN.forEach(r=>s.add(kf(r))); return s; }
 function dbEvents(){ const tk=dbTaggedKeys(); const out=[];
-  DATA.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; if(!evVisible(e)) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
-  TRAIN.forEach(e=>{ const k=evKey(e); if(DELETED.has(k)) return; if(!(e.skiers||[]).length && !e.hasTop) return; if(!evVisible(e)) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
+  DATA.forEach(e=>{ const k=evKey(e); if(isDeleted(e)) return; const tg=tk.has(k); if(!e.hasTop && !tg) return; if(!evVisible(e)) return; out.push({e,mode:'comp',key:k,tagged:tg,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
+  TRAIN.forEach(e=>{ const k=evKey(e); if(isDeleted(e)) return; if(!(e.skiers||[]).length && !e.hasTop) return; if(!evVisible(e)) return; out.push({e,mode:'train',key:k,tagged:true,archived:ARCHIVED.has(k),n:visSkiers(e).length,editable:canEditEvent(e)}); });
   return out.sort((a,b)=> (b.e.date||'').localeCompare(a.e.date||'') || (a.e.venue||'').localeCompare(b.e.venue) || String(a.e.run).localeCompare(String(b.e.run))); }
 /* ===== Vorhandene Coach-Links: in der Events-Zeile direkt kopieren =====
    Quelle 1: auf diesem Gerät erstellte Links (sofort). Quelle 2: Ordner coach/ im Repo (öffentliche GitHub-API,
@@ -7131,7 +7152,7 @@ function coachOutdated(date, venue, gender, mode){ const k=coachKeyOf(date,venue
   const have=new Map(c.runs.map(r=>[(r.disc||'')+'|'+r.run, r.n]));
   const cur= mode==='train' ? coachTrainEvs(date,venue,gender) : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train'&&!(typeof isDeleted==='function'&&isDeleted(e)));
   const miss=[]; let more=false;
-  cur.forEach(e=>{ const n=(e.skiers||[]).length; const h=have.has(e.discipline+'|'+e.run)?have.get(e.discipline+'|'+e.run):have.get('|'+e.run);
+  cur.forEach(e=>{ const n=visSkiers(e).length; const h=have.has(e.discipline+'|'+e.run)?have.get(e.discipline+'|'+e.run):have.get('|'+e.run);
     if(h===undefined) miss.push(String(e.run)); else if(n>h) more=true; });
   return (miss.length||more)? {miss:[...new Set(miss)].sort(), more} : null; }
 function coachTrainEvs(date,venue,gender){ return TRAIN.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&(e.skiers||[]).length&&!(typeof isDeleted==='function'&&isDeleted(e))&&(typeof evVisible!=='function'||evVisible(e))); }
@@ -7209,9 +7230,9 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const clBtn = (!r.tagged)
       ? '<span class="db-dash">—</span>'
       : _hasLink
-        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clurl="${escHtml(coachUrlOf(_ck))}" title="Nur den Link kopieren (z. B. zum Öffnen im Browser): ${escHtml(coachUrlOf(_ck))}">⧉ Link</button><button class="btn-mini coach-msg" data-clcopy="${escHtml(coachUrlOf(_ck))}" data-clkey="${escHtml(e.date+'|'+e.venue+'|'+e.gender+(_tr?'|train':''))}" title="Fertige Nachricht mit Ort, Datum, Lauf und Link kopieren – für Teams/WhatsApp">💬 Nachricht</button>${_old?`<button class="btn-mini cl-upd" data-cl="${e.date}|${e.venue}|${e.gender}${_tr?'|train':''}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${e.date}|${e.venue}|${e.gender}${_tr?'|train':''}" title="${hasVid?'Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)':'Daten des Coach-Links aktualisieren – die Videos bleiben wie veröffentlicht (liegen auf einem anderen Gerät)'}">↻</button>`}</span>`
+        ? `<span class="db-clwrap"><button class="btn-mini coach" data-clurl="${escHtml(coachUrlOf(_ck))}" title="Nur den Link kopieren (z. B. zum Öffnen im Browser): ${escHtml(coachUrlOf(_ck))}">⧉ Link</button><button class="btn-mini coach-msg" data-clcopy="${escHtml(coachUrlOf(_ck))}" data-clkey="${escHtml(e.date+'|'+e.venue+'|'+e.gender+(_tr?'|train':''))}" title="Fertige Nachricht mit Ort, Datum, Lauf und Link kopieren – für Teams/WhatsApp">💬 Nachricht</button>${_old?`<button class="btn-mini cl-upd" data-cl="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}${_tr?'|train':''}" title="${escHtml(coachOutdatedText(_old))} – jetzt aktualisieren (gleicher Link, Coaches müssen nichts Neues bekommen)">↻ Aktualisieren</button>`:`<button class="btn-mini" data-cl="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}${_tr?'|train':''}" title="${hasVid?'Coach-Link neu erstellen (aktualisiert Videos &amp; Daten, gleicher Link)':'Daten des Coach-Links aktualisieren – die Videos bleiben wie veröffentlicht (liegen auf einem anderen Gerät)'}">↻</button>`}</span>`
       : (hasVid
-          ? `<button class="btn-mini coach" data-cl="${e.date}|${e.venue}|${e.gender}${_tr?'|train':''}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
+          ? `<button class="btn-mini coach" data-cl="${escHtml(e.date+'|'+e.venue+'|'+e.gender)}${_tr?'|train':''}" title="Teilbaren Coach-Link mit Videos erstellen">↗ Coach-Link</button>`
           : `<span class="db-novid" title="Kein Coach-Link möglich: Für dieses Event liegen keine Videos lokal vor. Lade die Videos zuerst im Tagging (Video laden &amp; speichern), dann kann der Coach-Link erstellt werden.">⚠ kein Video</span>`);
     return clBtn; };
    const runCells=(r, withCL)=>{ const e=r.e, runLbl=runShort(r.mode, e.discipline, e.run);
@@ -7221,7 +7242,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const swBtn = `<button class="btn-mini" data-sw="${r.key}" title="Modus wechseln (Wettkampf ↔ Training)">↔ ${r.mode==='train'?'Wettkampf':'Training'}</button>`;
     const clBtn = withCL ? clFor(r) : '<span class="db-dash">—</span>';
     const acts = r.editable
-      ? `<button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${r.key}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button>`
+      ? `<button class="btn-mini" data-ed="${r.key}" title="Event-Parameter bearbeiten (Datum, Ort, Lauf …)">✎</button>${swBtn}<button class="btn-mini ${r.archived?'solid':''}" data-k="${r.key}" title="${r.archived?'Wieder aktivieren':'Archivieren (aus Liste & Analyse ausblenden, wiederherstellbar)'}">${r.archived?'↩ Aktivieren':'Archivieren'}</button><button class="btn-mini del" data-del="${escHtml(r.key)}" data-mode="${r.mode}" title="Event dauerhaft löschen – inkl. aller getaggten Läufe">🗑 Löschen</button>`
       : `<span class="db-ro" title="Von Admin/Wettkampf oder anderem Team erstellt – nur Ansicht.">🔒 nur Ansicht</span>`;
     return `<td>${runLbl}</td><td>${art}</td><td>${src}</td><td class="num">${r.n}</td><td>${status}</td><td>${clBtn}</td>`
       +`<td class="db-act">${acts}</td>`; };
@@ -7262,14 +7283,14 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
      const txt= kk.length>=3 ? coachShareText(kk[0],kk[1],kk[2],b.dataset.clcopy,kk[3]) : b.dataset.clcopy;
      copyText(txt).then(()=>gtgToast('Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.','ok')); });
    body.querySelectorAll('button[data-k]').forEach(b=> b.onclick=()=>{ const k=b.dataset.k; if(ARCHIVED.has(k)) ARCHIVED.delete(k); else ARCHIVED.add(k); LS.set('gtg_archived',[...ARCHIVED]); renderDatenbank(); buildFilters(); });
-   body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del; const r=dbEvents().find(x=>x.key===k); const tk=dbTaggedKeys();
-     const nTag=[...SAVED,...SAVED_TRAIN].filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
+   body.querySelectorAll('button[data-del]').forEach(b=> b.onclick=()=>{ const k=b.dataset.del, md=b.dataset.mode||''; const r=dbEvents().find(x=>x.key===k&&(!md||x.mode===md)); const tk=dbTaggedKeys();
+     const nTag=(md==='train'?SAVED_TRAIN:md==='comp'?SAVED:[...SAVED,...SAVED_TRAIN]).filter(x=>`${x.date}|${x.venue}|${x.disc}|${x.gen}|${x.run}`===k).length;
      const p=k.split('|'); const lbl=`${p[1]} · ${p[2]} ${p[3]} · L${p[4]} · ${dmy(p[0])}`;
      const _ck=coachKeyOf(p[0],p[1],p[3], r&&r.mode==='train'?'train':'comp'); const _hasLink=COACH_KNOWN.keys.has(_ck);
      gtgConfirm({title:'Event dauerhaft löschen?', danger:true, okLabel:'Endgültig löschen',
        check: _hasLink ? `Auch den Coach-Link «${p[1]} · ${dmy(p[0])}» inkl. hochgeladener Videos löschen (gilt für alle Läufe dieses Tages – der Link funktioniert danach nicht mehr)` : null,
        msg:`«${lbl}» wird komplett gelöscht.\n\n${nTag===1?'Der getaggte Lauf':(nTag>1?`Alle ${nTag} getaggten Läufe`:'Alle getaggten Läufe')} dieses Events${nTag>0?' (inkl. Videos auf diesem Gerät)':''} ${nTag===1?'wird':'werden'} dabei ebenfalls unwiderruflich entfernt. Dies kann nicht rückgängig gemacht werden.`})
-       .then(ok=>{ if(!ok) return; const alsoLink=_hasLink && !!window._cfChecked; deleteEvent(k); renderDatenbank(); buildFilters();
+       .then(ok=>{ if(!ok) return; const alsoLink=_hasLink && !!window._cfChecked; deleteEvent(k, md); renderDatenbank(); buildFilters();
          if(!alsoLink){ gtgToast('Event gelöscht.'); return; }
          gtgToast('Event gelöscht · Coach-Link wird entfernt …');
          coachDeleteRemote(_ck).then(res=>{ renderDatenbank();
@@ -7282,23 +7303,24 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
   });
 }
 /* ---- Ganzen Event dauerhaft löschen (inkl. aller getaggten Läufe) ---- */
-function deleteEvent(key){
+function deleteEvent(key, mode){   // mode: 'comp' | 'train' -> nur diesen Modus löschen (gleicher Tag/Ort/Lauf im anderen Modus bleibt)
   const match=r=>`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`===key;
-  // 1) getaggte Läufe entfernen (Wettkampf + Training)
+  const doC=mode!=='train', doT=mode!=='comp';
+  // 1) getaggte Läufe entfernen
   let ch=false;
-  for(let i=SAVED.length-1;i>=0;i--){ if(match(SAVED[i])){ SAVED.splice(i,1); ch=true; } }
-  for(let i=SAVED_TRAIN.length-1;i>=0;i--){ if(match(SAVED_TRAIN[i])){ SAVED_TRAIN.splice(i,1); ch=true; } }
+  if(doC) for(let i=SAVED.length-1;i>=0;i--){ if(match(SAVED[i])){ SAVED.splice(i,1); ch=true; } }
+  if(doT) for(let i=SAVED_TRAIN.length-1;i>=0;i--){ if(match(SAVED_TRAIN[i])){ SAVED_TRAIN.splice(i,1); ch=true; } }
   if(ch){ LS.set('gtg_runs',SAVED); LS.set('gtg_runs_train',SAVED_TRAIN); }
   // 2) aus den In-Memory-Events entfernen (sofortige Wirkung)
-  for(let i=DATA.length-1;i>=0;i--){ if(evKey(DATA[i])===key) DATA.splice(i,1); }
-  for(let i=TRAIN.length-1;i>=0;i--){ if(evKey(TRAIN[i])===key) TRAIN.splice(i,1); }
-  // 3) Kurssetzung (Daten + PDF)
-  if(COURSES[key]){ courseTomb(key); delete COURSES[key]; try{ vdbDel(key,'courses'); vdbDel(key,'kurspdf'); }catch(_){}
+  if(doC) for(let i=DATA.length-1;i>=0;i--){ if(evKey(DATA[i])===key) DATA.splice(i,1); }
+  if(doT) for(let i=TRAIN.length-1;i>=0;i--){ if(evKey(TRAIN[i])===key) TRAIN.splice(i,1); }
+  // 3) Kurssetzung (Daten + PDF) – gibt es nur bei Wettkämpfen
+  if(doC && COURSES[key]){ courseTomb(key); delete COURSES[key]; try{ vdbDel(key,'courses'); vdbDel(key,'kurspdf'); }catch(_){}
     if(typeof saveCourses==='function'){ try{ saveCourses(); }catch(_){} } }
   // 4) Videos dieses Events (lokal auf diesem Gerät) löschen
-  try{ vdbAll().then(vs=>{ (vs||[]).forEach(v=>{ if(`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`===key){ try{ vdbDel(v.id,'videos'); }catch(_){} } }); }); }catch(_){}
+  try{ vdbAll().then(vs=>{ (vs||[]).forEach(v=>{ if(`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`===key && (!mode || vidIsTrain(v)===(mode==='train'))){ try{ vdbDel(v.id,'videos'); }catch(_){} } }); }); }catch(_){}
   // 5) dauerhaft merken (gebackene Events bleiben nach Reload ausgeblendet) & aus Archiv nehmen
-  DELETED.add(key); LS.set('gtg_deleted',[...DELETED]);
+  DELETED.add(mode==='train'? key+'|T' : mode==='comp'? key+'|C' : key); LS.set('gtg_deleted',[...DELETED]);
   if(ARCHIVED.has(key)){ ARCHIVED.delete(key); LS.set('gtg_archived',[...ARCHIVED]); }
   try{ ghAutoSync&&ghAutoSync(); }catch(_){}
 }
@@ -7520,7 +7542,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const nA=anomFor(r).filter(Boolean).length; const nF=DBT_FLAGS(r).size;
       const anomBadge = (nF?`<span class="dbt-flagb" title="${nF} Tor(e) im Tagging als unsicher markiert (⚑)">⚑ ${nF}</span>`:'') + (nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – evtl. Tagging-Fehler oder nicht synchroner Videoschnitt. Details öffnen zum Prüfen.">⚠ ${nA} auffällig</span>`:'');
       const detail=`<tr class="dbt-detail" data-for="${enc}" style="display:none"><td colspan="11"><div class="dbt-inner" data-id="${enc}" data-built="0"></div></td></tr>`;
-      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${r.venue}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${r.name}${dup}${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
+      return `<tr class="dbt-row${nA?' dbt-rowanom':''}" data-id="${enc}"><td class="db-chk">${_ed?`<input type="checkbox" class="dbt-check" data-id="${enc}">`:''}</td><td>${dmy(r.date)}</td><td class="db-venue">${escHtml(r.venue)}</td><td>${r.disc}</td><td>${genHtml(r.gen)}</td><td>${runShort(r.mode,r.disc,r.run)}</td><td>${escHtml(r.name)}${dup}${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${(r.gates||[]).length}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-open="${enc}">Details</button></td></tr>${detail}`;
 };
     // Mehrere Athlet:innen im selben Event & Lauf -> eine Sammelzeile; aufgeklappt: Athlet:innen × Tore
     const gKey=r=>[r.date,r.venue,r.disc,r.gen,r.run,r.mode].join('|');
@@ -7535,7 +7557,7 @@ function renderDbTaggings(){ const body=$('#dbtBody'); if(!body) return;
       const nA=rs.reduce((a,r)=>a+anomFor(r).filter(Boolean).length,0);
       const nF=rs.reduce((a,r)=>a+DBT_FLAGS(r).size,0);
       const anomBadge=(nF?`<span class="dbt-flagb" title="${nF} Tor(e) im Tagging als unsicher markiert (⚑)">⚑ ${nF}</span>`:'')+(nA?`<span class="db-anomb" title="${nA} Tor(e) weichen stark vom Feld ab – aufklappen zum Prüfen.">⚠ ${nA} auffällig</span>`:'');
-      const names=rs.map(r=>String(r.name).split(' ')[0]).join(', ');
+      const names=rs.map(r=>escHtml(surOf(r.name))).join(', ');
       const hidden=rs.filter(r=>canEditBy(r.by)).map(r=>`<input type="checkbox" class="dbt-check" data-id="${encodeURIComponent(runId(r))}" hidden>`).join('');
       const anyEd=rs.some(r=>canEditBy(r.by));
       return `<tr class="dbt-row dbt-grow${nA?' dbt-rowanom':''}" data-g="${gid}"><td class="db-chk">${anyEd?`<input type="checkbox" class="dbt-gcheck" data-g="${gid}" title="Alle eigenen Taggings dieses Laufs auswählen">`:''}${hidden}</td><td>${dmy(r0.date)}</td><td class="db-venue">${escHtml(r0.venue)}</td><td>${r0.disc}</td><td>${genHtml(r0.gen)}</td><td>${runShort(r0.mode,r0.disc,r0.run)}</td><td><b>${rs.length} Athlet:innen</b> <span class="dbt-gnames">${escHtml(names)}</span>${anomBadge}</td><td class="db-art">${art} ${src}</td><td class="num">${maxG}</td><td>${vid}</td><td class="db-act"><button class="btn-mini" data-gopen="${gid}">Aufklappen</button></td></tr>`
@@ -7634,7 +7656,7 @@ function renderDbtGrid(list){
   h+=`<th class="dbtg-addcol"><button class="dbtg-add" id="dbtGridAddCol" title="Vergessenes Tor am Ende hinzufügen (Spalte)">+ Tor</button></th>`;
   h+=`</tr></thead><tbody>`;
   runs.forEach((r,ri)=>{ const id=encodeURIComponent(runId(r)); const srcB=r._databank?'<span class="db-badge db">Databank</span>':'<span class="db-badge tg">getaggt</span>';
-    h+=`<tr><td class="dbtg-ath">${r.name}${r.officialBest?' <span class="db-badge gold">Best</span>':''}</td><td class="dbtg-src">${srcB}</td>`;
+    h+=`<tr><td class="dbtg-ath">${escHtml(r.name)}${r.officialBest?' <span class="db-badge gold">Best</span>':''}</td><td class="dbtg-src">${srcB}</td>`;
     const ed=canEditBy(r.by);
     for(let i=0;i<cols;i++){ const g=(r.gates||[])[i]; h+=`<td class="dbtg-cell${bad(g,i)?' dbt-anom':''}"><input class="dbt-gedit" type="number" step="0.001" inputmode="decimal" data-id="${id}" data-i="${i}" data-r="${ri}" value="${g!=null?(+g).toFixed(3):''}"${ed?'':' readonly tabindex="-1" title="Nur Ansicht – gehört Admin/Wettkampf oder einem anderen Team"'}></td>`; }
     h+=`<td></td></tr>`; });
@@ -7731,7 +7753,7 @@ function renderDbVideos(){ const body=$('#dbvBody'); if(!body) return;
     dbvStorageBanner(list||[]);
     if($('#dbvCount')) $('#dbvCount').textContent=`${vids.length} Video${vids.length===1?'':'s'}`;
     if(!vids.length){ body.innerHTML=dbEmpty('Keine Videos auf diesem Gerät. Videos bleiben lokal (siehe Tagging → Bibliothek).', 10, 'video'); if($('#dbvBulk'))$('#dbvBulk').style.display='none'; return; }
-    body.innerHTML=vids.map(v=>{ const enc=encodeURIComponent(v.id); return `<tr class="dbv-row"><td class="db-chk"><input type="checkbox" class="dbv-check" data-id="${enc}"></td><td>${dmy(v.date)}</td><td class="db-venue">${v.venue}</td><td>${v.disc}</td><td>${genHtml(v.gen)}</td><td>${runShort(v.mode||'comp',v.disc,v.run)}</td><td>${v.name}</td><td class="num">${(v.tags||[]).length}</td><td>${fmtBytes(v.vsize||0)}</td><td class="db-act"><button class="btn-mini solid" data-vedit="${enc}">✎ Öffnen</button><button class="btn-mini del" data-vdel="${enc}">Löschen</button></td></tr>`; }).join('');
+    body.innerHTML=vids.map(v=>{ const enc=encodeURIComponent(v.id); return `<tr class="dbv-row"><td class="db-chk"><input type="checkbox" class="dbv-check" data-id="${enc}"></td><td>${dmy(v.date)}</td><td class="db-venue">${escHtml(v.venue)}</td><td>${v.disc}</td><td>${genHtml(v.gen)}</td><td>${runShort(v.mode||'comp',v.disc,v.run)}</td><td>${escHtml(v.name)}</td><td class="num">${(v.tags||[]).length}</td><td>${fmtBytes(v.vsize||0)}</td><td class="db-act"><button class="btn-mini solid" data-vedit="${enc}">✎ Öffnen</button><button class="btn-mini del" data-vdel="${enc}">Löschen</button></td></tr>`; }).join('');
     body.querySelectorAll('button[data-vedit]').forEach(b=> b.onclick=()=> loadFromLib(decodeURIComponent(b.dataset.vedit)));
     body.querySelectorAll('button[data-vdel]').forEach(b=> b.onclick=()=>{ const id=decodeURIComponent(b.dataset.vdel), nm=id.split('|')[5];
       gtgConfirm({title:'Video löschen', danger:true, okLabel:'Löschen', msg:`Video von «${nm}» löschen? Das Tagging (Zeiten) bleibt erhalten.`})
@@ -7788,7 +7810,7 @@ function renderDbAthletes(){
   list=[...list].sort((a,b)=>a.name.localeCompare(b.name));
   if($('#dbaCount')) $('#dbaCount').textContent = `${list.length} / ${ATHLETES.length}`;
   body.innerHTML = list.length? list.map(a=>{
-    const cnt=athTagCount(a.name); const sur=a.name.split(' ')[0], rest=a.name.split(' ').slice(1).join(' ');
+    const cnt=athTagCount(a.name); const sur=surOf(a.name), rest=String(a.name).trim().slice(surOf(a.name).length).trim();
     const col=athColor(a.name,false); const custom=!!a.color;
     return `<tr><td><b>${escHtml(sur)}</b>${rest?' '+escHtml(rest):''}</td>`
       +`<td>${a.nation?`<span class="gsex">${escHtml(a.nation)}</span>`:'—'}</td>`
@@ -7796,7 +7818,7 @@ function renderDbAthletes(){
       +`<td class="dba-colc"><input type="color" class="dba-col" data-col="${escHtml(a.name)}" value="${col}" title="Farbe für die Diagramme wählen">`
         +(custom?` <button class="btn-mini dba-colrst" data-colrst="${escHtml(a.name)}" title="Auf Standardfarbe zurücksetzen">↺</button>`:'')+`</td>`
       +`<td class="num">${cnt||'<span style="color:var(--muted)">–</span>'}</td>`
-      +`<td class="db-actions" style="white-space:nowrap;text-align:right"><button class="btn-mini" data-edit="${escHtml(a.name)}">Bearbeiten</button> <button class="btn-mini danger" data-del="${escHtml(a.name)}">Löschen</button></td></tr>`;
+      +`<td class="db-actions" style="white-space:nowrap;text-align:right"><button class="btn-mini" data-edit="${escHtml(a.name)}">Bearbeiten</button> ${(ME&&ME.r==='admin')||!cnt?`<button class="btn-mini danger" data-del="${escHtml(a.name)}">Löschen</button>`:''}</td></tr>`;
   }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">Keine Athlet:innen gefunden. Oben «＋ Neue:r Athlet:in» hinzufügen.</td></tr>`;
   body.querySelectorAll('[data-edit]').forEach(b=> b.onclick=()=>dbaOpenForm(b.dataset.edit));
   body.querySelectorAll('[data-del]').forEach(b=> b.onclick=()=>dbaDelete(b.dataset.del));
@@ -7853,10 +7875,13 @@ function dbaSave(){
 }
 function dbaDelete(name){
   const cnt=athTagCount(name);
-  if(!confirm(`«${name}» aus der Athlet:innen-Liste löschen?${cnt?`\n${cnt} bestehende Tagging(s) bleiben erhalten und behalten den Namen.`:''}`)) return;
-  ATHLETES=ATHLETES.filter(a=>a.name!==name);
-  persistAthletes(); if(typeof fillAthleteSelect==='function') fillAthleteSelect(); if(typeof ghAutoSync==='function') try{ ghAutoSync(); }catch(_){}
-  renderDbAthletes();
+  // Löschen wirkt fürs ganze Team: Admins immer, Coaches nur Einträge ohne Taggings (z. B. Tippfehler)
+  if(!(ME&&ME.r==='admin') && cnt>0){ gtgToast('Nur Admins können Athlet:innen mit bestehenden Taggings löschen.'); return; }
+  gtgConfirm({title:'Athlet:in löschen', danger:true, okLabel:'Löschen', msg:`«${name}» aus der Athlet:innen-Liste löschen?${cnt?`\n\n${cnt} bestehende Tagging(s) bleiben erhalten und behalten den Namen.`:''}`})
+    .then(ok=>{ if(!ok) return;
+      ATHLETES=ATHLETES.filter(a=>a.name!==name);
+      persistAthletes(); if(typeof fillAthleteSelect==='function') fillAthleteSelect(); if(typeof ghAutoSync==='function') try{ ghAutoSync(); }catch(_){}
+      renderDbAthletes(); });
 }
 
 function initDatenbank(){ ARCHIVED=new Set(LS.get('gtg_archived',[])); DELETED=new Set(LS.get('gtg_deleted',[]));
@@ -7942,8 +7967,8 @@ function cvVideosForCurrent(){
   return new Promise(res=>{
     if(COACH.on && COACH.bundle){
       const runs=COACH.bundle.runs||[];
-      if(COACH.bundle.mode==='train'){ const picks=(S.trainSel&&S.trainSel.picked)||new Set(); const sh=S.trShort||(n=>String(n).split(' ')[0]); const out=[];
-        runs.forEach(r=> (r.videos||[]).forEach(v=>{ if(picks.has(v.name+'|'+r.run)) out.push(Object.assign({}, v, {id:v.id||(v.name+'|'+r.run), name: sh(v.name)+'·L'+r.run, _base:v.name, _lauf:r.run})); }));
+      if(COACH.bundle.mode==='train'){ const picks=(S.trainSel&&S.trainSel.picked)||new Set(); const sh=S.trShort||(n=>surOf(n)); const out=[];
+        runs.forEach(r=> (r.videos||[]).forEach(v=>{ if(picks.has(v.name+'|'+r.run) && (!r.ev||!r.ev.discipline||r.ev.discipline===S.disc)) out.push(Object.assign({}, v, {id:v.id||(v.name+'|'+r.run), name: sh(v.name)+'·L'+r.run, _base:v.name, _lauf:r.run})); }));
         out.sort((a,b)=> String(a._base).localeCompare(String(b._base)) || ((+a._lauf)-(+b._lauf))); res(out); return; }
       const cur=runs.find(r=>String(r.run)===String(S.run)) || runs[0];
       res((cur&&cur.videos)||[]); return;
@@ -7957,7 +7982,7 @@ function cvVideosForCurrent(){
         const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && (r.video||r.onDisk) && picks.has(r.name+'|'+r.run) && vidIsTrain(r));
         // stabile Reihenfolge wie im Panel
         vids.sort((a,b)=> String(a.name).localeCompare(String(b.name)) || ((+a.run)-(+b.run)));
-        res(vids.map(r=>{ const sur=(S.trShort?S.trShort(r.name):String(r.name).split(' ')[0]);
+        res(vids.map(r=>{ const sur=(S.trShort?S.trShort(r.name):surOf(r.name));
           return { id:r.id, name: sur+'·L'+r.run, nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk, _base:r.name, _lauf:r.run }; }));
       }).catch(()=>res([]));
       return;
@@ -8208,9 +8233,15 @@ function clipGoto(name, g){
   clipLoad(v, g);
 }
 function clipColorOf(nm){ const s=S.comp&&S.comp.skiers.find(x=>x.name===nm); return s?s.color:'#7a8694'; }
+// Kurznamen für eine Namensliste: Nachname (auch Doppelnamen wie «DELLA MEA»); bei gleichem Nachnamen + Initial,
+// bei gleichem Initial der ganze Vorname (z. B. SUTER Jasmine / SUTER Juliana)
+function mkShortNames(names){ const L=[...new Set((names||[]).map(String))]; const cnt={}, ini={}; const rest=n=>String(n).trim().slice(surOf(n).length).trim();
+  L.forEach(n=>{ const s=surOf(n); cnt[s]=(cnt[s]||0)+1; });
+  L.forEach(n=>{ const s=surOf(n); if(cnt[s]>1){ const k=s+'|'+rest(n).charAt(0); ini[k]=(ini[k]||0)+1; } });
+  return n=>{ const s=surOf(n); if(cnt[s]>1){ const r=rest(n); if(r) return ini[s+'|'+r.charAt(0)]>1? s+' '+r : s+' '+r.charAt(0)+'.'; } return s; }; }
 function surOf(nm){ const w=String(nm||'').trim().split(/\s+/); const up=[]; for(const x of w){ if(x && x===x.toUpperCase() && /[A-ZÄÖÜÀ-Þ]/.test(x)) up.push(x); else break; } return (up.length?up.join(' '):w[0])||String(nm||''); }
 function surList(names){ const s=names.map(surOf); return names.map((n,i)=> s.filter(x=>x===s[i]).length>1 ? s[i]+' '+(String(n).trim().split(/\s+/).slice(-1)[0]||'').charAt(0)+'.' : s[i]); }
-function clipShort(nm){ nm=String(nm||''); const m=nm.match(/^(.+?)·L(\d+)/); if(m) return m[1].split(' ')[0]+'·L'+m[2]; return surOf(nm); }
+function clipShort(nm){ nm=String(nm||''); const m=nm.match(/^(.+?)·L(\d+)/); if(m) return surOf(m[1])+'·L'+m[2]; return surOf(nm); }
 function clipTableViz(name, g){
   const el=$('#clipViz'); if(!el) return; const src=$('#hmWrap');
   if(!src || !src.querySelector('table')){ clipChartViz(name, g); return; }
@@ -8255,7 +8286,7 @@ function clipTableViz(name, g){
 /* ---- Clip-Popup: Side-by-Side (zweites Video daneben, synchronisierbar) ---- */
 let CLIPSBS=false, CLIPBNAME=null, CLIPSYNC={on:false,delta:0}, CLIP_SBSPICK=null;
 function clipFillSelB(chosen){ const sel=$('#clipSelB'); if(!sel) return; const vids=CVVIDS||[];
-  sel.innerHTML=vids.map(v=>`<option value="${encodeURIComponent(v.id)}"${v.name===chosen?' selected':''}>${v.name}</option>`).join('');
+  sel.innerHTML=vids.map(v=>`<option value="${encodeURIComponent(v.id)}"${v.name===chosen?' selected':''}>${escHtml(v.name)}</option>`).join('');
   sel.onchange=()=>{ const v=vids.find(x=>x.id===decodeURIComponent(sel.value)); if(v){ clipSyncOff(); clipLoadB(v.name); } }; }
 function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===name)||vids.find(x=>x.name!==CLIPNAME)||vids[0]; if(!v) return; CLIPBNAME=v.name;
   const vid=$('#clipVideoB'); if(!vid) return; const url=cvUrl(v, ()=>{ if(CLIPBNAME===v.name) clipLoadB(v.name); }); if(!url) return;
@@ -8405,7 +8436,7 @@ function enterCoach(bundle){
   try{ Object.entries(bundle.colors||{}).forEach(([nm,col])=>{ if(!nm||!col) return; const a=ATHLETES.find(x=>x.name===nm); if(a) a.color=col; else ATHLETES.push({name:nm, color:col}); }); }catch(e){}   // Farben wie in der Analyse
   const isTr=bundle.mode==='train';
   const runs=bundle.runs||[];
-  try{ runs.forEach(r=>{ if(r.ev){ const k=evKey(r.ev); ARCHIVED.delete(k); DELETED.delete(k); } }); }catch(e){}   // lokal archiviert/gelöscht -> im Coach-Link trotzdem zeigen (nur im Speicher)
+  try{ runs.forEach(r=>{ if(r.ev){ const k=evKey(r.ev); ARCHIVED.delete(k); DELETED.delete(k); DELETED.delete(k+'|T'); DELETED.delete(k+'|C'); } }); }catch(e){}   // lokal archiviert/gelöscht -> im Coach-Link trotzdem zeigen (nur im Speicher)
   // Coach-Link zeigt nur den Inhalt des Links: lokal vorhandene Kopien desselben Events (z. B. auf dem eigenen Gerät getaggt) entfernen -> keine doppelten Läufe
   { const tgt=isTr?TRAIN:DATA; const ks=new Set(runs.filter(r=>r.ev).map(r=>[r.ev.date,r.ev.venue,r.ev.discipline,r.ev.gender,String(r.ev.run)].join('|')));
     for(let i=tgt.length-1;i>=0;i--){ const e=tgt[i]; if(ks.has([e.date,e.venue,e.discipline,e.gender,String(e.run)].join('|'))) tgt.splice(i,1); } }
@@ -8415,7 +8446,7 @@ function enterCoach(bundle){
   if(isTr) return enterCoachTrain(bundle, first);
   S.mode='comp'; S.discAll=false; S.disc=first.ev.discipline; S.gen=first.ev.gender;
   const ev0=first.ev, evSel=$('#selEvt'), runSel=$('#selRun');
-  if(evSel){ evSel.innerHTML=`<option value="${ev0.date}|${ev0.venue}">${ev0.venue} · ${dmy(ev0.date)}</option>`; evSel.value=`${ev0.date}|${ev0.venue}`; }
+  if(evSel){ evSel.innerHTML=`<option value="${escHtml(ev0.date+'|'+ev0.venue)}">${escHtml(ev0.venue)} · ${dmy(ev0.date)}</option>`; evSel.value=`${ev0.date}|${ev0.venue}`; }
   S.evtKey=`${ev0.date}|${ev0.venue}`;
   const runOpts=runs.map(r=>`<option value="${r.run}">Lauf ${r.run}</option>`).join('');
   if(runSel){ runSel.innerHTML=runOpts; runSel.value=first.run; runSel.onchange=loadEvent; }
@@ -8435,16 +8466,21 @@ function enterCoachTrain(bundle, first){
   const ev0=first.ev;
   S.mode='train'; S.discAll=false; S.disc=ev0.discipline; S.gen=ev0.gender; S.evtKey=`${ev0.date}|${ev0.venue}`; S.trainSel=null; S.run=null;
   document.body.classList.add('coach-train');
-  const evSel=$('#selEvt'); if(evSel){ evSel.innerHTML=`<option value="${ev0.date}|${ev0.venue}">${ev0.venue} · ${dmy(ev0.date)}</option>`; evSel.value=S.evtKey; }
-  const nRuns=runs_count(bundle);
-  const cr=$('#coachRun'); if(cr){ cr.innerHTML=''; cr.disabled=true; cr.style.display='none'; }
-  { const lab=document.querySelector('#coachRunWrap .cr-lab'); if(lab) lab.textContent='Training'; const car=document.querySelector('#coachRunWrap .cr-car'); if(car) car.style.display='none'; }
-  if($('#coachRunCount')) $('#coachRunCount').textContent = nRuns===1?'1 Lauf':nRuns+' Läufe';
-  { const cw=$('#coachRunWrap'); if(cw){ cw.style.display=''; cw.classList.add('cr-single'); cw.title='Training'; } }
+  const evSel=$('#selEvt'); if(evSel){ evSel.innerHTML=`<option value="${escHtml(ev0.date+'|'+ev0.venue)}">${escHtml(ev0.venue)} · ${dmy(ev0.date)}</option>`; evSel.value=S.evtKey; }
+  // Ein Trainings-Link kann mehrere Disziplinen desselben Tages enthalten (z. B. GS + SL) -> Umschalter
+  const discs=[...new Set((bundle.runs||[]).map(r=>r.ev&&r.ev.discipline).filter(Boolean))];
+  const setCount=()=>{ const n=runs_count(bundle, S.disc); if($('#coachRunCount')) $('#coachRunCount').textContent = LANG==='en'? (n===1?'1 run':n+' runs') : (n===1?'1 Lauf':n+' Läufe'); };
+  const cr=$('#coachRun');
+  if(cr && discs.length>1){ cr.innerHTML=discs.map(d=>`<option value="${escHtml(d)}">${escHtml(discName(d))}</option>`).join(''); cr.value=S.disc; cr.disabled=false; cr.style.display='';
+    cr.onchange=()=>{ S.disc=cr.value; S.trainSel=null; setCount(); refreshTrainSeries(); }; }
+  else if(cr){ cr.innerHTML=''; cr.disabled=true; cr.style.display='none'; }
+  { const lab=document.querySelector('#coachRunWrap .cr-lab'); if(lab) lab.textContent='Training'; const car=document.querySelector('#coachRunWrap .cr-car'); if(car) car.style.display= discs.length>1?'':'none'; }
+  setCount();
+  { const cw=$('#coachRunWrap'); if(cw){ cw.style.display=''; cw.classList.toggle('cr-single', discs.length<=1); cw.title='Training'; } }
   try{ document.title=`Coach · Training ${ev0.venue} ${dmy(ev0.date)} · ${ev0.gender==='M'?'Männer':'Frauen'}`; }catch(e){}
   S.anaSub='analyse'; switchView('analyse'); refreshTrainSeries();
 }
-function runs_count(b){ let n=0; (b.runs||[]).forEach(r=> n+=((r.ev&&r.ev.skiers)||[]).length); return n; }
+function runs_count(b, disc){ let n=0; (b.runs||[]).forEach(r=>{ if(disc && r.ev && r.ev.discipline && r.ev.discipline!==disc) return; n+=((r.ev&&r.ev.skiers)||[]).length; }); return n; }
 /* ---- Coach-Link erstellen (Bundle + Video-Upload zu GitHub) ---- */
 let COACHLINK={key:null};
 function cmProg(t,ok){ const m=$('#cmProg'); if(m){ m.className='save-msg'+(ok===false?' warn':ok?' ok':''); m.textContent=t; } }
@@ -8585,14 +8621,14 @@ async function coachCreate(){
   const evKeySafe=`${safe(venue)}_${safe(date)}_${gender}${isTr?'_T':''}`;
   cmProg('Sammle Videos…');
   const all=await vdbAll();
-  const evs= isTr ? coachTrainEvs(date,venue,gender).filter(e=>evVisible(e)) : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train');
+  const evs= isTr ? coachTrainEvs(date,venue,gender).filter(e=>evVisible(e)) : DATA.filter(e=>e.date===date&&e.venue===venue&&e.gender===gender&&e.hasTop&&e.mode!=='train'&&!isDeleted(e));
   if(!evs.length){ cmProg('Kein Event mit Daten gefunden.',false); return; }
   // bereits veröffentlichter Stand: unveränderte Videos (gleiche Datei & Grösse) nicht erneut hochladen;
   // Videos, die nur auf einem anderen Gerät liegen, werden aus dem veröffentlichten Link übernommen
   const PREVV=new Map(), PREVRUN={}; try{ cmProg('Prüfe bestehenden Coach-Link…'); const ob=await coachFetchBundle(evKeySafe);
     ((ob&&ob.runs)||[]).forEach(r=>{ const rk=((r.ev&&r.ev.discipline)||'')+'|'+r.run; PREVRUN[rk]=r.videos||[]; (r.videos||[]).forEach(x=>{ if(x&&x.id) PREVV.set(x.id,x); }); }); }catch(e){}
   const plan=[]; let totalVids=0;
-  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)&&(vidIsTrain(r)===isTr));
+  evs.forEach(ev=>{ const vids=all.filter(r=>r.date===ev.date&&r.venue===ev.venue&&r.disc===ev.discipline&&r.gen===ev.gender&&String(r.run)===String(ev.run)&&(r.video||r.onDisk)&&(vidIsTrain(r)===isTr)&&visSkiers(ev).some(s=>s.name===r.name));
     const have=new Set(vids.map(v=>v.id)); (PREVRUN[ev.discipline+'|'+ev.run]||[]).forEach(pv=>{ if(pv && pv.id && !have.has(pv.id)) vids.push({__prev:pv}); });
     plan.push({ev,vids}); totalVids+=vids.length; });
   if(!totalVids){ cmProg('Für dieses Event sind keine getaggten Videos vorhanden (nur mit Video teilbar).',false); return; }
@@ -8632,7 +8668,8 @@ async function coachCreate(){
       if(cs && Array.isArray(cs.gates)) course={ id:cs.id, date:cs.date, venue:cs.venue, disc:cs.disc, gen:cs.gen, run:cs.run,
         gates:cs.gates.map(g=>({no:g.no, type:g.type, dist:g.dist, offset:g.offset, pitch:g.pitch, angle:g.angle, fig:g.fig||''})) }; }catch(e){}
     // Datenschutz: keine Ersteller-E-Mails ins öffentliche Coach-Bundle (by / E-Mail-Felder entfernen)
-    const evPub=JSON.parse(JSON.stringify(ev)); (function strip(o){ if(Array.isArray(o)) o.forEach(strip); else if(o&&typeof o==='object'){ ['by','byEmail','email','createdBy'].forEach(k=>{ if(k in o) delete o[k]; }); Object.values(o).forEach(strip); } })(evPub);
+    const _vs=visSkiers(ev); const evPub=JSON.parse(JSON.stringify(Object.assign({}, ev, {skiers: _vs})));   // nur Serien, die die erstellende Person selbst sehen darf
+    if(_vs.length!==(ev.skiers||[]).length){ try{ recomputeEvent(evPub); }catch(_){} } (function strip(o){ if(Array.isArray(o)) o.forEach(strip); else if(o&&typeof o==='object'){ ['by','byEmail','email','createdBy'].forEach(k=>{ if(k in o) delete o[k]; }); Object.values(o).forEach(strip); } })(evPub);
     runs.push({ run:ev.run, ev: evPub, videos:vout, course });
   }
   // eigene Athletenfarben (Datenbank → Athlet:innen) mitgeben, damit der Coach-Link gleich aussieht wie die Analyse
@@ -8680,7 +8717,7 @@ initKurs();
    über einen MutationObserver automatisch mitübersetzt. Beim Umschalten wird
    neu geladen. Echte Daten (Namen, Orte) bleiben unberührt (nur exakte Treffer). */
 let LANG=(function(){ try{ return LS.get('gtg_lang','de'); }catch(e){ return 'de'; } })();
-const I18N_EN={
+const I18N_EN={"Coach-Link":"Coach link",
  // Navigation / Bereiche
  "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
  "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
@@ -9131,11 +9168,11 @@ const TOUR=[
   {view:'analyse', sel:'#cloudBtn', title:'☁ Cloud', lead:'Daten fürs Team, Videos bleiben bei dir.', pts:['Analyse-Daten synchronisieren übers ☁-Symbol','Videos gehen nur mit einem Coach-Link online','<b>Fertig!</b> Tour jederzeit über «Tutorial» unten']}
 ];
 const TOUR_EN=[
-  {title:'Welcome to Gate-to-Gate', lead:'See gate by gate where time is gained or lost.', pts:['<b>Tag → Analyse → Share</b>','For Swiss-Ski coaches &amp; analysts','About 1 minute · <kbd>←</kbd> <kbd>→</kbd> to navigate']},
-  {title:'1 · Tagging', lead:'Mark every gate passage in the video – this gives the gate-to-gate times.', pts:['At the top choose <b>Race</b> or <b>Training</b>']},
-  {title:'Load a video', lead:'Drag the video here or «choose file».', pts:['File name <code>Athlete_Venue_YYMMDD_GS_M_L1</code> fills in the details','The video stays <b>local</b> – nothing is uploaded']},
+  {title:'Welcome to Gate-to-Gate', lead:'See gate by gate where time is gained or lost.', pts:['<b>Tag → Analysis → Share</b>','For Swiss-Ski coaches &amp; analysts','About 1 minute · <kbd>←</kbd> <kbd>→</kbd> to navigate']},
+  {title:'1 · Tagging', lead:'Mark every gate passage in the video – this gives the gate-to-gate times.', pts:['At the top choose <b>Competition</b> or <b>Training</b>']},
+  {title:'Load a video', lead:'Drag the video here or «Choose file».', pts:['File name <code>Athlete_Venue_YYMMDD_GS_M_L1</code> fills in the details','The video stays <b>local</b> – nothing is uploaded']},
   {title:'How to tag', lead:'Press once at every gate – done.', pts:['<kbd>Space</kbd> play / pause','<kbd>Enter</kbd> tag gate · <kbd>⌫</kbd> delete last','<kbd>y</kbd> <kbd>x</kbd> ± 1 frame · <kbd>?</kbd> all shortcuts','Finish with <b>«✓ Save»</b>']},
-  {title:'FIS time', lead:'The reference for the comparison.', pts:['<b>Race:</b> enter the FIS deficit or tick «fastest run»','<b>Training:</b> automatically the fastest tagged run']},
+  {title:'FIS time', lead:'The reference for the comparison.', pts:['<b>Competition:</b> enter the FIS deficit or tick «Fastest run time»','<b>Training:</b> automatically the fastest tagged run']},
   {title:'2 · Analysis', lead:'Cumulative deficit per gate against the fastest run.', pts:['<b>Lower = slower</b> – all start at 0','Grey background: elevation profile with steepness','Click the legend to hide athletes']},
   {title:'Video pop-up', lead:'Click a gate to open the video exactly there.', pts:['Bar: <b class="tc-g">green</b> ahead, <b class="tc-r">red</b> behind','Slow motion ½× / ¼× and frame step','<b>Side by side</b>: two runs in sync']},
   {title:'Sections &amp; matrix', lead:'Where exactly is the time?', pts:['<b>Sections:</b> time lost between laps + overview per athlete','<b>Matrix:</b> Δ per gate, red = slower, green = faster','Click a cell to open the video']},
@@ -9228,20 +9265,24 @@ if(GD()){ const _dl=document.getElementById('afDownload'); if(_dl) _dl.style.dis
 function cmpVer(a,b){ const pa=String(a||'0').split('.').map(n=>parseInt(n,10)||0), pb=String(b||'0').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(pa.length,pb.length);i++){ const d=(pa[i]||0)-(pb[i]||0); if(d) return d>0?1:-1; } return 0; }
 function showDesktopUpdateBanner(cur, latest, url, notes){
   if(document.getElementById('updBanner')) return;
-  gtgUpdateCard('updBanner', `Update verfügbar · v${latest}`, `Eine neue Version ist verfügbar (du nutzt v${cur}). Bitte jetzt aktualisieren.`, 'Jetzt aktualisieren', (dl)=>{
+  const EN=LANG==='en';
+  const uc=gtgUpdateCard('updBanner', EN?`Update available · v${latest}`:`Update verfügbar · v${latest}`, EN?`A new version is available (you are on v${cur}). Please update now.`:`Eine neue Version ist verfügbar (du nutzt v${cur}). Bitte jetzt aktualisieren.`, EN?'Update now':'Jetzt aktualisieren', (dl)=>{
     const dk=GD();
     if(dk && typeof dk.downloadUpdate==='function'){
-      dl.disabled=true; dl.textContent='Lädt …';
-      if(typeof dk.onUpdateProgress==='function' && !dl._progBound){ dl._progBound=true; dk.onUpdateProgress(pct=>{ if(dl.disabled) dl.textContent = pct>=100?'Installer öffnet …':('Lädt … '+pct+' %'); }); }
-      Promise.resolve(dk.downloadUpdate()).then(r=>{ if(r && r.ok){ dl.textContent='Installer geöffnet ✓'; } else { dl.disabled=false; dl.textContent='Erneut versuchen'; } })
-        .catch(()=>{ dl.disabled=false; dl.textContent='Erneut versuchen'; });
+      dl.disabled=true; dl.textContent=EN?'Downloading …':'Lädt …';
+      if(typeof dk.onUpdateProgress==='function' && !dl._progBound){ dl._progBound=true; dk.onUpdateProgress(pct=>{ if(dl.disabled) dl.textContent = pct>=100?(EN?'Opening installer …':'Installer öffnet …'):((EN?'Downloading … ':'Lädt … ')+pct+' %'); }); }
+      Promise.resolve(dk.downloadUpdate()).then(r=>{ if(r && r.ok){ dl.textContent=EN?'Installer opened ✓':'Installer geöffnet ✓'; } else { dl.disabled=false; dl.textContent=EN?'Try again':'Erneut versuchen'; } })
+        .catch(()=>{ dl.disabled=false; dl.textContent=EN?'Try again':'Erneut versuchen'; });
     } else { window.open(url||'https://github.com/gate-to-gate/gtg-app/releases/latest','_blank','noopener'); } });
+  // ✕ = für diese Version nicht mehr anzeigen (erst wieder bei der nächsten Version)
+  try{ const x=uc&&uc.card&&uc.card.querySelector('.uc-x'); if(x) x.addEventListener('click',()=>LS.set('gtg_update_dismissed',latest)); }catch(e){}
 }
 // Update-bereit-Banner (Windows: electron-updater lädt im Hintergrund differenziell = nur geänderte Teile)
 function showUpdateReadyBanner(v){
   const ex=document.getElementById('updBanner'); if(ex) ex.remove();
   if(document.getElementById('updReadyBanner')) return;
-  gtgUpdateCard('updReadyBanner', `Update ${v?('v'+v+' '):''}bereit`, 'Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.', 'Neu starten & installieren', ()=>{ const dk=GD(); if(dk&&typeof dk.quitAndInstall==='function') dk.quitAndInstall(); });
+  const EN=LANG==='en';
+  gtgUpdateCard('updReadyBanner', EN?`Update ${v?('v'+v+' '):''}ready`:`Update ${v?('v'+v+' '):''}bereit`, EN?'Downloaded – a restart installs it. Your data is kept.':'Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.', EN?'Restart & install':'Neu starten & installieren', ()=>{ const dk=GD(); if(dk&&typeof dk.quitAndInstall==='function') dk.quitAndInstall(); });
 }
 (function checkDesktopUpdate(){
   const dk=GD(); if(!dk) return;
@@ -9262,16 +9303,17 @@ applyModeOverrides();   // gemerkte Wettkampf↔Training-Wechsel von Databank-Ev
 // im PDF die Hauptgrafik höher rendern (füllt Seite 1 besser), danach wieder normal
 const APP_TITLE='Swiss-Ski · Gate-to-Gate Analyse';
 window.addEventListener('beforeprint',()=>{ S._printDepth=(S._printDepth||0)+1; if(S._printDepth>1) return;   // doppelte Ereignisse (Desktop-PDF) nur einmal behandeln
-  if(S.pdfName){ S._titlePrev=document.title; try{ document.title=S.pdfName; }catch(e){} }   // PDF-Dateiname nur während des Druckens
+  S._titleSet=false; if(S.pdfName){ S._titlePrev=document.title; S._titleSet=true; try{ document.title=S.pdfName; }catch(e){} }   // PDF-Dateiname nur während des Druckens
   S._darkPrint = document.body.classList.contains('dark');   // PDF immer im hellen Design (Einstellung bleibt unverändert)
   if(S._darkPrint){ document.body.classList.remove('dark'); gtgRecolor(); }
   if(S.comp){ S.printMode=true; S._smoothPrev=S.heroSmooth; S.heroSmooth=true; try{drawHero();}catch(e){}   // im PDF immer geglättet
-    if(S._darkPrint){ try{ buildLegend(); }catch(e){} try{ drawSector(); }catch(e){} try{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); }catch(e){} } } });
+    try{ drawSector(); }catch(e){}   // Abschnitt-Grafik immer im Druck-Layout (auch vom Handy aus)
+    if(S._darkPrint){ try{ buildLegend(); }catch(e){} try{ const m=$('#hmMode')&&$('#hmMode').querySelector('button.on'); drawHeatmap(m?m.dataset.m:'diff'); }catch(e){} } } });
 window.addEventListener('afterprint',()=>{ S._printDepth=Math.max(0,(S._printDepth||0)-1); if(S._printDepth>0) return;
-  try{ document.title = S._titlePrev || APP_TITLE; }catch(e){}
+  if(S._titleSet){ try{ document.title = S._titlePrev || APP_TITLE; }catch(e){} S._titleSet=false; }
   const wasDark=!!S._darkPrint; if(wasDark){ document.body.classList.add('dark'); S._darkPrint=false; gtgRecolor(); }
   S.printMode=false; if(S._smoothPrev!==undefined){ S.heroSmooth=S._smoothPrev; }
-  if(wasDark) gtgRedrawAnalyse(); else { try{drawHero();}catch(e){} } });
+  if(wasDark) gtgRedrawAnalyse(); else { try{drawHero();}catch(e){} try{drawSector();}catch(e){} } });
 // Offline-Zwischenspeicher (nur auf der Webseite, nicht in der Desktop-App): Seite + Coach-Daten bleiben im Funkloch verfügbar
 try{ if('serviceWorker' in navigator && location.protocol==='https:' && !(typeof GD==='function' && GD())) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 const coachMode = initCoach();   // ?coach=<key> -> gesperrte Coach-Ansicht
