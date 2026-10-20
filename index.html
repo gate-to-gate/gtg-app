@@ -1864,6 +1864,7 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
 .clip-toolbar .clip-speed,.clip-toolbar .clip-sbsbar{margin-top:0}
 .clip-toolbar .clip-sbsbar[style*="flex"]{display:flex!important;padding-left:14px;border-left:1px solid var(--line)}
 body.dark .clip-toolbar .clip-sbsbar{border-left-color:#3a4452}
+.clip-toolbar.wrapped .clip-sbsbar{border-left:none!important;padding-left:0!important}
 @media(max-width:760px){.clip-toolbar .clip-sbsbar[style*="flex"]{border-left:none;padding-left:0}}
 
 body.dark .clip-speed .cs-seg{border-color:#3a4452;background:#232b36}
@@ -3191,7 +3192,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610200923';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610201239';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -8423,6 +8424,10 @@ function clipTogglePlay(w){ const av=$('#clipVideo'), bv=$('#clipVideoB');
       const end=()=>{ if(!sc._drag) return; sc._drag=false; seek(); if(sc._wasPlaying){ sc._wasPlaying=false; try{ v.play(); }catch(_){} } };
       sc.addEventListener('change',end); sc.addEventListener('pointerup',end); sc.addEventListener('pointercancel',end); }
     clipCtlUpdate(w); }); }catch(e){} })();
+// Steuerleiste: bricht sie in zwei Zeilen um (schmaler Platz), den Trennstrich weglassen
+function clipToolbarWrap(){ try{ const t=document.querySelector('.clip-toolbar'), a=$('#clipSpeed'), b=$('#clipSbsBar'); if(!t||!a||!b) return;
+  t.classList.toggle('wrapped', b.style.display!=='none' && !!b.offsetParent && Math.abs(a.getBoundingClientRect().top-b.getBoundingClientRect().top)>8); }catch(e){} }
+try{ const _tb=document.querySelector('.clip-toolbar'); if(_tb && window.ResizeObserver) new ResizeObserver(()=>clipToolbarWrap()).observe(_tb); }catch(e){}
 // Leertaste im Video-Pop-up: Play/Pause (im Side-by-Side beide Videos zusammen)
 document.addEventListener('keydown',e=>{ try{
   if(e.code!=='Space' && e.key!==' ') return; if(e.metaKey||e.ctrlKey||e.altKey) return;
@@ -8433,7 +8438,7 @@ document.addEventListener('keydown',e=>{ try{
   const bv=$('#clipVideoB');
   if(CLIPSBS && bv && bv.src) clipSyncPlayToggle(); else clipTogglePlay('A');
 }catch(_){} }, true);
-function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
+function clipSetSbs(on){ CLIPSBS=on; setTimeout(clipToolbarWrap,0); const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
   if(vids) vids.classList.toggle('sbs', on);
   if(colB) colB.style.display=on?'':'none';
   if(bar) bar.style.display=on?'flex':'none';
