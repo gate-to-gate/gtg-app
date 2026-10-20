@@ -96,6 +96,18 @@ body.dark .gh-status.dirty{background:#2a2113}
 .clip-chips .cv-chip .dot{width:9px;height:9px;border-radius:50%}
 .clip-chips .cv-chip.on{border-color:var(--red);background:#fff;color:var(--ink);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 .clip-videowrap{position:relative;background:#000;border-radius:12px;overflow:hidden}
+/* eigene, schlichte Steuerung unter dem Video (keine Browser-Steuerelemente/Abdunkeln auf dem Bild) */
+#clipVideo,#clipVideoB{cursor:pointer}
+.clip-ctl{display:flex;align-items:center;gap:10px;margin-top:8px}
+.clip-ctl .cc-play{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.clip-ctl .cc-play svg{width:16px;height:16px}
+.clip-ctl .cc-play .i-pause{display:none}
+.clip-ctl.playing .cc-play .i-play{display:none}
+.clip-ctl.playing .cc-play .i-pause{display:block}
+.clip-ctl .cc-scrub{flex:1 1 auto;min-width:60px;accent-color:var(--red);height:22px;cursor:pointer}
+.clip-ctl .cc-time{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+body.dark .clip-ctl .cc-play{background:#2d3644;border-color:#3a4452;color:#e7ebf1}
+@media print{.clip-ctl{display:none!important}}
 #clipVideo,#clipVideoB{width:100%;max-height:50vh;display:block;background:#000}
 .clip-viz{margin-top:12px}
 .clip-viz svg{width:100%;display:block;height:auto;cursor:pointer}
@@ -121,6 +133,22 @@ td.clip-hi{transition:outline-color .15s}
 .clip-tablemode .clip-viz{display:flex;flex-direction:column}
 .clip-chiprow{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
 .clip-chiprow .clip-chips{margin-bottom:0}
+.clip-btns{display:inline-flex;gap:8px;flex-wrap:wrap}
+/* Athleten-Chips dezenter, die Auswahl im Side-by-Side (Dropdowns über den Videos) prominenter */
+#coachVid .clip-chips .cv-chip{font-size:11px;padding:3px 9px;gap:5px;border-width:1px}
+#coachVid .clip-chips .cv-chip .dot{width:7px;height:7px}
+#coachVid .clip-chips{gap:5px}
+#coachVid .clip-selb{height:42px;font-size:15px;font-weight:800;padding:6px 34px 6px 12px;border:2px solid var(--athc,var(--line));border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer}
+.clip-sela{display:none}
+.clip-vids.sbs .clip-sela{display:block}
+.clip-vids.sbs .clip-alabel{display:none!important}
+/* Grafik/Tabelle ausblenden -> Videos über die ganze Breite */
+.clip-main.clip-novz .clip-viz{display:none!important}
+.clip-main.clip-novz .clip-left{flex:1 1 100%!important}
+.clip-vztog.on{background:var(--ink);border-color:var(--ink);color:#fff}
+body.dark .clip-vztog.on{background:#e7ebf1;color:#1b2129;border-color:#e7ebf1}
+body.cv-narrow .clip-vztog{display:none}
+#coachVid.cv-novz .cv-vizswitch{visibility:hidden}
 .clip-sbsbtn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:#414751;cursor:pointer;white-space:nowrap;transition:.15s}
 .clip-sbsbtn svg{width:15px;height:15px}
 .clip-sbsbtn:hover{background:#eef1f5;color:var(--ink)}
@@ -2017,19 +2045,19 @@ body.dark .upd-card .uc-go{background:#e7ebf1;color:#1c2430}
         </div>
         <div class="clip-chiprow">
           <div id="clipAth" class="clip-chips"></div>
-          <button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg><span class="sbs-txt">Side-by-Side</span></button>
+          <span class="clip-btns"><button id="clipVizToggle" class="clip-sbsbtn clip-vztog" type="button" title="Grafik/Tabelle rechts ausblenden – Videos werden grösser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="15" y1="4" x2="15" y2="20"/></svg><span class="vz-txt">Grafik ausblenden</span></button><button id="clipSbsBtn" class="clip-sbsbtn" type="button" title="Zwei Läufe nebeneinander vergleichen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/></svg><span class="sbs-txt">Side-by-Side</span></button></span>
         </div>
         <div class="clip-main">
           <div class="clip-left" id="clipLeft">
             <div class="clip-vids" id="clipVids">
               <div class="clip-vcol" data-col="a">
-                <div class="clip-alabel" id="clipLabelA"></div>
-                <div class="clip-videowrap"><video id="clipVideo" playsinline controls preload="metadata"></video></div>
+                <div class="clip-alabel" id="clipLabelA"></div><select id="clipSelA" class="clip-selb clip-sela" aria-label="Erster Athlet (links)"></select>
+                <div class="clip-videowrap"><video id="clipVideo" playsinline preload="metadata"></video></div><div class="clip-ctl" data-v="A"><button type="button" class="cc-play" data-v="A" title="Abspielen / Pause" aria-label="Abspielen / Pause"><svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg></button><input type="range" class="cc-scrub" data-v="A" min="0" max="1000" step="1" value="0" aria-label="Position im Video"><span class="cc-time" data-v="A">0:00</span></div>
                 <div id="clipDefbar" class="defbar"></div>
               </div>
               <div class="clip-vcol clip-colb" id="clipColB" data-col="b" style="display:none">
                 <select id="clipSelB" class="clip-selb" aria-label="Zweiter Athlet"></select>
-                <div class="clip-videowrap"><video id="clipVideoB" playsinline controls preload="metadata"></video></div>
+                <div class="clip-videowrap"><video id="clipVideoB" playsinline preload="metadata"></video></div><div class="clip-ctl" data-v="B"><button type="button" class="cc-play" data-v="B" title="Abspielen / Pause" aria-label="Abspielen / Pause"><svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg></button><input type="range" class="cc-scrub" data-v="B" min="0" max="1000" step="1" value="0" aria-label="Position im Video"><span class="cc-time" data-v="B">0:00</span></div>
                 <div id="clipDefbarB" class="defbar"></div>
               </div>
             </div>
@@ -3150,7 +3178,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610200853';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610200912';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -8049,7 +8077,7 @@ function cvRenderPanel(){
       if(_prevB && (CVVIDS||[]).some(v=>v.name===_prevB)){ clipFillSelB(_prevB); clipLoadB(_prevB); }
       if(_wasSync){ const bv=$('#clipVideoB'); const doS=()=>clipSyncAtGate(_atG); if(bv&&bv.readyState>=1) doS(); else if(bv) bv.addEventListener('loadedmetadata', doS, {once:true}); }
     } else if(typeof clipSetSbs==='function'){ clipSetSbs(false); }
-    if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS);
+    if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS); if($('#clipVizToggle')) $('#clipVizToggle').onclick=()=>clipSetNoViz(!CLIPNOVZ);
   });
 }
 /* ---- Vergrössern: Videos (Side-by-Side) oder Grafik im Vollbild-Pop-up ---- */
@@ -8064,7 +8092,8 @@ function cvMobileLayout(){ try{
     if(sw && viz && viz.parentNode && sw.nextSibling!==viz) viz.parentNode.insertBefore(sw, viz);
   } else {
     const row=document.querySelector('#coachVid .clip-chiprow'), head=document.querySelector('#coachVid .c-head');
-    if(sbs && row && sbs.parentNode!==row) row.appendChild(sbs);
+    const _bt=(row&&row.querySelector('.clip-btns'))||row;
+    if(sbs && _bt && sbs.parentNode!==_bt) _bt.appendChild(sbs);
     if(sw && head && sw.parentNode!==head) head.appendChild(sw);
   }
   document.body.classList.toggle('cv-narrow', narrow);
@@ -8096,7 +8125,7 @@ function clipPopOpen(){
 function clipBigClose(){ const m=$('#clipBig'); if(!m) return; const wasPop=m.classList.contains('clipbig-full');
   clipBigRestoreAll(); m.classList.remove('clipbig-full'); m.style.display='none';
   // Video-Pop-up: Side-by-Side nicht merken – beim nächsten Klick auf ein Tor wieder nur das angeklickte Video
-  if(wasPop){ try{ if(CLIPSBS) clipSetSbs(false); CLIPBNAME=null; }catch(e){} try{ const a=$('#clipVideo'); if(a) a.pause(); }catch(e){} } }
+  if(wasPop){ try{ if(CLIPSBS) clipSetSbs(false); CLIPBNAME=null; }catch(e){} try{ clipSetNoViz(false); }catch(e){} try{ const a=$('#clipVideo'); if(a) a.pause(); }catch(e){} } }
 function initClipBig(){
   if($('#clipBigBtn')) $('#clipBigBtn').onclick=clipBigOpen;
   if($('#clipBigClose')) $('#clipBigClose').onclick=clipBigClose;
@@ -8196,8 +8225,29 @@ function clipLoad(v, g){
   attachDefBar(vid, $('#clipDefbar'), v.name);
   const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g+1} · ${v.name}`;
   const la=$('#clipLabelA'); if(la) la.textContent=v.name;
+  clipSelColor();
   if(CLIPSRC==='table') clipTableViz(v.name, g); else clipChartViz(v.name, g);
+  if(CLIPSBS && CLIPBNAME) clipAlignB(g);   // Side-by-Side: rechtes Video ebenfalls genau an dieses Tor
 }
+// Rechtes Video an dasselbe Tor setzen (eigene Tags des rechten Laufs); bei gekoppelten Videos die Kopplung an diesem Tor neu ausrichten
+function clipAlignB(g){ const bv=$('#clipVideoB'); const vids=CVVIDS||[]; const va=vids.find(x=>x.name===CLIPNAME), vb=vids.find(x=>x.name===CLIPBNAME); if(!bv||!vb) return;
+  const ta=(va&&va.tags)||[], tb=vb.tags||[]; const ia=Math.max(0,Math.min(ta.length-1,g)), ib=Math.max(0,Math.min(tb.length-1,g));
+  const A=ta[ia]&&ta[ia].t, B=tb[ib]&&tb[ib].t; if(B==null) return;
+  if(CLIPSYNC && CLIPSYNC.on && A!=null) CLIPSYNC.delta=A-B;
+  const go=()=>{ try{ bv.pause(); }catch(e){} try{ bv.currentTime=Math.max(0,B); }catch(e){} };
+  if(bv.readyState>=1) go(); else bv.addEventListener('loadedmetadata', go, {once:true}); }
+// Dropdowns über den Videos (Side-by-Side): Rahmen in der Farbe der Athlet:in
+function clipSelColor(){ try{ const a=$('#clipSelA'), b=$('#clipSelB');
+  if(a){ const o=[...a.options].find(o=>o.dataset.n===CLIPNAME); if(o) a.value=o.value; a.style.setProperty('--athc', clipColorOf(CLIPNAME)); }
+  if(b && CLIPBNAME) b.style.setProperty('--athc', clipColorOf(CLIPBNAME)); }catch(e){} }
+function clipFillSelA(){ const sel=$('#clipSelA'); if(!sel) return; const vids=CVVIDS||[];
+  sel.innerHTML=vids.map(v=>`<option value="${encodeURIComponent(v.id)}" data-n="${escHtml(v.name)}"${v.name===CLIPNAME?' selected':''}>${escHtml(v.name)}</option>`).join('');
+  sel.onchange=()=>{ const v=vids.find(x=>x.id===decodeURIComponent(sel.value)); if(v) clipGoto(v.name, CLIPGATE||0); };
+  clipSelColor(); }
+// Grafik/Tabelle neben den Videos aus-/einblenden (Videos werden grösser)
+let CLIPNOVZ=false;
+function clipSetNoViz(on){ CLIPNOVZ=!!on; const m=document.querySelector('.clip-main'); if(m) m.classList.toggle('clip-novz', CLIPNOVZ); const cvp=$('#coachVid'); if(cvp) cvp.classList.toggle('cv-novz', CLIPNOVZ);
+  const b=$('#clipVizToggle'); if(b){ b.classList.toggle('on', CLIPNOVZ); const t=b.querySelector('.vz-txt'); if(t) t.textContent = LANG==='en'? (CLIPNOVZ?'Show chart':'Hide chart') : (CLIPNOVZ?'Grafik einblenden':'Grafik ausblenden'); } }
 function clipChartViz(name, g){
   const el=$('#clipViz'); if(!el) return; const c=S.comp; if(!c){ el.innerHTML=''; return; }
   const numKey=S.excludeAnom?'cumClean':'cumRaw'; const series=c.skiers||[]; const n=c.n;
@@ -8315,7 +8365,7 @@ function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===n
   cvBindMedia(vid, vid.closest('.clip-videowrap')); if(vid.src!==url){ vid.src=url; vid.load(); }
   const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,CLIPGATE)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
-  attachDefBar(vid, $('#clipDefbarB'), v.name);
+  attachDefBar(vid, $('#clipDefbarB'), v.name); clipSelColor();
   if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE);   // Kopf/Hervorhebung (links/rechts) aktualisieren
 }
 /* Tempo-Schnellknöpfe im Video-Panel (gilt für beide Videos, bleibt beim Video-Wechsel erhalten) */
@@ -8336,6 +8386,30 @@ function clipSetRate(r){ CLIPRATE=[1,0.5,0.25].includes(+r)?+r:1; try{ LS.set('g
     const fb=e.target.closest && e.target.closest('#clipSpeed button[data-fstep]'); if(fb){ e.preventDefault(); clipStep(+fb.dataset.fstep); } });
   ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(!v) return; ['loadedmetadata','play'].forEach(ev=> v.addEventListener(ev,()=>{ if(v.playbackRate!==CLIPRATE){ try{ v.playbackRate=CLIPRATE; }catch(_){} } })); });
   clipApplyRate(); }catch(e){} })();
+// Eigene Video-Steuerung (statt Browser-«controls»: kein Abdunkeln und keine Bedienelemente auf dem Bild, wenn pausiert)
+function clipFmtT(t){ t=Math.max(0,+t||0); const m=Math.floor(t/60), s=Math.floor(t%60); return m+':'+String(s).padStart(2,'0'); }
+function clipCtlUpdate(w){ const v=$(w==='B'?'#clipVideoB':'#clipVideo'); const c=document.querySelector('.clip-ctl[data-v="'+w+'"]'); if(!v||!c) return;
+  c.classList.toggle('playing', !v.paused && !v.ended);
+  const sc=c.querySelector('.cc-scrub'), tm=c.querySelector('.cc-time'), d=v.duration;
+  if(sc && !sc._drag) sc.value = (isFinite(d)&&d>0)? Math.round(v.currentTime/d*1000) : 0;
+  if(tm) tm.textContent = clipFmtT(v.currentTime)+' / '+(isFinite(d)&&d>0?clipFmtT(d):'–'); }
+function clipTogglePlay(w){ const av=$('#clipVideo'), bv=$('#clipVideoB');
+  if(CLIPSBS && CLIPSYNC && CLIPSYNC.on && av && bv && bv.src){ clipSyncPlayToggle(); return; }   // gekoppelt: beide zusammen
+  const v= w==='B'? bv : av; if(!v||!v.src) return;
+  if(v.paused||v.ended){ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{ try{ v.muted=true; v.play(); }catch(_){} }); }catch(e){} } else { try{ v.pause(); }catch(e){} } }
+(function initClipCtl(){ try{
+  ['A','B'].forEach(w=>{ const v=$(w==='B'?'#clipVideoB':'#clipVideo'); const c=document.querySelector('.clip-ctl[data-v="'+w+'"]'); if(!v||!c) return;
+    v.removeAttribute('controls');
+    ['play','pause','ended','timeupdate','loadedmetadata','durationchange','seeked','emptied'].forEach(ev=> v.addEventListener(ev,()=>clipCtlUpdate(w)));
+    v.addEventListener('click',e=>{ e.preventDefault(); clipTogglePlay(w); });
+    const pb=c.querySelector('.cc-play'); if(pb) pb.onclick=e=>{ e.preventDefault(); clipTogglePlay(w); };
+    const sc=c.querySelector('.cc-scrub'); if(sc){
+      const seek=()=>{ const d=v.duration; if(!(isFinite(d)&&d>0)) return; try{ v.currentTime=Math.min(d-0.001, (+sc.value/1000)*d); }catch(_){} };
+      sc.addEventListener('pointerdown',()=>{ sc._drag=true; try{ if(!v.paused){ sc._wasPlaying=true; v.pause(); } }catch(_){} });
+      sc.addEventListener('input',seek);
+      const end=()=>{ if(!sc._drag) return; sc._drag=false; seek(); if(sc._wasPlaying){ sc._wasPlaying=false; try{ v.play(); }catch(_){} } };
+      sc.addEventListener('change',end); sc.addEventListener('pointerup',end); sc.addEventListener('pointercancel',end); }
+    clipCtlUpdate(w); }); }catch(e){} })();
 function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
   if(vids) vids.classList.toggle('sbs', on);
   if(colB) colB.style.display=on?'':'none';
@@ -8345,8 +8419,11 @@ function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipCol
   const la=$('#clipLabelA'); if(la) la.textContent=CLIPNAME||'';
   if(!on){ CLIP_SBSPICK=null; clipSyncOff(); const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE); return; }
   const list=CVVIDS||[]; if(list.length<2) gtgToast('Für diesen Lauf ist nur ein Video vorhanden.');
-  const b=(list.find(v=>v.name!==CLIPNAME)||list[0]||{}).name; if(!b) return;
-  clipFillSelB(b); clipLoadB(b); }
+  // Standard rechts: der/die Schnellste (Laufbestzeit bzw. kleinster Rückstand) – in Wettkampf UND Training, nicht alphabetisch
+  const _sk=(S.comp&&S.comp.skiers)||[];
+  const rk=v=>{ const s=_sk.find(k=>k.name===v.name); if(!s) return 1e9; if(s.isTop) return -1; if(s.dnf) return 1e8; return isFinite(s.finalClean)? s.finalClean : 1e7; };
+  const b=([...list].filter(v=>v.name!==CLIPNAME).sort((x,y)=>rk(x)-rk(y))[0]||list[0]||{}).name; if(!b) return;
+  clipFillSelA(); clipFillSelB(b); clipLoadB(b); }
 function clipSyncAtGate(gInt){ const av=$('#clipVideo'), bv=$('#clipVideoB'); if(!av||!bv) return;
   const va=(CVVIDS||[]).find(x=>x.name===CLIPNAME), vb=(CVVIDS||[]).find(x=>x.name===CLIPBNAME);
   const ta=(va&&va.tags)||[], tb=(vb&&vb.tags)||[];
@@ -8368,7 +8445,7 @@ function clipSyncOff(){ CLIPSYNC.on=false; const av=$('#clipVideo'); if(av) av.o
 function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } clipSyncOff(); }
 function initClip(){
   if($('#clipClose')) $('#clipClose').onclick=closeClip;
-  if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS);
+  if($('#clipSbsBtn')) $('#clipSbsBtn').onclick=()=>clipSetSbs(!CLIPSBS); if($('#clipVizToggle')) $('#clipVizToggle').onclick=()=>clipSetNoViz(!CLIPNOVZ);
   if($('#clipSyncPlay')) $('#clipSyncPlay').onclick=clipSyncPlayToggle;
   if($('#clipSyncBtn')) $('#clipSyncBtn').onclick=()=>clipSyncAtGate(clipCurrentGate());
   if($('#clipSyncOff')) $('#clipSyncOff').onclick=()=>{ clipSyncOff(); gtgToast('Kopplung gelöst.'); };
@@ -8739,7 +8816,7 @@ initKurs();
    über einen MutationObserver automatisch mitübersetzt. Beim Umschalten wird
    neu geladen. Echte Daten (Namen, Orte) bleiben unberührt (nur exakte Treffer). */
 let LANG=(function(){ try{ return LS.get('gtg_lang','de'); }catch(e){ return 'de'; } })();
-const I18N_EN={"Coach-Link":"Coach link",
+const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafik einblenden":"Show chart","Grafik/Tabelle rechts ausblenden – Videos werden grösser":"Hide chart/table on the right – videos get bigger",
  // Navigation / Bereiche
  "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
  "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
