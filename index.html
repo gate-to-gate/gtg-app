@@ -3150,7 +3150,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610190626';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610200853';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5377,7 +5377,23 @@ function tgUndo(){ if(TGHIST.idx>0){ TGHIST.idx--; tgRestore(); } }
 function tgRedo(){ if(TGHIST.idx<TGHIST.stack.length-1){ TGHIST.idx++; tgRestore(); } }
 function updateUndoButtons(){ const u=$('#btnUndo'), r=$('#btnRedo');
   if(u) u.disabled=!(TGHIST.idx>0); if(r) r.disabled=!(TGHIST.idx<TGHIST.stack.length-1); }
-function tgFlag(i){ if(!TG.tags[i]) return; TG.tags[i].unsure=!TG.tags[i].unsure; renderTags(); tgPush(); }
+function tgFlag(i){ if(!TG.tags[i]) return; TG.tags[i].unsure=!TG.tags[i].unsure; renderTags(); tgPush(); tgFlagPersist(); }
+// ⚑ bei einem bereits gespeicherten Lauf sofort mitspeichern (lokal + Cloud), damit die Markierung in Datenbank → Taggings
+// und auf den anderen Geräten sichtbar ist – nur wenn die Tags noch dem gespeicherten Stand entsprechen (sonst beim nächsten «Speichern»)
+function tgFlagPersist(){ try{
+  const mode=TG.mode||'comp'; const date=$('#mDate')&&$('#mDate').value, venue=getVenue(), disc=$('#mDisc')&&$('#mDisc').value, gen=$('#mGen')&&$('#mGen').value, run=formRun(), name=$('#mAth')&&$('#mAth').value;
+  if(!date||!venue||!name||TG.tags.length<2) return false;
+  const id=runId({date,venue,disc,gen,run,name}); const arr=mode==='train'?SAVED_TRAIN:SAVED; const rec=arr.find(r=>runId(r)===id);
+  if(!rec || !canEditBy(rec.by)) return false;
+  const {gates,unsure}=buildRunFromTags(); const g0=rec.gates||[];
+  if(gates.length!==g0.length || gates.some((v,k)=> Math.abs((+v||0)-(+g0[k]||0))>0.0015)) return false;   // ungespeicherte Tag-Änderungen -> nicht teilweise speichern
+  const before=JSON.stringify(rec.unsure||[]); if(unsure.length) rec.unsure=unsure; else delete rec.unsure;
+  if(JSON.stringify(rec.unsure||[])===before) return false;
+  LS.set(mode==='train'?'gtg_runs_train':'gtg_runs', arr);
+  _idbGet(id,'videos').then(v=>{ if(v){ v.tags=TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})); return _idbPut(v,'videos'); } }).catch(()=>{});
+  if(typeof ghAutoSync==='function') ghAutoSync();
+  gtgToast(unsure.length?`⚑ Markierung gespeichert (${unsure.length} Tor${unsure.length>1?'e':''}).`:'⚑ Markierung entfernt.','ok');
+  return true; }catch(e){ return false; } }
 /* ---- Lupe (Zoom) + Zeitlupe ---- */
 let TGZOOM=false; const TGZF=2.3;
 function toggleZoom(force){ TGZOOM = (force==null)? !TGZOOM : !!force; const w=document.querySelector('.vid-wrap'), v=$('#vid'), b=$('#btnZoom');
@@ -5532,6 +5548,9 @@ function recomputeEvent(ev){
   ev.hasTop = ev.skiers.some(s=>s.fastest); ev.hasSUI = ev.skiers.some(s=>s.nation==='SUI');
 }
 function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gates,figures}
+  // Modus aus der Liste ableiten, in der das Tagging gespeichert ist (ältere/synchronisierte Trainings-Taggings haben teils kein «mode»
+  // -> Änderungen landeten sonst im Wettkampf statt in der Trainings-Analyse)
+  try{ if(SAVED_TRAIN.includes(rec)){ if(rec.mode!=='train') rec.mode='train'; } else if(SAVED.includes(rec)){ if(rec.mode==='train') rec.mode='comp'; } }catch(e){}
   const target = rec.mode==='train'? TRAIN : DATA;
   let ev = target.find(e=>e.date===rec.date&&e.venue===rec.venue&&e.discipline===rec.disc&&e.gender===rec.gen&&String(e.run)===String(rec.run));
   if(!ev){ ev={date:rec.date,venue:rec.venue,discipline:rec.disc,gender:rec.gen,run:rec.run,mode:rec.mode||'comp',nGates:0,figures:[],skiers:[],hasSUI:false,hasTop:false}; target.push(ev); }
@@ -8074,7 +8093,10 @@ function clipPopOpen(){
   m.classList.add('clipbig-full');                          // blendet den Videos/Grafik-Schalter aus
   m.style.display='flex';
 }
-function clipBigClose(){ const m=$('#clipBig'); if(!m) return; clipBigRestoreAll(); m.classList.remove('clipbig-full'); m.style.display='none'; }
+function clipBigClose(){ const m=$('#clipBig'); if(!m) return; const wasPop=m.classList.contains('clipbig-full');
+  clipBigRestoreAll(); m.classList.remove('clipbig-full'); m.style.display='none';
+  // Video-Pop-up: Side-by-Side nicht merken – beim nächsten Klick auf ein Tor wieder nur das angeklickte Video
+  if(wasPop){ try{ if(CLIPSBS) clipSetSbs(false); CLIPBNAME=null; }catch(e){} try{ const a=$('#clipVideo'); if(a) a.pause(); }catch(e){} } }
 function initClipBig(){
   if($('#clipBigBtn')) $('#clipBigBtn').onclick=clipBigOpen;
   if($('#clipBigClose')) $('#clipBigClose').onclick=clipBigClose;
