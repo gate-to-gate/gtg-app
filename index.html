@@ -149,6 +149,12 @@ td.clip-hi{transition:outline-color .15s}
 body.dark .clip-vztog.on{background:#e7ebf1;color:#1b2129;border-color:#e7ebf1}
 body.cv-narrow .clip-vztog{display:none}
 #coachVid.cv-novz .cv-vizswitch{visibility:hidden}
+.clip-vcol{min-width:0}
+.clip-main>.clip-left{max-width:100%}
+.clip-toolbar>*{min-width:0;max-width:100%}
+@media(max-width:760px){.clip-main>.clip-left{align-self:stretch;width:100%}.clip-toolbar .clip-speed{flex-wrap:wrap}}
+.clip-ctl .cc-scrub{min-width:0}
+@media(max-width:760px){.clip-vids.sbs .clip-ctl{gap:6px}.clip-vids.sbs .clip-ctl .cc-time{display:none}.clip-vids.sbs .clip-ctl .cc-play{width:30px;height:30px}#coachVid .clip-vids.sbs .clip-selb{font-size:13px;height:38px;padding:4px 24px 4px 8px}}
 .clip-sbsbtn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:#414751;cursor:pointer;white-space:nowrap;transition:.15s}
 .clip-sbsbtn svg{width:15px;height:15px}
 .clip-sbsbtn:hover{background:#eef1f5;color:var(--ink)}
@@ -1853,6 +1859,13 @@ body.dark .dbt-flag .dbt-gedit{border-color:#8a6a2c}
 .clip-sbsbar button{height:36px;border-radius:10px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .clip-sbsbar #clipSyncPlay{background:#2b3440;border-color:#2b3440;color:#fff;min-width:96px}
 .clip-sbsbar #clipSyncPlay:hover{background:#1c2430}
+/* Steuerleiste unter den Videos: Bild-für-Bild · Tempo | Side-by-Side-Knöpfe in einer Reihe, mit Trennstrich */
+.clip-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 14px;margin-top:12px}
+.clip-toolbar .clip-speed,.clip-toolbar .clip-sbsbar{margin-top:0}
+.clip-toolbar .clip-sbsbar[style*="flex"]{display:flex!important;padding-left:14px;border-left:1px solid var(--line)}
+body.dark .clip-toolbar .clip-sbsbar{border-left-color:#3a4452}
+@media(max-width:760px){.clip-toolbar .clip-sbsbar[style*="flex"]{border-left:none;padding-left:0}}
+
 body.dark .clip-speed .cs-seg{border-color:#3a4452;background:#232b36}
 body.dark .clip-speed .cs-seg button{background:transparent;color:#cfd6e0;border-color:#3a4452}
 body.dark .clip-speed .cs-seg button.on,body.dark .clip-sbsbtn.on,body.dark .clip-speed .clip-sbsbtn.on,body.dark .cv-vizswitch button.on,body.dark .clip-sbsbar #clipSyncPlay{background:#e7ebf1;border-color:#e7ebf1;color:#1c2430}
@@ -2061,13 +2074,13 @@ body.dark .upd-card .uc-go{background:#e7ebf1;color:#1c2430}
                 <div id="clipDefbarB" class="defbar"></div>
               </div>
             </div>
-            <div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-seg cs-frame" role="group" aria-label="Bild für Bild"><button type="button" data-fstep="-1" title="1 Bild zurück" aria-label="1 Bild zurück"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.8v12.4a.8.8 0 0 1-1.2.7L9.6 12.7a.8.8 0 0 1 0-1.4l8.2-6.2a.8.8 0 0 1 1.2.7z"/></svg></button><button type="button" data-fstep="1" title="1 Bild vor" aria-label="1 Bild vor"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.8v12.4a.8.8 0 0 0 1.2.7l8.2-6.2a.8.8 0 0 0 0-1.4L6.2 5.1A.8.8 0 0 0 5 5.8z"/></svg></button></span><span class="cs-lab">Tempo</span><span class="cs-seg"><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></span></div>
+            <div class="clip-toolbar"><div class="clip-speed" id="clipSpeed" role="group" aria-label="Wiedergabe-Tempo"><span class="cs-seg cs-frame" role="group" aria-label="Bild für Bild"><button type="button" data-fstep="-1" title="1 Bild zurück" aria-label="1 Bild zurück"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.8v12.4a.8.8 0 0 1-1.2.7L9.6 12.7a.8.8 0 0 1 0-1.4l8.2-6.2a.8.8 0 0 1 1.2.7z"/></svg></button><button type="button" data-fstep="1" title="1 Bild vor" aria-label="1 Bild vor"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.8v12.4a.8.8 0 0 0 1.2.7l8.2-6.2a.8.8 0 0 0 0-1.4L6.2 5.1A.8.8 0 0 0 5 5.8z"/></svg></button></span><span class="cs-lab">Tempo</span><span class="cs-seg"><button type="button" data-rate="1" class="on">1×</button><button type="button" data-rate="0.5">½×</button><button type="button" data-rate="0.25">¼×</button></span></div>
             <div class="clip-sbsbar" id="clipSbsBar" style="display:none">
               <button id="clipSyncPlay" type="button">▶ Beide</button>
               <button id="clipSyncBtn" type="button"><span class="lg-full">An diesem Tor synchronisieren</span><span class="lg-sur">Synchronisieren</span></button>
               <button id="clipSyncOff" type="button">Lösen</button>
               <button id="clipBigBtn" type="button" class="clip-bigbtn" title="Vergrössern (Vollbild)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>Vergrössern</button>
-            </div>
+            </div></div>
           </div>
           <div id="clipViz" class="clip-viz"></div>
         </div>
@@ -3178,7 +3191,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610200912';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610200923';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -8410,6 +8423,16 @@ function clipTogglePlay(w){ const av=$('#clipVideo'), bv=$('#clipVideoB');
       const end=()=>{ if(!sc._drag) return; sc._drag=false; seek(); if(sc._wasPlaying){ sc._wasPlaying=false; try{ v.play(); }catch(_){} } };
       sc.addEventListener('change',end); sc.addEventListener('pointerup',end); sc.addEventListener('pointercancel',end); }
     clipCtlUpdate(w); }); }catch(e){} })();
+// Leertaste im Video-Pop-up: Play/Pause (im Side-by-Side beide Videos zusammen)
+document.addEventListener('keydown',e=>{ try{
+  if(e.code!=='Space' && e.key!==' ') return; if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const m=$('#clipBig'); if(!m || m.style.display==='none') return;
+  const ae=document.activeElement, tn=(ae&&ae.tagName)||'';
+  if(tn==='TEXTAREA' || (tn==='INPUT' && !/^(range|checkbox|radio|button)$/i.test(ae.type||''))) return;   // in Textfeldern normal tippen
+  e.preventDefault(); e.stopPropagation(); if(ae && ae!==document.body && ae.blur) ae.blur();   // fokussierter Knopf/Dropdown soll nicht zusätzlich auslösen
+  const bv=$('#clipVideoB');
+  if(CLIPSBS && bv && bv.src) clipSyncPlayToggle(); else clipTogglePlay('A');
+}catch(_){} }, true);
 function clipSetSbs(on){ CLIPSBS=on; const vids=$('#clipVids'), colB=$('#clipColB'), bar=$('#clipSbsBar'), btn=$('#clipSbsBtn');
   if(vids) vids.classList.toggle('sbs', on);
   if(colB) colB.style.display=on?'':'none';
