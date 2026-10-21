@@ -2008,6 +2008,10 @@ table.hm td.hm-dnf{font-size:9px;font-weight:800;letter-spacing:.04em;color:var(
 #heroCard .hero-head:has(.legend.grp) .hero-ctrls{margin-left:auto}
 #heroCard .hero-right .legend.grp{flex:1 1 100%;justify-content:start;margin-top:2px}
 #rbrCard .rbr-pt.best{z-index:2}
+#rbrCard .rbr-fast{color:#a9801a}
+#kprevInfo{white-space:nowrap}
+body.dark #rbrCard .rbr-fast{color:#d8b24a}
+.tge-tx span{text-wrap:pretty}
 @media print{ .legend.grp{display:flex!important;flex-wrap:wrap;gap:0 12px;margin:0!important} .lgg{padding:0;gap:3px} .lgg-n{font-size:9px} .lgg{border:none;padding:0} .lgg-r{font-size:8px;padding:0 3px;gap:2px} .lgg-r .bar{width:9px;height:3px} #heroCard .hero-head:has(.legend.grp) .hero-ctrls{display:none} }
 .legend.grp{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;width:100%;align-self:flex-end}
 .lgg{display:inline-flex;align-items:center;gap:4px;min-width:0;padding:2px 3px 2px 9px;border-radius:8px;border:1px solid var(--line);background:var(--card,#fff)}
@@ -2925,7 +2929,7 @@ body.dark .tg-edithint .teh-note{color:#e2b04a}
     <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd></span><span>Rückgängig</span></div>
     <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>Z</kbd> · <kbd>Ctrl</kbd> + <kbd>Y</kbd></span><span>Wiederholen</span></div>
     <div class="kh-row"><span><kbd>?</kbd></span><span>Diese Übersicht öffnen / schliessen</span></div>
-    <div class="kh-tip">Tipp: Erster Tag = Tor 1 (Referenz). Tags lassen sich in der Liste rechts anklicken, verschieben oder mit ⚑ als «unsicher» markieren.</div>
+    <div class="kh-tip">Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, alten Tag mit ✕ löschen und mit Enter neu setzen. Mit ⚑ als «unsicher» markieren.</div>
   </div>
 </div>
 <div id="welcome" class="wc-overlay" style="display:none">
@@ -3298,7 +3302,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610211025';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610211130';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4259,7 +4263,7 @@ function trainRunsHTML(){
       strip+=`<span class="rbr-span" style="left:${lo}%;width:${Math.max(0,hi-lo)}%;background:${col}"></span>`;
       pts.forEach(q=>{ strip+=`<span class="rbr-pt${q.best?' best':''}" style="left:${q.p}%;--c:${col}" title="L${q.run}">${q.run}</span>`; }); }
     h+=`<div class="rbr-strip">${ticks.map(t=>`<i style="left:${pos(t)}%"></i>`).join('')}${strip}</div>`;
-    h+=`<div class="rbr-gap">${r.best&&g0!=null?((r.best.total-g0)<0.005?(EN?'fastest':'schnellste:r'):'+'+(r.best.total-g0).toFixed(2)+' s'):'–'}</div></div>`; });
+    h+=`<div class="rbr-gap">${r.best&&g0!=null?((r.best.total-g0)<0.005?'<span class="rbr-fast" title="'+(EN?'fastest run of the training':'schnellster Lauf des Trainings')+'">±0.00 s ★</span>':'+'+(r.best.total-g0).toFixed(2)+' s'):'–'}</div></div>`; });
   h+='</div></div>';
   return h;
 }
@@ -8467,7 +8471,8 @@ function clipChartViz(name, g){
   let vmax=0,vmin=0; series.forEach(s=>{ const a=PV(s); for(let i=0;i<n;i++){ if(a[i]!=null){ if(a[i]>vmax)vmax=a[i]; if(a[i]<vmin)vmin=a[i]; } } });
   if(vmax===vmin){vmax+=0.1;vmin-=0.1;}
   const pad=(vmax-vmin)*0.08||0.05; vmax+=pad; vmin-=pad;
-  const W=640,H=480,ml=38,mr=12,mt=10,mb=24,iw=W-ml-mr,ih=H-mt-mb;
+  // Zeichenfläche an die echte Breite anpassen, damit die Achsen-Schrift lesbar bleibt (Pop-up: oft nur ~300 px breit)
+  const _cw=Math.round(el.clientWidth||0); const W=_cw>=240?Math.min(900,_cw):640, H=Math.round(W*0.75), ml=40,mr=10,mt=10,mb=24,iw=W-ml-mr,ih=H-mt-mb;
   const X=i=> ml+(n<=1?iw/2:(i/(n-1))*iw);
   const Y=v=> mt+(v-vmin)/(vmax-vmin)*ih;
   // dezente Y-Achse (Sekunden) + Gitter
@@ -8534,7 +8539,7 @@ function clipTableViz(name, g){
   if(CLIPSBS && CLIPBNAME){
     const cA=clipColorOf(CLIPNAME), cB=clipColorOf(CLIPBNAME);
     vlab=`<span><b style="color:${cA}">◧ ${clipShort(CLIPNAME)}</b> (links) &nbsp;·&nbsp; <b style="color:${cB}">◨ ${clipShort(CLIPBNAME)}</b> (rechts) · Tor ${g+1}</span>`
-        + `<span class="clip-hint">· Tor in der Tabelle: 1. Lauf, dann 2. Lauf anklicken = am Tor nebeneinander</span>`;
+        + ` <span class="clip-hint">· Tor in der Tabelle: 1. Lauf, dann 2. Lauf anklicken = am Tor nebeneinander</span>`;
   } else {
     vlab=`Detail-Matrix · <b>${clipShort(name)}</b> · Tor ${g+1}`
        + (CLIPSBS?` <span class="clip-hint">· Tor anklicken für 1. und 2. Lauf</span>`:'');
@@ -8557,6 +8562,7 @@ function clipTableViz(name, g){
     td.onclick=()=>{ const a=decodeURIComponent(td.dataset.ath||''); const gg=parseInt(td.dataset.g,10); if(!a || isNaN(gg)) return;
       if(!CLIPSBS){ clipGoto(a, gg); return; }
       // SBS: 1. Klick = Lauf A, 2. Klick (anderer Lauf) = Lauf B + am geklickten Tor synchronisieren
+      if(!(CVVIDS||[]).some(v=>v.name===a)){ CLIP_SBSPICK=null; clipGoto(CLIPNAME, gg); setTimeout(()=>clipSyncAtGate(gg),200); gtgToast((LANG==='en'?'No video for ':'Kein Video für ')+clipShort(a)+(LANG==='en'?' – both videos jump to gate ':' – beide Videos springen an Tor ')+(gg+1)+'.'); return; }   // ohne Video nicht als 1. Lauf wählen
       if(!CLIP_SBSPICK || a===CLIPNAME){ CLIP_SBSPICK={name:a,g:gg}; clipGoto(a, gg); gtgToast('1. Lauf: '+clipShort(a)+' — jetzt 2. Lauf am Tor anklicken'); }
       else { clipFillSelB(a); clipLoadB(a); const bv=$('#clipVideoB'); const doS=()=>clipSyncAtGate(gg);
              if(bv && bv.readyState>=1) doS(); else if(bv) bv.addEventListener('loadedmetadata', doS, {once:true}); CLIP_SBSPICK=null; }
@@ -8921,8 +8927,8 @@ function openCoachLink(key){
 async function coachCreate(){
   const cfg={ repo:($('#cmRepo').value||'').trim().replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,''),
     branch:($('#cmBranch').value||'main').trim()||'main', token:($('#cmToken').value||'').trim(), base:($('#cmBase').value||'').trim() };
-  if(!/^[^/]+\/[^/]+$/.test(cfg.repo)){ cmProg('Repository als Owner/Name angeben.',false); return; }
-  if(!cfg.token){ cmProg('Access Token angeben.',false); return; }
+  if(!cfg.token){ cmProg('Access Token angeben.',false); try{ $('#cmToken').focus(); }catch(e){} return; }   // zuerst das sichtbare Feld prüfen
+  if(!/^[^/]+\/[^/]+$/.test(cfg.repo)){ cmProg('Repository als Owner/Name angeben.',false); try{ const d=$('#cmRepo').closest('details'); if(d) d.open=true; $('#cmRepo').focus(); }catch(e){} return; }
   if(!cfg.base){ cmProg('Pages-URL angeben.',false); return; }
   if(!/^https?:\/\//.test(cfg.base)){ cmProg('Pages-URL muss mit https:// beginnen.',false); return; }
   if(!cfg.base.endsWith('/')) cfg.base+='/';
@@ -9046,7 +9052,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  // Navigation / Bereiche
  "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
  "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
- "Tagging Tor für Tor":"Tagging gate by gate","↗ PDF öffnen":"↗ Open PDF","Bearbeiten":"Edit","Rückgängig":"Undo","Tipp: Erster Tag = Tor 1 (Referenz). Tags lassen sich in der Liste rechts anklicken, verschieben oder mit ⚑ als «unsicher» markieren.":"Tip: first tag = gate 1 (reference). Tags can be clicked in the list on the right, moved, or marked «unsure» with ⚑.","Analyse · Hafjell · Riesenslalom Männer · Lauf 1":"Analysis · Hafjell · Giant slalom men · Run 1","Tagging · MEILLARD Loic · Bern · GS M · Lauf 1":"Tagging · MEILLARD Loic · Bern · GS M · Run 1",", nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).":", down = gained. Colour = athlete (same as in the main chart).","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
+ "Tagging Tor für Tor":"Tagging gate by gate","↗ PDF öffnen":"↗ Open PDF","Bearbeiten":"Edit","Rückgängig":"Undo","Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, alten Tag mit ✕ löschen und mit Enter neu setzen. Mit ⚑ als «unsicher» markieren.":"Tip: first tag = gate 1 (reference). To fix a gate: click the row, go to the right frame with y/x, delete the old tag with ✕ and set it again with Enter. Mark «unsure» with ⚑.","Analyse · Hafjell · Riesenslalom Männer · Lauf 1":"Analysis · Hafjell · Giant slalom men · Run 1","Tagging · MEILLARD Loic · Bern · GS M · Lauf 1":"Tagging · MEILLARD Loic · Bern · GS M · Run 1",", nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).":", down = gained. Colour = athlete (same as in the main chart).","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
  "Swiss-Ski · Gate-to-Gate Analyse":"Swiss-Ski · Gate-to-Gate Analysis","Gate-to-Gate · Rückstand":"Gate-to-Gate · deficit",
  // Filter / Labels
  "Art":"Type","Disziplin":"Discipline","Geschlecht":"Gender","Männer":"Men","Frauen":"Women",
