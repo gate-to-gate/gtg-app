@@ -1091,7 +1091,7 @@ body.dark .db-by{color:#8a93a0}
 .db-chev{display:inline-block;color:var(--muted);font-size:10px;transition:transform .15s;width:10px}
 .db-table tr.db-grp.open .db-chev{transform:rotate(90deg)}
 .db-grpcount{display:inline-block;font-weight:800;font-size:10.5px;color:var(--ink2);background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
-.db-grphint{font-size:10.5px;color:var(--muted);font-style:italic}
+.db-grphint{cursor:pointer;white-space:nowrap}
 #dbSecEvents .db-act{text-align:left}
 .db-clind{color:#1f6fb2;font-weight:800;font-size:11px;white-space:nowrap}
 body.dark .db-clind{color:#6ea8e6}
@@ -1612,6 +1612,7 @@ body.dark #darkBtn{background:var(--red);border-color:var(--red);color:#fff}
 /* Header & Icon-Buttons */
 body.dark header{background:#252d39;border-bottom:1px solid #313a48}
 body.dark .hdr-ico,body.dark .pdf-btn{background:#2d3644;color:#e7ebf1;border-color:#3a4452}
+body.dark .pdf-btn{box-shadow:none;border:1px solid #3a4452}
 body.dark .hdr-ico:hover,body.dark .pdf-btn:hover{background:#38424f;color:#fff}
 body.dark .brand-sub,body.dark .brand .sub{color:#9aa6b4}
 body.dark .evt-chip{color:#aeb8c6}
@@ -2035,6 +2036,33 @@ body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:
 body.dark .tg-edithint{color:#bcd7f2;background:rgba(80,140,210,.12);border-color:rgba(120,170,230,.3)}
 body.dark .tg-edithint kbd{background:transparent;color:#bcd7f2;border-color:rgba(120,170,230,.45)}
 body.dark .tg-edithint .teh-note{color:#e2b04a}
+
+/* Legende Wettkampf (Kachel-Stil wie Training) */
+.lgg.lgg-1{gap:7px;padding:3px 10px 3px 9px;cursor:pointer;user-select:none;font-size:12px;font-weight:700;color:var(--ink2)}
+.lgg.lgg-1 .bar{width:14px;height:4px;border-radius:2px;flex:none}
+.lgg.lgg-1 .lg-full{white-space:nowrap}
+.lgg.lgg-1.off{opacity:.35}
+.lgg.lgg-1 .lg-best{margin-left:2px}
+/* Legende überfahren: Linien hervorheben */
+#heroShell.hl path[data-s]:not(.hl-on),#heroShell.hl text[data-s]:not(.hl-on){opacity:.12;transition:opacity .12s}
+#heroShell.hl path[data-s][stroke-linejoin].hl-on{stroke-width:3.2}
+/* Detail-Matrix: Tor-Spalte bleibt beim seitlichen Scrollen stehen */
+#hmWrap table.hm .gate-c{position:sticky;left:0;z-index:3;background:var(--card)}
+#hmWrap table.hm thead th.gate-c{z-index:6}
+#hmWrap table.hm td.hm-cell{min-width:46px}
+/* Header bis 1180 px kompakt: kein Datum, PDF nur Symbol */
+@media(min-width:721px) and (max-width:1180px){
+  header .evt-chip,header .hdr-sep{display:none}
+  #pdfBtn{font-size:0;gap:0;padding:0;width:34px;justify-content:center;flex:none}
+  #pdfBtn svg{width:16px;height:16px}
+  .head-in{gap:6px}
+  .hdr-me{max-width:150px}
+}
+@media(min-width:721px) and (max-width:900px){
+  .brand-sub{display:none}
+  .hdr-me{max-width:96px}
+  header .tab{padding-left:8px;padding-right:8px}
+}
 
 </style>
 </head>
@@ -3250,7 +3278,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610210925';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610210943';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4126,7 +4154,7 @@ function kpiHTML(){
   if(S.ev && S.ev.mode==='train' && S.trSeries) return trainKpiHTML();
   const c=S.comp, top=c.top, best=bestSui();
   // biggest single time loss among SUI
-  let bigLoss={v:-9}; c.sui.filter(s=>!(c.top&&s.name===c.top.name)).forEach(s=> (S.excludeAnom?s.cleanDiff:s.diff).forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
+  let bigLoss={v:-9}; c.sui.filter(s=>!(c.top&&s.name===c.top.name) && !s.dnf).forEach(s=> (S.excludeAnom?s.cleanDiff:s.diff).forEach((d,i)=>{ if(d!=null && !s.anom[i] && d>bigLoss.v) bigLoss={v:d,gate:i+1,name:s.name}; }));
   const nFig = c.figs.length;
   const I=(p)=>`<svg class="k-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
   const icStar='<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.3 13.6l.7-4.3-3.1-3 4.3-.6z"/>';
@@ -4137,11 +4165,11 @@ function kpiHTML(){
   const icDown='<path d="M1.6 4.8l4.8 4.8 2.8-2.8 4.8 4.8"/><path d="M14.4 11.6v-3.8h-3.8"/>';
   return `<div class="kpis">
     <div class="kpi gold" title="Schnellster Lauf = Referenz (0.00). Alle Rückstände werden relativ zu diesem Lauf berechnet. Bei Wettkämpfen aus der FIS-Zeit, bei Training aus der schnellsten getaggten Gesamtzeit."><div class="k-lab">${I(icStar)}Bestzeit (Top)</div><div class="k-val" style="font-size:15px">${escHtml(top.name)}</div><div class="k-sub">${top.nation?escHtml(top.nation)+' · ':''}Referenz 0.00</div></div>
-    <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">${I(icClock)}Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Bestzeit, gefiltert</div></div>
+    <div class="kpi" title="Durchschnittliche Gate-to-Gate-Zeit des schnellsten Läufers, gefiltert auf plausible Werte (ca. 0.9–1.8 s), damit Start/Ziel-Ausreisser das Mittel nicht verfälschen."><div class="k-lab">${I(icClock)}Ø Zeit / Tor</div><div class="k-val">${fmt0(top.avg)}<small> s</small></div><div class="k-sub">Laufbeste:r · ohne Ausreisser</div></div>
     <div class="kpi" title="Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps)."><div class="k-lab">${I(icFlag)}Tore</div><div class="k-val">${c.n}</div><div class="k-sub">${nFig} markierte Figuren</div></div>
     <div class="kpi" title="Beste:r Schweizer:in in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor)."><div class="k-lab">${I(icMedal)}Bester SUI</div><div class="k-val" style="font-size:15px">${best?escHtml(surOf(best.name)):'–'}</div><div class="k-sub">${best?'Rückstand '+fmt(best.finalClean)+' s':'–'}</div></div>
     <div class="kpi" title="Anzahl Schweizer Athlet:innen (SUI), die in diesem Lauf getaggt/erfasst sind."><div class="k-lab">${I(icPeople)}SUI Athlet:innen</div><div class="k-val">${c.sui.length}</div><div class="k-sub">im Lauf erfasst</div></div>
-    <div class="kpi" title="Grösster Einzel-Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr."><div class="k-lab">${I(icDown)}Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?escHtml(surOf(bigLoss.name))+' · Tor '+(bigLoss.gate+1):'–'}</div></div>
+    <div class="kpi" title="Grösster Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (ohne Ausfälle und Tagging-Ausreisser). Zeigt Athlet:in und Tor-Nr."><div class="k-lab">${I(icDown)}Grösster Verlust</div><div class="k-val" style="color:var(--bad)">${bigLoss.v>-9?fmt(bigLoss.v):'–'}<small> s</small></div><div class="k-sub">${bigLoss.v>-9?escHtml(surOf(bigLoss.name))+' · Tor '+(bigLoss.gate+1):(c.sui.some(s=>s.dnf)?'nur Ausfälle':'–')}</div></div>
   </div>`;
 }
 
@@ -4221,13 +4249,20 @@ function buildLegend(){
   // Training mit mehreren Läufen pro Person: Legende nach Athlet:in gruppieren (Name | L1 L2 …) in gleich breiten Spalten
   if(isTrain() && S.comp.skiers.some(s=>s._dup)){ buildLegendGrouped(el); return; }
   const order=[...S.comp.skiers].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // Bestzeit immer ganz links
+  el.classList.add('grp');
   order.forEach(s=>{
-    const d=document.createElement('div'); d.className='lg'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
+    const d=document.createElement('div'); d.className='lg lgg lgg-1'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
+    heroHLBind(d,[s.name]);
     d.innerHTML=`<span class="bar" style="background:${s.color}"></span><span class="lg-full">${escHtml(s.name)}</span><span class="lg-sur">${surOf(s.name)}</span>${s.isTop?(isTrain()?`<span class="lg-best" title="${LANG==='en'?'Fastest run of the session = reference':'Schnellster Lauf des Trainings = Referenz'}">${LANG==='en'?'Fastest':'Schnellster'}</span>`:'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>'):''}`;
     d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
     el.appendChild(d);
   });
 }
+/* Beim Überfahren der Legende die zugehörigen Linien hervorheben, alle anderen verblassen */
+function heroHL(names){ const sh=$('#heroShell'); if(!sh) return; const set=names&&names.length?new Set(names):null;
+  sh.classList.toggle('hl', !!set);
+  sh.querySelectorAll('[data-s]').forEach(n=> n.classList.toggle('hl-on', !!set && set.has(n.getAttribute('data-s')))); }
+function heroHLBind(el,names){ el.addEventListener('mouseenter',e=>{ e.stopPropagation(); heroHL(names); }); el.addEventListener('mouseleave',()=>{ const p=el.parentElement&&el.parentElement.closest('.lgg'); heroHL(p&&p.matches(':hover')&&p._hl?p._hl:null); }); el._hl=names; }
 function buildLegendGrouped(el){
   el.classList.add('grp'); const EN=LANG==='en';
   const baseOf=s=>String(s.name).split('·L')[0], runOf=s=>{ const p=String(s.name).split('·L'); return p.length>1?p[p.length-1]:(s._lauf||''); };
@@ -4240,6 +4275,7 @@ function buildLegendGrouped(el){
     const allOff=runs.every(s=>S.hidden.has(s.name));
     const g=document.createElement('div'); g.className='lgg'+(allOff?' off':'');
     const nm=document.createElement('span'); nm.className='lgg-n'; nm.textContent=surOf(k); nm.title=(EN?'Show/hide all runs of ':'Alle Läufe ein-/ausblenden: ')+k;
+    heroHLBind(g, runs.map(s=>s.name));
     nm.onclick=()=>{ const show=runs.every(s=>S.hidden.has(s.name)); runs.forEach(s=>{ if(show) S.hidden.delete(s.name); else S.hidden.add(s.name); }); buildLegend(); drawHero(); };
     g.appendChild(nm);
     const rw=document.createElement('span'); rw.className='lgg-rs';
@@ -4247,6 +4283,7 @@ function buildLegendGrouped(el){
       r.title=s.isTop?(EN?'Fastest run of the session = reference':'Schnellster Lauf des Trainings = Referenz'):(EN?'Show/hide run':'Lauf ein-/ausblenden');
       r.innerHTML=`<span class="bar" style="background:${s.isTop?'#C28E00':s.color}"></span>L${escHtml(runOf(s))}${s.isTop?'<span class="lgg-star">★</span>':''}`;
       r.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
+      heroHLBind(r,[s.name]);
       rw.appendChild(r); });
     g.appendChild(rw); el.appendChild(g); });
 }
@@ -4396,10 +4433,10 @@ function drawHero(){
       const area=smoothMono(sg)+` L ${sg[sg.length-1].x.toFixed(1)} ${y0.toFixed(1)} L ${sg[0].x.toFixed(1)} ${y0.toFixed(1)} Z`;
       svg+=`<path class="hFocusFill" d="${area}" fill="url(#hFocusGrad)" stroke="none"/>`; }); }
     // farbige Linie
-    svg+=`<path${s.isTop?' class="hTop"':''} d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
+    svg+=`<path data-s="${escHtml(s.name)}"${s.isTop?' class="hTop"':''} d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
     // Trainings-Serien: Lauf-Nr. an das Linienende (wenn derselbe Athlet mehrere Läufe hat)
     if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
-      if(PVs[li]!=null){ endLabs.push({x:x(li+1), y:y(PVs[li]), col:lineCol, t:'L'+s._lauf}); } }
+      if(PVs[li]!=null){ endLabs.push({x:x(li+1), y:y(PVs[li]), col:lineCol, t:'L'+s._lauf, s:s.name}); } }
     // Anomalie-Marker in der Grafik bewusst NICHT mehr zeichnen (Auffälligkeiten werden
     // stattdessen in der Datenbank bei den Taggings markiert). Die Anomalie-Erkennung
     // (s.anom) bleibt für die bereinigte Kurve & KPI-Berechnung erhalten.
@@ -4414,8 +4451,8 @@ function drawHero(){
     for(let i=1;i<endLabs.length;i++) endLabs[i].ty=Math.max(endLabs[i].ty, endLabs[i-1].ty+gap);
     const over=endLabs[endLabs.length-1].ty-hi; if(over>0){ endLabs.forEach(L=>{ L.ty-=over; }); for(let i=endLabs.length-2;i>=0;i--) endLabs[i].ty=Math.min(endLabs[i].ty, endLabs[i+1].ty-gap); }
     endLabs.forEach(L=>{ const tx=W-mr+4, near=Math.abs(L.ty-3.5-L.y)>2.5;
-      if(near) svg+=`<path d="M${(L.x+1).toFixed(1)} ${L.y.toFixed(1)} L${(tx-2).toFixed(1)} ${(L.ty-3.5).toFixed(1)}" stroke="${L.col}" stroke-width="1" opacity=".55" fill="none"/>`;
-      svg+=`<text x="${tx.toFixed(1)}" y="${Math.max(lo,L.ty).toFixed(1)}" text-anchor="start" font-size="10" font-weight="800" fill="${L.col}">${L.t}</text>`; }); }
+      if(near) svg+=`<path data-s="${escHtml(L.s)}" d="M${(L.x+1).toFixed(1)} ${L.y.toFixed(1)} L${(tx-2).toFixed(1)} ${(L.ty-3.5).toFixed(1)}" stroke="${L.col}" stroke-width="1" opacity=".55" fill="none"/>`;
+      svg+=`<text data-s="${escHtml(L.s)}" x="${tx.toFixed(1)}" y="${Math.max(lo,L.ty).toFixed(1)}" text-anchor="start" font-size="10" font-weight="800" fill="${L.col}">${L.t}</text>`; }); }
   // hover: Führungslinie, Punkte je Athlet, Werte + Steilheit
   svg+=`<line id="hg" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="${T.zero}" stroke-width="1.3" opacity="0"/>`;
   svg+=`<g id="hgm">`+series.map((s,i)=>`<circle data-i="${i}" r="3.6" fill="${s.color}" stroke="${T.halo}" stroke-width="1.6" opacity="0"/>`).join('')+`</g>`;
@@ -4549,7 +4586,7 @@ function drawSector(){
   const W=_nw?440:620,H=(_nw?340:320)+(hasSt?14:0), ml=42,mr=12,mt=20,mb=52+(hasSt?14:0), iw=W-ml-mr, ih=H-mt-mb;
   let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v))); data.forEach(d=> (d.rng||[]).forEach(r=> r && all.push(r[0],r[1])));
   let vmax=Math.max(0.05,...all), vmin=Math.min(0,...all);
-  const range=(vmax-vmin)||0.1; vmin-=range*0.06; vmax+=range*0.34;   // Kopfraum für Namens-Labels
+  const range=(vmax-vmin)||0.1; vmin-=range*(vmin<0?0.16:0.06); vmax+=range*0.16;   // Platz für die Werte über/unter den Balken
   const ng=secs.length, gw=iw/ng, bw=Math.min(28,gw/(data.length+0.6));
   const y=v=> mt+(vmax-v)/(vmax-vmin)*ih;
   // klar schlechtester Abschnitt (grösster Netto-Verlust übers SUI-Team) – nur wenn deutlich
@@ -4569,18 +4606,17 @@ function drawSector(){
     const cx=ml+gw*si+gw/2;
     const totW=bw*data.length; let bx=cx-totW/2;
     data.forEach(d=>{ const v=d.vals[si]; if(v!=null){ const Y=v>=0?y(v):y(0); const h=Math.abs(y(v)-y(0));
-      svg+=`<rect class="sb" data-s="${escHtml(d.s.name)}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${Y}" width="${bw-2}" height="${Math.max(h,.6)}" rx="2" fill="${d.s.color}" opacity=".92"/>`;
-      // Athletenname vertikal, immer NACH OBEN (auch bei Abwärtsbalken) -> keine Kollision mit den S-/Tor-Labels unten
-      const bxc=bx+(bw-2)/2, nm=surOf(d.s.name), tl=nm.length*7.2+4;   // geschätzte Textlänge (vertikal)
-      const _rg=d.rng&&d.rng[si];
+      const _rg=d.rng&&d.rng[si], bxc=bx+(bw-2)/2;
+      // Balken; Werte nahe 0 als deutlicher kurzer Strich (sonst unsichtbar)
+      const tiny=h<2.5;
+      svg+=`<rect class="sb" data-s="${escHtml(d.s.name)}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${tiny?y(0)-1.5:Y}" width="${bw-2}" height="${tiny?3:h}" rx="${tiny?1.5:2}" fill="${d.s.color}" opacity=".92"/>`;
       if(_rg){ const ya=y(_rg[1]), yb=y(_rg[0]); svg+=`<line x1="${bxc}" x2="${bxc}" y1="${ya}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${ya}" y2="${ya}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${yb}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/>`; }
-      let ty=Math.min((v>=0?y(v):y(0)), _rg?y(_rg[1]):1e9)-5, inside=false;
-      if(ty-tl < 2 && v>=0 && h>tl+8){ ty=y(v)+6; inside=true; }   // oben kein Platz -> weiss im Balken
-      svg+=`<text x="${bxc}" y="${ty}" transform="rotate(-90 ${bxc} ${ty})" text-anchor="${inside?'end':'start'}" dominant-baseline="middle" font-size="10.5" font-weight="800" fill="${inside?'#fff':d.s.color}">${escHtml(nm)}</text>`; 
-      // Abschnitts-Rückstand dezent im Balken – senkrecht (wie die Namen), unten im Balken, weiss
-      { const txt=(v>0?'+':'')+v.toFixed(2), fs=Math.min(10, Math.max(8, bw*0.42)), need=txt.length*fs*0.62+10;
-        if(h>=need && bw>=12){ const vy = v>=0 ? y(0)-5 : y(v)-5;
-          svg+=`<text x="${bxc}" y="${vy}" transform="rotate(-90 ${bxc} ${vy})" text-anchor="start" dominant-baseline="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="#fff" opacity=".9" style="font-variant-numeric:tabular-nums">${txt}</text>`; } } }
+      // Wert waagrecht über (Verlust) bzw. unter (Gewinn) dem Balken; bei schmalen Balken senkrecht
+      { const txt=fmt(v), up=v>=0, vert=bw<27, fs=vert?9.5:10;
+        const edge= up ? Math.min(tiny?y(0)-2:Y, _rg?y(_rg[1]):1e9)-4 : Math.max(tiny?y(0)+2:Y+h, _rg?y(_rg[0]):-1e9)+4;
+        if(vert) svg+=`<text x="${bxc}" y="${edge}" transform="rotate(-90 ${bxc} ${edge})" text-anchor="${up?'start':'end'}" dominant-baseline="middle" font-size="${fs}" font-weight="800" fill="${T.txt}" style="font-variant-numeric:tabular-nums">${txt}</text>`;
+        else svg+=`<text x="${bxc}" y="${up?edge:edge+fs*0.8}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${T.txt}" style="font-variant-numeric:tabular-nums">${txt}</text>`; }
+    }
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
     svg+=`<text x="${cx}" y="${H-mb+31}" text-anchor="middle" font-size="11" fill="${T.txt2}">Tor ${a+1}–${b+1}</text>`;
@@ -4624,8 +4660,8 @@ function drawHeatmap(mode){
   const _dk=chTheme().dark, _blank=_dk?'transparent':'#fff', _zero=_dk?'rgba(255,255,255,.05)':'#f6f8fa';
   const colorOf=(d,anom)=>{ if(d==null) return _blank; if(anom) return _blank;
     const t=Math.min(1,Math.abs(d)/max); const a=0.12+t*0.7;
-    return d>0.001?`rgba(224,65,58,${a})`:d<-0.001?`rgba(31,157,107,${a})`:_zero; };
-  let h=`<div class="hm-ref">${LANG==='en'?'Reference (best time, Δ = 0.00)':'Referenz (Bestzeit, Δ = 0.00)'}: <b>${escHtml(c.top.name)}</b>${c.top.nation?' · '+escHtml(c.top.nation):''}</div><div class="tbl-wrap"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
+    return d>=0.02?`rgba(224,65,58,${a})`:d<=-0.02?`rgba(31,157,107,${a})`:_zero; };   // unter 0.02 s neutral
+  let h=`<div class="hm-ref">${LANG==='en'?'Reference (best time, Δ = 0.00)':'Referenz (Bestzeit, Δ = 0.00)'}: <b>${escHtml(c.top.name)}</b>${c.top.nation?' · '+escHtml(c.top.nation):''}</div><div class="tbl-wrap" style="max-width:${80+cols.length*104}px"><table class="hm"><thead><tr><th class="gate-c">Tor</th>`;
   cols.forEach(s=>{ const _p=String(s.name).split('·L'), _l=_p.length>1?_p[_p.length-1]:'';
     h+=`<th${s.isTop?' class="hm-top"':''}>${escHtml(surOf(_l?_p.slice(0,-1).join('·L'):s.name))}${s.sui?' 🇨🇭':''}${s.isTop?' ★':''}<div class="nat">${_l?'L'+escHtml(_l)+' · ':''}${escHtml(s.nation||'')}</div></th>`; });
   h+=`</tr></thead><tbody>`;
@@ -7440,7 +7476,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
    const runCells=(r, withCL)=>{ const e=r.e, runLbl=runShort(r.mode, e.discipline, e.run);
     const art=r.mode==='train'?'<span class="db-badge tr">Training</span>':'<span class="db-badge wk">Wettkampf</span>';
     const src=r.tagged?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
-    const status=r.archived?'<span class="db-badge ar">archiviert</span>':'<span class="db-badge ok">aktiv</span>';
+    const status=r.archived?'<span class="db-badge ar">archiviert</span>':'';
     const swBtn = `<button class="btn-mini" data-sw="${r.key}" title="Modus wechseln (Wettkampf ↔ Training)">↔ ${r.mode==='train'?'Wettkampf':'Training'}</button>`;
     const clBtn = withCL ? clFor(r) : '<span class="db-dash">—</span>';
     const acts = r.editable
@@ -7460,7 +7496,7 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
     const allTag=g.rows.every(r=>r.tagged); const anyTag=g.rows.some(r=>r.tagged);
     const src=(allTag||anyTag)?'<span class="db-badge tg">getaggt</span>':'<span class="db-badge db">Databank</span>';
     const nArch=g.rows.filter(r=>r.archived).length;
-    const status= nArch===0?'<span class="db-badge ok">aktiv</span>' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ok">aktiv</span> <span class="db-badge ar">${nArch} arch.</span>`;
+    const status= nArch===0?'' : nArch===nRuns?'<span class="db-badge ar">archiviert</span>' : `<span class="db-badge ar">${nArch} arch.</span>`;
     const gcl=creatorLabel(g.rows.map(r=>r.e));
     const anyCL=g.rows.some(r=> r.tagged && (r.mode==='train'?vidEvtT:vidEvt).has(`${r.e.date}|${r.e.venue}|${r.e.gender}`));
     const _gm=g.rows[0].mode==='train'?'train':'comp';
@@ -7470,13 +7506,13 @@ function renderDbEvents(){ const body=$('#dbBody'); if(!body) return; coachKnown
       +`<td>${e.discipline}</td><td>${genHtml(e.gender)}</td>`
       +`<td><span class="db-grpcount">${nRuns} ${nRuns===1?'Lauf':'Läufe'}</span></td>`
       +`<td>${art}</td><td>${src}</td><td class="num">${names.size}</td><td>${status}</td>`
-      +`<td>${(()=>{ const cr=g.rows.find(r=>r.tagged); return cr? clFor(cr) : '<span class="db-dash">—</span>'; })()}</td><td class="db-act"><span class="db-grphint">aufklappen</span></td></tr>`;
+      +`<td>${(()=>{ const cr=g.rows.find(r=>r.tagged); return cr? clFor(cr) : '<span class="db-dash">—</span>'; })()}</td><td class="db-act"><span class="btn-mini db-grphint">Aufklappen</span></td></tr>`;
     g.rows.forEach(r=>{ html+=`<tr class="db-sub${r.archived?' db-arch':''}${zeb}" data-pgrp="${id}" style="display:none"><td></td><td class="db-subv">↳</td><td></td><td></td>${runCells(r)}</tr>`; });
    });
    body.innerHTML=html;
    body.querySelectorAll('tr.db-grp').forEach(tr=> tr.addEventListener('click', ev=>{ if(ev.target.closest('button')) return;
      const id=tr.dataset.grp; const open=tr.classList.toggle('open');
-     const hint=tr.querySelector('.db-grphint'); if(hint) hint.textContent= open?'zuklappen':'aufklappen';
+     const hint=tr.querySelector('.db-grphint'); if(hint) hint.textContent= open?'Zuklappen':'Aufklappen';
      body.querySelectorAll(`tr.db-sub[data-pgrp="${id}"]`).forEach(s=> s.style.display= open?'':'none'); }));
    body.querySelectorAll('button[data-ed]').forEach(b=> b.onclick=()=> openEvEdit(b.dataset.ed));
    body.querySelectorAll('button[data-cl]').forEach(b=> b.onclick=()=> openCoachLink(b.dataset.cl));
@@ -9143,7 +9179,7 @@ Object.assign(I18N_EN,{
  "Dauerhafter Speicher aktiviert — die Videos bleiben erhalten und der Browser stellt deutlich mehr Platz bereit (meist mehrere GB).":"Persistent storage enabled — videos are kept and the browser provides much more space (usually several GB).","Der Browser könnte Daten/Videos löschen. In der Bibliothek «Speicher maximieren», Cloud verbinden und regelmässig «Backup sichern».":"The browser could delete data/videos. In the library «Maximize storage», connect the cloud and regularly «Export backup».",
  "Sicherheitssoftware (z. B. ESET) oder Firewall sperrt *.workers.dev. Freigeben lassen (IT) oder im Dialog den GitHub-Upload nutzen.":"Security software (e.g. ESET) or a firewall blocks *.workers.dev. Have it allowed (IT) or use the GitHub upload in the dialog.","✓ Einladungscode (mit Token) kopiert — an Kollegen senden. Er fügt ihn oben unter «Schnell verbinden» ein und ist sofort verbunden.":"✓ Invite code (with token) copied — send it to a colleague. They paste it above under «Quick connect» and are connected instantly.",
  "Anzahl ausgewerteter Läufe der Athlet:in in der gewählten Saison. «Laufbestzeit» = Läufe, in denen er/sie selbst die Laufbestzeit (Referenz) fuhr.":"Number of analyzed runs for the athlete in the chosen season. «Fastest run» = runs in which they set the fastest time (reference) themselves.","Anzahl getaggter Tore in diesem Lauf. «Markierte Figuren» = im Kurs hinterlegte Schlüsselstellen (Verschiebung, Rhythmuswechsel, Laps).":"Number of tagged gates in this run. «Marked figures» = key sections stored in the course (offset, rhythm change, laps).",
- "PDF-Modul nicht geladen — für den Kurssetzungs-Import ist einmalig eine Internetverbindung nötig (danach cachet der Browser die Bibliothek).":"PDF module not loaded — a one-time internet connection is needed for the course-setting import (after that the browser caches the library).","Grösster Einzel-Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (Tagging-Anomalien ausgenommen). Zeigt Athlet und Tor-Nr.":"Biggest single time loss of a Swiss athlete at a single gate vs. the best time (excluding tagging anomalies). Shows athlete and gate no.",
+ "PDF-Modul nicht geladen — für den Kurssetzungs-Import ist einmalig eine Internetverbindung nötig (danach cachet der Browser die Bibliothek).":"PDF module not loaded — a one-time internet connection is needed for the course-setting import (after that the browser caches the library).","Grösster Zeitverlust einer Schweizer Athlet:in an einem einzelnen Tor gegenüber der Bestzeit (ohne Ausfälle und Tagging-Ausreisser). Zeigt Athlet:in und Tor-Nr.":"Biggest single time loss of a Swiss athlete at a single gate vs. the best time (excluding tagging anomalies). Shows athlete and gate no.",
  "Für diese Auswahl gibt es keinen Kurs mit passenden Tagging-Daten. Tagge den Lauf (Tab «Tagging») und lade die Kurssetzung mit gleichem Datum/Ort/Lauf.":"There's no course with matching tagging data for this selection. Tag the run (tab «Tagging») and load the course setting with the same date/location/run.","Beste:r Schweizer:in in diesem Lauf – gemessen am kleinsten Endrückstand auf die Bestzeit (bei Nicht-Finishern am fairsten Ø Rückstand pro getaggtem Tor).":"Best Swiss athlete in this run – measured by the smallest final deficit to the best time (for non-finishers, the fairest average deficit per tagged gate).",
  "Bestzeit":"Best time","evtl. doppelt":"possibly duplicate","keine Terrain-Werte":"no terrain values","kein Video":"no video","✓ Video":"✓ video","Neu laden":"Reload",
  "Video konnte nicht geladen werden.":"Could not load the video.","Kein Vergleich — oben hinzufügen (mehrere möglich)":"No comparison — add above (multiple possible)","＋ Vergleich hinzufügen …":"＋ Add comparison …",
@@ -9278,7 +9314,7 @@ Object.assign(I18N_EN,{
  "Terrain-Linien (Steil/Flach/Drehend/Direkt) erscheinen, wo eine Kurssetzung hinterlegt ist.":"Terrain lines (Steep/Flat/Turning/Direct) appear where a course setting is stored."
 });
 Object.assign(I18N_EN,{
- "Bestzeit (Top)":"Best time (top)","Ø Zeit / Tor":"Ø time / gate","Bestzeit, gefiltert":"Best time, filtered","im Lauf erfasst":"recorded in run",
+ "Bestzeit (Top)":"Best time (top)","Ø Zeit / Tor":"Ø time / gate","Bestzeit, gefiltert":"Best time, filtered","Laufbeste:r · ohne Ausreisser":"Fastest skier · without outliers","nur Ausfälle":"DNFs only","im Lauf erfasst":"recorded in run",
  "Kumulierter Rückstand auf":"Cumulative deficit to","(= 0). Tiefer = langsamer.":"(= 0). Lower = slower.",
  "Kumulierter Rückstand pro Tor auf die Bestzeit —":"Cumulative deficit per gate to the best time —","tiefer = langsamer":"lower = slower",
  ". Alle Linien starten bei 0; fällt eine Linie ab, wird Zeit verloren.":". All lines start at 0; when a line drops, time is being lost.",
