@@ -2007,19 +2007,20 @@ table.hm td.hm-dnf{font-size:9px;font-weight:800;letter-spacing:.04em;color:var(
 #heroCard .hero-head:has(.legend.grp) .hero-ctrls{margin-left:auto}
 #heroCard .hero-right .legend.grp{flex:1 1 100%;justify-content:start;margin-top:2px}
 #rbrCard .rbr-pt.best{z-index:2}
-@media print{ .legend.grp{display:flex!important;flex-wrap:wrap;gap:0 12px;margin:0!important} .lgg{padding:0;gap:3px} .lgg-n{width:auto!important;font-size:9px} .lgg-r{font-size:8px;padding:0 3px;gap:2px} .lgg-r .bar{width:9px;height:3px} #heroCard .hero-head:has(.legend.grp) .hero-ctrls{display:none} }
-.legend.grp{display:grid;grid-template-columns:repeat(auto-fill,calc(var(--lgn,9ch) + var(--lgr,2)*46px + 22px));gap:2px 8px;justify-content:end;width:100%;align-self:flex-end}
-.lgg{display:flex;align-items:center;gap:6px;min-width:0;padding:1px 6px;border-radius:7px}
-.lgg:hover{background:var(--bg)}
-.lgg-n{flex:none;width:var(--lgn,9ch);min-width:0;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}
+@media print{ .legend.grp{display:flex!important;flex-wrap:wrap;gap:0 12px;margin:0!important} .lgg{padding:0;gap:3px} .lgg-n{font-size:9px} .lgg{border:none;padding:0} .lgg-r{font-size:8px;padding:0 3px;gap:2px} .lgg-r .bar{width:9px;height:3px} #heroCard .hero-head:has(.legend.grp) .hero-ctrls{display:none} }
+.legend.grp{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;width:100%;align-self:flex-end}
+.lgg{display:inline-flex;align-items:center;gap:4px;min-width:0;padding:2px 3px 2px 9px;border-radius:8px;border:1px solid var(--line);background:var(--card,#fff)}
+.lgg:hover{border-color:#c9cfd8}
+.lgg-n{flex:none;margin-right:2px;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}
 .lgg.off .lgg-n{opacity:.35}
-.lgg-rs{display:inline-flex;gap:3px;flex:none}
+.lgg-rs{display:inline-flex;gap:2px;flex:none}
 .lgg-r{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:var(--ink2);padding:2px 5px;border-radius:5px;cursor:pointer;user-select:none;border:1px solid transparent}
-.lgg-r:hover{border-color:var(--line)}
+.lgg-r:hover{background:var(--bg)}
 .lgg-r .bar{width:12px;height:4px;border-radius:2px;flex:none}
 .lgg-r.off{opacity:.3}
 .lgg-r.top{background:#fdf3d6;color:#a9801a;border-color:#eddca0}
 .lgg-star{font-size:9px;margin-left:1px}
+body.dark .lgg{background:transparent;border-color:#3a4450}
 body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:rgba(216,178,74,.35)}
 @media(max-width:600px){ .legend.grp{justify-content:start;align-self:stretch} }
 
@@ -3235,7 +3236,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610210744';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610210753';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
