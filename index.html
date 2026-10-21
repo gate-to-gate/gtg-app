@@ -2024,6 +2024,18 @@ body.dark .lgg{background:transparent;border-color:#3a4450}
 body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:rgba(216,178,74,.35)}
 @media(max-width:600px){ .legend.grp{justify-content:start;align-self:stretch} }
 
+/* Hinweis: bestehendes Tagging bearbeiten */
+.tg-edithint{display:flex;gap:8px;align-items:flex-start;margin:0 0 10px;padding:9px 10px 9px 12px;font-size:12px;line-height:1.5;color:#1f4f7a;background:#eef5fc;border:1px solid #cfe2f5;border-radius:10px}
+.tg-edithint .teh-tx{flex:1;min-width:0}
+.tg-edithint kbd{font:inherit;font-size:10.5px;font-weight:700;padding:0 4px;border:1px solid #bcd3ea;border-bottom-width:2px;border-radius:4px;background:#fff;color:#1f4f7a}
+.tg-edithint .teh-note{margin-top:4px;color:#8a5a00}
+.tg-edithint .teh-act{margin-top:6px}
+.tg-edithint .teh-x{flex:none;border:none;background:none;color:inherit;opacity:.6;cursor:pointer;font-size:12px;padding:0 2px;line-height:1.4}
+.tg-edithint .teh-x:hover{opacity:1}
+body.dark .tg-edithint{color:#bcd7f2;background:rgba(80,140,210,.12);border-color:rgba(120,170,230,.3)}
+body.dark .tg-edithint kbd{background:transparent;color:#bcd7f2;border-color:rgba(120,170,230,.45)}
+body.dark .tg-edithint .teh-note{color:#e2b04a}
+
 </style>
 </head>
 <body>
@@ -2212,6 +2224,7 @@ body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:
             <input type="text" id="naFis" placeholder="FIS-Code" inputmode="numeric" style="max-width:120px">
             <button class="btn-mini solid" id="naSave">Speichern</button>
           </div>
+          <div id="metaOffer" class="tg-edithint" style="display:none;margin:10px 0 0;grid-column:1/-1"></div>
           <div id="metaErr" class="meta-err"></div>
         </div>
         <div class="modal-foot"><button class="btn-mini" id="metaCancel">Abbrechen</button><button class="save-btn" id="metaApply">✓ Übernehmen</button></div>
@@ -2304,6 +2317,7 @@ body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:
           <div class="tge-step"><span class="tge-n">2</span><div class="tge-tx"><b>Tore taggen</b><span>Video abspielen (<kbd>Leertaste</kbd>), bei jedem Tor <kbd>Enter</kbd>. Feineinstellung: <kbd>x</kbd>/<kbd>y</kbd> = 1 Frame.</span></div></div>
           <div class="tge-step"><span class="tge-n">3</span><div class="tge-tx"><b>Speichern</b><span>FIS-Zeit-Modus wählen, dann «✓ Speichern» — der Lauf landet in Datenbank &amp; Analyse.</span></div></div>
         </div>
+        <div id="tgEditHint" class="tg-edithint" style="display:none"></div>
         <div class="tag-list-wrap"><table class="tag-list"><thead>
           <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Tor (s)</th><th>Figur</th><th></th></tr>
         </thead><tbody id="tagBody"></tbody></table></div>
@@ -3236,7 +3250,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610210753';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610210925';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5298,6 +5312,23 @@ function initSbs(){
 }
 
 /* ---- video ---- */
+/* Hinweis im Tagging, wenn ein bestehendes Tagging wieder geöffnet wird (bzw. das Video schon getaggt ist) */
+function tgEditHint(mode, info){ const el=$('#tgEditHint'); if(!el) return; TG.editHint=mode||null;
+  const mo=$('#metaOffer'); if(mo){ mo.style.display='none'; mo.innerHTML=''; }
+  if(!mode){ el.style.display='none'; el.innerHTML=''; return; }
+  if(mode==='offer' && mo){   // auch im Lauf-Angaben-Pop-up anzeigen (das liegt beim Laden über der Liste)
+    mo.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>`;
+    mo.querySelector('.teh-load').onclick=()=>{ closeMetaModal(); tgEditHint(null); loadFromLib(info.id); }; mo.style.display=''; }
+  const x='<button class="teh-x" title="Hinweis schliessen">✕</button>';
+  if(mode==='offer'){
+    el.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). Lade das gespeicherte Tagging, um einzelne Tore anzupassen, statt alles neu zu taggen.<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>${x}`;
+    el.querySelector('.teh-load').onclick=()=>{ closeMetaModal(); tgEditHint(null); loadFromLib(info.id); };
+  } else {
+    el.innerHTML=`<div class="teh-tx"><b>Tor anpassen:</b> Zeile anklicken – das Video springt zu diesem Tor · mit <kbd>y</kbd>/<kbd>x</kbd> (1 Frame) oder <kbd>a</kbd>/<kbd>s</kbd> (10 Frames) auf die richtige Stelle · alten Tag mit ✕ löschen und mit <kbd>Enter</kbd> neu setzen (die Liste sortiert sich selbst) · «✓ Speichern» ersetzt das bisherige Tagging.${mode==='novideo'?'<div class="teh-note">Kein Video auf diesem Gerät: zuerst das Video links hineinziehen – die Tags bleiben erhalten.</div>':''}</div>${x}`;
+  }
+  el.querySelector('.teh-x').onclick=()=>tgEditHint(null);
+  el.style.display='';
+}
 function loadVideo(file){ TG.file=file; TG.wantFps=true; loadVideoBlob(file);
   // Ist bereits ein Tagging geladen (z. B. aus der Datenbank geöffnet)? Dann Video nur ANHÄNGEN,
   // Angaben & Tags NICHT aus dem Dateinamen überschreiben (Dateiname kann veralteten Ort/Datum haben).
@@ -5305,10 +5336,16 @@ function loadVideo(file){ TG.file=file; TG.wantFps=true; loadVideoBlob(file);
     if($('#pbName')) $('#pbName').textContent=file.name||'';
     const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent='Video an das geladene Tagging angehängt — Angaben & Tags bleiben. Zum Speichern auf «✓ Speichern» klicken.'; }
     if(typeof gtgToast==='function') gtgToast('Video angehängt — Tags & Angaben bleiben. Jetzt «✓ Speichern».','ok');
+    if(TG.editHint==='novideo') tgEditHint('edit');
     return; }
   if($('#mMode')) $('#mMode').value='comp'; setTagMode('comp');   // Standard: Wettkampf, wird bei Erkennung ggf. überschrieben
   const found=autofillFromFilename(file.name||''); openMetaModal();
-  const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent = found.length ? ('Aus Dateiname übernommen: '+found.join(', ')+' — bitte prüfen.') : 'Bitte Angaben manuell auswählen.'; } }
+  const e=$('#metaErr'); if(e){ e.className='meta-err info'; e.textContent = found.length ? ('Aus Dateiname übernommen: '+found.join(', ')+' — bitte prüfen.') : 'Bitte Angaben manuell auswählen.'; }
+  tgEditHint(null);
+  try{ vdbAll().then(list=>{ if(TG.file!==file || (TG.tags&&TG.tags.length)) return;
+    const hit=(list||[]).filter(r=>r && r.vname===file.name && (r.vsize||0)===(file.size||0) && (r.tags||[]).length>=2).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0))[0];
+    if(hit) tgEditHint('offer',{id:hit.id, n:(hit.tags||[]).length, label:`${hit.name} · ${hit.venue} · ${hit.disc} ${hit.gen} · ${runLong(hit.mode||'comp', hit.disc, hit.run)}`});
+  }).catch(()=>{}); }catch(_){} }
 /* Metadaten aus Dateinamen vorausfüllen (nur was eindeutig erkennbar ist; Rest bleibt manuell) */
 function autofillFromFilename(fname){
   const base=String(fname).replace(/\.[^.]+$/,'');
@@ -5392,7 +5429,7 @@ function resetVideo(keepEvent=true){
   const v=$('#vid'); try{ v.pause(); }catch(e){}
   if(TG.video){ URL.revokeObjectURL(TG.video); TG.video=null; }
   v.removeAttribute('src'); try{ v.load(); }catch(e){}
-  TG.file=null; TG.tags=[]; TG.overlay=null; TG.dur=0; TG.frame=0;
+  TG.file=null; TG.tags=[]; TG.overlay=null; TG.dur=0; TG.frame=0; tgEditHint(null);
   $('#player').style.display='none'; $('#dropZone').style.display='';
   if($('#vidFile')) $('#vidFile').value=''; if($('#pbName')) $('#pbName').textContent='';
   // nächster Athlet: Athlet + FIS zurücksetzen, Event-Angaben (Datum/Ort/Disziplin/…) behalten
@@ -5611,6 +5648,7 @@ function figOpts(used, sel){
   return out;
 }
 function renderTags(){
+  if(TG.editHint && TG.editHint!=='offer' && TG.tags.length<2) tgEditHint(null);
   TG.tags.sort((a,b)=>a.t-b.t); const fps=curFps(); const tb=$('#tagBody'); tb.innerHTML='';
   // Figuren-Vorlage übernehmen (Kurssetzung oder zuvor getaggte Athleten desselben Laufs) – nur noch leere Tags
   const tpl=getFigTemplate();
@@ -6134,6 +6172,7 @@ async function loadFromLib(id){
     $('#mGap').value=(!r.officialBest && r.officialGap!=null)? r.officialGap : '';
     if($('#mNoFis')) $('#mNoFis').checked=(!r.officialBest && r.officialGap==null); updateFisMode();
     updateMetaSummary(); renderTags(); tgResetHistory();
+    tgEditHint(r.video?'edit':'novideo');
     const m=$('#saveMsg'); m.className='save-msg ok'; m.textContent=`Geladen: ${r.name} · ${r.venue} ${r.disc} ${r.gen} ${runLong(r.mode||'comp', r.disc, r.run)} (${(r.tags||[]).length} Tags).`;
   }
 }
@@ -7877,7 +7916,7 @@ function openTaggingFromRecord(rec){ switchView('tagging'); if(typeof setTagMode
   TG.file=null; if($('#pbName')) $('#pbName').textContent='';
   const ts=[{t:0,fig:null,unsure:false}]; let acc=0; (rec.gates||[]).forEach(g=>{ acc=Math.round((acc+(g||0))*1000)/1000; ts.push({t:acc,fig:null,unsure:false}); });
   const fmap={}; (rec.figures||[]).forEach(f=>fmap[f.gate]=f.label); ts.forEach((tg,i)=>{ if(fmap[i]) tg.fig=fmap[i]; });
-  TG.tags=ts;
+  TG.tags=ts; tgEditHint('novideo');
   $('#mDate').value=rec.date||''; fillVenueSelect();
   const vsel=$('#mVenueSel'); if(vsel){ if([...vsel.options].some(o=>o.value===rec.venue)) vsel.value=rec.venue; else { $('#mVenueNew').style.display=''; $('#mVenueNew').value=rec.venue; } }
   $('#mDisc').value=rec.disc; $('#mGen').value=rec.gen; if($('#mRun'))$('#mRun').value=String(rec.run); updateRunField();
@@ -9055,7 +9094,8 @@ Object.assign(I18N_EN,{
  "Datum und Ort angeben.":"Enter date and location.","Kein Event ausgewählt.":"No event selected.","Token/Internet prüfen.":"Check token/internet.",
  "CSV leer oder ungültig.":"CSV empty or invalid.","Kein Athlet ausgewählt.":"No athlete selected.","Kuppe (Schlüsselstelle)":"Crest (key section)",
  "Nichts zum Wiederholen.":"Nothing to redo.","· Video wird gesichert…":"· saving video…","Event dauerhaft löschen?":"Delete event permanently?",
- ". Wechsle in die Analyse.":". Switch to Analysis.","Angaben fehlen — «Ändern»":"Details missing — «Edit»","Aus Dateiname übernommen:":"Taken from filename:",
+ ". Wechsle in die Analyse.":". Switch to Analysis.","Angaben fehlen — «Ändern»":"Details missing — «Edit»","Gespeichertes Tagging laden":"Load saved tagging","Dieses Video ist schon getaggt":"This video is already tagged","Tor anpassen:":"Adjust a gate:","Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.":"To adjust single gates, load the saved tagging instead of tagging everything again.","Hinweis schliessen":"Close hint",
+ "Kein Video auf diesem Gerät: zuerst das Video links hineinziehen – die Tags bleiben erhalten.":"No video on this device: drop the video on the left first – the tags are kept.","Aus Dateiname übernommen:":"Taken from filename:",
  "IndexedDB nicht verfügbar":"IndexedDB not available","Lokaler Speicher blockiert":"Local storage blocked","Ungültiger Einladungscode.":"Invalid invite code.",
  "Noch keine lokale Sicherung":"No local backup yet","Video-Pop-up & Side-by-Side":"Video pop-up & side-by-side","desselben Laufs übernommen.":"applied from the same run.",
  "Bitte Datum und Ort angeben.":"Please enter date and location.","Bitte eine:n Athlet:in wählen.":"Please choose an athlete.","Datum, Ort und Lauf angeben.":"Enter date, location and run.",
