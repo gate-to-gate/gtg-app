@@ -2064,6 +2064,26 @@ body.dark .tg-edithint .teh-note{color:#e2b04a}
   header .tab{padding-left:8px;padding-right:8px}
 }
 
+/* PDF: Legende wie früher rechts neben dem Titel (eine Zeile mehr würde die Abschnitts-Grafik auf Seite 2 schieben) */
+@media print{
+  #heroCard .hero-head:has(.legend.grp){flex-wrap:nowrap!important}
+  #heroCard .hero-right:has(.legend.grp){display:flex!important;flex:0 1 auto;max-width:68%}
+  #heroCard .hero-right .legend.grp{justify-content:flex-end!important;margin:0!important;gap:0 10px!important}
+  .lgg{border:none!important;background:none!important;padding:0 2px!important}
+  .lgg.lgg-1{border:none!important;padding:0!important;font-size:9px;gap:4px;background:none!important}
+  .lgg.lgg-1 .bar{width:10px;height:3px}
+}
+
+/* PDF Seite 1: Abschnitts-Übersicht kompakt halten, damit Hauptgrafik + Abschnitte immer auf eine Seite passen (auch bei 6–7 SUI-Athlet:innen) */
+@media print{
+  #secSum .ss-tab td{padding:.7mm 1.4mm .7mm 0}
+  #secSum .ss-h2{margin-top:2mm}
+  #secSum .ss-msg li{margin-top:.5mm}
+  #secSum .ss-msg li:nth-child(n+3){display:none}
+  #secSum .ss-card{padding:2.6mm 3.4mm 2.4mm}
+  .lgg.lgg-1{font-size:8.5px}
+}
+
 </style>
 </head>
 <body>
@@ -3278,7 +3298,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610210943';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610211025';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4330,7 +4350,7 @@ function drawHero(){
   const _cw=(()=>{ try{ const el=document.querySelector('#heroShell'); const w=el?el.clientWidth:0; return w>0? w : Math.max(0,(window.innerWidth||0)-80); }catch(e){ return 0; } })();   // Ansicht noch versteckt -> aus Fensterbreite schätzen
   // Training mit mehreren Läufen derselben Person: Lauf-Nr. (L1/L2…) rechts neben dem Linienende -> etwas Rand reservieren
   const _endLab = !!(c.skiers||[]).some(s=>s._lauf && s._dup && !s.isTop && !S.hidden.has(s.name));
-  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?440:600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
+  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?405:600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
@@ -9278,6 +9298,13 @@ const I18N_SUB=[
  [/\b(\d+) Lauf\b/g,'$1 run'],
  [/\b(\d+) Tags\b/g,'$1 tags'],
  [/\b1 Tag\b/g,'1 tag'],
+ [/\b(\d+) unsicher ⚑/g,'$1 unsure ⚑'],
+ [/Training \(schnellster getaggter = Referenz\)/g,'Training (fastest tagged run = reference)'],
+ [/Endrückstand aus Taggings/g,'final deficit from taggings'],
+ [/ohne FIS-Zeit \(keine Kalibrierung\)/g,'no FIS time (no calibration)'],
+ [/als Laufbestzeit/g,'as fastest run'],
+ [/FIS-Rückstand ([\d.]+) s kalibriert/g,'FIS deficit $1 s calibrated'],
+ [/ohne FIS-Zeit/g,'no FIS time'],
  [/\b(\d+) Tor-Zeiten\b/g,'$1 gate times'],
  [/\b1 Tor-Zeit\b/g,'1 gate time'],
  [/\bTor-Zeiten\b/g,'gate times'],
