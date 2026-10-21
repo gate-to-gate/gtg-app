@@ -515,20 +515,33 @@ body.dark .kpi:hover,body.dark .row3 .card:hover{box-shadow:0 11px 26px -10px rg
 .series-pick .sp-ownnote{font-size:11.5px;color:var(--muted)}
 .series-pick .sp-rbtn.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,24,31,.12)}
 #rbrCard .rbr{display:flex;flex-direction:column}
-#rbrCard .rbr-row{display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
-#rbrCard .rbr-row:first-child{border-top:none}
-#rbrCard .rbr-ath{display:flex;align-items:center;gap:8px;font-size:13px}
+#rbrCard .rbr-row{display:grid;align-items:center;column-gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+#rbrCard .rbr-hd{border-top:none;padding:0 0 6px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#rbrCard .rbr-hd .rbr-c{padding-left:18px}
+#rbrCard .rbr-c-r,#rbrCard .rbr-gap{text-align:right}
+#rbrCard .rbr-ath{display:flex;align-items:center;gap:8px;font-size:13px;min-width:0}
+#rbrCard .rbr-ath b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #rbrCard .rbr-dot{width:10px;height:10px;border-radius:50%;flex:none}
-#rbrCard .rbr-runs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-#rbrCard .rbr-run{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
-#rbrCard .rbr-run i{font-style:normal;font-size:10.5px;font-weight:800;color:var(--muted)}
+#rbrCard .rbr-slot{display:flex;align-items:center;gap:4px}
+#rbrCard .rbr-run{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:62px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:3px 7px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
 #rbrCard .rbr-run.best{border-color:#D9A400;background:rgba(217,164,0,.1)}
 #rbrCard .rbr-run.dnf{color:var(--muted)}
-#rbrCard .rbr-star{color:#D9A400}
-#rbrCard .rbr-tr{font-size:13px;font-weight:900;width:12px;text-align:center}
+#rbrCard .rbr-none{color:var(--muted);padding-left:24px}
+#rbrCard .rbr-star{color:#D9A400;font-size:11px}
+#rbrCard .rbr-tr{font-size:13px;font-weight:900;width:14px;flex:none;text-align:center}
 #rbrCard .rbr-tr.up{color:var(--good)} #rbrCard .rbr-tr.dn{color:var(--bad)} #rbrCard .rbr-tr.eq{color:var(--muted)}
-#rbrCard .rbr-gap{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-@media (max-width:700px){ #rbrCard .rbr-row{grid-template-columns:1fr auto} #rbrCard .rbr-runs{grid-column:1 / -1;grid-row:2} }
+#rbrCard .rbr-gap{font-size:12.5px;font-weight:700;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+#rbrCard .rbr-axis{position:relative;height:14px;margin:0 10px}
+#rbrCard .rbr-axis span{position:absolute;transform:translateX(-50%);font-size:10px;letter-spacing:0;font-variant-numeric:tabular-nums}
+#rbrCard .rbr-strip{position:relative;height:24px;margin:0 10px}
+#rbrCard .rbr-strip>i{position:absolute;top:2px;bottom:2px;width:1px;background:var(--line)}
+#rbrCard .rbr-span{position:absolute;top:11px;height:2px;border-radius:2px;opacity:.45}
+#rbrCard .rbr-pt{position:absolute;top:3px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--c);color:var(--c);font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+#rbrCard .rbr-pt.best{background:var(--c);color:#fff;box-shadow:0 0 0 2px #D9A400}
+body.dark #rbrCard .rbr-pt{background:#252d39}
+body.dark #rbrCard .rbr-pt.best{background:var(--c);color:#111}
+@media (max-width:760px){ #rbrCard .rbr-axis,#rbrCard .rbr-strip{display:none} #rbrCard .rbr-row{grid-template-columns:minmax(90px,1fr) repeat(var(--rn,2),auto) auto!important} }
+@media print{ #rbrCard .rbr-pt.best{box-shadow:none;border-color:#D9A400} }
 @media print{ #rbrCard{display:none!important} }
 /* Serien-Auswahl (Training): klare Zeilen mit Beschriftung links */
 .series-pick{padding:10px 14px}
@@ -1988,6 +2001,28 @@ input.num#inpFps{width:64px;padding:0 4px}
 #msText{display:inline}
 table.hm td.hm-dnf{font-size:9px;font-weight:800;letter-spacing:.04em;color:var(--muted)}
 
+/* Training-Legende gruppiert: je Athlet:in eine Zelle «NAME  ▬L1 ▬L2», gleich breite Spalten */
+#heroCard .hero-head:has(.legend.grp){flex-wrap:wrap}
+#heroCard .hero-right:has(.legend.grp){display:contents}
+#heroCard .hero-head:has(.legend.grp) .hero-ctrls{margin-left:auto}
+#heroCard .hero-right .legend.grp{flex:1 1 100%;justify-content:start;margin-top:2px}
+#rbrCard .rbr-pt.best{z-index:2}
+@media print{ .legend.grp{display:flex!important;flex-wrap:wrap;gap:0 12px;margin:0!important} .lgg{padding:0;gap:3px} .lgg-n{width:auto!important;font-size:9px} .lgg-r{font-size:8px;padding:0 3px;gap:2px} .lgg-r .bar{width:9px;height:3px} #heroCard .hero-head:has(.legend.grp) .hero-ctrls{display:none} }
+.legend.grp{display:grid;grid-template-columns:repeat(auto-fill,calc(var(--lgn,9ch) + var(--lgr,2)*46px + 22px));gap:2px 8px;justify-content:end;width:100%;align-self:flex-end}
+.lgg{display:flex;align-items:center;gap:6px;min-width:0;padding:1px 6px;border-radius:7px}
+.lgg:hover{background:var(--bg)}
+.lgg-n{flex:none;width:var(--lgn,9ch);min-width:0;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}
+.lgg.off .lgg-n{opacity:.35}
+.lgg-rs{display:inline-flex;gap:3px;flex:none}
+.lgg-r{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:var(--ink2);padding:2px 5px;border-radius:5px;cursor:pointer;user-select:none;border:1px solid transparent}
+.lgg-r:hover{border-color:var(--line)}
+.lgg-r .bar{width:12px;height:4px;border-radius:2px;flex:none}
+.lgg-r.off{opacity:.3}
+.lgg-r.top{background:#fdf3d6;color:#a9801a;border-color:#eddca0}
+.lgg-star{font-size:9px;margin-left:1px}
+body.dark .lgg-r.top{background:rgba(216,178,74,.14);color:#d8b24a;border-color:rgba(216,178,74,.35)}
+@media(max-width:600px){ .legend.grp{justify-content:start;align-self:stretch} }
+
 </style>
 </head>
 <body>
@@ -3200,7 +3235,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610210705';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610210744';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4133,23 +4168,43 @@ function trainRunsHTML(){
   const EN=LANG==='en', g0=st.fastest?st.fastest.total:null, sur=n=>(S.trShort?S.trShort(n):surOf(n||''));
   const rows=[...st.by.entries()].map(([nm,l])=>{ const fin=l.filter(x=>x.total!=null); const best=fin.length?fin.reduce((a,b)=>b.total<a.total?b:a):null; return {nm,l,best}; })
     .sort((a,b)=> (a.best?a.best.total:1e9)-(b.best?b.best.total:1e9));
+  // Spalten je Lauf-Nr. (über alle Athlet:innen gleich ausgerichtet) + Punkt-Skala für den Rückstand
+  const runNos=[...new Set(rows.flatMap(r=>r.l.map(x=>+x.run)))].sort((a,b)=>a-b);
+  let gMax=0; rows.forEach(r=>r.l.forEach(x=>{ if(x.total!=null&&g0!=null) gMax=Math.max(gMax,x.total-g0); }));
+  const step=gMax<=1?0.25:(gMax<=2.5?0.5:1); const sMax=Math.max(step,Math.ceil((gMax+1e-9)/step)*step);
+  const pos=v=>Math.max(0,Math.min(100,v/sMax*100));
+  const ticks=[]; for(let t=0;t<=sMax+1e-9;t+=step) ticks.push(Math.round(t*100)/100);
+  const cols=`--rn:${runNos.length};grid-template-columns:minmax(110px,150px) repeat(${runNos.length},96px) minmax(180px,1fr) 110px`;
   let h=`<div class="card" id="rbrCard"><div class="c-head"><div><h2>${EN?'Run by run':'Lauf für Lauf'}</h2>
     <div class="c-sub">${EN?'Total time per run relative to the fastest run of the training. ↓ green = faster than the previous run, ↑ red = slower. ★ = own best run.':'Gesamtzeit je Lauf relativ zum schnellsten Lauf des Trainings. ↓ grün = schneller als der Lauf davor, ↑ rot = langsamer. ★ = eigener bester Lauf.'}</div></div></div><div class="rbr">`;
+  // Kopfzeile
+  h+=`<div class="rbr-row rbr-hd" style="${cols}"><div>${EN?'Athlete':'Athlet:in'}</div>${runNos.map(n=>`<div class="rbr-c">${EN?'Run':'Lauf'} ${n}</div>`).join('')}<div class="rbr-axis">${ticks.map(t=>`<span style="left:${pos(t)}%">${t===0?'0':'+'+t.toFixed(t%1?2:0).replace(/0$/,'')}</span>`).join('')}</div><div class="rbr-c-r">${EN?'Best':'Bester'}</div></div>`;
   rows.forEach(r=>{ const col=athColor(r.nm,false);
-    h+=`<div class="rbr-row"><div class="rbr-ath"><span class="rbr-dot" style="background:${col}"></span><b>${escHtml(sur(r.nm))}</b></div><div class="rbr-runs">`;
+    h+=`<div class="rbr-row" style="${cols}"><div class="rbr-ath"><span class="rbr-dot" style="background:${col}"></span><b title="${escHtml(r.nm)}">${escHtml(sur(r.nm))}</b></div>`;
     let prev=null;
-    r.l.forEach(x=>{ const isB=r.best&&x===r.best;
-      let tr=''; if(prev!=null && x.total!=null){ const d=x.total-prev; tr= Math.abs(d)<0.005?'<span class="rbr-tr eq">=</span>':(d<0?`<span class="rbr-tr up" title="${(d).toFixed(2)} s">↓</span>`:`<span class="rbr-tr dn" title="+${d.toFixed(2)} s">↑</span>`); }
+    runNos.forEach(n=>{ const x=r.l.find(z=>+z.run===n);
+      if(!x){ h+=`<div class="rbr-slot"><span class="rbr-none">–</span></div>`; return; }
+      const isB=r.best&&x===r.best;
+      let tr='<span class="rbr-tr"></span>'; if(prev!=null && x.total!=null){ const d=x.total-prev; tr= Math.abs(d)<0.005?'<span class="rbr-tr eq">=</span>':(d<0?`<span class="rbr-tr up" title="${(d).toFixed(2).replace('-','−')} s">↓</span>`:`<span class="rbr-tr dn" title="+${d.toFixed(2)} s">↑</span>`); }
       const val = x.total==null? 'DNF' : (g0!=null? ((x.total-g0)<0.005?'±0.00':'+'+(x.total-g0).toFixed(2)) : x.total.toFixed(2));
-      h+=`${tr}<span class="rbr-run${isB?' best':''}${x.total==null?' dnf':''}"><i>L${x.run}</i>${val}${isB?' <span class="rbr-star">★</span>':''}</span>`;
+      h+=`<div class="rbr-slot">${tr}<span class="rbr-run${isB?' best':''}${x.total==null?' dnf':''}">${val}${isB?'<span class="rbr-star">★</span>':''}</span></div>`;
       if(x.total!=null) prev=x.total; });
-    h+=`</div><div class="rbr-gap">${r.best&&g0!=null?((r.best.total-g0)<0.005?(EN?'fastest':'schnellste:r'):(EN?'best ':'bester ')+'+'+(r.best.total-g0).toFixed(2)+' s'):'–'}</div></div>`; });
+    // Punkt-Skala: jeder Lauf als Punkt, Linie vom ersten zum letzten Lauf
+    const pts=r.l.filter(x=>x.total!=null&&g0!=null).map(x=>({run:x.run,p:pos(x.total-g0),best:r.best&&x===r.best}));
+    let strip='';
+    if(pts.length){ const lo=Math.min(...pts.map(q=>q.p)), hi=Math.max(...pts.map(q=>q.p));
+      strip+=`<span class="rbr-span" style="left:${lo}%;width:${Math.max(0,hi-lo)}%;background:${col}"></span>`;
+      pts.forEach(q=>{ strip+=`<span class="rbr-pt${q.best?' best':''}" style="left:${q.p}%;--c:${col}" title="L${q.run}">${q.run}</span>`; }); }
+    h+=`<div class="rbr-strip">${ticks.map(t=>`<i style="left:${pos(t)}%"></i>`).join('')}${strip}</div>`;
+    h+=`<div class="rbr-gap">${r.best&&g0!=null?((r.best.total-g0)<0.005?(EN?'fastest':'schnellste:r'):'+'+(r.best.total-g0).toFixed(2)+' s'):'–'}</div></div>`; });
   h+='</div></div>';
   return h;
 }
 /* ---------- legend ---------- */
 function buildLegend(){
-  const el=$('#legend'); el.innerHTML='';
+  const el=$('#legend'); el.innerHTML=''; el.classList.remove('grp');
+  // Training mit mehreren Läufen pro Person: Legende nach Athlet:in gruppieren (Name | L1 L2 …) in gleich breiten Spalten
+  if(isTrain() && S.comp.skiers.some(s=>s._dup)){ buildLegendGrouped(el); return; }
   const order=[...S.comp.skiers].sort((a,b)=>(b.isTop?1:0)-(a.isTop?1:0));   // Bestzeit immer ganz links
   order.forEach(s=>{
     const d=document.createElement('div'); d.className='lg'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
@@ -4157,6 +4212,28 @@ function buildLegend(){
     d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
     el.appendChild(d);
   });
+}
+function buildLegendGrouped(el){
+  el.classList.add('grp'); const EN=LANG==='en';
+  const baseOf=s=>String(s.name).split('·L')[0], runOf=s=>{ const p=String(s.name).split('·L'); return p.length>1?p[p.length-1]:(s._lauf||''); };
+  const groups=new Map(); S.comp.skiers.forEach(s=>{ const b=baseOf(s); if(!groups.has(b)) groups.set(b,[]); groups.get(b).push(s); });
+  const keys=[...groups.keys()]; const topB=keys.find(k=>groups.get(k).some(s=>s.isTop));
+  keys.sort((a,b)=>(a===topB?-1:b===topB?1:0) || a.localeCompare(b,'de'));
+  { const mx=Math.max(4,...keys.map(k=>surOf(k).length)), mr=Math.max(1,...keys.map(k=>groups.get(k).length));
+    el.style.setProperty('--lgn', Math.min(13,mx)+1+'ch'); el.style.setProperty('--lgr', mr); }
+  keys.forEach(k=>{ const runs=groups.get(k).sort((a,b)=>(+runOf(a))-(+runOf(b)));
+    const allOff=runs.every(s=>S.hidden.has(s.name));
+    const g=document.createElement('div'); g.className='lgg'+(allOff?' off':'');
+    const nm=document.createElement('span'); nm.className='lgg-n'; nm.textContent=surOf(k); nm.title=(EN?'Show/hide all runs of ':'Alle Läufe ein-/ausblenden: ')+k;
+    nm.onclick=()=>{ const show=runs.every(s=>S.hidden.has(s.name)); runs.forEach(s=>{ if(show) S.hidden.delete(s.name); else S.hidden.add(s.name); }); buildLegend(); drawHero(); };
+    g.appendChild(nm);
+    const rw=document.createElement('span'); rw.className='lgg-rs';
+    runs.forEach(s=>{ const r=document.createElement('span'); r.className='lgg-r'+(s.isTop?' top':'')+(S.hidden.has(s.name)?' off':'');
+      r.title=s.isTop?(EN?'Fastest run of the session = reference':'Schnellster Lauf des Trainings = Referenz'):(EN?'Show/hide run':'Lauf ein-/ausblenden');
+      r.innerHTML=`<span class="bar" style="background:${s.isTop?'#C28E00':s.color}"></span>L${escHtml(runOf(s))}${s.isTop?'<span class="lgg-star">★</span>':''}`;
+      r.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
+      rw.appendChild(r); });
+    g.appendChild(rw); el.appendChild(g); });
 }
 function figStrip(){
   const el=$('#figstrip'); if(!el) return; el.innerHTML='';
