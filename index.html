@@ -1301,7 +1301,7 @@ table.hmp .g b{font-size:6.5px}
   .print-only{display:block!important}
   #gtgToast,.modal-backdrop,#tour,#welcome,.upd-bar{display:none!important}
   body.dark{--ink:#14181f;--ink2:#3a4350;--muted:#6b7785;--line:#e6e9ee;--bg:#f4f6f9;--card:#ffffff;--good-l:#e4f5ee;--bad-l:#fdecea;--top:#9aa3af}   /* Rückfall, falls «beforeprint» nicht greift */
-  #printHead{display:flex!important;border-bottom:1px solid rgba(218,41,28,.35);padding-bottom:6px;margin-bottom:8px}   /* dezente Linie */
+  #printHead{display:flex!important;border-bottom:1px solid rgba(60,66,76,.35);padding-bottom:6px;margin-bottom:8px}   /* dezente Linie */
   #printHead .ph-logo{width:24px;height:24px}
   #printHead .ph-left{gap:9px}
   #printHead .ph-title{font-size:14px}
@@ -3338,7 +3338,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231246';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231255';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4175,7 +4175,7 @@ function render(){
       ${(S.ev&&S.ev.mode==='train'&&S.trSeries)?trainRunsHTML():''}
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
-          <div class="c-sub">${isTrain()?(c._ownRef?'Rückstand je Abschnitt (zwischen zwei Laps) auf den eigenen besten Lauf. Oben = verliert, unten = gewinnt.':'Rückstand je Abschnitt (zwischen zwei Laps) auf den schnellsten Lauf. Oben = verliert, unten = gewinnt.'):'Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.'} <span class="sec-note">Zeitachse als Orientierung – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.</span></div>
+          <div class="c-sub">${isTrain()?(c._ownRef?'Rückstand je Abschnitt (zwischen zwei Laps) auf den eigenen besten Lauf. Oben = verliert, unten = gewinnt.':'Rückstand je Abschnitt (zwischen zwei Laps) auf den schnellsten Lauf. Oben = verliert, unten = gewinnt.'):'Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.'}</div>
           <div class="print-only sec-readhelp">Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).</div></div></div>
         <div id="secLeg" class="sec-leg"></div>
         <div id="secRow">
