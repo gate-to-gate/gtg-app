@@ -43,3 +43,6 @@ supabase_admins*.sql
 
 # nicht mehr benötigt (Vorschau-Seiten pro Link wurden verworfen)
 404.html
+
+# Claude-Übergabe & Testkit (lokal)
+_claude/
