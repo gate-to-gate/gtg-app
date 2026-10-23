@@ -3338,7 +3338,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610230852';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610230906';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4390,7 +4390,7 @@ function drawHero(){
   const _cw=(()=>{ try{ const el=document.querySelector('#heroShell'); const w=el?el.clientWidth:0; return w>0? w : Math.max(0,(window.innerWidth||0)-80); }catch(e){ return 0; } })();   // Ansicht noch versteckt -> aus Fensterbreite schätzen
   // Training mit mehreren Läufen derselben Person: Lauf-Nr. (L1/L2…) rechts neben dem Linienende -> etwas Rand reservieren
   const _endLab = !!(c.skiers||[]).some(s=>s._lauf && s._dup && !s.isTop && !S.hidden.has(s.name));
-  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?(405-Math.max(0,((S.comp.sui||[]).filter(s=>!s.isTop).length)-5)*22):600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
+  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?(405-Math.max(0,((S.comp.sui||[]).filter(s=>!s.isTop).length)-6)*18):600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
@@ -4598,33 +4598,16 @@ function secSummary(data, secs, STS, hasSt, worst){
   const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
     for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
     const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? (EN?{st0:'flat',st1:'medium',st2:'steep'}:{st0:'flach',st1:'mittel',st2:'steil'})[k] : MIX; };
-  // Tabelle: Total + Mini-Raster mit dem Rang je Abschnitt (ohne Sekunden – Abschnitte ≠ FIS-Sektoren)
-  const nS=secs.length;
-  // Abschnitt vollständig gefahren? (bei Ausfall: Abschnitt mit dem Ausfall und alle danach zählen nicht)
-  const doneSec=(r,i)=>{ if(!r.dnf) return r.d.vals[i]!=null; const lr=r.d.s.lastReal; if(lr==null) return r.d.vals[i]!=null; return secs[i][1]-1<=lr && r.d.vals[i]!=null; };
-  const dnfSec=r=>{ if(!r.dnf||r.d.s.lastReal==null) return -1; const lr=r.d.s.lastReal; return secs.findIndex(([a,b])=> b-1>lr); };
-  const rankOf=secs.map((_,i)=>{ const L=rows.filter(r=>doneSec(r,i)).map(r=>({r,v:r.d.vals[i]})).sort((x,y)=>x.v-y.v);
-    const m=new Map(); L.forEach((o,k)=>{ const prev=k&&Math.abs(o.v-L[k-1].v)<0.005? m.get(L[k-1].r) : k+1; m.set(o.r,prev); }); return {m,n:L.length}; });
-  const rkCol=(rk,n)=>{ const t=n<=1?0:(rk-1)/(n-1);   // 0 = bester (grün) … 1 = letzter (rot)
-    const stops=[[31,157,107],[132,186,86],[226,177,52],[224,110,58],[214,62,52]]; const p=t*(stops.length-1), k=Math.min(stops.length-2,Math.floor(p)), f=p-k;
-    const c=stops[k].map((v,j)=>Math.round(v+(stops[k+1][j]-v)*f)); return `rgb(${c.join(',')})`; };
+  // Tabelle (wie früher): Total, stärkster und schwächster Abschnitt – ohne Sekunden (Abschnitte ≠ FIS-Sektoren)
   const dnfGate=r=> (r.d.s.lastReal!=null? r.d.s.lastReal+2 : null);   // letztes passiertes Tor (Zählung wie Grafik/Matrix)
-  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th>${secs.map((_,i)=>`<th class="ss-sh">${secLbl(i)}</th>`).join('')}</tr></thead><tbody>`;
-  rows.forEach(r=>{ const ds=dnfSec(r); const dg=dnfGate(r);
+  const chipTip=v=> v<=-0.005?(EN?'faster than the best time':'schneller als die Bestzeit'):(v<0.005?(EN?'as fast as the best time':'gleich schnell wie die Bestzeit'):(EN?'slower than the best time':'langsamer als die Bestzeit'));
+  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>${EN?'Best':'Stärkster'}</th><th>${EN?'Weakest':'Schwächster'}</th></tr></thead><tbody>`;
+  rows.forEach(r=>{ const dg=dnfGate(r);
     h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
-    (r.dnf?`<td class="r ss-tot ss-dnf" title="${EN?'Did not finish':'Ausgefallen'}${dg?(EN?' after gate ':' nach Tor ')+dg:''}">DNF${dg?`<small> · ${EN?'gate':'Tor'} ${dg}</small>`:''}</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`);
-    secs.forEach((_,i)=>{ const R=rankOf[i];
-      if(doneSec(r,i)){ const rk=R.m.get(r), v=r.d.vals[i], ref=v<0.005;   // ref: so schnell wie die Bestzeit oder schneller
-        const rel= v<=-0.005?(EN?'faster than the best time':'schneller als die Bestzeit'):(v<0.005?(EN?'as fast as the best time':'gleich schnell wie die Bestzeit'):(EN?'slower than the best time':'langsamer als die Bestzeit'));
-        h+=`<td class="ss-rc"><span class="ss-rk${ref?' ss-ref':''}" style="background:${rkCol(rk,R.n)}" title="${secLbl(i)}: ${EN?'rank':'Rang'} ${rk} / ${R.n} · ${rel}">${rk}</span></td>`; }
-      else if(i===ds){ h+=`<td class="ss-rc"><span class="ss-rk ss-out" title="${EN?'DNF in this section':'Ausfall in diesem Abschnitt'}">✕</span></td>`; }
-      else h+=`<td class="ss-rc"><span class="ss-rk ss-na" title="${EN?'not driven':'nicht gefahren'}">–</span></td>`; });
-    h+=`</tr>`; });
-  h+='</tbody>';
-  // Gelände je Abschnitt (aus der Kurssetzung): steil / mittel / flach – zeigt, ob jemand eher im Steilen oder im Flachen verliert
-  if(hasSt){ const tx=secs.map((_,i)=>steepTxt(i)); if(tx.some(Boolean)) h+=`<tfoot><tr><td class="ss-terr-l">${EN?'Terrain':'Gelände'}</td><td></td>${tx.map(t=>`<td class="ss-rc ss-terr">${t||'–'}</td>`).join('')}</tr></tfoot>`; }
-  h+='</table>';
-  h+=`<div class="ss-rkleg"><span class="ss-rk" style="background:${rkCol(1,3)}">1</span>${EN?'fastest in the section':'schnellste:r im Abschnitt'}<span class="ss-rkbar"></span><span class="ss-rk" style="background:${rkCol(3,3)}">${rows.length}</span>${EN?'slowest':'langsamste:r'}${rows.some(r=>r.d.vals.some(v=>v!=null&&v<0.005))?`</div><div class="ss-rkleg"><span class="ss-rk ss-ref ss-refleg" style="background:${rkCol(1,3)}"></span>${EN?'framed = as fast as the best time or faster':'umrandet = so schnell wie die Bestzeit oder schneller'}`:''}</div>`;
+    (r.dnf?`<td class="r ss-tot ss-dnf" title="${EN?'Did not finish':'Ausgefallen'}${dg?(EN?' after gate ':' nach Tor ')+dg:''}">DNF${dg?`<small> · ${EN?'gate':'Tor'} ${dg}</small>`:''}</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
+    `<td><span class="ss-chip ${cc(r.best.v)}" title="${chipTip(r.best.v)}">${secLbl(r.best.i)}</span></td>`+
+    `<td><span class="ss-chip ${cc(r.weak.v)}" title="${chipTip(r.weak.v)}">${secLbl(r.weak.i)}</span></td></tr>`; });
+  h+='</tbody></table>';
   // Kernaussagen (max. 3)
   const msgs=[];
   { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
