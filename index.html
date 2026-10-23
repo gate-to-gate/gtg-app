@@ -1941,7 +1941,7 @@ body.coach .coach-stand{display:block;font-size:12px;color:var(--muted);font-wei
 table.hm .gate-c.st0,#hmPrint table.hmp td.g.st0{box-shadow:inset 5px 0 0 #e4e6ea}
 table.hm .gate-c.st1,#hmPrint table.hmp td.g.st1{box-shadow:inset 5px 0 0 #c4c9d0}
 table.hm .gate-c.st2,#hmPrint table.hmp td.g.st2{box-shadow:inset 5px 0 0 #8f97a2}
-.hm-stlegend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:11.5px;color:var(--muted);margin:8px 0 0}
+.hm-stlegend{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px 8px;font-size:11.5px;color:var(--muted);margin:8px 0 0}
 .hm-sw{display:inline-block;width:14px;height:9px;border-radius:2px;margin-left:6px}
 .hm-sw:first-child{margin-left:0}
 .hm-sw.st0{background:#e4e6ea}.hm-sw.st1{background:#c4c9d0}.hm-sw.st2{background:#8f97a2}
@@ -2087,6 +2087,41 @@ body.dark .tg-edithint .teh-note{color:#e2b04a}
   #secSum .ss-msg li:nth-child(n+3){display:none}
   #secSum .ss-card{padding:2.6mm 3.4mm 2.4mm}
   .lgg.lgg-1{font-size:8.5px}
+}
+
+/* Übersicht: Mini-Raster Rang je Abschnitt */
+#secSum .ss-tab th.ss-sh{text-align:center;padding-right:0;min-width:26px}
+#secSum .ss-tab td.ss-rc{text-align:center;padding-right:0}
+#secSum .ss-rk{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;border-radius:6px;color:#fff;font-weight:800;font-size:11.5px;font-variant-numeric:tabular-nums}
+#secSum .ss-rk.ss-na{background:transparent;color:#a7afba}
+#secSum .ss-rk.ss-out{background:#e6e9ee;color:#8a919c;font-size:10px}
+#secSum .ss-dnf small{font-weight:600;font-size:10.5px;color:var(--muted);margin-left:2px}
+#secSum .ss-rkleg{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10.5px;color:var(--muted)}
+#secSum .ss-rkleg .ss-rk{width:18px;height:16px;font-size:9.5px;border-radius:4px}
+#secSum .ss-rkbar{width:46px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgb(31,157,107),rgb(132,186,86),rgb(226,177,52),rgb(224,110,58),rgb(214,62,52));margin:0 2px}
+body.dark #secSum .ss-rk.ss-out{background:#39424f;color:#9aa6b4}
+@media print{
+  #secSum .ss-rk{width:5mm;height:4.4mm;font-size:8px;border-radius:1.2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #secSum .ss-tab th.ss-sh{min-width:5.5mm}
+  #secSum .ss-rkleg{margin-top:1.6mm;font-size:7.4px}
+  #secSum .ss-rkleg .ss-rk{width:3.6mm;height:3.2mm;font-size:7px}
+  #secSum .ss-rkbar{width:9mm;height:1.4mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+#secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 2px #fff,0 0 0 1.5px rgb(31,157,107)}
+#secSum .ss-rkleg .ss-refleg{margin:0 2px 0 1px}
+#secSum .ss-rkleg+.ss-rkleg{margin-top:5px}
+#secSum .ss-rkleg{flex-wrap:wrap}
+#secSum .ss-tab tfoot td{border-top:1px solid #e3e6ea;padding-top:6px;font-size:10px;color:var(--muted);font-weight:700}
+#secSum .ss-tab td.ss-terr{font-weight:600;font-size:9.5px;white-space:nowrap}
+body.dark #secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 2px #1f2631,0 0 0 1.5px rgb(80,190,140)}
+body.dark #secSum .ss-tab tfoot td{border-top-color:#39424f}
+@media print{ #secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 1.2px #fff,0 0 0 1px rgb(31,157,107)} #secSum .ss-tab tfoot td{font-size:7px;padding-top:1mm} }
+
+@media print{
+  #secSum .ss-tab td{padding-top:.5mm;padding-bottom:.5mm}
+  #secSum .ss-rkleg{display:inline-flex;margin-right:3mm}
+  #secSum .ss-rkleg+.ss-rkleg{margin-top:0}
 }
 
 </style>
@@ -3303,7 +3338,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610230803';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610230852';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4355,7 +4390,7 @@ function drawHero(){
   const _cw=(()=>{ try{ const el=document.querySelector('#heroShell'); const w=el?el.clientWidth:0; return w>0? w : Math.max(0,(window.innerWidth||0)-80); }catch(e){ return 0; } })();   // Ansicht noch versteckt -> aus Fensterbreite schätzen
   // Training mit mehreren Läufen derselben Person: Lauf-Nr. (L1/L2…) rechts neben dem Linienende -> etwas Rand reservieren
   const _endLab = !!(c.skiers||[]).some(s=>s._lauf && s._dup && !s.isTop && !S.hidden.has(s.name));
-  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?405:600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
+  const W=_nw?(_cw?Math.max(360,Math.min(520,Math.round(_cw))):520):(S.printMode||!_cw?980:Math.max(640,Math.min(980,Math.round(_cw)))),H=(S.printMode?((S.comp&&S.comp.sectors&&S.comp.sectors.length>=2)?(405-Math.max(0,((S.comp.sui||[]).filter(s=>!s.isTop).length)-5)*22):600):(_nw?(W<480?360:420):(W<900?400:420))), ml=_nw?58:74,mr=(_nw?12:20)+(_endLab?18:0),mt=18,mb=46;
   const iw=W-ml-mr, ih=H-mt-mb;
   const series = c.skiers.filter(s=>!S.hidden.has(s.name));
   const key = S.excludeAnom?'cumClean':'cumRaw';   // echter kumulierter Rückstand – identisch zur Detail-Tabelle (kein normStart-Versatz)
@@ -4371,7 +4406,7 @@ function drawHero(){
   const focusName=S.heroFocus||''; const _focus=focusName?series.find(z=>!z.isTop && z.name===focusName):null; const focusCol=_focus?_focus.color:'#da291c';
   svg+=`<defs><linearGradient id="hFocusGrad" gradientUnits="userSpaceOnUse" x1="0" y1="${mt}" x2="0" y2="${mt+ih}"><stop offset="0" stop-color="${focusCol}" stop-opacity="0"/><stop offset="1" stop-color="${focusCol}" stop-opacity=".3"/></linearGradient></defs>`;
   // dezentes Höhenprofil als Hintergrundfläche (aus Kurssetzung-Steilheit)
-  const pitchByGate={};
+  const pitchByGate={}; let _stLeg=false;   // _stLeg: Steilheits-Legende unten zentriert -> «Tor-Nr.» dann rechts
   const _course = (typeof curCourse==='function')? curCourse() : null;
   if(_course && _course.gates){ const gts=_course.gates.filter(z=>z.type!=='Finish'); const m=Math.min(n,gts.length);
     for(let i=0;i<m;i++){ if(gts[i]&&gts[i].pitch!=null) pitchByGate[i+1]=gts[i].pitch; }
@@ -4398,7 +4433,8 @@ function drawHero(){
       // Legende Steilheit (unten links, neben «Tor-Nr.»)
       { const _e=LANG==='en'; const lab = (_nw || (!S.printMode && W<820)) ? (_e?['flat','medium','steep']:['flach','mittel','steil']) : (_e?['flat < 13.5°','medium 13.5–18.9°','steep > 18.9°']:['flach < 13.5°','mittel 13.5–18.9°','steil > 18.9°']);
         const pm=!!S.printMode, lfs=pm?7:9.5, sw=pm?10:14, shh=pm?5:7;   // im PDF kleiner (die Grafik wird dort gestreckt)
-        let lx=ml, ly=H-8; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(l.length<8?0.57:0.55) + 10; }); }
+        const _lw=lab.reduce((s,l)=> s + sw+8 + l.length*lfs*(l.length<8?0.57:0.55) + 10, 0) - 10;
+        let lx=Math.max(ml, ml+iw/2-_lw/2), ly=H-8; _stLeg=true; lab.forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-shh}" width="${sw}" height="${shh}" rx="1.5" fill="${SC[k]}" stroke="${T.dark?'rgba(255,255,255,.18)':'#c9cdd3'}" stroke-width=".6"/><text x="${lx+sw+4}" y="${ly}" font-size="${lfs}" fill="${T.txt2}">${l}</text>`; lx+= sw+8 + l.length*lfs*(l.length<8?0.57:0.55) + 10; }); }
     }
   }
   // y gridlines
@@ -4418,7 +4454,7 @@ function drawHero(){
     if(!show) continue;
     svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${mt}" y2="${mt+ih}" stroke="${T.grid2}" opacity=".5"/>`;
     svg+=`<text x="${x(t)}" y="${H-mb+18}" text-anchor="middle" font-size="${S.printMode?9.5:11}" fill="${T.txt2}">${t}</text>`; }
-  { const nar=!S.printMode && W<700; svg+=`<text x="${nar?W-mr:ml+iw/2}" y="${H-6}" text-anchor="${nar?'end':'middle'}" font-size="${S.printMode?9.5:11}" fill="${T.txt}">${LANG==='en'?'Gate no.':'Tor-Nr.'}</text>`; }
+  { const nar=(!S.printMode && W<700) || _stLeg; svg+=`<text x="${nar?W-mr:ml+iw/2}" y="${H-6}" text-anchor="${nar?'end':'middle'}" font-size="${S.printMode?9.5:11}" fill="${T.txt}">${LANG==='en'?'Gate no.':'Tor-Nr.'}</text>`; }
   // Figuren-Referenzlinien: Linien pro Tor gruppiert (zweifarbig bei mehreren am selben Tor)
   const colOf=f=> FIG[f.type]?FIG[f.type].c:'#c3cad4';
   const figByGate={}; c.figs.forEach(f=>{ if(f.gate<1||f.gate>n) return; (figByGate[f.gate]=figByGate[f.gate]||[]).push(f); });
@@ -4562,13 +4598,33 @@ function secSummary(data, secs, STS, hasSt, worst){
   const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
     for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
     const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? (EN?{st0:'flat',st1:'medium',st2:'steep'}:{st0:'flach',st1:'mittel',st2:'steil'})[k] : MIX; };
-  // Tabelle
-  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>${EN?'Best':'Stärkster'}</th><th>${EN?'Weakest':'Schwächster'}</th></tr></thead><tbody>`;
-  rows.forEach(r=>{ h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
-    (r.dnf?`<td class="r ss-tot ss-dnf">DNF</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
-    `<td><span class="ss-chip ${cc(r.best.v)}">${secLbl(r.best.i)}</span></td>`+   // ohne Sekunden (Abschnitte ≠ FIS-Sektoren)
-    `<td><span class="ss-chip ${cc(r.weak.v)}">${secLbl(r.weak.i)}</span></td></tr>`; });
-  h+='</tbody></table>';
+  // Tabelle: Total + Mini-Raster mit dem Rang je Abschnitt (ohne Sekunden – Abschnitte ≠ FIS-Sektoren)
+  const nS=secs.length;
+  // Abschnitt vollständig gefahren? (bei Ausfall: Abschnitt mit dem Ausfall und alle danach zählen nicht)
+  const doneSec=(r,i)=>{ if(!r.dnf) return r.d.vals[i]!=null; const lr=r.d.s.lastReal; if(lr==null) return r.d.vals[i]!=null; return secs[i][1]-1<=lr && r.d.vals[i]!=null; };
+  const dnfSec=r=>{ if(!r.dnf||r.d.s.lastReal==null) return -1; const lr=r.d.s.lastReal; return secs.findIndex(([a,b])=> b-1>lr); };
+  const rankOf=secs.map((_,i)=>{ const L=rows.filter(r=>doneSec(r,i)).map(r=>({r,v:r.d.vals[i]})).sort((x,y)=>x.v-y.v);
+    const m=new Map(); L.forEach((o,k)=>{ const prev=k&&Math.abs(o.v-L[k-1].v)<0.005? m.get(L[k-1].r) : k+1; m.set(o.r,prev); }); return {m,n:L.length}; });
+  const rkCol=(rk,n)=>{ const t=n<=1?0:(rk-1)/(n-1);   // 0 = bester (grün) … 1 = letzter (rot)
+    const stops=[[31,157,107],[132,186,86],[226,177,52],[224,110,58],[214,62,52]]; const p=t*(stops.length-1), k=Math.min(stops.length-2,Math.floor(p)), f=p-k;
+    const c=stops[k].map((v,j)=>Math.round(v+(stops[k+1][j]-v)*f)); return `rgb(${c.join(',')})`; };
+  const dnfGate=r=> (r.d.s.lastReal!=null? r.d.s.lastReal+2 : null);   // letztes passiertes Tor (Zählung wie Grafik/Matrix)
+  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th>${secs.map((_,i)=>`<th class="ss-sh">${secLbl(i)}</th>`).join('')}</tr></thead><tbody>`;
+  rows.forEach(r=>{ const ds=dnfSec(r); const dg=dnfGate(r);
+    h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
+    (r.dnf?`<td class="r ss-tot ss-dnf" title="${EN?'Did not finish':'Ausgefallen'}${dg?(EN?' after gate ':' nach Tor ')+dg:''}">DNF${dg?`<small> · ${EN?'gate':'Tor'} ${dg}</small>`:''}</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`);
+    secs.forEach((_,i)=>{ const R=rankOf[i];
+      if(doneSec(r,i)){ const rk=R.m.get(r), v=r.d.vals[i], ref=v<0.005;   // ref: so schnell wie die Bestzeit oder schneller
+        const rel= v<=-0.005?(EN?'faster than the best time':'schneller als die Bestzeit'):(v<0.005?(EN?'as fast as the best time':'gleich schnell wie die Bestzeit'):(EN?'slower than the best time':'langsamer als die Bestzeit'));
+        h+=`<td class="ss-rc"><span class="ss-rk${ref?' ss-ref':''}" style="background:${rkCol(rk,R.n)}" title="${secLbl(i)}: ${EN?'rank':'Rang'} ${rk} / ${R.n} · ${rel}">${rk}</span></td>`; }
+      else if(i===ds){ h+=`<td class="ss-rc"><span class="ss-rk ss-out" title="${EN?'DNF in this section':'Ausfall in diesem Abschnitt'}">✕</span></td>`; }
+      else h+=`<td class="ss-rc"><span class="ss-rk ss-na" title="${EN?'not driven':'nicht gefahren'}">–</span></td>`; });
+    h+=`</tr>`; });
+  h+='</tbody>';
+  // Gelände je Abschnitt (aus der Kurssetzung): steil / mittel / flach – zeigt, ob jemand eher im Steilen oder im Flachen verliert
+  if(hasSt){ const tx=secs.map((_,i)=>steepTxt(i)); if(tx.some(Boolean)) h+=`<tfoot><tr><td class="ss-terr-l">${EN?'Terrain':'Gelände'}</td><td></td>${tx.map(t=>`<td class="ss-rc ss-terr">${t||'–'}</td>`).join('')}</tr></tfoot>`; }
+  h+='</table>';
+  h+=`<div class="ss-rkleg"><span class="ss-rk" style="background:${rkCol(1,3)}">1</span>${EN?'fastest in the section':'schnellste:r im Abschnitt'}<span class="ss-rkbar"></span><span class="ss-rk" style="background:${rkCol(3,3)}">${rows.length}</span>${EN?'slowest':'langsamste:r'}${rows.some(r=>r.d.vals.some(v=>v!=null&&v<0.005))?`</div><div class="ss-rkleg"><span class="ss-rk ss-ref ss-refleg" style="background:${rkCol(1,3)}"></span>${EN?'framed = as fast as the best time or faster':'umrandet = so schnell wie die Bestzeit oder schneller'}`:''}</div>`;
   // Kernaussagen (max. 3)
   const msgs=[];
   { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
@@ -4652,7 +4708,8 @@ function drawSector(){
         ['st0','st1','st2'].forEach(k=>{ const w=bwS*cnt[k]/tot; if(w>0){ svg+=`<rect x="${xx.toFixed(1)}" y="${by}" width="${w.toFixed(1)}" height="6" fill="${col[k]}"/>`; xx+=w; } });
         svg+=`<rect x="${bx0.toFixed(1)}" y="${by}" width="${bwS.toFixed(1)}" height="6" rx="2" fill="none" stroke="${T.dark?'#4a5563':'#c9cdd3'}" stroke-width=".6"/></g>`; } }
   });
-  if(hasSt){ const ly=H-6; let lx=ml; const col=T.dark?['#3a4350','#59626f','#8a94a2']:['#e4e6ea','#c4c9d0','#8f97a2'];
+  if(hasSt){ const ly=H-6, _lb=(LANG==='en'?['flat','medium','steep']:['flach','mittel','steil']), _nt=(LANG==='en'?'· steepness in section':'· Steilheit im Abschnitt');
+    const _tw=_lb.reduce((s,l)=>s+16+l.length*5.6+12,0)+2+_nt.length*5.0; let lx=Math.max(4, ml+iw/2-_tw/2); const col=T.dark?['#3a4350','#59626f','#8a94a2']:['#e4e6ea','#c4c9d0','#8f97a2'];
     (LANG==='en'?['flat','medium','steep']:['flach','mittel','steil']).forEach((l,k)=>{ svg+=`<rect x="${lx}" y="${ly-7}" width="12" height="6" rx="1.5" fill="${col[k]}"/><text x="${lx+16}" y="${ly}" font-size="9.5" fill="${T.txt2}">${l}</text>`; lx+=16+l.length*5.6+12; });
     svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">${LANG==='en'?'· steepness in section':'· Steilheit im Abschnitt'}</text>`; }
   svg+='</svg>'; $('#secShell').innerHTML=svg;
@@ -9238,7 +9295,7 @@ Object.assign(I18N_EN,{
  "Alle Tore auf einen Blick:":"All gates at a glance:","1 · Tagging – das Fundament":"1 · Tagging – the foundation","Tore · bei Bedarf anpassen.":"gates · adjust if needed.",
  "wechseln die Zeile,":"change the row,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
  "Tor anklicken für 1. und 2. Lauf":"click a gate for the 1st and 2nd run","Bester Rückstand":"Best deficit","grösster Verlust":"biggest loss","grösster Zeitverlust":"biggest time loss",
- "Abschnitts-Rückstand":"Section deficit","Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.":"No seconds shown – the tagged sections do not match the FIS sectors 1:1.","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
+ "Abschnitts-Rückstand":"Section deficit","schnellste:r im Abschnitt":"fastest in the section","langsamste:r":"slowest","Ausfall in diesem Abschnitt":"DNF in this section","nicht gefahren":"not driven","Gelände":"Terrain","umrandet = so schnell wie die Bestzeit oder schneller":"framed = as fast as the best time or faster","Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.":"No seconds shown – the tagged sections do not match the FIS sectors 1:1.","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
  "Alle auswählen":"Select all","An die Coaches":"To the coaches","auf dem Gerät.":"on the device.","erstellen, mit":"create, with","Video wählen —":"Choose video —",
  "Athlet wählen —":"Choose athlete —","keine Daten —":"no data —","älter als 1 Jahr":"older than 1 year","älter als 6 Monate":"older than 6 months","älter als 90 Tage":"older than 90 days",
  "Video(s) löschen und ~":"Delete video(s) and ~","verfügbar — du nutzt v":"available — you're using v","heruntergeladen — bereit zur Installation.":"downloaded — ready to install.",
