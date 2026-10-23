@@ -3333,7 +3333,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231212';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231217';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -5722,7 +5722,7 @@ function getFigTemplate(){
   const ev=DATA.find(e=>e.date===date&&e.venue===venue&&e.discipline===disc&&e.gender===gen&&e.run===run);
   if(ev && Array.isArray(ev.figures)) ev.figures.forEach(f=>{ if(f && f.label){ const tor=(+f.gate)+1; if(!(tor in map)) map[tor]=f.label; } });
   // 2) Kurssetzung füllt die restlichen Tore (g.no = Tor-Nummer).
-  const course=COURSES[`${date}|${venue}|${disc}|${gen}|${run}`];
+  const course=COURSES[`${date}|${venue}|${disc}|${gen}|${run}`] || (TG.mode!=='train' ? findCourseByRace(`${date}|${disc}|${gen}|${run}`) : null);   // Ort-Schreibweise egal (wie in der Analyse)
   //    Jede Figur nur EINMAL pro Lauf: steht sie schon (aus Schritt 1) an einem Tor, wird sie nicht ein zweites Mal gesetzt.
   const used=new Set(); Object.values(map).forEach(l=>String(l).split('+').forEach(x=>{ if(x) used.add(x); }));
   if(course && Array.isArray(course.gates)) course.gates.forEach(g=>{ if(!g || !g.fig || (g.no in map)) return;
