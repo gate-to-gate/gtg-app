@@ -1134,6 +1134,11 @@ table.tag-list .figsel-wrap select.figb{opacity:.85}
 .tg-head-btns{align-self:center;flex:none}
 .tg-head-btns .btn-mini{padding:5px 9px;font-size:11px;white-space:nowrap;flex:none}
 .tg-data-card .tag-list-wrap{flex:1;min-height:120px;max-height:none;overflow:auto}
+.row-move{border:1px solid var(--red);background:var(--red);color:#fff;border-radius:6px;font:inherit;font-size:10.5px;font-weight:800;padding:2px 7px;margin-right:6px;cursor:pointer;line-height:1.3}
+.row-move:hover{filter:brightness(1.08)}
+.tag-list td.gnum,.tag-list th{white-space:nowrap}
+.tg-data-card .tg-edithint:not([style*="none"]) + .tag-list-wrap{min-height:180px}
+.tg-edithint{font-size:11.5px;line-height:1.45}
 .row-del{color:var(--muted);cursor:pointer;border:none;background:none;font-size:15px;line-height:1}
 .row-del:hover{color:var(--bad)}
 .row-flag{color:#c9ced6;cursor:pointer;border:none;background:none;font-size:13px;line-height:1;margin-right:5px}
@@ -1277,22 +1282,14 @@ table.hmp .g b{font-size:6.5px}
 #secSum .ss-tot{font-weight:800}
 #secSum .ss-dnf{color:var(--muted);font-weight:700}
 #secSum .ss-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:-.5px}
-#secSum .ss-chip{display:inline-block;padding:2px 8px;border-radius:7px;font-weight:700;font-size:12px}
-#secSum .ss-chip i{font-style:normal;font-weight:600;opacity:.85;margin-left:3px}
-#secSum .ss-g{background:#f0f7f2;color:#4f8a63}
-#secSum .ss-r{background:#fbf1f0;color:#b86a62}
-#secSum .ss-n{background:#f1f2f4;color:#7a828d}
 #secSum .ss-msg{margin:0;padding:0;list-style:none;font-size:12.5px;line-height:1.45;color:var(--ink2)}
 #secSum .ss-msg li{position:relative;padding-left:14px;margin-top:5px}
 #secSum .ss-msg li:before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:#D9A400}
 @media screen{
   body.dark #secSum .ss-card{background:#1f2631}
   body.dark #secSum .ss-tab td{border-top-color:#39424f}
-  body.dark #secSum .ss-g{background:rgba(79,138,99,.16);color:#8cc29f}
-  body.dark #secSum .ss-r{background:rgba(184,106,98,.16);color:#e0a29b}
-  body.dark #secSum .ss-n{background:rgba(255,255,255,.06);color:#9aa6b4}
 }
-@media (max-width:700px){ #secSum{flex:1 1 100%;min-width:0} #secSum .ss-tab{font-size:12px} #secSum .ss-chip{font-size:11px;padding:2px 6px} }
+@media (max-width:700px){ #secSum{flex:1 1 100%;min-width:0} #secSum .ss-tab{font-size:12px} }
 @media print{
   @page{size:A4 landscape;margin:0}   /* margin:0 unterdrückt die Browser-Kopf-/Fusszeile (file://-Pfad, Datum) */
   @page matrix{size:A4 portrait;margin:0}   /* Seite 2 (Detail-Matrix) im Hochformat -> mehr Tore untereinander */
@@ -1363,11 +1360,6 @@ table.hmp .g b{font-size:6.5px}
   #secSum .ss-tab .r{text-align:right;padding-right:3mm}
   #secSum .ss-tot{font-weight:800}
   #secSum .ss-dot{display:inline-block;width:2.2mm;height:2.2mm;border-radius:50%;margin-right:1.6mm;vertical-align:-.2mm}
-  #secSum .ss-chip{display:inline-block;padding:.3mm 1.6mm;border-radius:1.6mm;font-weight:700;font-size:8.6px}
-  #secSum .ss-chip i{font-style:normal;font-weight:600;opacity:.85;margin-left:.6mm}
-  #secSum .ss-g{background:#f0f7f2;color:#4f8a63}
-  #secSum .ss-r{background:#fbf1f0;color:#b86a62}
-  #secSum .ss-n{background:#f1f2f4;color:#7a828d}
   #secSum .ss-msg{margin:0;padding:0;list-style:none;font-size:9px;line-height:1.42;color:#2b3440}
   #secSum .ss-msg li{position:relative;padding-left:3.2mm;margin-top:.9mm}
   #secSum .ss-msg li:before{content:"";position:absolute;left:0;top:1.35mm;width:1.4mm;height:1.4mm;border-radius:50%;background:#D9A400}
@@ -1396,7 +1388,7 @@ table.hmp .g b{font-size:6.5px}
   #hmPrint table.hmp .g{width:30px;padding-right:6px}
   #hmPrint table.hmp th:not(.g):not(.sp),#hmPrint table.hmp td:not(.g):not(.sp){width:46px;white-space:nowrap}
   /* Abstand zwischen den Athleten (Zwischenspalte, ohne Rahmen) */
-  #hmPrint table.hmp .sp{width:20px;border:none!important;background:#fff!important;padding:0}
+  #hmPrint table.hmp .sp{width:var(--hmpsp,20px);border:none!important;background:#fff!important;padding:0}
   /* Kopf: Name über Δ+Σ, darunter kleine Δ/Σ-Beschriftung */
   #hmPrint table.hmp thead th.ath{border-bottom:none;font-size:6.6px;letter-spacing:-.01em;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #hmPrint table.hmp thead th.sub{font-weight:700;color:var(--muted);font-size:8px;padding-top:0}
@@ -2090,39 +2082,9 @@ body.dark .tg-edithint .teh-note{color:#e2b04a}
   .lgg.lgg-1{font-size:8.5px}
 }
 
-/* Übersicht: Mini-Raster Rang je Abschnitt */
-#secSum .ss-tab th.ss-sh{text-align:center;padding-right:0;min-width:26px}
-#secSum .ss-tab td.ss-rc{text-align:center;padding-right:0}
-#secSum .ss-rk{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;border-radius:6px;color:#fff;font-weight:800;font-size:11.5px;font-variant-numeric:tabular-nums}
-#secSum .ss-rk.ss-na{background:transparent;color:#a7afba}
-#secSum .ss-rk.ss-out{background:#e6e9ee;color:#8a919c;font-size:10px}
-#secSum .ss-dnf small{font-weight:600;font-size:10.5px;color:var(--muted);margin-left:2px}
-#secSum .ss-rkleg{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10.5px;color:var(--muted)}
-#secSum .ss-rkleg .ss-rk{width:18px;height:16px;font-size:9.5px;border-radius:4px}
-#secSum .ss-rkbar{width:46px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgb(31,157,107),rgb(132,186,86),rgb(226,177,52),rgb(224,110,58),rgb(214,62,52));margin:0 2px}
-body.dark #secSum .ss-rk.ss-out{background:#39424f;color:#9aa6b4}
-@media print{
-  #secSum .ss-rk{width:5mm;height:4.4mm;font-size:8px;border-radius:1.2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #secSum .ss-tab th.ss-sh{min-width:5.5mm}
-  #secSum .ss-rkleg{margin-top:1.6mm;font-size:7.4px}
-  #secSum .ss-rkleg .ss-rk{width:3.6mm;height:3.2mm;font-size:7px}
-  #secSum .ss-rkbar{width:9mm;height:1.4mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}
-
-#secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 2px #fff,0 0 0 1.5px rgb(31,157,107)}
-#secSum .ss-rkleg .ss-refleg{margin:0 2px 0 1px}
-#secSum .ss-rkleg+.ss-rkleg{margin-top:5px}
-#secSum .ss-rkleg{flex-wrap:wrap}
-#secSum .ss-tab tfoot td{border-top:1px solid #e3e6ea;padding-top:6px;font-size:10px;color:var(--muted);font-weight:700}
-#secSum .ss-tab td.ss-terr{font-weight:600;font-size:9.5px;white-space:nowrap}
-body.dark #secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 2px #1f2631,0 0 0 1.5px rgb(80,190,140)}
-body.dark #secSum .ss-tab tfoot td{border-top-color:#39424f}
-@media print{ #secSum .ss-rk.ss-ref{box-shadow:inset 0 0 0 1.2px #fff,0 0 0 1px rgb(31,157,107)} #secSum .ss-tab tfoot td{font-size:7px;padding-top:1mm} }
 
 @media print{
   #secSum .ss-tab td{padding-top:.5mm;padding-bottom:.5mm}
-  #secSum .ss-rkleg{display:inline-flex;margin-right:3mm}
-  #secSum .ss-rkleg+.ss-rkleg{margin-top:0}
 }
 
 /* Übersicht: «Wo entsteht der Rückstand?» – gestapelter Anteils-Balken */
@@ -2149,6 +2111,11 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
 #secRow #secShell{align-self:stretch;display:flex;align-items:center}
 @media (max-width:700px){ #secSum{display:block} }
 @media print{ #secSum{display:block} #secSum .ss-card{display:block} #secRow #secShell{display:block} }
+
+@media print{
+  #hmPrint[data-blocks="2"] .hmp-col,#hmPrint[data-blocks="3"] .hmp-col,#hmPrint[data-blocks="4"] .hmp-col{max-width:none;margin:0 auto 3mm;break-inside:avoid;page-break-inside:avoid}
+  #hmPrint table.hmp thead th.ath{max-width:none}
+}
 
 </style>
 </head>
@@ -2406,6 +2373,7 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
               <span><b>Rad</b> scrubben</span>
               <span><b>Enter</b> taggen</span>
               <span><b>⌫</b> Tag löschen</span>
+              <span><b>m</b> Tag hierher</span>
               <span><b>z</b> Lupe</span>
               <span><b>l</b> Zeitlupe</span>
               <span><b>⌘Z</b> undo</span>
@@ -2988,10 +2956,11 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
     <div class="kh-sec">Tags</div>
     <div class="kh-row"><span><kbd>Enter</kbd></span><span>Tor taggen (am aktuellen Bild)</span></div>
     <div class="kh-row"><span><kbd>⌫</kbd></span><span>Letzten Tag löschen</span></div>
+    <div class="kh-row"><span><kbd>M</kbd></span><span>Gewählten Tag hierher verschieben</span></div>
     <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd></span><span>Rückgängig</span></div>
     <div class="kh-row"><span><kbd>⌘/Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>Z</kbd> · <kbd>Ctrl</kbd> + <kbd>Y</kbd></span><span>Wiederholen</span></div>
     <div class="kh-row"><span><kbd>?</kbd></span><span>Diese Übersicht öffnen / schliessen</span></div>
-    <div class="kh-tip">Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, alten Tag mit ✕ löschen und mit Enter neu setzen. Mit ⚑ als «unsicher» markieren.</div>
+    <div class="kh-tip">Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, dann «⤓ Hierher» oder Taste M. Mit ⚑ als «unsicher» markieren.</div>
   </div>
 </div>
 <div id="welcome" class="wc-overlay" style="display:none">
@@ -3364,7 +3333,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231006';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231036';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3416,7 +3385,7 @@ function themeCol(c){ try{
     const hex='#'+out.map(v=>('0'+Math.round(Math.max(0,Math.min(1,v))*255).toString(16)).slice(-2)).join('');
     _TC_CACHE[c]=hex; return hex;
   }catch(e){ return c; } }
-const athColor = (name,isTop)=> isTop ? GOLD : themeCol(athCustomColor(name) || ATH_COLOR[name] || (name?palHash(name, ATH_PAL):'#7a8694'));
+const athColor = (name,isTop)=> { if(isTop) return GOLD; const lg=NAME_LEGACY_F(name); return themeCol(athCustomColor(name) || ATH_COLOR[name] || ATH_COLOR[lg] || (name?palHash(lg, ATH_PAL):'#7a8694')); };
 /* FIS-Codes (Quelle: offizielle FIS-Datenbank, Alpine). Schlüssel = normalisierter Name.
    Füllt fehlende Codes automatisch und hält bekannte Athlet:innen korrekt. */
 const ATH_FIS = {
@@ -3521,7 +3490,8 @@ const ATH_FIS = {
   "ZUBCIC FILIP":"380335"
 };
 function fisNorm(s){ return String(s==null?'':s).toUpperCase().replace(/\u00C4/g,'AE').replace(/\u00D6/g,'OE').replace(/\u00DC/g,'UE').replace(/\u00DF/g,'SS').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z ]/g,' ').replace(/\s+/g,' ').trim(); }
-function fisFor(name){ return ATH_FIS[fisNorm(name)]||''; }
+function fisFor(name){ const k=fisNorm(name); return ATH_FIS[k]||ATH_FIS[fisNorm(NAME_LEGACY_F(name))]||''; }
+function NAME_LEGACY_F(n){ try{ return (typeof NAME_LEGACY!=='undefined'&&NAME_LEGACY[n])||n; }catch(e){ return n; } }
 /* FIS-Nationen (offizielle FIS-Datenbank) – korrigiert falsch erfasste Nationen. */
 const ATH_NAT = {
   "AERNI LUCA":"SUI",
@@ -3624,7 +3594,7 @@ const ATH_NAT = {
   "ZENHAEUSERN RAMON":"SUI",
   "ZUBCIC FILIP":"CRO"
 };
-function natFor(name){ return ATH_NAT[fisNorm(name)]||''; }
+function natFor(name){ return ATH_NAT[fisNorm(name)]||ATH_NAT[fisNorm(NAME_LEGACY_F(name))]||''; }
 /* FIS competitor-id je Code -> Link auf das FIS-Profil */
 const ATH_CID = {
   "20398":"166175",
@@ -4620,7 +4590,6 @@ function secSummary(data, secs, STS, hasSt, worst){
   rows.sort((a,b)=>(a.dnf-b.dnf)||(a.tot-b.tot));
   const fin=rows.filter(r=>!r.dnf);
   const secLbl=i=> 'S'+(i+1);
-  const cc=v=> v<=-0.005?'ss-g':(v>=0.005?'ss-r':'ss-n');   // grün nur bei minus, rot nur bei plus, sonst neutral
   const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
     for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
     const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? (EN?{st0:'flat',st1:'medium',st2:'steep'}:{st0:'flach',st1:'mittel',st2:'steil'})[k] : MIX; };
@@ -4815,17 +4784,25 @@ function heatmapPrint(){
   // Seite 2 im Hochformat: IMMER eine Spalte — alle Tore untereinander, nicht aufgeteilt.
   // Schriftgrösse automatisch skalieren, damit die ganze Tabelle auf eine A4-Seite passt.
   const ncol = 1; const per = n;
-  if(el){ el.dataset.cols = 1;
-    const rows = n + 3;                                   // Tore + Startzeile + 2 Kopfzeilen
-    // Schrift so wählen, dass die Tabelle + Legende die A4-Seite gut ausfüllt (kein grosser Weissraum)
-    const fs = Math.max(5.5, Math.min(11, Math.round((710/rows) * 10) / 10));
-    const pad = fs>=8 ? '1px 5px' : (fs>=6.5 ? '1px 4px' : '0.5px 3px');
+  // Viele Athlet:innen/Läufe (z. B. Training mit 17 Läufen): Tabelle in mehrere Blöcke untereinander teilen,
+  // damit sie nicht rechts abgeschnitten wird. Schrift so gross wie möglich (Breite UND Höhe der A4-Seite).
+  const K=cols.length; let nb=1, fsBest=0;
+  for(let b=1;b<=4;b++){ const pk=Math.ceil(K/b); if(b>1 && Math.ceil(K/(b-1))===pk) continue;
+    const rowsTot=b*(n+3)+(b-1)*2;
+    const fsH=710/rowsTot, fsW=((640-34-(pk-1)*10)/(2*pk)-6)/3.1;
+    const fs=Math.min(11,fsH,fsW); if(fs>fsBest+0.25){ fsBest=fs; nb=b; } }
+  const perBlk=Math.ceil(K/nb);
+  if(el){ el.dataset.cols = 1; el.dataset.blocks = nb;
+    const fs = Math.max(5.5, Math.round(fsBest*10)/10);
+    const pad = fs>=8 ? '1px 5px' : (fs>=6.5 ? '1px 4px' : '0.5px 2.5px');
     el.style.setProperty('--hmpfs', fs+'px');
     el.style.setProperty('--hmppad', pad);
+    el.style.setProperty('--hmpsp', nb>1||K>5 ? '10px' : '20px');
   }
   const cumCol=s=> S.excludeAnom ? s.cumClean : s.cumRaw;   // gleiche Werte wie Hauptgrafik und Bildschirm-Matrix
   const cumTxt=v=> v==null?'':(Math.abs(v)<0.005?'+':(v>0?'+':'−'))+Math.abs(v).toFixed(2);
-  let blocks='';
+  let blocks=''; const allCols=cols;
+  for(let bI=0;bI<nb;bI++){ const cols=allCols.slice(bI*perBlk,(bI+1)*perBlk); if(!cols.length) continue;
   for(let cI=0;cI<ncol;cI++){ const start=cI*per, end=Math.min(n,start+per); if(start>=end) continue;
     // Kopf: zwei Zeilen — Name über beiden Spalten, darunter Δ (pro Tor) und Σ (kumuliert)
     let t=`<table class="hmp"><thead><tr><th class="g" rowspan="2">Tor</th>`;
@@ -4847,7 +4824,7 @@ function heatmapPrint(){
         t+=`<td class="cum" style="color:${cc}">${cumTxt(cu)}</td>`; });
       t+=`</tr>`; }
     t+=`</tbody></table>`; blocks+=`<div class="hmp-col">${t}</div>`;
-  }
+  } }
   const legend= LANG==='en' ? `<div class="hmp-legend">`
     +`<div><span class="hl-k">Δ&nbsp;(per&nbsp;gate)</span> Time difference at this gate vs. the fastest run – «+» slower, «−» faster. Colour: <b style="color:#c0392b">red = slower</b>, <b style="color:#1a8f5a">green = faster</b> (the stronger, the bigger the difference).</div>`
     +`<div><span class="hl-k">Σ&nbsp;(cumulative)</span> summed deficit up to this gate – the running total deficit vs. the fastest run.</div>`
@@ -5464,14 +5441,16 @@ function tgEditHint(mode, info){ const el=$('#tgEditHint'); if(!el) return; TG.e
   const mo=$('#metaOffer'); if(mo){ mo.style.display='none'; mo.innerHTML=''; }
   if(!mode){ el.style.display='none'; el.innerHTML=''; return; }
   if(mode==='offer' && mo){   // auch im Lauf-Angaben-Pop-up anzeigen (das liegt beim Laden über der Liste)
-    mo.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>`;
+    mo.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). ${LANG==='en'?'To adjust single gates, load the saved tagging instead of tagging everything again.':'Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.'}<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>`;
     mo.querySelector('.teh-load').onclick=()=>{ closeMetaModal(); tgEditHint(null); loadFromLib(info.id); }; mo.style.display=''; }
   const x='<button class="teh-x" title="Hinweis schliessen">✕</button>';
   if(mode==='offer'){
-    el.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). Lade das gespeicherte Tagging, um einzelne Tore anzupassen, statt alles neu zu taggen.<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>${x}`;
+    el.innerHTML=`<div class="teh-tx"><b>Dieses Video ist schon getaggt</b> – ${escHtml(info.label)} (${info.n} Tags). ${LANG==='en'?'Load the saved tagging to adjust single gates instead of tagging everything again.':'Lade das gespeicherte Tagging, um einzelne Tore anzupassen, statt alles neu zu taggen.'}<div class="teh-act"><button class="btn-mini solid teh-load">Gespeichertes Tagging laden</button></div></div>${x}`;
     el.querySelector('.teh-load').onclick=()=>{ closeMetaModal(); tgEditHint(null); loadFromLib(info.id); };
   } else {
-    el.innerHTML=`<div class="teh-tx"><b>Tor anpassen:</b> Zeile anklicken – das Video springt zu diesem Tor · mit <kbd>y</kbd>/<kbd>x</kbd> (1 Frame) oder <kbd>a</kbd>/<kbd>s</kbd> (10 Frames) auf die richtige Stelle · alten Tag mit ✕ löschen und mit <kbd>Enter</kbd> neu setzen (die Liste sortiert sich selbst) · «✓ Speichern» ersetzt das bisherige Tagging.${mode==='novideo'?'<div class="teh-note">Kein Video auf diesem Gerät: zuerst das Video links hineinziehen – die Tags bleiben erhalten.</div>':''}</div>${x}`;
+    el.innerHTML=`<div class="teh-tx">${LANG==='en'
+      ? `<b>Adjust a gate:</b> click the row – the video jumps to this gate · go to the right spot with <kbd>y</kbd>/<kbd>x</kbd> (1 frame) or <kbd>a</kbd>/<kbd>s</kbd> (10 frames) · then click <b>«⤓ Here»</b> in the row or press <kbd>M</kbd> · «✓ Save» replaces the previous tagging.`
+      : `<b>Tor anpassen:</b> Zeile anklicken – das Video springt zu diesem Tor · mit <kbd>y</kbd>/<kbd>x</kbd> (1 Frame) oder <kbd>a</kbd>/<kbd>s</kbd> (10 Frames) auf die richtige Stelle · dann <b>«⤓ Hierher»</b> in der Zeile klicken oder Taste <kbd>M</kbd> · «✓ Speichern» ersetzt das bisherige Tagging.`}${mode==='novideo'?'<div class="teh-note">Kein Video auf diesem Gerät: zuerst das Video links hineinziehen – die Tags bleiben erhalten.</div>':''}</div>${x}`;
   }
   el.querySelector('.teh-x').onclick=()=>tgEditHint(null);
   el.style.display='';
@@ -5772,7 +5751,17 @@ function syncDataHeight(){ const vc=document.querySelector('.tg-video-card'), dc
   dc.style.minHeight=target+'px';
   lw.style.maxHeight=(target-dataFixed-2)+'px';               // Liste füllt den Rest und scrollt bei Bedarf
 }
-function delTag(i){ TG.tags.splice(i,1); renderTags(); tgPush(); }
+function delTag(i){ if(TG.tags[i] && TG.selT!=null && Math.abs(TG.tags[i].t-TG.selT)<1e-6) TG.selT=null; TG.tags.splice(i,1); renderTags(); tgPush(); }
+/* Gewählten Tag (Zeile angeklickt) auf das aktuelle Video-Bild verschieben – statt löschen und neu taggen */
+function moveSelTag(){ const v=$('#vid'); if(!v||!v.src) return; const EN=LANG==='en';
+  const i=TG.selT==null?-1:TG.tags.findIndex(x=>Math.abs(x.t-TG.selT)<1e-6);
+  if(i<0){ gtgToast(EN?'First click the row of the gate you want to move.':'Zuerst die Zeile des Tors anklicken, das du verschieben willst.'); return; }
+  const fps=curFps(), f=curFrame(v), t=Math.round((f/fps)*1000)/1000, old=TG.tags[i].t;
+  if(Math.abs(t-old)<1e-6){ gtgToast(EN?'The tag is already on this frame – move the video with y/x first.':'Der Tag liegt schon auf diesem Bild – zuerst mit y/x das Video verschieben.'); return; }
+  const prev=i>0?TG.tags[i-1].t:-Infinity, next=i<TG.tags.length-1?TG.tags[i+1].t:Infinity;
+  if(!(t>prev && t<next)){ gtgToast(EN?`Gate ${i+1} would no longer lie between its neighbours – check the position.`:`Tor ${i+1} läge nicht mehr zwischen den Nachbar-Toren – Position prüfen.`); return; }
+  TG.tags[i].t=t; TG.selT=t; TG.lastTagT=null; renderTags(); tgPush();
+  const df=Math.round((t-old)*fps); gtgToast((EN?`Gate ${i+1} moved by `:`Tor ${i+1} verschoben um `)+(df>0?'+':'')+df+(EN?' frame(s).':(Math.abs(df)===1?' Frame.':' Frames.')),'ok'); }
 function clearTags(){ TG.tags=[]; renderTags(); tgPush(); }
 /* Leerzustand/Ablauf steuern: ohne geladenes Video Workflow zeigen & Buttons ausgrauen */
 function updateTaggingState(){
@@ -5795,6 +5784,7 @@ function figOpts(used, sel){
   return out;
 }
 function renderTags(){
+  if(TG.selT!=null && !TG.tags.some(x=>Math.abs(x.t-TG.selT)<1e-6)) TG.selT=null;   // gewählter Tag existiert nicht mehr
   if(TG.editHint && TG.editHint!=='offer' && TG.tags.length<2) tgEditHint(null);
   TG.tags.sort((a,b)=>a.t-b.t); const fps=curFps(); const tb=$('#tagBody'); tb.innerHTML='';
   // Figuren-Vorlage übernehmen (Kurssetzung oder zuvor getaggte Athleten desselben Laufs) – nur noch leere Tags
@@ -5814,13 +5804,15 @@ function renderTags(){
     const tr=document.createElement('tr');
     if(tag.unsure) tr.classList.add('unsure');
     if(TG.lastTagT!=null && Math.abs(tag.t-TG.lastTagT)<1e-6) tr.classList.add('row-new');
+    const _sel = TG.selT!=null && Math.abs(tag.t-TG.selT)<1e-6; if(_sel) tr.classList.add('active');
     tr.innerHTML=`<td class="gnum">${label}</td><td>${frameOf(tag.t)}</td><td>${tag.t.toFixed(3)}s</td>
       <td>${d==null?'—':d.toFixed(3)}</td>
       <td>${i===0?'':`<div class="figsel-wrap"><select class="figsel figa" data-i="${i}">${optsFor(f1)}</select><select class="figsel figb" data-i="${i}" title="Optionale 2. Figur">${optsFor(f2)}</select></div>`}</td>
-      <td style="white-space:nowrap"><button class="row-flag${tag.unsure?' on':''}" data-i="${i}" title="Als unsicher markieren (später prüfen)">⚑</button><button class="row-del" data-i="${i}" title="löschen">✕</button></td>`;
+      <td style="white-space:nowrap">${_sel?`<button class="row-move" data-i="${i}" title="Diesen Tag auf das aktuelle Video-Bild verschieben (Taste M)">⤓ Hierher</button>`:''}<button class="row-flag${tag.unsure?' on':''}" data-i="${i}" title="Als unsicher markieren (später prüfen)">⚑</button><button class="row-del" data-i="${i}" title="löschen">✕</button></td>`;
     tb.appendChild(tr);
   });
   tb.querySelectorAll('.row-del').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); delTag(+b.dataset.i); });
+  tb.querySelectorAll('.row-move').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); moveSelTag(); });
   tb.querySelectorAll('.row-flag').forEach(b=> b.onclick=(e)=>{ e.stopPropagation(); tgFlag(+b.dataset.i); });
   tb.querySelectorAll('.figsel-wrap').forEach(wrap=>{ const a=wrap.querySelector('.figa'), b=wrap.querySelector('.figb'); const i=+a.dataset.i;
     const upd=()=>{ let av=a.value, bv=b.value; if(bv&&bv===av) bv='';
@@ -5834,11 +5826,12 @@ function renderTags(){
   tb.querySelectorAll('tr').forEach((tr,i)=> tr.onclick=(e)=>{ if(e.target.closest('select,button')) return;
     const v=$('#vid'); if(!v.src) return; if(!v.paused){ v.pause(); }
     setTime(TG.tags[i].t); updateOSD();
-    tb.querySelectorAll('tr').forEach(x=>x.classList.remove('active')); tr.classList.add('active'); });
+    TG.selT=TG.tags[i].t; renderTags(); });   // Zeile gewählt -> «⤓ Hierher» erscheint
   const gates=TG.tags.length-1; const nUnsure=TG.tags.filter(t=>t.unsure).length;
   $('#tagSummary').textContent = TG.tags.length? `${TG.tags.length} ${TG.tags.length===1?'Tag':'Tags'} · ${Math.max(0,gates)} ${Math.max(0,gates)===1?'Tor-Zeit':'Tor-Zeiten'}${nUnsure?` · ${nUnsure} unsicher ⚑`:''}` : 'Noch keine Tags.';
   $('#btnSaveRun').disabled = !(TG.tags.length>=2);
   // neu gesetzten Tag sichtbar machen (automatisch dorthin scrollen)
+  const ar=tb.querySelector('tr.active'); if(ar && !tb.querySelector('tr.row-new')){ try{ ar.scrollIntoView({block:'nearest'}); }catch(e){} }
   const nr=tb.querySelector('tr.row-new'); if(nr){ try{ nr.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){ nr.scrollIntoView(); } }
   computeOverlaySteps(); updateOverlay(); syncDataHeight(); updateTaggingState();
 }
@@ -5884,8 +5877,9 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   let ev = target.find(e=>e.date===rec.date&&e.venue===rec.venue&&e.discipline===rec.disc&&e.gender===rec.gen&&String(e.run)===String(rec.run));
   if(!ev){ ev={date:rec.date,venue:rec.venue,discipline:rec.disc,gender:rec.gen,run:rec.run,mode:rec.mode||'comp',nGates:0,figures:[],skiers:[],hasSUI:false,hasTop:false}; target.push(ev); }
   try{ const dk=evKey(ev), dm=dk+(ev.mode==='train'?'|T':'|C'); if(DELETED.has(dk)||DELETED.has(dm)){ DELETED.delete(dk); DELETED.delete(dm); LS.set('gtg_deleted',[...DELETED]); } }catch(e){}
-  ev.skiers = ev.skiers.filter(s=>s.name!==rec.name);
-  ev.skiers.push({name:rec.name, nation:(natFor(rec.name)||rec.nation), fastest:false, gates:rec.gates.slice(),
+  const _nm=canonName(rec.name);   // alte Umschrift (z. B. MAECHLER) = gleiche Person wie MÄCHLER
+  ev.skiers = ev.skiers.filter(s=>s.name!==_nm && s.name!==rec.name);
+  ev.skiers.push({name:_nm, nation:(natFor(_nm)||rec.nation), fastest:false, gates:rec.gates.slice(),
     officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
   // figures zusammenführen (nach Tor-Nr.)
   const fmap=new Map(ev.figures.map(f=>[f.gate,f.label])); (rec.figures||[]).forEach(f=>fmap.set(f.gate,f.label));
@@ -6849,6 +6843,7 @@ function initTagging(){
     else if(k==='z'){ e.preventDefault(); toggleZoom(); }     // Lupe
     else if(k==='l'){ e.preventDefault(); toggleSlow(); }     // Zeitlupe
     else if(e.key==='Enter'){ e.preventDefault(); addTag(); }
+    else if(k==='m'){ e.preventDefault(); moveSelTag(); }     // gewählten Tag hierher verschieben
     else if(e.key==='Backspace'){ e.preventDefault(); if(TG.tags.length) delTag(TG.tags.length-1); }
     else if(e.key==='?'){ e.preventDefault(); khToggle(); }
   });
@@ -6883,7 +6878,12 @@ function normVenue(v){ if(!v) return v; v=String(v).trim(); if(!v) return v;
 DATA.forEach(e=> e.venue=normVenue(e.venue));
 
 /* Athletennamen vereinheitlichen: Nachname GROSS, Vorname(n) normal. Schreibvarianten zusammenführen. */
-const NAME_OVERRIDES={ 'ZENHAEUSERN Ramon':'ZENHÄUSERN Ramon', 'MCGRATH Atlelie':'MCGRATH Atle Lie', 'HAECHLER Lenz':'HÄCHLER Lenz' };
+const NAME_OVERRIDES={ 'ZENHAEUSERN Ramon':'ZENHÄUSERN Ramon', 'MCGRATH Atlelie':'MCGRATH Atle Lie', 'HAECHLER Lenz':'HÄCHLER Lenz',
+  // Umschrift aus den Datenquellen -> richtige Schreibweise (FIS-Code bleibt gleich, siehe fisFor)
+  'BRAENDLI Anuk':'BRÄNDLI Anuk', 'MAECHLER Janine':'MÄCHLER Janine', 'HOEPLI Aline':'HÖPLI Aline', 'DUERR Lena':'DÜRR Lena',
+  'VONGRUENIGEN Noel':'VON GRÜNIGEN Noel', 'LOEVBLOM Hilma':'LÖVBLOM Hilma', 'OEHLUND Cornelia':'ÖHLUND Cornelia' };
+// Farbe soll gleich bleiben wie vor der Umbenennung (Farbe wird aus dem Namen berechnet)
+const NAME_LEGACY=Object.fromEntries(Object.entries(NAME_OVERRIDES).map(([a,b])=>[b,a]));
 function isUpperTok(t){ return t===t.toUpperCase() && /[A-ZÄÖÜ]/.test(t); }
 function titleTok(t){ return t.split('-').map(p=> p? p[0].toUpperCase()+p.slice(1).toLowerCase() : p).join('-'); }
 function canonName(name){
@@ -7713,7 +7713,7 @@ function applyEventOverrides(){ const ov=LS.get('gtg_event_override',{}); if(!ov
 /* ---- Taggings (Rohdaten je Lauf) ---- */
 function dbAllTaggings(){
   const tagged=[...SAVED.map(r=>({...r,mode:r.mode||'comp'})), ...SAVED_TRAIN.map(r=>({...r,mode:'train'}))];
-  const taggedIds=new Set(tagged.map(r=>runId(r)));
+  const taggedIds=new Set(tagged.flatMap(r=>[runId(r), runId({...r,name:canonName(r.name)})]));
   const dbRuns=[];
   const push=(arr,mode)=> (arr||[]).forEach(e=> (e.skiers||[]).forEach(s=>{
     const rec={date:e.date,venue:e.venue,disc:e.discipline,gen:e.gender,run:e.run,name:s.name,nation:s.nation,
@@ -8339,7 +8339,7 @@ function cvVideosForCurrent(){
     }
     vdbAll().then(list=>{
       const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && String(r.run)===String(S.run) && (r.video||r.onDisk) && vidIsTrain(r)===isTrain());
-      res(vids.map(r=>({ id:r.id, name:r.name, nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk })));
+      res(vids.map(r=>({ id:r.id, name:canonName(r.name), nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk })));
     }).catch(()=>res([]));
   });
 }
@@ -9059,7 +9059,7 @@ async function coachCreate(){
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
       { const pv=PREVV.get(v.id), ks=v.vsize||(v.video&&v.video.size)||0;
         if(pv && pv.size && ks && pv.size===ks && String(pv.url||'').endsWith('coach/videos/'+fname)){
-          vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size, fps: v.fps||pv.fps||undefined });
+          vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size, fps: v.fps||pv.fps||undefined });
           done++; skipped++; cmProg(`Video ${done}/${totalVids} unverändert – übersprungen: ${v.name}`); continue; } }
       // Video-Bytes beschaffen: im Browser aus IndexedDB (v.video), auf dem Desktop von der Festplatte
       let blob=v.video;
@@ -9078,7 +9078,7 @@ async function coachCreate(){
         await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
         vurl = cfg.base+`coach/videos/${fname}`;
       }
-      vout.push({ id:v.id, name:v.name, nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
+      vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
       done++;
     }
     // Kurssetzung mitgeben (Höhenprofil, Steilheit, Figuren) – sonst fehlt sie auf den Geräten der Coaches
@@ -9139,7 +9139,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  // Navigation / Bereiche
  "Analyse":"Analysis","Datenbank":"Database","Ansicht":"View","Saison-Verlauf":"Season progression",
  "Athleten-Profil":"Athlete profile","Kurssetzung":"Course setting","Video-Bibliothek":"Video library",
- "Tagging Tor für Tor":"Tagging gate by gate","↗ PDF öffnen":"↗ Open PDF","Bearbeiten":"Edit","Rückgängig":"Undo","Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, alten Tag mit ✕ löschen und mit Enter neu setzen. Mit ⚑ als «unsicher» markieren.":"Tip: first tag = gate 1 (reference). To fix a gate: click the row, go to the right frame with y/x, delete the old tag with ✕ and set it again with Enter. Mark «unsure» with ⚑.","Analyse · Hafjell · Riesenslalom Männer · Lauf 1":"Analysis · Hafjell · Giant slalom men · Run 1","Tagging · MEILLARD Loic · Bern · GS M · Lauf 1":"Tagging · MEILLARD Loic · Bern · GS M · Run 1",", nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).":", down = gained. Colour = athlete (same as in the main chart).","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
+ "Tagging Tor für Tor":"Tagging gate by gate","↗ PDF öffnen":"↗ Open PDF","Bearbeiten":"Edit","Rückgängig":"Undo","Tipp: Erster Tag = Tor 1 (Referenz). Tor korrigieren: Zeile anklicken, mit y/x auf den richtigen Frame, dann «⤓ Hierher» oder Taste M. Mit ⚑ als «unsicher» markieren.":"Tip: first tag = gate 1 (reference). To fix a gate: click the row, go to the right frame with y/x, then «⤓ Here» or key M. Mark «unsure» with ⚑.","Analyse · Hafjell · Riesenslalom Männer · Lauf 1":"Analysis · Hafjell · Giant slalom men · Run 1","Tagging · MEILLARD Loic · Bern · GS M · Lauf 1":"Tagging · MEILLARD Loic · Bern · GS M · Run 1",", nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).":", down = gained. Colour = athlete (same as in the main chart).","Rennen läuft":"Race is on","Schweizer Athlet:innen und Laufbeste:r fahren ihren Lauf – wir brauchen für jeden den TV-Lauf vom Start bis ins Ziel.":"Swiss athletes and the fastest racer ski their run – we need each TV run from start to finish.","Clip pro Lauf speichern":"Save one clip per run","Jeden Lauf als MP4 sichern, z. B.":"Save each run as an MP4, e.g.","– aus dem Namen liest die App Athlet, Ort, Datum, Disziplin und Lauf. Das Video bleibt lokal.":"– the app reads athlete, venue, date, discipline and run from the name. The video stays local.","Video in den Tab «Tagging» ziehen,":"Drag the video into the «Tagging» tab,","abspielen und an jedem Tor":"to play and press","drücken. Rechts füllt sich die Tor-Tabelle – am Schluss «✓ Speichern».":"at every gate. The gate table fills up on the right – finish with «✓ Save».","= Tor":"= gate","Im Tab «Analyse» sofort sichtbar: kumulierter Rückstand pro Tor auf die Laufbestzeit, Höhenprofil mit Steilheit, Abschnitte und Matrix. Ein Klick auf «PDF» – fertig.":"Instantly visible in the «Analysis» tab: cumulative deficit per gate against the fastest run, elevation profile with steepness, sections and matrix. One click on «PDF» – done.","MEILLARD +0.74 s – Zeitverlust ab Tor 32":"MEILLARD +0.74 s – time lost from gate 32","Datenbank → Events → «💬 Nachricht»: Text und Coach-Link in den WhatsApp-Chat. Die Coaches öffnen Analyse und Videos direkt am Handy – Tor antippen, Video startet genau dort.":"Database → Events → «💬 Message»: text and coach link into the WhatsApp chat. Coaches open analysis and videos right on the phone – tap a gate and the video starts exactly there.","👍 Danke, schauen wir gleich an!":"👍 Thanks, we'll look at it right away!","Analyse & Videos: gate-to-gate.github.io/…":"Analysis & videos: gate-to-gate.github.io/…","Gate-to-Gate Analyse":"Gate-to-Gate Analysis",
  "Swiss-Ski · Gate-to-Gate Analyse":"Swiss-Ski · Gate-to-Gate Analysis","Gate-to-Gate · Rückstand":"Gate-to-Gate · deficit",
  // Filter / Labels
  "Art":"Type","Disziplin":"Discipline","Geschlecht":"Gender","Männer":"Men","Frauen":"Women",
@@ -9167,7 +9167,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  "), bei jedem Tor":"), at each gate"," drücken.":" press.",". Feineinstellung:":". Fine-tuning:","Leertaste":"Space",
  "Play/Pause (Leertaste)":"Play/Pause (Space)","Zeitlupe":"Slow motion","Zeitlupe 0.25× (Taste l)":"Slow motion 0.25× (key l)",
  "Lupe":"Zoom","Lupe: ins Bild zoomen (z) – Maus bewegen zum Schwenken":"Zoom into image (z) – move mouse to pan",
- "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag löschen":"delete tag","Update verfügbar":"Update available","Neue Funktionen und Verbesserungen sind bereit.":"New features and improvements are ready.","Wird geladen …":"Loading …","Neu starten & installieren":"Restart & install","Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.":"Downloaded – a restart installs it. Your data is kept.","Schliessen":"Close","⧉ Link":"⧉ Link","💬 Nachricht":"💬 Message","Link kopiert.":"Link copied.","Tastenkürzel beim Taggen":"Keyboard shortcuts for tagging","Abspielen / Pause":"Play / pause","1 Bild zurück / vor":"1 frame back / forward","10 Bilder zurück / vor":"10 frames back / forward","Im Video vor- und zurückspulen":"Scrub through the video","Zeitlupe ein/aus":"Slow motion on/off","Lupe (Ausschnitt vergrössern)":"Magnifier (zoom into detail)","Tor taggen (am aktuellen Bild)":"Tag gate (at current frame)","Letzten Tag löschen":"Delete last tag","Wiederholen":"Redo","Diese Übersicht öffnen / schliessen":"Open / close this overview","Alle Tastenkürzel anzeigen (?)":"Show all shortcuts (?)","Leertaste":"Space","Mausrad":"Mouse wheel","flach":"flat","mittel":"medium","steil":"steep","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
+ "Lupe aktiv — Maus bewegen zum Schwenken":"Zoom active — move mouse to pan","Tipp:":"Tip:","Tag hierher":"tag here","Tag löschen":"delete tag","Update verfügbar":"Update available","Neue Funktionen und Verbesserungen sind bereit.":"New features and improvements are ready.","Wird geladen …":"Loading …","Neu starten & installieren":"Restart & install","Heruntergeladen – mit einem Neustart ist es installiert. Deine Daten bleiben erhalten.":"Downloaded – a restart installs it. Your data is kept.","Schliessen":"Close","⧉ Link":"⧉ Link","💬 Nachricht":"💬 Message","Link kopiert.":"Link copied.","Tastenkürzel beim Taggen":"Keyboard shortcuts for tagging","Abspielen / Pause":"Play / pause","1 Bild zurück / vor":"1 frame back / forward","10 Bilder zurück / vor":"10 frames back / forward","Im Video vor- und zurückspulen":"Scrub through the video","Zeitlupe ein/aus":"Slow motion on/off","Lupe (Ausschnitt vergrössern)":"Magnifier (zoom into detail)","Tor taggen (am aktuellen Bild)":"Tag gate (at current frame)","Letzten Tag löschen":"Delete last tag","Wiederholen":"Redo","Diese Übersicht öffnen / schliessen":"Open / close this overview","Alle Tastenkürzel anzeigen (?)":"Show all shortcuts (?)","Leertaste":"Space","Mausrad":"Mouse wheel","flach":"flat","mittel":"medium","steil":"steep","1 Bild zurück":"1 frame back","1 Bild vor":"1 frame forward","Nachricht mit Coach-Link kopiert – einfach in Teams/WhatsApp einfügen.":"Message with coach link copied – just paste it into Teams/WhatsApp.","Nachricht mit Link kopiert – in Teams/WhatsApp einfügen.":"Message with link copied – paste it into Teams/WhatsApp.","↻ Aktualisieren":"↻ Update","⚠ Link aktualisieren":"⚠ Update link","Neue Athlet:innen fehlen im Coach-Link":"New athletes missing from the coach link","Synchronisieren":"Sync","Dieser Coach-Link wurde deaktiviert.":"This coach link has been deactivated.","Die Analyse ist nicht mehr verfügbar. Bitte beim Analyse-Team einen aktuellen Link anfragen.":"The analysis is no longer available. Please ask the analysis team for a current link.","Coach-Link nicht gefunden.":"Coach link not found.","Bitte den Link prüfen oder beim Analyse-Team einen aktuellen Link anfragen.":"Please check the link or ask the analysis team for a current link.","Coach-Link wird gerade veröffentlicht … die Seite lädt automatisch, sobald er bereit ist (meist unter 1 Minute).":"The coach link is being published … the page loads automatically as soon as it is ready (usually under 1 minute).","⚑ im Tagging als unsicher markiert":"⚑ marked as unsure in tagging","unsicher markiert":"marked unsure","Passwort anzeigen":"Show password","Passwort verbergen":"Hide password","⧉ Link kopieren":"⧉ Copy link","Coach-Link kopiert.":"Coach link copied.","Coach-Link neu erstellen (aktualisiert Videos & Daten, gleicher Link)":"Recreate coach link (updates videos & data, same link)","Tempo":"Speed","Wiedergabe-Tempo":"Playback speed","Aufklappen":"Expand","Zuklappen":"Collapse","Alle eigenen Taggings dieses Laufs auswählen":"Select all own taggings of this run","Jede Spalte = ein Tor (Start = Tor 1). Werte direkt editierbar · ↑/↓ wechseln die Zeile.":"Each column = one gate (start = gate 1). Values editable · ↑/↓ change row.","Athlet:in":"Athlete","Video vorhanden":"Video available","✎ FIS-Rückstände dieses Laufs":"✎ FIS deficits of this run","✎ FIS-Rückstände":"✎ FIS deficits","FIS:":"FIS:","Laufbestzeit wählen und bei allen anderen den offiziellen FIS-Rückstand eintragen. Die Analyse wird sofort neu kalibriert.":"Choose the fastest run and enter the official FIS deficit for all others. The analysis is recalibrated immediately.","FIS-Rückstand":"FIS deficit","jemand anderes (nicht getaggt)":"someone else (not tagged)","alle getaggten mit Rückstand":"all tagged runs with a deficit","Neue Laufbestzeit von jemand anderem?":"New fastest run by someone else?","Sie ist":"It is","s schneller als die bisherige.":"s faster than the previous one.","Alle Rückstände anpassen":"Adjust all deficits","Addiert den Wert zu allen Rückständen; die bisherige Laufbestzeit bekommt genau diesen Rückstand. Danach «Speichern».":"Adds the value to all deficits; the previous fastest run gets exactly this deficit. Then «Save».","leer = ohne FIS-Zeit":"empty = no FIS time","ohne FIS-Zeit":"no FIS time","Rad scrubben":"Wheel: scrub","taggen":"tag gate","Typ":"Type","Winkel":"Angle","Umrandete Werte zählen nicht einzeln: rot = Ausreisser (nicht gewertet), gestrichelt = mit dem Nachbartor verrechnet (Tagging um ein Tor versetzt). Details per Mauszeiger.":"Outlined values do not count individually: red = outlier (not counted), dashed = combined with the neighbouring gate (tagging shifted by one gate). Hover for details.","Ausreisser – zählt nicht in Kurve und Σ":"Outlier – not counted in curve and Σ","Tagging-Daten":"Tagging data","CSV-Export":"CSV export","⭳ CSV-Import":"⭳ CSV import","Tor-Zeit":"Gate time","Δ Tor (s)":"Δ Gate (s)",
  "Rückgängig (Cmd/Ctrl+Z)":"Undo (Cmd/Ctrl+Z)","Wiederholen (Cmd/Ctrl+Shift+Z)":"Redo (Cmd/Ctrl+Shift+Z)",
  "Schritt zurück":"Step back","Schritt weiter":"Step forward","Pfeiltasten":"Arrow keys","Play/Pause (Leertaste)":"Play/Pause (Space)",
  "Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.":"Stays local on your computer — nothing is uploaded.",
@@ -9243,7 +9243,7 @@ Object.assign(I18N_EN,{
  "Datum und Ort angeben.":"Enter date and location.","Kein Event ausgewählt.":"No event selected.","Token/Internet prüfen.":"Check token/internet.",
  "CSV leer oder ungültig.":"CSV empty or invalid.","Kein Athlet ausgewählt.":"No athlete selected.","Kuppe (Schlüsselstelle)":"Crest (key section)",
  "Nichts zum Wiederholen.":"Nothing to redo.","· Video wird gesichert…":"· saving video…","Event dauerhaft löschen?":"Delete event permanently?",
- ". Wechsle in die Analyse.":". Switch to Analysis.","Angaben fehlen — «Ändern»":"Details missing — «Edit»","Gespeichertes Tagging laden":"Load saved tagging","Dieses Video ist schon getaggt":"This video is already tagged","Tor anpassen:":"Adjust a gate:","Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.":"To adjust single gates, load the saved tagging instead of tagging everything again.","Hinweis schliessen":"Close hint",
+ ". Wechsle in die Analyse.":". Switch to Analysis.","Angaben fehlen — «Ändern»":"Details missing — «Edit»","Gespeichertes Tagging laden":"Load saved tagging","Dieses Video ist schon getaggt":"This video is already tagged","Tor anpassen:":"Adjust a gate:","⤓ Hierher":"⤓ Here","Diesen Tag auf das aktuelle Video-Bild verschieben (Taste M)":"Move this tag to the current video frame (key M)","Gewählten Tag hierher verschieben":"Move selected tag here","Um einzelne Tore anzupassen, das gespeicherte Tagging laden statt alles neu zu taggen.":"To adjust single gates, load the saved tagging instead of tagging everything again.","Hinweis schliessen":"Close hint",
  "Kein Video auf diesem Gerät: zuerst das Video links hineinziehen – die Tags bleiben erhalten.":"No video on this device: drop the video on the left first – the tags are kept.","Aus Dateiname übernommen:":"Taken from filename:",
  "IndexedDB nicht verfügbar":"IndexedDB not available","Lokaler Speicher blockiert":"Local storage blocked","Ungültiger Einladungscode.":"Invalid invite code.",
  "Noch keine lokale Sicherung":"No local backup yet","Video-Pop-up & Side-by-Side":"Video pop-up & side-by-side","desselben Laufs übernommen.":"applied from the same run.",
