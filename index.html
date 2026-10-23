@@ -859,6 +859,62 @@ body.dark .wc-code{background:#2d3644;color:#eef1f6;border-color:#3a4452}
 .dropzone .hint{font-size:11.5px;opacity:.75;margin-top:5px}
 .dz-arrow{animation:dzbob 1.8s ease-in-out infinite}
 @keyframes dzbob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+/* === Video-Dropzone v2: animierter Rand, Aurora, Slalom-Spur === */
+#dropZone{border:0;isolation:isolate}
+#dropZone .dz-bg{z-index:1}
+#dropZone .dz-inner{z-index:3}
+#dropZone.drag *{pointer-events:none}
+#dropZone .dz-aurora{position:absolute;inset:-25%;pointer-events:none;z-index:0;filter:blur(40px);opacity:.9;transition:opacity .3s}
+#dropZone .dz-aurora i{position:absolute;border-radius:50%}
+#dropZone .dz-aurora .a1{width:44%;height:58%;left:10%;top:12%;background:radial-gradient(circle,rgba(255,90,69,.32),transparent 70%);animation:dzau1 13s ease-in-out infinite alternate}
+#dropZone .dz-aurora .a2{width:42%;height:56%;right:8%;top:28%;background:radial-gradient(circle,rgba(110,135,255,.26),transparent 70%);animation:dzau2 16s ease-in-out infinite alternate}
+#dropZone .dz-aurora .a3{width:38%;height:50%;left:34%;bottom:6%;background:radial-gradient(circle,rgba(255,110,180,.24),transparent 70%);animation:dzau3 11s ease-in-out infinite alternate}
+@keyframes dzau1{to{transform:translate(30%,16%) scale(1.18)}}
+@keyframes dzau2{to{transform:translate(-32%,-14%) scale(1.12)}}
+@keyframes dzau3{to{transform:translate(-22%,-26%) scale(1.22)}}
+#dropZone .dz-track{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;
+  -webkit-mask-image:radial-gradient(ellipse 30% 44% at 50% 52%,transparent 30%,#000 95%);mask-image:radial-gradient(ellipse 30% 44% at 50% 52%,transparent 30%,#000 95%)}
+.dz-track .trail{fill:none;stroke:rgba(26,31,40,.16);stroke-width:2;stroke-dasharray:1 7;stroke-linecap:round}
+.dz-track .comet{fill:none;stroke:#da291c;stroke-width:3;stroke-linecap:round;stroke-dasharray:90 1000;opacity:.5}
+.dz-track .skier{fill:#da291c;filter:drop-shadow(0 0 5px rgba(218,41,28,.8))}
+.dz-track .gate line{stroke:rgba(26,31,40,.38);stroke-width:1.6;stroke-linecap:round}
+.dz-track .gate.r path{fill:#da291c;opacity:.75}
+.dz-track .gate.b path{fill:#2f5bd8;opacity:.7}
+#dropZone .dz-border{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:hidden;border-radius:18px}
+#dropZone .dz-border rect{fill:none;stroke:url(#dzBorderG);stroke-width:5;stroke-dasharray:11 8;opacity:.6;animation:dzmarch 1.6s linear infinite;transition:opacity .25s}
+@keyframes dzmarch{to{stroke-dashoffset:-38}}
+#dropZone:hover .dz-border rect{opacity:1;animation-duration:.8s}
+#dropZone.drag .dz-border rect{opacity:1;stroke-dasharray:none;stroke-width:7}
+#dropZone.drag .dz-aurora{opacity:1}
+#dropZone.drag .dz-aurora i{animation-duration:3s}
+/* Icon: drehender Bogen, Glanz, REC-Punkt */
+.dz-icon .arc{position:absolute;inset:5px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 55%,rgba(255,138,122,.0) 55%,#ff8a7a 82%,#da291c 100%);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:dzspin 2.2s linear infinite}
+@keyframes dzspin{to{transform:rotate(360deg)}}
+.dz-icon .disc{overflow:hidden}
+.dz-icon .disc::after{content:'';position:absolute;top:-10%;left:-70%;width:45%;height:120%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:dzshine 3.8s ease-in-out infinite}
+@keyframes dzshine{0%{left:-70%}35%,100%{left:140%}}
+.dz-icon .rec{position:absolute;top:19px;right:19px;z-index:3;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(218,41,28,.9)}
+.dz-icon .rec::after{content:'';position:absolute;inset:2.5px;border-radius:50%;background:#da291c;animation:dzblink 1.1s steps(1) infinite}
+@keyframes dzblink{50%{opacity:0}}
+#dropZone.drag .dz-icon{transform:scale(1.1);animation:none}
+#dropZone.drag .dz-icon .ring{animation-duration:1s}
+/* Titel: Drag-Text + Einblenden */
+.dz-title .t-drag{display:none;background:linear-gradient(90deg,#da291c,#ff5fa2,#da291c);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:dzgrad 1.2s linear infinite}
+#dropZone.drag .dz-title .t-idle{display:none}
+#dropZone.drag .dz-title .t-drag{display:inline}
+@keyframes dzgrad{to{background-position:-200% 0}}
+#dropZone .dz-inner>*{animation:dzin .7s cubic-bezier(.2,.8,.2,1) both}
+#dropZone .dz-inner>.dz-icon{animation:dzin .7s cubic-bezier(.2,.8,.2,1) both,dzfloat 3.4s ease-in-out .7s infinite}
+#dropZone .dz-inner>:nth-child(2){animation-delay:.08s}
+#dropZone .dz-inner>:nth-child(3){animation-delay:.16s}
+#dropZone .dz-inner>:nth-child(4){animation-delay:.24s}
+@keyframes dzin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+body.dark #dropZone .dz-aurora{opacity:.55}
+body.dark .dz-track .trail{stroke:rgba(255,255,255,.16)}
+body.dark .dz-track .gate line{stroke:rgba(255,255,255,.4)}
+body.dark .dz-track .gate.b path{fill:#6f8dff}
+@media(prefers-reduced-motion:reduce){#dropZone *,#dropZone *::after{animation:none!important}#dropZone .dz-track .comet,#dropZone .dz-track .skier{display:none}}
 .vid-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
 #vid{width:100%;height:100%;object-fit:contain;display:block;transition:transform .08s ease}
 .vid-wrap.zoom-on{cursor:zoom-in}
@@ -2322,14 +2378,17 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
       <div class="card tg-video-card">
         <div id="dropZone" class="dropzone">
           <div class="dz-bg" id="dzBg"></div>
+          <div class="dz-aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
+          <svg class="dz-track" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path class="trail" d="M-40 190 C20 80 60 80 100 80 C190 80 210 300 300 300 C390 300 410 80 500 80 C540 80 580 80 640 190"/><path class="comet" d="M-40 190 C20 80 60 80 100 80 C190 80 210 300 300 300 C390 300 410 80 500 80 C540 80 580 80 640 190" pathLength="1000"><animate attributeName="stroke-dashoffset" from="90" to="-1000" dur="5.5s" repeatCount="indefinite"/></path><g class="gate r" transform="translate(100 62)"><g><animateTransform attributeName="transform" type="rotate" dur="5.5s" repeatCount="indefinite" keyTimes="0;0.197;0.217;0.237;0.267;1" values="0 0 10;0 0 10;-16 0 10;9 0 10;0 0 10;0 0 10"/><line x1="0" y1="-16" x2="0" y2="10"/><path d="M0 -16 L13 -11 L0 -6Z"/></g></g><g class="gate b" transform="translate(300 318)"><g><animateTransform attributeName="transform" type="rotate" dur="5.5s" repeatCount="indefinite" keyTimes="0;0.508;0.528;0.548;0.578;1" values="0 0 -10;0 0 -10;-16 0 -10;9 0 -10;0 0 -10;0 0 -10"/><line x1="0" y1="16" x2="0" y2="-10"/><path d="M0 16 L13 11 L0 6Z"/></g></g><g class="gate r" transform="translate(500 62)"><g><animateTransform attributeName="transform" type="rotate" dur="5.5s" repeatCount="indefinite" keyTimes="0;0.819;0.839;0.859;0.889;1" values="0 0 10;0 0 10;-16 0 10;9 0 10;0 0 10;0 0 10"/><line x1="0" y1="-16" x2="0" y2="10"/><path d="M0 -16 L13 -11 L0 -6Z"/></g></g><circle class="skier" r="6"><animateMotion dur="5.5s" repeatCount="indefinite" path="M-40 190 C20 80 60 80 100 80 C190 80 210 300 300 300 C390 300 410 80 500 80 C540 80 580 80 640 190"/></circle></svg>
+          <svg class="dz-border" aria-hidden="true"><defs><linearGradient id="dzBorderG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#da291c"/><stop offset=".35" stop-color="#ff7aa8"/><stop offset=".65" stop-color="#7f93ff"/><stop offset="1" stop-color="#da291c"/><animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="7s" repeatCount="indefinite"/></linearGradient></defs><rect width="100%" height="100%" rx="18" ry="18"/></svg>
           <input type="file" id="vidFile" accept="video/*" hidden>
           <div class="dz-inner">
             <div class="dz-icon">
               <span class="ring"></span><span class="ring r2"></span>
-              <span class="disc"></span>
+              <span class="arc"></span><span class="disc"></span><span class="rec"></span>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg>
             </div>
-            <div class="dz-title">Video hierher ziehen</div>
+            <div class="dz-title"><span class="t-idle">Video hierher ziehen</span><span class="t-drag">Jetzt loslassen</span></div>
             <div class="dz-sub">oder <label class="link" for="vidFile">Datei wählen</label> <svg class="dz-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#da291c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
             <div class="hint">Bleibt lokal auf deinem Rechner — nichts wird hochgeladen.</div>
           </div>
@@ -3338,7 +3397,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231255';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231420';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6825,6 +6884,8 @@ function initTagging(){
     for(let i=0;i<16;i++){ const left=Math.random()*100, dur=(5+Math.random()*5).toFixed(2), del=(-Math.random()*8).toFixed(2), sc=(0.5+Math.random()*1).toFixed(2);
       h+=`<span style="left:${left}%;animation-duration:${dur}s;animation-delay:${del}s;transform:scale(${sc})"></span>`; }
     dzBg.innerHTML=h; }
+  // reduzierte Bewegung: SVG-Animationen (Slalom-Spur, Rand-Farbverlauf) anhalten
+  try{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) dz.querySelectorAll('svg').forEach(s=>s.pauseAnimations&&s.pauseAnimations()); }catch(e){}
   // controls
   const v=$('#vid');
   $('#btnPlay').onclick=()=>{ if(v.paused){ v.play(); playLoop(); $('#btnPlay').textContent='❚❚'; } else { v.pause(); $('#btnPlay').textContent='▶'; } };
@@ -9199,7 +9260,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  "Suche Ort oder Athlet …":"Search location or athlete …","Suche Name oder FIS-Code …":"Search name or FIS code …",
  "Disz.":"Disc.","Gesch.":"Gender","Athl.":"Ath.","Rennen":"Races","Saison":"Season","Speicher":"Storage","Rückstand":"Deficit",
  // Tagging
- "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here",
+ "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here","Jetzt loslassen":"Drop it now",
  "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (Enter)":"Tag gate (Enter)",
  "Noch keine Tags.":"No tags yet.","Tor":"Gate","Tore":"Gates","Zeit":"Time","Figur":"Figure","Löschen":"Delete",
  "✓ Speichern":"✓ Save","Speichern":"Save","Lauf-Angaben":"Run details","Lauf-Angaben bearbeiten":"Edit run details",
