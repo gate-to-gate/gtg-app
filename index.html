@@ -1262,9 +1262,10 @@ table.hmp .g b{font-size:6.5px}
 #printHead .ph-date{font-size:10.5px;color:var(--muted);margin-top:2px}
 
 /* Abschnitts-Übersicht (Tabelle + Kernaussagen) – Bildschirm; Druck-Grössen im @media print */
-#secRow{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+#secRow{display:flex;align-items:stretch;justify-content:center;gap:28px;flex-wrap:wrap}
 #secRow #secShell{flex:1 1 520px;margin:0!important}
-#secSum{flex:0 1 400px;min-width:300px}
+#secSum{flex:0 1 540px;min-width:330px;display:flex}
+#secSum .ss-card{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center}
 #secSum:empty{display:none}
 #secSum .ss-card{background:#f6f7f9;border-radius:14px;padding:16px 18px 14px;color:var(--ink)}
 #secSum .ss-h{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
@@ -1351,7 +1352,7 @@ table.hmp .g b{font-size:6.5px}
   #secRow{justify-content:center;gap:9mm;align-items:center;flex-wrap:nowrap}
   #secRow #secShell{flex:0 0 auto}
   #secSum{min-width:0}
-  #secSum{flex:0 0 98mm;max-width:98mm}
+  #secSum{flex:0 0 108mm;max-width:108mm}
   #secSum .ss-dnf{color:#8a919c;font-weight:700}
   #secSum .ss-card{background:#f6f7f9;border-radius:3mm;padding:3.2mm 3.8mm 3mm;color:#14181f}
   #secSum .ss-h{font-size:7.4px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#6b7380;margin-bottom:1.6mm}
@@ -2140,6 +2141,14 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
   #secSum .ss-seg{font-size:6.6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #secSum .ss-stleg{font-size:7px;margin-top:1.2mm}
 }
+
+#secSum .ss-nm{display:inline-block;font-weight:800;color:var(--c);border-radius:5px;padding:0 6px;line-height:1.5}
+@media print{ #secSum .ss-nm{padding:0 1.2mm;border-radius:1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact} }
+
+/* Abschnitte: Grafik ohne Zusatzabstand, damit die Übersicht oben/unten bündig ist */
+#secRow #secShell{align-self:stretch;display:flex;align-items:center}
+@media (max-width:700px){ #secSum{display:block} }
+@media print{ #secSum{display:block} #secSum .ss-card{display:block} #secRow #secShell{display:block} }
 
 </style>
 </head>
@@ -3355,7 +3364,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610230941';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231006';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4635,6 +4644,9 @@ function secSummary(data, secs, STS, hasSt, worst){
   h+='</tbody></table>';
   h+=`<div class="ss-stleg">${EN?'Wide = most time lost there':'Breit = dort geht am meisten Zeit verloren'}${rows.some(r=>r.dnf)?(EN?' · DNF: only completed sections':' · DNF: nur fertig gefahrene Abschnitte'):''}</div>`;
   // Kernaussagen (max. 3)
+  // Namen in den Kernaussagen farbig hinterlegt (gleiche Farbe wie Linie/Balken)
+  const _tint=c=>{ const h=String(c||'').replace('#',''); if(/^[0-9a-f]{6}$/i.test(h)) return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},.14)`; const m=String(c).match(/rgba?\(([^)]+)\)/); return m?`rgba(${m[1].split(',').slice(0,3).join(',')},.14)`:'transparent'; };
+  const nmTag=r=>`<span class="ss-nm" style="--c:${r.col};background:${_tint(r.col)}">${esc(r.nm)}</span>`;
   const msgs=[];
   { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
     let wi=worst; if(wi<0){ wi=tl.reduce((m,v,i)=>v>tl[m]?i:m,0); if(!(tl[wi]>0.15)) wi=-1; }
@@ -4644,17 +4656,18 @@ function secSummary(data, secs, STS, hasSt, worst){
   if(top){ const mxOf=r=>Math.max(...r.idx.map(o=>Math.abs(o.v))); const mx=mxOf(top);
     const _pm=mx<0.1?'0.10':mx.toFixed(2);
     const _most=fin.every(r=> r===top || mxOf(r)>=mx-0.005);   // «am konstantesten» nur, wenn wirklich niemand konstanter ist
-    msgs.push((mx<=0.25 && _most) ? (EN?`<b>${esc(top.nm)}</b> most consistent – no larger loss in any section.`:`<b>${esc(top.nm)}</b> am konstantesten – in keinem Abschnitt ein grösserer Verlust.`)
-                       : (EN?`<b>${esc(top.nm)}</b> with the smallest total deficit (${f(top.tot)} s), best in ${secLbl(top.best.i)}.`:`<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), am besten in ${secLbl(top.best.i)}.`)); }
+    msgs.push((mx<=0.25 && _most) ? (EN?`${nmTag(top)} most consistent – no larger loss in any section.`:`${nmTag(top)} am konstantesten – in keinem Abschnitt ein grösserer Verlust.`)
+                       : (EN?`${nmTag(top)} with the smallest total deficit (${f(top.tot)} s), best in ${secLbl(top.best.i)}.`:`${nmTag(top)} mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), am besten in ${secLbl(top.best.i)}.`)); }
   let conc=null; fin.forEach(r=>{ if(r.pos>0.3 && r.weak.v>0){ const sh=r.weak.v/r.pos; if(sh>=0.4 && (!conc||sh>conc.sh)) conc={r,sh}; } });
   if(conc && conc.r!==top){ const st=steepTxt(conc.r.weak.i);
     const _sx=st&&st!==MIX?' ('+st+')':'';
-    msgs.push(EN?`<b>${esc(conc.r.nm)}</b> loses ${conc.sh>=0.6?'most':'a large part'} of the deficit in ${secLbl(conc.r.weak.i)}${_sx}.`:`<b>${esc(conc.r.nm)}</b> verliert ${conc.sh>=0.6?'den Grossteil':'einen grossen Teil'} des Rückstands in ${secLbl(conc.r.weak.i)}${_sx}.`); }
+    msgs.push(EN?`${nmTag(conc.r)} loses ${conc.sh>=0.6?'most':'a large part'} of the deficit in ${secLbl(conc.r.weak.i)}${_sx}.`:`${nmTag(conc.r)} verliert ${conc.sh>=0.6?'den Grossteil':'einen grossen Teil'} des Rückstands in ${secLbl(conc.r.weak.i)}${_sx}.`); }
   if(msgs.length) h+='<div class="ss-h ss-h2">'+(EN?'Key messages':'Kernaussagen')+'</div><ul class="ss-msg">'+msgs.slice(0,3).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
   h+='</div>';
   el.innerHTML=h;
 }
 function drawSector(){
+  if(!drawSector._fit) S._secH=null;   // Höhe jedes Mal neu an die Übersicht anpassen
   const T=chTheme();
   const c=S.comp; const secs=c.sectors; const sui=c.sui;
   const card=$('#secCard');
@@ -4673,7 +4686,8 @@ function drawSector(){
       sub.innerHTML = _trAgg ? (LANG==='en'?'Training: per athlete the <b>best run</b> as bar; the thin line shows the range of all runs (best to worst).':'Training: pro Athlet:in der <b>beste Lauf</b> als Balken, der feine Strich zeigt die Spannweite aller Läufe (bester bis schlechtester).') : sub.dataset.orig; } }
   const _nw=!S.printMode && gtgNarrow('#secShell');
   const STS=hmSteepOf(), hasSt=Object.keys(STS).length>0;   // Steilheit je Tor (gleiche Stufen wie Höhenprofil/Matrix)
-  const W=_nw?440:620,H=(_nw?340:320)+(hasSt?14:0), ml=42,mr=12,mt=20,mb=52+(hasSt?14:0), iw=W-ml-mr, ih=H-mt-mb;
+  const _H0=(_nw?340:320)+(hasSt?14:0);
+  const W=_nw?440:620,H=(!S.printMode && !_nw && S._secH)? Math.max(_H0, Math.min(_H0*1.8, S._secH)) : _H0, ml=42,mr=12,mt=20,mb=52+(hasSt?14:0), iw=W-ml-mr, ih=H-mt-mb;
   let all=[]; data.forEach(d=> d.vals.forEach(v=> v!=null && all.push(v))); data.forEach(d=> (d.rng||[]).forEach(r=> r && all.push(r[0],r[1])));
   let vmax=Math.max(0.05,...all), vmin=Math.min(0,...all);
   const range=(vmax-vmin)||0.1; vmin-=range*(vmin<0?0.16:0.06); vmax+=range*0.16;   // Platz für die Werte über/unter den Balken
@@ -4723,6 +4737,12 @@ function drawSector(){
     svg+=`<text x="${lx+2}" y="${ly}" font-size="9.5" fill="${T.txt2}" opacity=".8">${LANG==='en'?'· steepness in section':'· Steilheit im Abschnitt'}</text>`; }
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   try{ secSummary(data, secs, STS, hasSt, worst); }catch(e){ const el=$('#secSum'); if(el) el.innerHTML=''; }
+  // Bildschirm: Grafik so hoch wie die Übersicht daneben (oben/unten bündig); einmal nachzeichnen, wenn die Höhen deutlich abweichen
+  try{ if(!S.printMode && !_nw && !drawSector._fit){ const sv=$('#secShell svg'), cd=$('#secSum .ss-card');
+      if(sv && cd){ const a=sv.getBoundingClientRect(), b=cd.getBoundingClientRect();
+        if(a.width>0 && b.height>0 && b.top < a.bottom-20){   // nebeneinander (nicht umgebrochen)
+          const want=Math.round(b.height * W / a.width);
+          if(Math.abs(want-H) > 6){ S._secH=want; drawSector._fit=true; try{ drawSector(); } finally { drawSector._fit=false; } } } } } }catch(e){}
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
     const _sec=r.dataset.sec, _all=[...$('#secShell').querySelectorAll('.sb')].filter(x=>x.dataset.sec===_sec).map(x=>+x.dataset.v).sort((a,b)=>a-b);
     const _rk=_all.indexOf(+r.dataset.v)+1, EN=LANG==='en';
