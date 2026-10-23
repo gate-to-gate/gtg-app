@@ -2124,6 +2124,23 @@ body.dark #secSum .ss-tab tfoot td{border-top-color:#39424f}
   #secSum .ss-rkleg+.ss-rkleg{margin-top:0}
 }
 
+/* Übersicht: «Wo entsteht der Rückstand?» – gestapelter Anteils-Balken */
+#secSum .ss-tab td.ss-stc{width:100%;padding-right:0}
+#secSum .ss-tab th.ss-sth{white-space:nowrap}
+#secSum .ss-stack{display:flex;height:20px;border-radius:5px;overflow:hidden;background:#eef0f3;min-width:150px}
+#secSum .ss-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;letter-spacing:.02em;min-width:2px;box-shadow:inset -1px 0 0 rgba(255,255,255,.55)}
+#secSum .ss-seg:last-child{box-shadow:none}
+#secSum .ss-stack.ss-none{align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#1a8f5a;background:#e6f4ec}
+#secSum .ss-stleg{font-size:10.5px;color:var(--muted);margin-top:7px}
+body.dark #secSum .ss-stack{background:#2a323d}
+body.dark #secSum .ss-seg{color:#0f141a;box-shadow:inset -1px 0 0 rgba(0,0,0,.45)}
+body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f}
+@media print{
+  #secSum .ss-stack{height:3.6mm;border-radius:1mm;min-width:30mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #secSum .ss-seg{font-size:6.6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #secSum .ss-stleg{font-size:7px;margin-top:1.2mm}
+}
+
 </style>
 </head>
 <body>
@@ -3338,7 +3355,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610230906';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610230941';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4598,16 +4615,25 @@ function secSummary(data, secs, STS, hasSt, worst){
   const steepTxt=i=>{ if(!hasSt) return ''; const [a,b]=secs[i]; const c={st0:0,st1:0,st2:0}; let n=0;
     for(let t=a+1;t<=b+1;t++){ const q=STS[t]; if(q){ c[q.k]++; n++; } } if(!n) return '';
     const k=['st2','st1','st0'].reduce((m,x)=>c[x]>c[m]?x:m,'st2'); return c[k]/n>=0.5? (EN?{st0:'flat',st1:'medium',st2:'steep'}:{st0:'flach',st1:'mittel',st2:'steil'})[k] : MIX; };
-  // Tabelle (wie früher): Total, stärkster und schwächster Abschnitt – ohne Sekunden (Abschnitte ≠ FIS-Sektoren)
+  // Tabelle: Total + «Wo entsteht der Rückstand?» – Anteil jedes Abschnitts am eigenen Verlust (ohne Sekunden; Abschnitte ≠ FIS-Sektoren)
   const dnfGate=r=> (r.d.s.lastReal!=null? r.d.s.lastReal+2 : null);   // letztes passiertes Tor (Zählung wie Grafik/Matrix)
-  const chipTip=v=> v<=-0.005?(EN?'faster than the best time':'schneller als die Bestzeit'):(v<0.005?(EN?'as fast as the best time':'gleich schnell wie die Bestzeit'):(EN?'slower than the best time':'langsamer als die Bestzeit'));
-  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>${EN?'Best':'Stärkster'}</th><th>${EN?'Weakest':'Schwächster'}</th></tr></thead><tbody>`;
+  const doneSec=(r,i)=>{ const v=r.d.vals[i]; if(v==null) return false; if(!r.dnf||r.d.s.lastReal==null) return true; return secs[i][1]-1<=r.d.s.lastReal; };   // Abschnitt mit Ausfall zählt nicht
+  const nS=secs.length, dk=document.body.classList.contains('dark');
+  const shade=i=>{ const L=dk?[ [158,170,186],[120,134,152],[88,102,122],[62,74,92],[44,54,70] ]:[ [168,178,192],[122,134,150],[84,96,114],[48,58,74],[28,34,46] ];
+    const t=nS<=1?0.5:i/(nS-1), p=t*(L.length-1), k=Math.min(L.length-2,Math.floor(p)), f=p-k; return 'rgb('+L[k].map((v,j)=>Math.round(v+(L[k+1][j]-v)*f)).join(',')+')'; };
+  const secInfo=i=>{ const [a,b]=secs[i]; const st=steepTxt(i); return `${secLbl(i)} · ${EN?'gates':'Tor'} ${a+1}–${b+1}${st?' · '+st:''}`; };
+  let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th class="ss-sth">${EN?'Share of the deficit':'Anteil am Rückstand'}</th></tr></thead><tbody>`;
   rows.forEach(r=>{ const dg=dnfGate(r);
+    const parts=secs.map((_,i)=>({i,v:doneSec(r,i)?Math.max(0,r.d.vals[i]):0})); const sum=parts.reduce((a,p)=>a+p.v,0);
+    const top=sum>0?parts.reduce((m,p)=>p.v>m.v?p:m):null;
+    let bar='';
+    if(sum>0.005){ bar=parts.filter(p=>p.v>0).map(p=>{ const w=p.v/sum*100; return `<span class="ss-seg${top&&p.i===top.i?' ss-top':''}" style="width:${w.toFixed(1)}%;background:${shade(p.i)}" title="${secInfo(p.i)}${top&&p.i===top.i?(EN?' · biggest share':' · grösster Anteil'):''}">${w>=14?secLbl(p.i):''}</span>`; }).join(''); bar=`<div class="ss-stack">${bar}</div>`; }
+    else bar=`<div class="ss-stack ss-none">${r.dnf?(EN?'no loss until the DNF':'bis zum Ausfall kein Verlust'):(EN?'no loss to the best time':'kein Verlust auf die Bestzeit')}</div>`;
     h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
     (r.dnf?`<td class="r ss-tot ss-dnf" title="${EN?'Did not finish':'Ausgefallen'}${dg?(EN?' after gate ':' nach Tor ')+dg:''}">DNF${dg?`<small> · ${EN?'gate':'Tor'} ${dg}</small>`:''}</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
-    `<td><span class="ss-chip ${cc(r.best.v)}" title="${chipTip(r.best.v)}">${secLbl(r.best.i)}</span></td>`+
-    `<td><span class="ss-chip ${cc(r.weak.v)}" title="${chipTip(r.weak.v)}">${secLbl(r.weak.i)}</span></td></tr>`; });
+    `<td class="ss-stc">${bar}</td></tr>`; });
   h+='</tbody></table>';
+  h+=`<div class="ss-stleg">${EN?'Wide = most time lost there':'Breit = dort geht am meisten Zeit verloren'}${rows.some(r=>r.dnf)?(EN?' · DNF: only completed sections':' · DNF: nur fertig gefahrene Abschnitte'):''}</div>`;
   // Kernaussagen (max. 3)
   const msgs=[];
   { const tl=secs.map((_,i)=> fin.reduce((a,r)=>{ const v=r.d.vals[i]; return a+(v>0?v:0); },0));
@@ -9278,7 +9304,7 @@ Object.assign(I18N_EN,{
  "Alle Tore auf einen Blick:":"All gates at a glance:","1 · Tagging – das Fundament":"1 · Tagging – the foundation","Tore · bei Bedarf anpassen.":"gates · adjust if needed.",
  "wechseln die Zeile,":"change the row,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
  "Tor anklicken für 1. und 2. Lauf":"click a gate for the 1st and 2nd run","Bester Rückstand":"Best deficit","grösster Verlust":"biggest loss","grösster Zeitverlust":"biggest time loss",
- "Abschnitts-Rückstand":"Section deficit","schnellste:r im Abschnitt":"fastest in the section","langsamste:r":"slowest","Ausfall in diesem Abschnitt":"DNF in this section","nicht gefahren":"not driven","Gelände":"Terrain","umrandet = so schnell wie die Bestzeit oder schneller":"framed = as fast as the best time or faster","Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.":"No seconds shown – the tagged sections do not match the FIS sectors 1:1.","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
+ "Abschnitts-Rückstand":"Section deficit","Anteil am Rückstand":"Share of the deficit","bis zum Ausfall kein Verlust":"no loss until the DNF","kein Verlust auf die Bestzeit":"no loss to the best time","Breit = dort geht am meisten Zeit verloren":"Wide = most time lost there","schnellste:r im Abschnitt":"fastest in the section","langsamste:r":"slowest","Ausfall in diesem Abschnitt":"DNF in this section","nicht gefahren":"not driven","Gelände":"Terrain","umrandet = so schnell wie die Bestzeit oder schneller":"framed = as fast as the best time or faster","Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.":"No seconds shown – the tagged sections do not match the FIS sectors 1:1.","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
  "Alle auswählen":"Select all","An die Coaches":"To the coaches","auf dem Gerät.":"on the device.","erstellen, mit":"create, with","Video wählen —":"Choose video —",
  "Athlet wählen —":"Choose athlete —","keine Daten —":"no data —","älter als 1 Jahr":"older than 1 year","älter als 6 Monate":"older than 6 months","älter als 90 Tage":"older than 90 days",
  "Video(s) löschen und ~":"Delete video(s) and ~","verfügbar — du nutzt v":"available — you're using v","heruntergeladen — bereit zur Installation.":"downloaded — ready to install.",
