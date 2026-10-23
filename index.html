@@ -3333,7 +3333,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231036';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610231207';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -6339,6 +6339,34 @@ async function parseCoursePdf(file){
   const vp=page.getViewport({scale:1}); const H=vp.height;
   const tc=await page.getTextContent();
   const items=tc.items.map(it=>({s:(it.str||'').trim(), x:it.transform[4], top:H-it.transform[5]})).filter(it=>it.s);
+  // Neu: zeilenweise lesen. Spaltengrenzen aus der Kopfzeile (No / Type / Distance / Offset / Pitch / Angle),
+  // nur Zeilen mit Tor-Nr. oder «Finish» – und nach «Finish» aufhören (darunter folgen Grafik-Achsen, die sonst als Tore zählten).
+  { const hdrKey=s=> /^no\b/i.test(s)?'no': /^type/i.test(s)?'type': /^dist/i.test(s)?'dist': /^offset/i.test(s)?'offset': /^pitch/i.test(s)?'pitch': /^angle/i.test(s)?'angle': null;
+    const hs=items.filter(it=>hdrKey(it.s)); const hTop=hs.length? hs.find(h=>hdrKey(h.s)==='dist')?.top : null;
+    const hdr0= hTop==null? [] : items.filter(h=>Math.abs(h.top-hTop)<4 && (hdrKey(h.s)||/^width/i.test(h.s))).sort((a,b)=>a.x-b.x);
+    // Kopfzeile inkl. Zusatzspalten (z. B. «Width / Dist» bei Haarnadeln im SL) – doppelte Schlüssel werden zu Zusatzspalten
+    const seen={}; const hdr=hdr0.map(h=>{ let k=hdrKey(h.s)||'x'; if(seen[k]) k='x'; seen[k]=1; return {k,x:h.x}; });
+    if(hdr.filter(h=>h.k!=='x').length>=5 && hdr.some(h=>h.k==='dist') && hdr.some(h=>h.k==='pitch')){
+      const bnd=hdr.map((h,i)=> i<hdr.length-1 ? (h.x+hdr[i+1].x)/2 : Infinity);
+      const colOf=x=>{ for(let i=0;i<hdr.length;i++) if(x<bnd[i]) return hdr[i].k; return hdr[hdr.length-1].k; };
+      const body=items.filter(it=>it.top>hTop+4).sort((a,b)=>a.top-b.top||a.x-b.x);
+      const rows=[]; body.forEach(it=>{ const r=rows[rows.length-1]; if(r && Math.abs(it.top-r.top)<4) r.items.push(it); else rows.push({top:it.top,items:[it]}); });
+      const out=[]; let done=false;
+      rows.forEach(r=>{ if(done) return; const rec={}; r.items.forEach(it=>{ const k=colOf(it.x); rec[k]=rec[k]?rec[k]+' '+it.s:it.s; });
+        const isFin=/finish/i.test(rec.type||''); const isGate=/^\d+$/.test(String(rec.no||'').trim()) && rec.type;
+        if(!isFin && !isGate) return;
+        out.push(rec); if(isFin) done=true; });
+      // Ziel ohne «Finish»-Text (letzte Zeile ohne Offset und Winkel) als Ziel werten
+      if(out.length && !/finish/i.test(out[out.length-1].type||'')){ const L=out[out.length-1]; if(L.offset==null && L.angle==null) L.type='Finish'; }
+      if(out.length>=3){
+        const tn=out.map(r=>{ const ty=String(r.type||'').replace(/\s/g,''); return /finish/i.test(ty)?'Finish': /hairpin/i.test(ty)?'Hairpin': /v\.?comb/i.test(ty)?'V.Comb': /delay/i.test(ty)?'Delayed':'Open'; });
+        const ff=deriveCourseFigs(tn);
+        return out.map((r,i)=> tn[i]==='Finish'
+          ? {no:i+1,type:'Finish',dist:kNum(r.dist),offset:null,pitch:kNum(r.pitch),angle:null,fig:''}
+          : {no:i+1,type:tn[i],dist:kNum(r.dist),offset:kNum(r.offset),pitch:kNum(r.pitch),angle:kNum(r.angle),fig:ff[i]||''});
+      }
+    } }
+  // Rückfall (altes Verfahren, feste Spalten), falls keine Kopfzeile erkannt wurde
   const colof=x=> x<60?'no': x<112?'type': x<220?'dist': x<312?'offset': x<410?'pitch': x<500?'angle': x<548?'width':'d2';
   const cols={};
   items.forEach(it=>{ if(it.top<40 || it.top>H-32) return; (cols[colof(it.x)]=cols[colof(it.x)]||[]).push(it); });
