@@ -2010,6 +2010,7 @@ table.hm td.hm-dnf{font-size:9px;font-weight:800;letter-spacing:.04em;color:var(
 #rbrCard .rbr-pt.best{z-index:2}
 #rbrCard .rbr-fast{color:#a9801a}
 #kprevInfo{white-space:nowrap}
+.sec-note{color:var(--muted);font-style:italic}
 body.dark #rbrCard .rbr-fast{color:#d8b24a}
 .tge-tx span{text-wrap:pretty}
 @media print{ .legend.grp{display:flex!important;flex-wrap:wrap;gap:0 12px;margin:0!important} .lgg{padding:0;gap:3px} .lgg-n{font-size:9px} .lgg{border:none;padding:0} .lgg-r{font-size:8px;padding:0 3px;gap:2px} .lgg-r .bar{width:9px;height:3px} #heroCard .hero-head:has(.legend.grp) .hero-ctrls{display:none} }
@@ -3302,7 +3303,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610211148';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610230803';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4138,7 +4139,7 @@ function render(){
       ${(S.ev&&S.ev.mode==='train'&&S.trSeries)?trainRunsHTML():''}
       <div class="card" id="secCard">
         <div class="c-head"><div><h2>Zeitverlust nach Abschnitt</h2>
-          <div class="c-sub">${isTrain()?(c._ownRef?'Rückstand je Abschnitt (zwischen zwei Laps) auf den eigenen besten Lauf. Oben = verliert, unten = gewinnt.':'Rückstand je Abschnitt (zwischen zwei Laps) auf den schnellsten Lauf. Oben = verliert, unten = gewinnt.'):'Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.'}</div>
+          <div class="c-sub">${isTrain()?(c._ownRef?'Rückstand je Abschnitt (zwischen zwei Laps) auf den eigenen besten Lauf. Oben = verliert, unten = gewinnt.':'Rückstand je Abschnitt (zwischen zwei Laps) auf den schnellsten Lauf. Oben = verliert, unten = gewinnt.'):'Rückstand je Abschnitt (zwischen zwei Laps) auf die Bestzeit. Oben = verliert, unten = gewinnt.'} <span class="sec-note">Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.</span></div>
           <div class="print-only sec-readhelp">Rückstand je Abschnitt zwischen zwei Laps — <b>Balken nach oben = Zeit verloren</b>, nach unten = gewonnen. Farbe = Athlet (gleich wie in der Hauptgrafik).</div></div></div>
         <div id="secRow">
           <div class="chart-shell" id="secShell" style="max-width:680px;margin:0 auto"></div>
@@ -4565,8 +4566,8 @@ function secSummary(data, secs, STS, hasSt, worst){
   let h=`<div class="ss-card"><div class="ss-h">${EN?'Overview per athlete':'Übersicht pro Athlet:in'}</div><table class="ss-tab"><thead><tr><th></th><th class="r">Total</th><th>${EN?'Best':'Stärkster'}</th><th>${EN?'Weakest':'Schwächster'}</th></tr></thead><tbody>`;
   rows.forEach(r=>{ h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
     (r.dnf?`<td class="r ss-tot ss-dnf">DNF</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
-    `<td><span class="ss-chip ${cc(r.best.v)}">${secLbl(r.best.i)} <i>${f(r.best.v)}</i></span></td>`+
-    `<td><span class="ss-chip ${cc(r.weak.v)}">${secLbl(r.weak.i)} <i>${f(r.weak.v)}</i></span></td></tr>`; });
+    `<td><span class="ss-chip ${cc(r.best.v)}">${secLbl(r.best.i)}</span></td>`+   // ohne Sekunden (Abschnitte ≠ FIS-Sektoren)
+    `<td><span class="ss-chip ${cc(r.weak.v)}">${secLbl(r.weak.i)}</span></td></tr>`; });
   h+='</tbody></table>';
   // Kernaussagen (max. 3)
   const msgs=[];
@@ -4578,12 +4579,12 @@ function secSummary(data, secs, STS, hasSt, worst){
   if(top){ const mxOf=r=>Math.max(...r.idx.map(o=>Math.abs(o.v))); const mx=mxOf(top);
     const _pm=mx<0.1?'0.10':mx.toFixed(2);
     const _most=fin.every(r=> r===top || mxOf(r)>=mx-0.005);   // «am konstantesten» nur, wenn wirklich niemand konstanter ist
-    msgs.push((mx<=0.25 && _most) ? (EN?`<b>${esc(top.nm)}</b> most consistent – within ±${_pm} s in every section.`:`<b>${esc(top.nm)}</b> am konstantesten – in allen Abschnitten innerhalb ±${_pm} s.`)
+    msgs.push((mx<=0.25 && _most) ? (EN?`<b>${esc(top.nm)}</b> most consistent – no larger loss in any section.`:`<b>${esc(top.nm)}</b> am konstantesten – in keinem Abschnitt ein grösserer Verlust.`)
                        : (EN?`<b>${esc(top.nm)}</b> with the smallest total deficit (${f(top.tot)} s), best in ${secLbl(top.best.i)}.`:`<b>${esc(top.nm)}</b> mit dem kleinsten Gesamtrückstand (${f(top.tot)} s), am besten in ${secLbl(top.best.i)}.`)); }
   let conc=null; fin.forEach(r=>{ if(r.pos>0.3 && r.weak.v>0){ const sh=r.weak.v/r.pos; if(sh>=0.4 && (!conc||sh>conc.sh)) conc={r,sh}; } });
   if(conc && conc.r!==top){ const st=steepTxt(conc.r.weak.i);
     const _sx=st&&st!==MIX?' ('+st+')':'';
-    msgs.push(EN?`<b>${esc(conc.r.nm)}</b> loses ${Math.round(conc.sh*100)} % of the deficit in ${secLbl(conc.r.weak.i)}${_sx}.`:`<b>${esc(conc.r.nm)}</b> verliert ${Math.round(conc.sh*100)} % des Rückstands in ${secLbl(conc.r.weak.i)}${_sx}.`); }
+    msgs.push(EN?`<b>${esc(conc.r.nm)}</b> loses ${conc.sh>=0.6?'most':'a large part'} of the deficit in ${secLbl(conc.r.weak.i)}${_sx}.`:`<b>${esc(conc.r.nm)}</b> verliert ${conc.sh>=0.6?'den Grossteil':'einen grossen Teil'} des Rückstands in ${secLbl(conc.r.weak.i)}${_sx}.`); }
   if(msgs.length) h+='<div class="ss-h ss-h2">'+(EN?'Key messages':'Kernaussagen')+'</div><ul class="ss-msg">'+msgs.slice(0,3).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
   h+='</div>';
   el.innerHTML=h;
@@ -4624,8 +4625,11 @@ function drawSector(){
     // Label vertikal am linken Rand, oben bündig (überschneidet die Balken/Namen nicht)
     const lx=ml+gw*worst+9, ly=mt+7;
     svg+=`<text x="${lx}" y="${ly}" transform="rotate(-90 ${lx} ${ly})" text-anchor="end" font-size="9" font-weight="800" letter-spacing=".04em" fill="${T.dark?T.gold:'#b8860b'}" opacity=".85">grösster Zeitverlust</text>`; }
-  niceTicks(vmin,vmax,5).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"/>`;
-    svg+=`<text x="${ml-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="${T.txt2}">${fmt(t)}</text>`;});
+  // Keine Sekundenwerte: die getaggten Abschnitte decken sich nicht 1:1 mit den FIS-Sektoren -> nur Richtung & Grössenverhältnis zeigen
+  niceTicks(vmin,vmax,5).forEach(t=>{ svg+=`<line x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}" stroke="${t===0?T.zero:T.grid2}"${t===0?' stroke-width="1.4"':''}/>`; });
+  { const ax=ml-8, EN=LANG==='en';
+    svg+=`<text x="${ax}" y="${(mt+ (y(0)-mt)/2).toFixed(1)}" transform="rotate(-90 ${ax} ${(mt+(y(0)-mt)/2).toFixed(1)})" text-anchor="middle" font-size="10.5" font-weight="700" fill="${T.txt2}">${EN?'loses time ↑':'verliert ↑'}</text>`;
+    if(vmin<-0.01 && y(vmin)-y(0)>40) svg+=`<text x="${ax}" y="${(y(0)+(y(vmin)-y(0))/2).toFixed(1)}" transform="rotate(-90 ${ax} ${(y(0)+(y(vmin)-y(0))/2).toFixed(1)})" text-anchor="middle" font-size="10.5" font-weight="700" fill="${T.txt2}">${EN?'↓ gains':'↓ gewinnt'}</text>`; }
   secs.forEach(([a,b],si)=>{
     const cx=ml+gw*si+gw/2;
     const totW=bw*data.length; let bx=cx-totW/2;
@@ -4635,11 +4639,6 @@ function drawSector(){
       const tiny=h<2.5;
       svg+=`<rect class="sb" data-s="${escHtml(d.s.name)}" data-v="${v}" data-sec="${a+1}-${b+1}" x="${bx}" y="${tiny?y(0)-1.5:Y}" width="${bw-2}" height="${tiny?3:h}" rx="${tiny?1.5:2}" fill="${d.s.color}" opacity=".92"/>`;
       if(_rg){ const ya=y(_rg[1]), yb=y(_rg[0]); svg+=`<line x1="${bxc}" x2="${bxc}" y1="${ya}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${ya}" y2="${ya}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/><line x1="${bxc-3}" x2="${bxc+3}" y1="${yb}" y2="${yb}" stroke="${T.txt}" stroke-width="1.3" opacity=".55"/>`; }
-      // Wert waagrecht über (Verlust) bzw. unter (Gewinn) dem Balken; bei schmalen Balken senkrecht
-      { const txt=fmt(v), up=v>=0, vert=bw<27, fs=vert?9.5:10;
-        const edge= up ? Math.min(tiny?y(0)-2:Y, _rg?y(_rg[1]):1e9)-4 : Math.max(tiny?y(0)+2:Y+h, _rg?y(_rg[0]):-1e9)+4;
-        if(vert) svg+=`<text x="${bxc}" y="${edge}" transform="rotate(-90 ${bxc} ${edge})" text-anchor="${up?'start':'end'}" dominant-baseline="middle" font-size="${fs}" font-weight="800" fill="${T.txt}" style="font-variant-numeric:tabular-nums">${txt}</text>`;
-        else svg+=`<text x="${bxc}" y="${up?edge:edge+fs*0.8}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${T.txt}" style="font-variant-numeric:tabular-nums">${txt}</text>`; }
     }
       bx+=bw; });
     svg+=`<text x="${cx}" y="${H-mb+17}" text-anchor="middle" font-size="13" font-weight="700" fill="${T.txt}">S${si+1}</text>`;
@@ -4659,7 +4658,9 @@ function drawSector(){
   svg+='</svg>'; $('#secShell').innerHTML=svg;
   try{ secSummary(data, secs, STS, hasSt, worst); }catch(e){ const el=$('#secSum'); if(el) el.innerHTML=''; }
   $('#secShell').querySelectorAll('.sb').forEach(r=> r.addEventListener('mousemove',ev=>{
-    tt.innerHTML=`<div class="tt-h">${escHtml(surOf(r.dataset.s))} · Tor ${String(r.dataset.sec).replace('-','–')}</div><div class="tt-r"><span class="n">Abschnitts-Rückstand</span><b>${fmt(+r.dataset.v)} s</b></div>`;
+    const _sec=r.dataset.sec, _all=[...$('#secShell').querySelectorAll('.sb')].filter(x=>x.dataset.sec===_sec).map(x=>+x.dataset.v).sort((a,b)=>a-b);
+    const _rk=_all.indexOf(+r.dataset.v)+1, EN=LANG==='en';
+    tt.innerHTML=`<div class="tt-h">${escHtml(surOf(r.dataset.s))} · ${EN?'gates':'Tor'} ${String(_sec).replace('-','–')}</div><div class="tt-r"><span class="n">${EN?'Rank in this section':'Rang in diesem Abschnitt'}</span><b>${_rk} / ${_all.length}</b></div><div class="tt-r"><span class="n">${(+r.dataset.v)<=-0.005?(EN?'faster than the best time':'schneller als die Bestzeit'):((+r.dataset.v)>=0.005?(EN?'slower than the best time':'langsamer als die Bestzeit'):(EN?'equal to the best time':'gleich wie die Bestzeit'))}</span></div>`;
     const br=r.getBoundingClientRect(); tt.style.opacity=1; tt.style.left=(br.left+br.width/2)+'px'; tt.style.top=(br.top-6)+'px';
   }));
   $('#secShell').onmouseleave=()=> tt.style.opacity=0;
@@ -9237,7 +9238,7 @@ Object.assign(I18N_EN,{
  "Alle Tore auf einen Blick:":"All gates at a glance:","1 · Tagging – das Fundament":"1 · Tagging – the foundation","Tore · bei Bedarf anpassen.":"gates · adjust if needed.",
  "wechseln die Zeile,":"change the row,","springt eine Zelle nach unten,":"jumps one cell down,","jetzt 2. Lauf am Tor anklicken":"now click the 2nd run at the gate",
  "Tor anklicken für 1. und 2. Lauf":"click a gate for the 1st and 2nd run","Bester Rückstand":"Best deficit","grösster Verlust":"biggest loss","grösster Zeitverlust":"biggest time loss",
- "Abschnitts-Rückstand":"Section deficit","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
+ "Abschnitts-Rückstand":"Section deficit","Ohne Sekundenwerte – die getaggten Abschnitte entsprechen nicht 1:1 den FIS-Sektoren.":"No seconds shown – the tagged sections do not match the FIS sectors 1:1.","Rückstand s":"Deficit s","Bester Lauf":"Best race","Schwächster Lauf":"Weakest race","FIS-Rückstand":"FIS deficit",
  "Alle auswählen":"Select all","An die Coaches":"To the coaches","auf dem Gerät.":"on the device.","erstellen, mit":"create, with","Video wählen —":"Choose video —",
  "Athlet wählen —":"Choose athlete —","keine Daten —":"no data —","älter als 1 Jahr":"older than 1 year","älter als 6 Monate":"older than 6 months","älter als 90 Tage":"older than 90 days",
  "Video(s) löschen und ~":"Delete video(s) and ~","verfügbar — du nutzt v":"available — you're using v","heruntergeladen — bereit zur Installation.":"downloaded — ready to install.",
