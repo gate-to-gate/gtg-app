@@ -3411,7 +3411,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610241231';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241303';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4074,6 +4074,7 @@ function loadEvent(){
     if(!(typeof COACH!=='undefined'&&COACH&&COACH.on) && $('#main')) $('#main').innerHTML=`<div class="card">${emptyBox('Kein Event/Lauf ausgewählt. Wähle oben ein Event.', 'chart')}</div>`;
     return; }
   S.run = Number($('#selRun').value); savePrefs();
+  if(typeof COACH!=='undefined' && COACH && COACH.on && COACH.bundle) coachSelSet(COACH.bundle.key, {run:S.run});
   const [date,venue]=S.evtKey.split('|');
   S.ev = DS().find(e=> discMatch(e)&&e.gender===S.gen&&e.date===date&&e.venue===venue&&String(e.run)===String(S.run));
   S.hidden = new Set();
@@ -9038,7 +9039,13 @@ function coachLoadBundle(key, attempt){
       setTimeout(()=>coachLoadBundle(key, attempt+1), 10000);
     } else coachLinkState(key).then(st=> coachDeadBox(st||'missing'));
   }); }
+// Coach-Link: zuletzt gewählter Lauf / Disziplin je Link merken (Neuladen bleibt beim gleichen Lauf)
+function coachSelGet(k){ try{ return k? ((LS.get('gtg_coachsel',{})||{})[k]||null) : null; }catch(e){ return null; } }
+function coachSelSet(k,o){ if(!k) return; try{ const m=LS.get('gtg_coachsel',{})||{}; m[k]=Object.assign({}, m[k]||{}, o, {at:Date.now()});
+    const ks=Object.keys(m); if(ks.length>40){ ks.sort((x,y)=>(m[x].at||0)-(m[y].at||0)).slice(0,ks.length-40).forEach(x=>delete m[x]); }
+    LS.set('gtg_coachsel',m); }catch(e){} }
 function enterCoach(bundle){
+  if(!bundle.key){ try{ bundle.key=new URLSearchParams(location.search).get('coach')||null; }catch(e){} }
   COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
   try{ const cs=$('#coachStand'); if(cs){ if(bundle.created){ const d=new Date(bundle.created);
         const p2=x=>String(x).padStart(2,'0');
@@ -9060,9 +9067,10 @@ function enterCoach(bundle){
   if(evSel){ evSel.innerHTML=`<option value="${escHtml(ev0.date+'|'+ev0.venue)}">${escHtml(ev0.venue)} · ${dmy(ev0.date)}</option>`; evSel.value=`${ev0.date}|${ev0.venue}`; }
   S.evtKey=`${ev0.date}|${ev0.venue}`;
   const runOpts=runs.map(r=>`<option value="${r.run}">Lauf ${r.run}</option>`).join('');
-  if(runSel){ runSel.innerHTML=runOpts; runSel.value=first.run; runSel.onchange=loadEvent; }
+  const _sv=coachSelGet(bundle.key), _r0=(_sv && runs.some(r=>String(r.run)===String(_sv.run))) ? String(_sv.run) : first.run;   // zuletzt gewählter Lauf
+  if(runSel){ runSel.innerHTML=runOpts; runSel.value=_r0; runSel.onchange=loadEvent; }
   // markanter Lauf-Wechsler im Header
-  const cr=$('#coachRun'); if(cr){ cr.innerHTML=runOpts; cr.value=first.run; cr.onchange=()=>{ if(runSel){ runSel.value=cr.value; } loadEvent(); }; }
+  const cr=$('#coachRun'); if(cr){ cr.innerHTML=runOpts; cr.value=_r0; cr.onchange=()=>{ if(runSel){ runSel.value=cr.value; } loadEvent(); }; }
   if($('#coachRunCount')) $('#coachRunCount').textContent = runs.length===1 ? '1 Lauf' : runs.length+' Läufe';
   if($('#coachRunWrap')) $('#coachRunWrap').style.display = runs.length>=1 ? '' : 'none';   // Anzahl Läufe direkt sichtbar
   { const cw=$('#coachRunWrap'), one=runs.length<=1; if(cw){ cw.classList.toggle('cr-single', one); cw.title = one ? 'Bisher nur ein Lauf verfügbar' : 'Lauf wählen'; }
@@ -9082,8 +9090,9 @@ function enterCoachTrain(bundle, first){
   const discs=[...new Set((bundle.runs||[]).map(r=>r.ev&&r.ev.discipline).filter(Boolean))];
   const setCount=()=>{ const n=runs_count(bundle, S.disc); if($('#coachRunCount')) $('#coachRunCount').textContent = LANG==='en'? (n===1?'1 run':n+' runs') : (n===1?'1 Lauf':n+' Läufe'); };
   const cr=$('#coachRun');
+  { const sv=coachSelGet(bundle.key); if(sv && sv.disc && discs.includes(sv.disc)) S.disc=sv.disc; }   // zuletzt gewählte Disziplin (Serien-Auswahl merkt sich die Analyse selbst)
   if(cr && discs.length>1){ cr.innerHTML=discs.map(d=>`<option value="${escHtml(d)}">${escHtml(discName(d))}</option>`).join(''); cr.value=S.disc; cr.disabled=false; cr.style.display='';
-    cr.onchange=()=>{ S.disc=cr.value; S.trainSel=null; setCount(); refreshTrainSeries(); }; }
+    cr.onchange=()=>{ S.disc=cr.value; S.trainSel=null; coachSelSet(bundle.key,{disc:S.disc}); setCount(); refreshTrainSeries(); }; }
   else if(cr){ cr.innerHTML=''; cr.disabled=true; cr.style.display='none'; }
   { const lab=document.querySelector('#coachRunWrap .cr-lab'); if(lab) lab.textContent='Training'; const car=document.querySelector('#coachRunWrap .cr-car'); if(car) car.style.display= discs.length>1?'':'none'; }
   setCount();
