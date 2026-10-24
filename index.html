@@ -1217,6 +1217,9 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .part-row.on .part-f{display:flex}
 .part-row .part-f label{gap:6px}
 .part-row #mStartGate{width:52px}
+.part-row #mAnchorGate{width:80px}
+.part-row .part-anc{white-space:nowrap}
+.anchor-mk{color:var(--red);font-size:10px}
 .ss-part{font-size:10px;font-weight:600;color:var(--muted);margin-left:4px;white-space:nowrap}
 .hm-cell.hm-startpt{color:var(--muted);font-style:italic}
 .fis-row .fis-gap.off{opacity:.4;pointer-events:none}
@@ -2479,7 +2482,7 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
           <div class="fis-opts">
             <label class="fis-chk" title="Das Video zeigt den Lauf erst ab einem späteren Tor (z. B. ab der 1. Zwischenzeit). Der erste Tag ist dann dieses Tor, die Linie in der Analyse beginnt dort mit dem eingetragenen Rückstand."><input type="checkbox" id="mPart"> Video beginnt später</label>
             <span class="part-f"><label>ab Tor <input type="number" id="mStartGate" min="2" step="1" inputmode="numeric" placeholder="14"></label>
-            <label title="Rückstand auf die Laufbestzeit bei diesem Tor (z. B. aus der FIS-Zwischenzeit). Vorsprung mit Minus eingeben.">Rückstand dort <input type="number" id="mStartGap" step="0.01" inputmode="decimal" placeholder="0.00"> <span class="unit">s</span></label></span>
+            <label class="part-anc" title="Tor mit bekanntem Rückstand (z. B. die nächste Zwischenzeit). Leer lassen, wenn der Rückstand beim Start-Tor bekannt ist – die Tore davor werden zurückgerechnet.">Rückstand bei Tor <input type="number" id="mAnchorGate" min="2" step="1" inputmode="numeric" placeholder="= Start"> <input type="number" id="mStartGap" step="0.01" inputmode="decimal" placeholder="0.00" title="Rückstand auf die Laufbestzeit bei diesem Tor (z. B. aus der FIS-Zwischenzeit). Vorsprung mit Minus eingeben."> <span class="unit">s</span></label></span>
           </div>
         </div>
         <div class="fis-row" id="fisRow">
@@ -3411,7 +3414,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610241309';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241437';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3895,7 +3898,7 @@ function trainSectionSeries(date,venue){
   const evs = TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e)&&!isArchived(e));
   const out=[];
   evs.forEach(e=> (e.skiers||[]).forEach(s=>{ if(!canSeeBy(s.by)) return;   // Serien anderer Teams nicht zeigen
-    out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run, by:s.by||null, startGate:s.startGate, startGap:s.startGap}); }));
+    out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run, by:s.by||null, startGate:s.startGate, startGap:s.startGap, anchorGate:s.anchorGate}); }));
   // sortiert nach Athlet, dann Lauf; doppelte Serien (gleiche Person + Lauf) nur einmal
   out.sort((a,b)=> a.name.localeCompare(b.name) || (+a.run)-(+b.run));
   const seen=new Set(); return out.filter(x=>{ const k=x.name+'|'+x.run; if(seen.has(k)) return false; seen.add(k); return true; });
@@ -4023,7 +4026,7 @@ function loadTrainEvent(all){ try{ savePrefs(); }catch(e){}
   const _short=mkShortNames(all.map(x=>x.name));   // gleicher Nachname -> Initial (z. B. SUTER J. / SUTER C.)
   S.trShort=_short;
   const skiers = sel.map(s=>{ const sur=_short(s.name);
-    return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run, startGate:s.startGate, startGap:s.startGap}; });
+    return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run, startGate:s.startGate, startGap:s.startGap, anchorGate:s.anchorGate}; });
   // Figuren der Sektion zusammenführen
   const evsF=TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e));
   const fmap=new Map(); evsF.forEach(e=>(e.figures||[]).forEach(f=>{ if(!fmap.has(f.gate)) fmap.set(f.gate,f.label); }));
@@ -4033,12 +4036,13 @@ function loadTrainEvent(all){ try{ savePrefs(); }catch(e){}
   recomputeEvent(ev);
   S.ev=ev; S.run=null; { const _sk=[date,venue,S.disc,S.gen].join('|'), _h=(S._hidSec===_sk&&S.hidden)||new Set(); S._hidSec=_sk; S.hidden=new Set([..._h].filter(n=>skiers.some(s=>s.name===n))); }   // ausgeblendete Serien bleiben ausgeblendet, solange sie gewählt sind
   window._trMaxGates=Math.max(0,...(all||sel).map(s=>(s.gates||[]).length));   // «vollständig» am ganzen Abschnitt messen, nicht an der Auswahl
-  S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null, startGate:s.startGate, startGap:s.startGap})); S.trSeries.forEach(x=> x.total=recStart(x)?null:trTotal(x));
+  S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null, startGate:s.startGate, startGap:s.startGap, anchorGate:s.anchorGate})); S.trSeries.forEach(x=> x.total=recStart(x)?null:trTotal(x));
   // Teil-Video im Training: Gesamtzeit = Zeit des schnellsten ganzen Laufs bis Tor X + Rückstand dort + eigene Zeit ab Tor X
   { const full=S.trSeries.filter(x=>x.total!=null); const ref=full.length?full.reduce((a,b)=>b.total<a.total?b:a):null;
-    S.trSeries.forEach(x=>{ const st=recStart(x); if(!st||!ref) return; const g=x.gates||[]; const own=g.slice(st.g-1).filter(v=>typeof v==='number'&&v>0);
-      const nEnd=Math.max(g.length,(ref.gates||[]).length)-(st.g-1); if(!own.length || own.length<nEnd*0.95) return;
-      const pre=(ref.gates||[]).slice(0,st.g-1).reduce((a,v)=>a+((typeof v==='number'&&v>0)?v:0),0);
+    // (mit Anker: Zeit des schnellsten bis zum Anker-Tor + bekannter Rückstand dort + eigene Zeit ab dem Anker-Tor)
+    S.trSeries.forEach(x=>{ const st=recStart(x); if(!st||!ref) return; const g=x.gates||[]; const own=g.slice(st.a-1).filter(v=>typeof v==='number'&&v>0);
+      const nEnd=Math.max(g.length,(ref.gates||[]).length)-(st.a-1); if(!own.length || own.length<nEnd*0.95) return;
+      const pre=(ref.gates||[]).slice(0,st.a-1).reduce((a,v)=>a+((typeof v==='number'&&v>0)?v:0),0);
       x.total=pre+st.gap+own.reduce((a,v)=>a+v,0); }); }
   S.comp=compute(ev);
   if(S.trainRef==='own'){ try{ S.comp=trainOwnRefComp(ev, S.comp); }catch(e){ try{ console.error('[GtG] own ref',e); }catch(_){} } }
@@ -4121,6 +4125,8 @@ function compute(ev){
     // Teil-Video: Linie beginnt erst bei Tor st0 mit dem eingetragenen Rückstand (sGap); davor keine Werte
     const st0 = (!isTop && parseInt(s.startGate,10)>=2) ? Math.min(parseInt(s.startGate,10), n) : 1;
     const sIdx = st0-1, sGap = (st0>1 && typeof s.startGap==='number' && isFinite(s.startGap)) ? s.startGap : 0;
+    // Anker: Rückstand sGap ist bei Tor aG bekannt (z. B. 1. Zwischenzeit), getaggt wird schon ab Tor st0 -> davor wird zurückgerechnet
+    const aG = (st0>1 && parseInt(s.anchorGate,10)>st0) ? Math.min(parseInt(s.anchorGate,10), n) : st0, aIdx = aG-1;
     // Pass 1: Rohdifferenz + Anomalie
     const rawDiff=[], anom=[];
     for(let i=0;i<n;i++){
@@ -4154,7 +4160,7 @@ function compute(ev){
     const og = (typeof s.officialGap==='number') ? s.officialGap : null;
     let calibrated=false;
     if(!isTop && og!=null){
-      const idxs=[]; for(let i=0;i<n;i++) if(rawDiff[i]!=null) idxs.push(i);
+      const idxs=[]; for(let i=0;i<n;i++) if(rawDiff[i]!=null && i>=aIdx) idxs.push(i);   // nur nach dem Anker kalibrieren (davor ist nichts Offizielles bekannt)
       if(idxs.length){
         const clean=i=> cleanBase[i];
         const base = idxs.reduce((a,i)=> a + clean(i), 0);
@@ -4171,9 +4177,12 @@ function compute(ev){
     // Pass 2: kalibrierte Diffs + Kumulative
     // Kumulative aus UNGERUNDETEN Werten summieren (erst beim Speichern runden),
     // damit der Endrückstand exakt der FIS-Kalibrierung entspricht (kein Rundungsdrift).
-    const diff=[], cleanDiff=[], cumRaw=[], cumClean=[]; let cr=sGap, cc=sGap;
+    // Startwert bei Tor st0: Rückstand am Anker minus die getaggten Differenzen zwischen Start und Anker
+    let pR=0, pC=0; for(let i=sIdx;i<aIdx;i++){ if(rawDiff[i]!=null){ pR+=rawDiff[i]+corrArr[i]; pC+=cleanBase[i]+corrArr[i]; } }
+    const c0R=sGap-pR, c0C=sGap-pC;
+    const diff=[], cleanDiff=[], cumRaw=[], cumClean=[]; let cr=c0R, cc=c0C;
     for(let i=0;i<n;i++){
-      if(i<sIdx){ const v=(i===sIdx-1)? Math.round(sGap*1000)/1000 : null; diff[i]=null; cleanDiff[i]=null; cumRaw[i]=v; cumClean[i]=v; continue; }
+      if(i<sIdx){ const isS=(i===sIdx-1); diff[i]=null; cleanDiff[i]=null; cumRaw[i]=isS?Math.round(c0R*1000)/1000:null; cumClean[i]=isS?Math.round(c0C*1000)/1000:null; continue; }
       const rd=rawDiff[i]; const corr=corrArr[i];
       const dxRaw  = rd==null ? null : (rd+corr);
       const dxClean= rd==null ? null : (cleanBase[i]+corr);
@@ -4186,7 +4195,7 @@ function compute(ev){
     const dnf = lastReal>=0 && lastReal < n-4;
     const filled = diff.filter(x=>x!=null).length;
     const cumRawDisp = st0>1? cumRaw.slice() : normStart(cumRaw), cumCleanDisp = st0>1? cumClean.slice() : normStart(cumClean);
-    return {name:s.name, nation:s.nation, isTop, sui:s.nation==='SUI', lastReal, dnf, startGate:st0, startIdx:sIdx, startGap:sGap,
+    return {name:s.name, nation:s.nation, isTop, sui:s.nation==='SUI', lastReal, dnf, startGate:st0, startIdx:sIdx, startGap:sGap, anchorGate:aG, startCumRaw:(st0>1?c0R:0), startCumClean:(st0>1?c0C:0),
       officialGap: og, calibrated,
       gates:SGi, diff, anom, pair, cleanDiff, cumRaw, cumClean, cumRawDisp, cumCleanDisp,
       finalRaw:cumRaw[lastReal]??cr, finalClean:cumClean[lastReal]??cc, filled, complete: (n-sIdx)>0? filled/(n-sIdx) : 0, color:null};
@@ -4589,6 +4598,8 @@ function drawHero(){
     // Teil-Video: Startpunkt markieren (Video beginnt erst hier, Rückstand eingetragen)
     if(s.startIdx>0 && PVs[s.startIdx]!=null){ const X=x(s.startIdx+1), Y=y(PVs[s.startIdx]);
       svg+=`<circle data-s="${escHtml(s.name)}" cx="${X}" cy="${Y}" r="3.8" fill="${T.halo}" stroke="${col}" stroke-width="2"><title>${LANG==='en'?'Video starts at gate ':'Video beginnt bei Tor '}${s.startGate}</title></circle>`; }
+    if(s.startIdx>0 && s.anchorGate>s.startGate && PVs[s.anchorGate-1]!=null){ const X=x(s.anchorGate), Y=y(PVs[s.anchorGate-1]);
+      svg+=`<rect data-s="${escHtml(s.name)}" x="${X-3.4}" y="${Y-3.4}" width="6.8" height="6.8" transform="rotate(45 ${X} ${Y})" fill="${col}" stroke="${T.halo}" stroke-width="1.4"><title>${LANG==='en'?'Known deficit at gate ':'Bekannter Rückstand bei Tor '}${s.anchorGate}</title></rect>`; }
     // Trainings-Serien: Lauf-Nr. an das Linienende (wenn derselbe Athlet mehrere Läufe hat)
     if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
       if(PVs[li]!=null){ endLabs.push({x:x(li+1), y:y(PVs[li]), col:lineCol, t:'L'+s._lauf, s:s.name}); } }
@@ -4679,7 +4690,7 @@ function secSummary(data, secs, STS, hasSt, worst){
   const esc=t=> String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const rows=data.map(d=>{ const idx=d.vals.map((v,i)=>({v,i})).filter(o=>o.v!=null);
     if(!idx.length) return null;
-    const tot=idx.reduce((a,o)=>a+o.v,0) + (d.s.startIdx>0? (d.s.startGap||0) : 0);   // Teil-Video: Rückstand bei Tor X mitzählen
+    const tot=idx.reduce((a,o)=>a+o.v,0) + (d.s.startIdx>0? ((S.excludeAnom?d.s.startCumClean:d.s.startCumRaw)||0) : 0);   // Teil-Video: Rückstand beim Start-Tor mitzählen
     const best=idx.reduce((a,o)=>o.v<a.v?o:a), weak=idx.reduce((a,o)=>o.v>a.v?o:a);
     const pos=idx.reduce((a,o)=>a+(o.v>0?o.v:0),0);
     return {d, nm:nmOf(d.s), col:d.s.color, tot, best, weak, pos, idx, dnf:!!d.s.dnf}; }).filter(Boolean)
@@ -4870,7 +4881,7 @@ function drawHeatmap(mode){
       else { const pr=isPair(s,i);
         const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?(LANG==='en'?`Combined with gate ${s.pair[i]+2} (tagging shifted by one gate) – together ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`):'');
         const _dnfHere = d==null && s.dnf && i===s.lastReal+1;
-        if(s.startIdx>0 && i===s.startIdx-1){ h+=`<td class="hm-cell hm-startpt" ${da} style="background:${_blank}" title="${LANG==='en'?'Video starts here – deficit at this gate':'Video beginnt hier – Rückstand bei diesem Tor'}">▸ ${fmt(s.startGap)}</td>`; return; }
+        if(s.startIdx>0 && i===s.startIdx-1){ h+=`<td class="hm-cell hm-startpt" ${da} style="background:${_blank}" title="${LANG==='en'?'Video starts here – deficit at this gate':'Video beginnt hier – Rückstand bei diesem Tor'}${s.anchorGate>s.startGate?(LANG==='en'?' (calculated back from gate '+s.anchorGate+')':' (zurückgerechnet ab Tor '+s.anchorGate+')'):''}">▸ ${fmt(S.excludeAnom?s.startCumClean:s.startCumRaw)}</td>`; return; }
         h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}${s.isTop?' hm-top':''}${_dnfHere?' hm-dnf':''}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?(_dnfHere?'DNF':''):fmt(d)}</td>`; }
     });
     h+=`</tr>`; }
@@ -5060,7 +5071,8 @@ function getVenue(){ const nw=$('#mVenueNew'); if(nw && nw.style.display!=='none
 /* ---- view switching ---- */
 function savePrefs(){ try{ const o=LS.get('gtg_prefs',{})||{};
     // Event/Lauf je Modus (Wettkampf/Training) merken, damit «Aktualisieren» die Auswahl behält
-    const evt=Object.assign({}, o.evt||{}); if(S.evtKey && !S._want) evt[S.mode]={key:S.evtKey, run:(S.run!=null?S.run:null), disc:S.disc, gen:S.gen};
+    const _co=(typeof COACH!=='undefined'&&COACH&&COACH.on);   // Coach-Link: Auswahl gehört zum Link (coachSelSet), nicht zur eigenen Analyse
+    const evt=Object.assign({}, o.evt||{}); if(S.evtKey && !S._want && !_co) evt[S.mode]={key:S.evtKey, run:(S.run!=null?S.run:null), disc:S.disc, gen:S.gen};
     const tr = (S.mode==='train' && S.trainSel && S.trainSel.sectionKey) ? {sec:S.trainSel.sectionKey, picked:[...S.trainSel.picked], known:[...(S.trainSel.known||[])]} : (o.trSel||null);
     LS.set('gtg_prefs',{disc:S.disc,discAll:!!S.discAll,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain,evt,trSel:tr}); }catch(e){} }
 function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
@@ -5709,10 +5721,11 @@ function computeOverlaySteps(){
   let topG=null, topOG=0;
   if(ev){ const top=ev.skiers.find(s=>s.fastest); if(top && top.name!==name){ topG=gOfRaw(top); topOG=(typeof top.officialGap==='number')?top.officialGap:0; } }
   const gates=[]; for(let i=1;i<ts.length;i++) gates.push(ts[i].t-ts[i-1].t);
-  const _st=formStart(), _off=(_st&&_st.g)?_st.g-1:0, _g0=(_st&&_st.g&&_st.gap!=null)?_st.gap:0;   // Teil-Video: ab Tor X mit Rückstand dort
+  const _st=formStart(), _off=(_st&&_st.g)?_st.g-1:0, _gA=(_st&&_st.g&&_st.gap!=null)?_st.gap:0, _ak=(_st&&_st.g)?Math.max(0,_st.a-_st.g):0;   // Teil-Video: ab Tor X, Rückstand bei Tor A bekannt
   let diffs=gates.map((g,i)=> (topG&&topG[i+_off]!=null) ? g-topG[i+_off] : 0);
   const best=$('#mBest').checked; const gapVal=parseFloat($('#mGap').value); const og=best?0:(isFinite(gapVal)?gapVal:null);
-  if(og!=null && diffs.length){ const base=diffs.reduce((a,b)=>a+b,0); const corr=((og-topOG-_g0)-base)/diffs.length; diffs=diffs.map(d=>d+corr); }
+  if(og!=null && diffs.length>_ak){ const post=diffs.slice(_ak); const base=post.reduce((a,b)=>a+b,0); const corr=((og-topOG-_gA)-base)/post.length; diffs=diffs.map((d,i)=> i>=_ak? d+corr : d); }
+  const _g0=_gA-diffs.slice(0,_ak).reduce((a,b)=>a+b,0);   // Startwert = Rückstand am Anker minus Differenzen davor
   const steps=[]; let c=_g0; for(let i=0;i<diffs.length;i++){ c+=diffs[i]; steps.push({t:ts[i+1].t, cum:Math.round(c*1000)/1000}); }
   const startT=ts[0].t, finishT=ts[ts.length-1].t;
   // Farbverlauf entlang der Timeline (oben Start -> unten Ziel)
@@ -5765,7 +5778,7 @@ function saveTagDraft(){ try{
     if(!TG.tags || TG.tags.length<2){ return; }   // erst ab Start + 1 Tor sinnvoll
     const d={ tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), mode:TG.mode||'comp',
       date:$('#mDate')?.value||'', venue:(typeof getVenue==='function'?getVenue():'')||'', disc:$('#mDisc')?.value||'GS', gen:$('#mGen')?.value||'M',
-      run:(typeof formRun==='function'?formRun():1), name:$('#mAth')?.value||'', best:!!$('#mBest')?.checked, gap:$('#mGap')?.value||'', part:!!$('#mPart')?.checked, sg:$('#mStartGate')?.value||'', sgap:$('#mStartGap')?.value||'',
+      run:(typeof formRun==='function'?formRun():1), name:$('#mAth')?.value||'', best:!!$('#mBest')?.checked, gap:$('#mGap')?.value||'', part:!!$('#mPart')?.checked, sg:$('#mStartGate')?.value||'', sgap:$('#mStartGap')?.value||'', sa:$('#mAnchorGate')?.value||'',
       fps:(typeof curFps==='function'?curFps():30), savedAt:Date.now() };
     LS.set('gtg_tagdraft', d);
   }catch(e){} }
@@ -5788,7 +5801,7 @@ function restoreTagDraft(d){ try{
     if(d.name){ if(![...($('#mAth')?.options||[])].some(o=>o.value===d.name) && !ATHLETES.some(a=>a.name===d.name)){ ATHLETES.push({name:d.name}); ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); fillAthleteSelect(); } if($('#mAth')) $('#mAth').value=d.name; }
     if($('#mBest')) $('#mBest').checked=!!d.best; if($('#gapLab')) $('#gapLab').classList.toggle('off', !!d.best);
     if($('#mGap')) $('#mGap').value=d.best?'':(d.gap||'');
-    if($('#mPart')) $('#mPart').checked=!!d.part; if($('#mStartGate')) $('#mStartGate').value=d.sg||''; if($('#mStartGap')) $('#mStartGap').value=d.sgap||''; updatePartUI();
+    if($('#mPart')) $('#mPart').checked=!!d.part; if($('#mStartGate')) $('#mStartGate').value=d.sg||''; if($('#mStartGap')) $('#mStartGap').value=d.sgap||''; if($('#mAnchorGate')) $('#mAnchorGate').value=d.sa||''; updatePartUI();
     if($('#inpFps')) $('#inpFps').value=d.fps||30;
     TG.tags=d.tags.map(t=>({t:t.t, fig:t.fig||null, unsure:!!t.unsure}));
     updateMetaSummary(); renderTags(); tgResetHistory();
@@ -5918,13 +5931,14 @@ function renderTags(){
     const prev=i>0?TG.tags[i-1].t:null;
     const d = prev!=null ? Math.round((tag.t-prev)*1000)/1000 : null;
     const label = 'Tor '+(i+_S);   // wir taggen den Start nicht: erster Tag = Tor 1 (Referenz) – bei Teil-Video Tor _S
+    const _fa=formStart(); const _isA=!!(_fa&&_fa.g&&_fa.a>_fa.g&&i+_S===_fa.a);   // Tor mit bekanntem Rückstand markieren
     const fp=String(tag.fig||'').split('+'); const f1=fp[0]||'', f2=fp[1]||'';
     const optsFor=sel=>figOpts(usedFig,[f1,f2]).map(o=>{ const dis=o&&o!==sel&&usedFig.has(o); return `<option value="${o}"${o===sel?' selected':''}${dis?' disabled':''}>${o||'–'}</option>`; }).join('');
     const tr=document.createElement('tr');
     if(tag.unsure) tr.classList.add('unsure');
     if(TG.lastTagT!=null && Math.abs(tag.t-TG.lastTagT)<1e-6) tr.classList.add('row-new');
     const _sel = TG.selT!=null && Math.abs(tag.t-TG.selT)<1e-6; if(_sel) tr.classList.add('active');
-    tr.innerHTML=`<td class="gnum">${label}</td><td>${frameOf(tag.t)}</td><td>${tag.t.toFixed(3)}s</td>
+    tr.innerHTML=`<td class="gnum"${_isA?' title="Rückstand bei diesem Tor bekannt"':''}>${label}${_isA?' <span class="anchor-mk">◆</span>':''}</td><td>${frameOf(tag.t)}</td><td>${tag.t.toFixed(3)}s</td>
       <td>${d==null?'—':d.toFixed(3)}</td>
       <td>${(i===0&&_S<2)?'':`<div class="figsel-wrap"><select class="figsel figa" data-i="${i}">${optsFor(f1)}</select><select class="figsel figb" data-i="${i}" title="Optionale 2. Figur">${optsFor(f2)}</select></div>`}</td>
       <td style="white-space:nowrap">${_sel?`<button class="row-move" data-i="${i}" title="Diesen Tag auf das aktuelle Video-Bild verschieben (Taste M)">⤓ Hierher</button>`:''}<button class="row-flag${tag.unsure?' on':''}" data-i="${i}" title="Als unsicher markieren (später prüfen)">⚑</button><button class="row-del" data-i="${i}" title="löschen">✕</button></td>`;
@@ -6002,7 +6016,7 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   ev.skiers = ev.skiers.filter(s=>s.name!==_nm && s.name!==rec.name);
   ev.skiers.push({name:_nm, nation:(natFor(_nm)||rec.nation), fastest:false, gates:rec.gates.slice(),
     officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
-  { const _st=recStart(rec); if(_st){ const sk=ev.skiers[ev.skiers.length-1]; sk.startGate=_st.g; sk.startGap=_st.gap; } }
+  { const _st=recStart(rec); if(_st){ const sk=ev.skiers[ev.skiers.length-1]; sk.startGate=_st.g; sk.startGap=_st.gap; if(_st.a>_st.g) sk.anchorGate=_st.a; } }
   // figures zusammenführen (nach Tor-Nr.)
   const fmap=new Map(ev.figures.map(f=>[f.gate,f.label])); (rec.figures||[]).forEach(f=>fmap.set(f.gate,f.label));
   ev.figures=[...fmap.entries()].map(([gate,label])=>({gate,label})).sort((a,b)=>a.gate-b.gate);
@@ -6051,7 +6065,9 @@ function saveRun(){
   if(TG.tags.length<2){ msg.textContent='Mindestens 2 Tags (Start + 1 Tor) nötig.'; return; }
   const _st=formStart();
   if(_st){ if(!_st.g){ msg.textContent='Teil-Video: bitte das Tor angeben, bei dem das Video beginnt (ab Tor 2).'; return; }
-    if(_st.gap==null){ msg.textContent='Teil-Video: bitte den Rückstand bei Tor '+_st.g+' eintragen (− = Vorsprung).'; return; }
+    if(_st.gap==null){ msg.textContent='Teil-Video: bitte den Rückstand bei Tor '+_st.a+' eintragen (− = Vorsprung).'; return; }
+    { const _ai=parseInt($('#mAnchorGate')&&$('#mAnchorGate').value,10); if(_ai && _ai<_st.g){ msg.textContent='Teil-Video: das Tor mit bekanntem Rückstand muss gleich oder nach Tor '+_st.g+' liegen.'; return; } }
+    if(_st.a>_st.g && _st.a-_st.g >= TG.tags.length){ msg.textContent='Teil-Video: Tor '+_st.a+' ist im Video nicht getaggt (Tags reichen nur bis Tor '+(_st.g+TG.tags.length-1)+').'; return; }
     if(mode!=='train' && $('#mBest') && $('#mBest').checked){ msg.textContent='Die Laufbestzeit muss ab Tor 1 getaggt sein (Referenz) – «Video beginnt später» ausschalten.'; return; } }
   const {gates,figures,unsure}=buildRunFromTags();
   { const _id=runId({date,venue,disc,gen,run,name}); const _ex=(mode==='train'?SAVED_TRAIN:SAVED).find(r=>runId(r)===_id);
@@ -6073,7 +6089,8 @@ function saveRun(){
     fisTxt = noFis ? ' · ohne FIS-Zeit · Endrückstand aus Taggings' : (best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)'));
   }
   if(unsure && unsure.length) rec.unsure=unsure; else delete rec.unsure;   // ⚑-Markierungen mitspeichern (Datenbank zeigt sie)
-  if(_st){ rec.startGate=_st.g; rec.startGap=Math.round(_st.gap*1000)/1000; fisTxt+=` · Video ab Tor ${_st.g} (${_st.gap>=0?'+':'−'}${Math.abs(_st.gap).toFixed(2)} s)`; } else { delete rec.startGate; delete rec.startGap; }
+  if(_st){ rec.startGate=_st.g; rec.startGap=Math.round(_st.gap*1000)/1000; if(_st.a>_st.g) rec.anchorGate=_st.a; else delete rec.anchorGate;
+    fisTxt+=` · Video ab Tor ${_st.g} (${_st.a>_st.g?'bei Tor '+_st.a+' ':''}${_st.gap>=0?'+':'−'}${Math.abs(_st.gap).toFixed(2)} s)`; } else { delete rec.startGate; delete rec.startGap; delete rec.anchorGate; }
   // Ersteller:in ist oben schon gesetzt (bestehende:r Ersteller:in bleibt, auch wenn ein Admin korrigiert)
   applyRun(rec);
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
@@ -6106,11 +6123,11 @@ function saveRun(){
    Import: erkennt «;» oder «,», Anführungszeichen, Dezimalkomma, Spalten über die Kopfzeile. */
 function csvCell(v){ const t=String(v==null?'':v); return /[";\n\r]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; }
 function csvText(head, rows){ return '﻿'+[head,...rows].map(r=>r.map(csvCell).join(';')).join('\r\n'); }
-function runCsvHead(maxG){ return ['Date','Venue','Discipline','Gender','Run','Skier','Nation','FIS','Is fastest','ID','Start gap',...Array.from({length:maxG},(_,i)=>'Gate '+(i+1))]; }
+function runCsvHead(maxG){ return ['Date','Venue','Discipline','Gender','Run','Skier','Nation','FIS','Is fastest','ID','Start gap','Start gap gate',...Array.from({length:maxG},(_,i)=>'Gate '+(i+1))]; }
 function runCsvRow(r, maxG){ const g=(r.gates||[]).map(x=>x==null?'':x); while(g.length<maxG) g.push('');
   const fis = r.officialBest ? 0 : (typeof r.officialGap==='number' ? r.officialGap : '');
   const st=recStart(r);   // Teil-Video: Rückstand beim ersten Tor mit Zeit (Gate-Spalten davor leer)
-  return [r.date,r.venue,r.disc,r.gen,r.run,r.name,r.nation||'',fis,r.officialBest?1:'',runId(r),st?st.gap:'',...g]; }
+  return [r.date,r.venue,r.disc,r.gen,r.run,r.name,r.nation||'',fis,r.officialBest?1:'',runId(r),st?st.gap:'',(st&&st.a>st.g)?st.a:'',...g]; }
 function csvParse(text){
   text=String(text||'').replace(/^﻿/,'');
   const first=(text.split(/\r?\n/)[0]||''); const delim=(first.split(';').length>first.split(',').length)?';':',';
@@ -6128,7 +6145,7 @@ function csvParse(text){
   const col={ date:find(/^(date|datum)$/,0), venue:find(/^(venue|ort)$/,1), disc:find(/^(disciplin|discipline|disziplin)$/,2),
     gen:find(/^(gender|geschlecht)$/,3), run:find(/^(run|lauf)$/,4), name:find(/^(skier|athlet|athlete|name)$/,5),
     nation:find(/^(nation)$/,6), fis:find(/^(fis|fis gap|fis-rückstand)$/,7), fast:find(/^(is fastest|fastest|bestzeit)$/,8),
-    gate1:find(/^(gate|tor)\s*1$/,10), sgap:find(/^(start gap|startrückstand|start-rückstand)$/,-1) };
+    gate1:find(/^(gate|tor)\s*1$/,10), sgap:find(/^(start gap|startrückstand|start-rückstand)$/,-1), sgate:find(/^(start gap gate|start gap at)$/,-1) };
   return {hdr, rows:rows.slice(1), col};
 }
 function csvNum(v){ const t=String(v==null?'':v).trim().replace(',','.'); if(t==='') return null; const n=parseFloat(t); return isFinite(n)?n:null; }
@@ -6147,7 +6164,7 @@ function exportCsv(){
   const {gates}=buildRunFromTags(); const maxG=gates.length;
   const noFis=$('#mNoFis')&&$('#mNoFis').checked, best=!noFis&&$('#mBest')&&$('#mBest').checked, gap=csvNum($('#mGap')&&$('#mGap').value);
   const rec={date,venue,disc,gen,run,name,nation:natOf(name)||'',gates,officialBest:!!best,officialGap:noFis?null:(best?0:gap)};
-  { const _st=formStart(); if(_st&&_st.g&&_st.gap!=null){ rec.startGate=_st.g; rec.startGap=_st.gap; } }
+  { const _st=formStart(); if(_st&&_st.g&&_st.gap!=null){ rec.startGate=_st.g; rec.startGap=_st.gap; if(_st.a>_st.g) rec.anchorGate=_st.a; } }
   download(`GtG_${venue}_${disc}_${gen}_Lauf${run}_${name.replace(/\s/g,'')}.csv`, csvText(runCsvHead(maxG),[runCsvRow(rec,maxG)]), 'text/csv;charset=utf-8');
 }
 function exportJson(){ download('GtG_tagging_backup.json', JSON.stringify({athletes:ATHLETES, runs:SAVED, trainRuns:SAVED_TRAIN, courses:Object.values(COURSES)},null,2), 'application/json'); }
@@ -6177,7 +6194,7 @@ function parseImportCsv(text, stat){
     const officialBest=/^(1|true|yes|ja|x|fastest|best)$/i.test(String(c[col.fast]||'').trim());
     let gap=csvNum(c[col.fis]); if(gap!=null && (gap<0 || gap>60)) gap=null;   // ältere Exporte hatten hier den FIS-Code -> ignorieren
     const rec={mode:'comp',date,venue,disc,gen,run,name,nation:nation||((typeof natOf==='function'?natOf(name):'')||''),gates,figures:[],officialBest,officialGap:officialBest?0:gap};
-    { const sg=col.sgap>=0? csvNum(c[col.sgap]) : null; const f=gates.findIndex(x=>x!=null); if(sg!=null && f>=1 && !officialBest){ rec.startGate=f+1; rec.startGap=sg; } }
+    { const sg=col.sgap>=0? csvNum(c[col.sgap]) : null; const f=gates.findIndex(x=>x!=null); if(sg!=null && f>=1 && !officialBest){ rec.startGate=f+1; rec.startGap=sg; const ag=col.sgate>=0? parseInt(c[col.sgate],10) : NaN; if(ag>f+1) rec.anchorGate=ag; } }
     const id=runId(rec); const ex=SAVED.find(r=>runId(r)===id);
     if(ex && !canEditBy(ex.by)){ stat.foreign=(stat.foreign||0)+1; return; }   // fremdes Tagging nicht überschreiben
     rec.by = (ex&&ex.by) || (ME&&ME.e) || undefined;
@@ -6199,7 +6216,7 @@ function importTagsFromCsv(file){ const r=new FileReader(); r.onload=()=>{ try{
     if(!row){ gtgToast('Keine gültige Zeile im CSV gefunden.'); return; }
     let gates=csvGates(row, col.gate1);
     { const sg=col.sgap>=0? csvNum(row[col.sgap]) : null, f=gates.findIndex(x=>x!=null);   // Teil-Video: leere Gate-Spalten vorne + Start-Rückstand
-      if(sg!=null && f>=1){ gates=gates.slice(f); setFormStart({startGate:f+1, startGap:sg}); } else setFormStart(null); }
+      if(sg!=null && f>=1){ gates=gates.slice(f); const ag=col.sgate>=0? parseInt(row[col.sgate],10) : NaN; setFormStart({startGate:f+1, startGap:sg, anchorGate:(ag>f+1?ag:undefined)}); } else setFormStart(null); }
     gates=gates.map(g=>g==null?0:g);
     if(!gates.some(g=>g>0)){ gtgToast('Keine Tor-Zeiten im CSV.'); return; }
     // Lauf-Angaben passend zum CSV setzen
@@ -6304,15 +6321,19 @@ function runId(r){ return `${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}|${r.
 /* ---- Teil-Video: Video beginnt erst bei Tor X (z. B. 1. Zwischenzeit) mit bekanntem Rückstand dort ----
    Gespeichert als rec.startGate (Tor-Nr. des ersten Tags, ≥2) + rec.startGap (Rückstand dort in s, − = Vorsprung).
    gates[] wird vorne mit null aufgefüllt, damit Index = Tor bleibt. Video-Tags bleiben ungepolstert (Tag 0 = Tor X). */
-function recStart(r){ const g=parseInt(r&&r.startGate,10); if(!(g>=2)) return null; return {g, gap:(typeof r.startGap==='number'&&isFinite(r.startGap))?r.startGap:0}; }
+function recStart(r){ const g=parseInt(r&&r.startGate,10); if(!(g>=2)) return null; const a0=parseInt(r&&r.anchorGate,10);
+  // a = Tor, bei dem der Rückstand bekannt ist (Zwischenzeit); fehlt es, gilt das Start-Tor
+  return {g, a:(a0>g?a0:g), gap:(typeof r.startGap==='number'&&isFinite(r.startGap))?r.startGap:0}; }
 function padTags(r){ const st=recStart(r); const tags=(r&&r.tags)||[]; if(!st) return tags; return Array.from({length:st.g-1},()=>({t:null,fig:''})).concat(tags); }
 function formStart(){ const on=$('#mPart')&&$('#mPart').checked; if(!on) return null;
   const g=parseInt($('#mStartGate')&&$('#mStartGate').value,10); const gp=parseFloat(String(($('#mStartGap')&&$('#mStartGap').value)||'').replace(',','.'));
-  return {g:(g>=2?g:null), gap:(isFinite(gp)?gp:null)}; }
+  const a0=parseInt($('#mAnchorGate')&&$('#mAnchorGate').value,10); const gg=(g>=2?g:null);
+  return {g:gg, a:(gg&&a0>=gg)?a0:gg, gap:(isFinite(gp)?gp:null)}; }
 function tgStartGate(){ const s=formStart(); return (s&&s.g)?s.g:1; }
 function updatePartUI(){ const on=!!($('#mPart')&&$('#mPart').checked); const row=$('#partRow'); if(row) row.classList.toggle('on',on); }
 function setFormStart(r){ const st=recStart(r); if($('#mPart')) $('#mPart').checked=!!st;
-  if($('#mStartGate')) $('#mStartGate').value=st?st.g:''; if($('#mStartGap')) $('#mStartGap').value=st?st.gap:''; updatePartUI(); }
+  if($('#mStartGate')) $('#mStartGate').value=st?st.g:''; if($('#mStartGap')) $('#mStartGap').value=st?st.gap:'';
+  if($('#mAnchorGate')) $('#mAnchorGate').value=(st&&st.a>st.g)?st.a:''; updatePartUI(); }
 
 function isQuotaErr(err){ if(!err) return false; if(err._full===true) return true; const n=(err.name||'')+' '+(err.message||''); return /quota|exceeded|storage/i.test(n) || err.name==='QuotaExceededError' || err.code===22; }
 function saveVideoToLib(rec){
@@ -6320,7 +6341,7 @@ function saveVideoToLib(rec){
   const v={ id:runId(rec), mode:rec.mode||'comp', date:rec.date,venue:rec.venue,disc:rec.disc,gen:rec.gen,run:rec.run,
     name:rec.name,nation:rec.nation,fis:fisOf(rec.name), officialBest:rec.officialBest, officialGap:rec.officialGap,
     fps:curFps(), tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), figures:rec.figures,
-    startGate:rec.startGate, startGap:rec.startGap,
+    startGate:rec.startGate, startGap:rec.startGap, anchorGate:rec.anchorGate,
     video:TG.file, vname:TG.file.name||'video', vsize:TG.file.size||0, savedAt:Date.now() };
   const doPut=()=> vdbPut(v).then(()=>({saved:true})).catch(err=>({saved:false, quota:isQuotaErr(err), err}));
   // Warnung: Training und Wettkampf mit gleicher Athlet:in/Tag/Ort/Disziplin/Lauf-Nr. teilen sich dieselbe Video-Kennung
@@ -6993,7 +7014,7 @@ function initTagging(){
   // Teil-Video (Video beginnt später): Tor-Beschriftung, Figuren und Live-Overlay sofort nachführen
   if($('#mPart')){ const _pu=()=>{ updatePartUI(); try{ renderTags(); saveTagDraft(); }catch(e){} };
     $('#mPart').addEventListener('change',()=>{ _pu(); if($('#mPart').checked && $('#mStartGate') && !$('#mStartGate').value) $('#mStartGate').focus(); });
-    ['#mStartGate','#mStartGap'].forEach(s=>{ const el=$(s); if(el){ el.addEventListener('change',_pu); el.addEventListener('input',()=>{ try{ computeOverlaySteps(); updateOverlay(); }catch(e){} }); } }); }
+    ['#mStartGate','#mStartGap','#mAnchorGate'].forEach(s=>{ const el=$(s); if(el){ el.addEventListener('change',_pu); el.addEventListener('input',()=>{ try{ computeOverlaySteps(); updateOverlay(); }catch(e){} }); } }); }
   if($('#mNoFis')) $('#mNoFis').onchange=()=>{ updateFisMode(); if(typeof computeOverlaySteps==='function'){ computeOverlaySteps(); updateOverlay(); } };
   // wheel scrub over video
   $('.vid-wrap')?.addEventListener('wheel',e=>{ if(!v.src)return; e.preventDefault(); stepFrame(e.deltaY>0?1:-1); },{passive:false});
@@ -9045,7 +9066,7 @@ function coachSelSet(k,o){ if(!k) return; try{ const m=LS.get('gtg_coachsel',{})
     LS.set('gtg_coachsel',m); }catch(e){} }
 function enterCoach(bundle){
   if(!bundle.key){ try{ bundle.key=new URLSearchParams(location.search).get('coach')||null; }catch(e){} }
-  COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle;
+  COACH.on=true; COACH.key=bundle.key||null; COACH.bundle=bundle; S._want=null;   // gemerkte eigene Analyse-Auswahl darf den Link-Inhalt nicht überschreiben
   try{ const cs=$('#coachStand'); if(cs){ if(bundle.created){ const d=new Date(bundle.created);
         const p2=x=>String(x).padStart(2,'0');
         cs.innerHTML=`Stand ${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())}${bundle.mode==='train'?'':' · '+((bundle.runs||[]).length===1?'1 Lauf':(bundle.runs||[]).length+' Läufe')}`; cs.style.display=''; }
@@ -9322,7 +9343,7 @@ $('#selEvt').onchange=refreshRun; $('#selRun').onchange=loadEvent;
 // gespeicherte Auswahl (Disziplin/Geschlecht/Ansicht) wiederherstellen
 const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.discAll) S.discAll=true; if(PREFS.gen) S.gen=PREFS.gen; if(PREFS.mode==='train'||PREFS.mode==='comp') S.mode=PREFS.mode;
 // excludeAnom: früher abschaltbar, heute immer an (alte gespeicherte Einstellung wird ignoriert)
-try{ const pe=PREFS.evt&&PREFS.evt[S.mode]; if(pe&&pe.key){ S.evtKey=pe.key; if(pe.run!=null) S.run=pe.run; S._want={key:pe.key, run:pe.run}; } }catch(e){}
+try{ const pe=!/[?&]coach=/.test(location.search||'') && PREFS.evt&&PREFS.evt[S.mode]; if(pe&&pe.key){ S.evtKey=pe.key; if(pe.run!=null) S.run=pe.run; S._want={key:pe.key, run:pe.run}; } }catch(e){}
 // Gewünschte Auswahl gilt, bis sie gefunden wurde (Daten/Cloud/Login laden evtl. erst später) oder der Nutzer selbst etwas wählt
 ['#selMode','#selDisc','#selGen','#selEvt','#selRun'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('pointerdown',()=>{ S._want=null; },true); });
 if(typeof PREFS.heroSmooth==='boolean') S.heroSmooth=PREFS.heroSmooth;
@@ -9358,7 +9379,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  "Suche Ort oder Athlet …":"Search location or athlete …","Suche Name oder FIS-Code …":"Search name or FIS code …",
  "Disz.":"Disc.","Gesch.":"Gender","Athl.":"Ath.","Rennen":"Races","Saison":"Season","Speicher":"Storage","Rückstand":"Deficit",
  // Tagging
- "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here","Video-Start":"Video start","Video beginnt später":"Video starts later","ab Tor":"from gate","Rückstand dort":"Deficit there","Jetzt loslassen":"Drop it now",
+ "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here","Video-Start":"Video start","Video beginnt später":"Video starts later","ab Tor":"from gate","Rückstand dort":"Deficit there","Rückstand bei Tor":"Deficit at gate","leer = Start-Tor":"empty = start gate","Jetzt loslassen":"Drop it now",
  "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (Enter)":"Tag gate (Enter)",
  "Noch keine Tags.":"No tags yet.","Tor":"Gate","Tore":"Gates","Zeit":"Time","Figur":"Figure","Löschen":"Delete",
  "✓ Speichern":"✓ Save","Speichern":"Save","Lauf-Angaben":"Run details","Lauf-Angaben bearbeiten":"Edit run details",
