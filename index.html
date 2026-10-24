@@ -3411,7 +3411,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610241303';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241305';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -7728,10 +7728,8 @@ function coachTitleOf(date, venue, gender, runsIn, mode){
   if(mode==='train'){ const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / '); const g = gender==='W'?'Frauen':gender==='M'?'Männer':gender;
     return `${venue} · ${dmy(date)} · Training ${[discs,g].filter(Boolean).join(' ')}`; }   // Training: keine Lauf-Angabe (Link enthält alle Läufe, auch spätere)
   const discs=[...new Set(runs.map(r=>r.disc).filter(Boolean))].map(discName).join(' / ');
-  const nums=[...new Set(runs.map(r=>String(r.run)))].sort();
-  const lauf= nums.length ? (nums.length===1?'Lauf '+nums[0]:'Lauf '+nums.slice(0,-1).join(', ')+' & '+nums[nums.length-1]) : '';
   const g = gender==='W'?'Frauen':gender==='M'?'Männer':gender;
-  return `${venue} · ${dmy(date)} · ${[discs,g].filter(Boolean).join(' ')}${lauf?' · '+lauf:''}`; }
+  return `${venue} · ${dmy(date)} · ${[discs,g].filter(Boolean).join(' ')}`; }   // ohne Lauf-Nr.: der Link enthält alle Läufe (auch Lauf 2, sobald aktualisiert)
 function coachShareText(date, venue, gender, url, mode){ return `Gate-to-Gate · ${coachTitleOf(date,venue,gender,null,mode)}\n${url}`; }
 function copyText(t){ try{ if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t); }catch(e){}
   return new Promise(res=>{ const i=document.createElement('textarea'); i.value=t; i.style.position='fixed'; i.style.opacity='0'; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); }catch(e){} i.remove(); res(); }); }
