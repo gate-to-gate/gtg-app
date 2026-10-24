@@ -3411,7 +3411,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610241305';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241309';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -4404,15 +4404,16 @@ function buildLegend(){
     const d=document.createElement('div'); d.className='lg lgg lgg-1'+(S.hidden.has(s.name)?' off':'')+(s.isTop?' lg-top':'');
     heroHLBind(d,[s.name]);
     d.innerHTML=`<span class="bar" style="background:${s.color}"></span><span class="lg-full">${escHtml(s.name)}</span><span class="lg-sur">${surOf(s.name)}</span>${s.isTop?(isTrain()?`<span class="lg-best" title="${LANG==='en'?'Fastest run of the session = reference':'Schnellster Lauf des Trainings = Referenz'}">${LANG==='en'?'Fastest':'Schnellster'}</span>`:'<span class="lg-best" title="Laufbestzeit — schnellster Athlet">Bestzeit</span>'):''}`;
-    d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
+    d.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); heroHL(null); buildLegend(); drawHero(); };
     el.appendChild(d);
   });
 }
 /* Beim Überfahren der Legende die zugehörigen Linien hervorheben, alle anderen verblassen */
-function heroHL(names){ const sh=$('#heroShell'); if(!sh) return; const set=names&&names.length?new Set(names):null;
+function heroHL(names){ const sh=$('#heroShell'); if(!sh) return; const vis=(names||[]).filter(n=>!(S.hidden&&S.hidden.has(n))); const set=vis.length?new Set(vis):null;   // ausgeblendete Linien nicht «hervorheben» (sonst wird alles blass)
   sh.classList.toggle('hl', !!set);
   sh.querySelectorAll('[data-s]').forEach(n=> n.classList.toggle('hl-on', !!set && set.has(n.getAttribute('data-s')))); }
-function heroHLBind(el,names){ el.addEventListener('mouseenter',e=>{ e.stopPropagation(); heroHL(names); }); el.addEventListener('mouseleave',()=>{ const p=el.parentElement&&el.parentElement.closest('.lgg'); heroHL(p&&p.matches(':hover')&&p._hl?p._hl:null); }); el._hl=names; }
+// Nur echte Maus hebt hervor: auf Handy/Tablet löst ein Antippen sonst ein «Hover» aus, das nach dem Neuzeichnen hängen bleibt (alle Linien blass)
+function heroHLBind(el,names){ el.addEventListener('pointerenter',e=>{ if(e.pointerType!=='mouse') return; e.stopPropagation(); heroHL(names); }); el.addEventListener('pointerleave',e=>{ if(e.pointerType!=='mouse') return; const p=el.parentElement&&el.parentElement.closest('.lgg'); heroHL(p&&p.matches(':hover')&&p._hl?p._hl:null); }); el._hl=names; }
 function buildLegendGrouped(el){
   el.classList.add('grp'); const EN=LANG==='en';
   const baseOf=s=>String(s.name).split('·L')[0], runOf=s=>{ const p=String(s.name).split('·L'); return p.length>1?p[p.length-1]:(s._lauf||''); };
@@ -4426,13 +4427,13 @@ function buildLegendGrouped(el){
     const g=document.createElement('div'); g.className='lgg'+(allOff?' off':'');
     const nm=document.createElement('span'); nm.className='lgg-n'; nm.textContent=surOf(k); nm.title=(EN?'Show/hide all runs of ':'Alle Läufe ein-/ausblenden: ')+k;
     heroHLBind(g, runs.map(s=>s.name));
-    nm.onclick=()=>{ const show=runs.every(s=>S.hidden.has(s.name)); runs.forEach(s=>{ if(show) S.hidden.delete(s.name); else S.hidden.add(s.name); }); buildLegend(); drawHero(); };
+    nm.onclick=()=>{ const show=runs.every(s=>S.hidden.has(s.name)); runs.forEach(s=>{ if(show) S.hidden.delete(s.name); else S.hidden.add(s.name); }); heroHL(null); buildLegend(); drawHero(); };
     g.appendChild(nm);
     const rw=document.createElement('span'); rw.className='lgg-rs';
     runs.forEach(s=>{ const r=document.createElement('span'); r.className='lgg-r'+(s.isTop?' top':'')+(S.hidden.has(s.name)?' off':'');
       r.title=s.isTop?(EN?'Fastest run of the session = reference':'Schnellster Lauf des Trainings = Referenz'):(EN?'Show/hide run':'Lauf ein-/ausblenden');
       r.innerHTML=`<span class="bar" style="background:${s.isTop?'#C28E00':s.color}"></span>L${escHtml(runOf(s))}${s.isTop?'<span class="lgg-star">★</span>':''}`;
-      r.onclick=()=>{ if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); buildLegend(); drawHero(); };
+      r.onclick=e=>{ if(e) e.stopPropagation(); if(S.hidden.has(s.name)) S.hidden.delete(s.name); else S.hidden.add(s.name); heroHL(null); buildLegend(); drawHero(); };
       heroHLBind(r,[s.name]);
       rw.appendChild(r); });
     g.appendChild(rw); el.appendChild(g); });
@@ -4612,7 +4613,7 @@ function drawHero(){
   svg+=`<g id="hgm">`+series.map((s,i)=>`<circle data-i="${i}" r="3.6" fill="${s.color}" stroke="${T.halo}" stroke-width="1.6" opacity="0"/>`).join('')+`</g>`;
   svg+=`<rect id="hov" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg+='</svg>';
-  $('#heroShell').innerHTML=svg;
+  $('#heroShell').innerHTML=svg; $('#heroShell').classList.remove('hl');
   // Hinweis-Text zu auffälligen Stellen unter der Grafik
   const _hn=$('#heroNote');
   if(_hn){ if(_anom.length && !S.printMode){
@@ -4756,8 +4757,8 @@ function drawSector(){
       const it=data.filter(d=>{ const k=d.s.name; if(seen.has(k)) return false; seen.add(k); return true; });
       lg.innerHTML = it.length>1 ? it.map(d=>`<span class="sl-i" data-s="${escHtml(d.s.name)}" style="--c:${d.s.color}"><i></i>${escHtml(surOf(String(d.s.name||''))+(()=>{ const m=String(d.s.name||'').match(/·\s*(L\d+)/); return (m&&!_trAgg)?' · '+m[1]:''; })())}</span>`).join('') : '';
       lg.style.display = it.length>1 ? '' : 'none';
-      lg.querySelectorAll('.sl-i').forEach(el=>{ el.onmouseenter=()=>{ const sh=$('#secShell'); if(!sh) return; sh.classList.add('hl'); sh.querySelectorAll('[data-s]').forEach(n=> n.classList.toggle('hl-on', n.getAttribute('data-s')===el.dataset.s)); };
-        el.onmouseleave=()=>{ const sh=$('#secShell'); if(sh) sh.classList.remove('hl'); }; }); } }
+      lg.querySelectorAll('.sl-i').forEach(el=>{ el.onpointerenter=e=>{ if(e.pointerType!=='mouse') return; const sh=$('#secShell'); if(!sh) return; sh.classList.add('hl'); sh.querySelectorAll('[data-s]').forEach(n=> n.classList.toggle('hl-on', n.getAttribute('data-s')===el.dataset.s)); };
+        el.onpointerleave=()=>{ const sh=$('#secShell'); if(sh) sh.classList.remove('hl'); }; }); } }
   const _nw=!S.printMode && gtgNarrow('#secShell');
   const STS=hmSteepOf(), hasSt=Object.keys(STS).length>0;   // Steilheit je Tor (gleiche Stufen wie Höhenprofil/Matrix)
   const _H0=(_nw?340:320)+(hasSt?14:0);
