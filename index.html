@@ -3411,7 +3411,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610241204';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241231';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3836,7 +3836,7 @@ function segFill(sel, vals, lab, cur, onPick){
     el.appendChild(b); });
 }
 function buildModeToggle(){ if(!$('#selMode')) return;
-  segFill('#selMode',['comp','train'], m=> m==='comp'?'Wettkampf':'Training', S.mode, v=>{ if(v===S.mode) return; S.mode=v; S.evtKey=null; S.run=null; savePrefs(); buildFilters(); });
+  segFill('#selMode',['comp','train'], m=> m==='comp'?'Wettkampf':'Training', S.mode, v=>{ if(v===S.mode) return; S.mode=v; S.evtKey=null; S.run=null; try{ const pe=((LS.get('gtg_prefs',{})||{}).evt||{})[v]; if(pe&&pe.key){ S.evtKey=pe.key; S.run=pe.run; } }catch(e){} savePrefs(); buildFilters(); });
   const lbl=$('#selRunLbl'); if(lbl) lbl.textContent = isTrain()?'Serien':'Lauf'; }
 function buildFilters(){
   buildModeToggle();
@@ -3871,7 +3871,7 @@ function refreshEvt(){
     return;
   }
   fill($('#selEvt'), keys, k=>{ const e=evs.find(x=> x.date+'|'+x.venue===k); return evLabel(e); },
-      keys.includes(S.evtKey)?S.evtKey:keys[0]);
+      (S._want && keys.includes(S._want.key)) ? S._want.key : (keys.includes(S.evtKey)?S.evtKey:keys[0]));
   refreshRun();
 }
 function refreshRun(){
@@ -3884,7 +3884,8 @@ function refreshRun(){
     .map(e=>e.run);
   runs=[...new Set(runs)];   // «Alle»: gleiche Lauf-Nr. über mehrere Disziplinen nicht doppelt
   runs.sort((a,b)=>(+a)-(+b));
-  fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), runs.includes(S.run)?S.run:runs[0], true);
+  if(S._want && S._want.key===S.evtKey){ if(S._want.run!=null) S.run=S._want.run; S._want=null; }   // gemerkte Auswahl gefunden
+  { const _r=runs.find(r=>String(r)===String(S.run)); fill($('#selRun'), runs, r=>runLong(S.mode,S.disc,r), _r!=null?_r:runs[0], true); }
   loadEvent();
 }
 
@@ -3911,6 +3912,8 @@ function refreshTrainSeries(){
   const _keys=all.map(s=>seriesKey(s.name,s.run));
   if(!S.trainSel || S.trainSel.sectionKey!==secKey){
     S.trainSel={ sectionKey:secKey, picked:new Set(_keys), known:new Set(_keys) };   // Default: alle Serien
+    try{ const sv=(LS.get('gtg_prefs',{})||{}).trSel; if(sv && sv.sec===secKey && Array.isArray(sv.picked)){   // nach Neuladen: letzte Auswahl übernehmen
+        const kn=new Set(sv.known||[]); S.trainSel.picked=new Set(_keys.filter(k=> sv.picked.includes(k) || !kn.has(k))); } }catch(e){}
   } else {   // neu hinzugekommene Serien (z. B. nach dem Taggen / Aktualisieren) automatisch anwählen
     const kn=S.trainSel.known||new Set(_keys); _keys.forEach(k=>{ if(!kn.has(k)){ S.trainSel.picked.add(k); kn.add(k); } }); S.trainSel.known=kn;
   }
@@ -4009,7 +4012,7 @@ function trainOwnRefComp(ev, cAll){
   const skiers=[top, ...out];
   return Object.assign({}, cAll, {top, skiers, sui:skiers.filter(k=>k.sui), _ownRef:true});
 }
-function loadTrainEvent(all){
+function loadTrainEvent(all){ try{ savePrefs(); }catch(e){}
   if(!S.evtKey){ return; }
   const [date,venue]=S.evtKey.split('|');
   if(!all) all=trainSectionSeries(date,venue);
@@ -4070,7 +4073,7 @@ function loadEvent(){
   if(!$('#selRun')||$('#selRun').value===''){ S.comp=null; S.ev=null;
     if(!(typeof COACH!=='undefined'&&COACH&&COACH.on) && $('#main')) $('#main').innerHTML=`<div class="card">${emptyBox('Kein Event/Lauf ausgewählt. Wähle oben ein Event.', 'chart')}</div>`;
     return; }
-  S.run = Number($('#selRun').value);
+  S.run = Number($('#selRun').value); savePrefs();
   const [date,venue]=S.evtKey.split('|');
   S.ev = DS().find(e=> discMatch(e)&&e.gender===S.gen&&e.date===date&&e.venue===venue&&String(e.run)===String(S.run));
   S.hidden = new Set();
@@ -5053,7 +5056,11 @@ function getVenue(){ const nw=$('#mVenueNew'); if(nw && nw.style.display!=='none
   const s=$('#mVenueSel'); return (s && s.value && s.value!=='__new__') ? normVenue(s.value) : ''; }
 
 /* ---- view switching ---- */
-function savePrefs(){ try{ LS.set('gtg_prefs',{disc:S.disc,discAll:!!S.discAll,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain}); }catch(e){} }
+function savePrefs(){ try{ const o=LS.get('gtg_prefs',{})||{};
+    // Event/Lauf je Modus (Wettkampf/Training) merken, damit «Aktualisieren» die Auswahl behält
+    const evt=Object.assign({}, o.evt||{}); if(S.evtKey && !S._want) evt[S.mode]={key:S.evtKey, run:(S.run!=null?S.run:null), disc:S.disc, gen:S.gen};
+    const tr = (S.mode==='train' && S.trainSel && S.trainSel.sectionKey) ? {sec:S.trainSel.sectionKey, picked:[...S.trainSel.picked], known:[...(S.trainSel.known||[])]} : (o.trSel||null);
+    LS.set('gtg_prefs',{disc:S.disc,discAll:!!S.discAll,gen:S.gen,view:S.view,mode:S.mode,anaSub:S.anaSub,excludeAnom:S.excludeAnom,heroSmooth:S.heroSmooth,terrain:S.terrain,evt,trSel:tr}); }catch(e){} }
 function setDark(on){ document.body.classList.toggle('dark', !!on); try{ LS.set('gtg_dark', !!on); }catch(e){}
   const b=$('#darkBtn'); if(b) b.classList.toggle('on', !!on); }
 function initDark(){ let on=false; try{ on=!!LS.get('gtg_dark',false); }catch(e){} setDark(on);
@@ -9307,6 +9314,9 @@ $('#selEvt').onchange=refreshRun; $('#selRun').onchange=loadEvent;
 // gespeicherte Auswahl (Disziplin/Geschlecht/Ansicht) wiederherstellen
 const PREFS=LS.get('gtg_prefs',{}); if(PREFS.disc) S.disc=PREFS.disc; if(PREFS.discAll) S.discAll=true; if(PREFS.gen) S.gen=PREFS.gen; if(PREFS.mode==='train'||PREFS.mode==='comp') S.mode=PREFS.mode;
 // excludeAnom: früher abschaltbar, heute immer an (alte gespeicherte Einstellung wird ignoriert)
+try{ const pe=PREFS.evt&&PREFS.evt[S.mode]; if(pe&&pe.key){ S.evtKey=pe.key; if(pe.run!=null) S.run=pe.run; S._want={key:pe.key, run:pe.run}; } }catch(e){}
+// Gewünschte Auswahl gilt, bis sie gefunden wurde (Daten/Cloud/Login laden evtl. erst später) oder der Nutzer selbst etwas wählt
+['#selMode','#selDisc','#selGen','#selEvt','#selRun'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('pointerdown',()=>{ S._want=null; },true); });
 if(typeof PREFS.heroSmooth==='boolean') S.heroSmooth=PREFS.heroSmooth;
 if(typeof PREFS.terrain==='boolean') S.terrain=PREFS.terrain;
 let prefView=PREFS.view; if(prefView==='verlauf'){ prefView='analyse'; }   // alte Verlauf-Ansicht -> Analyse-Unterseite
