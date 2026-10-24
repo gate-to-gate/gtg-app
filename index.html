@@ -1213,6 +1213,12 @@ table.tag-list tbody tr.unsure .gnum{color:#b07a1e}
 .fis-row input[type=number]{width:60px;border:1.4px solid var(--line);border-radius:7px;padding:4px 8px;font:inherit;font-size:12px;font-weight:700;text-align:right;background:#fff}
 .fis-row input[type=number]:focus{outline:none;border-color:var(--red)}
 .fis-row .unit{color:var(--muted);font-weight:600}
+.part-row .part-f{display:none;align-items:center;gap:9px 14px;flex-wrap:wrap}
+.part-row.on .part-f{display:flex}
+.part-row .part-f label{gap:6px}
+.part-row #mStartGate{width:52px}
+.ss-part{font-size:10px;font-weight:600;color:var(--muted);margin-left:4px;white-space:nowrap}
+.hm-cell.hm-startpt{color:var(--muted);font-style:italic}
 .fis-row .fis-gap.off{opacity:.4;pointer-events:none}
 .fis-row.nofis .fis-chk:not(.fis-nofis),.fis-row.nofis .fis-gap{opacity:.38;pointer-events:none}
 .fis-nofis{font-weight:700}
@@ -2468,6 +2474,14 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
           <tr><th>Tor</th><th>Frame</th><th>Zeit</th><th>Δ Tor (s)</th><th>Figur</th><th></th></tr>
         </thead><tbody id="tagBody"></tbody></table></div>
         <div id="tgTagHint" class="tg-taghint">▶ Video abspielen (<kbd>Leertaste</kbd>) und bei jedem Tor <kbd>Enter</kbd> drücken.</div>
+        <div class="fis-row part-row" id="partRow">
+          <span class="fis-title">Video-Start</span>
+          <div class="fis-opts">
+            <label class="fis-chk" title="Das Video zeigt den Lauf erst ab einem späteren Tor (z. B. ab der 1. Zwischenzeit). Der erste Tag ist dann dieses Tor, die Linie in der Analyse beginnt dort mit dem eingetragenen Rückstand."><input type="checkbox" id="mPart"> Video beginnt später</label>
+            <span class="part-f"><label>ab Tor <input type="number" id="mStartGate" min="2" step="1" inputmode="numeric" placeholder="14"></label>
+            <label title="Rückstand auf die Laufbestzeit bei diesem Tor (z. B. aus der FIS-Zwischenzeit). Vorsprung mit Minus eingeben.">Rückstand dort <input type="number" id="mStartGap" step="0.01" inputmode="decimal" placeholder="0.00"> <span class="unit">s</span></label></span>
+          </div>
+        </div>
         <div class="fis-row" id="fisRow">
           <span class="fis-title">FIS-Zeit</span>
           <div class="fis-opts">
@@ -2562,7 +2576,7 @@ body.dark #secSum .ss-stack.ss-none{background:rgba(79,138,99,.16);color:#8cc29f
             <label class="mf"><span>Lauf</span><select id="kRun"><option value="1">Lauf 1</option><option value="2">Lauf 2</option></select></label>
           </div>
           <div id="kursPreviewWrap" style="display:none;margin-top:14px">
-            <div class="kprev-head"><span id="kprevInfo"></span><span class="hint">Editierbar. Figuren: H/F/B automatisch aus Tor-Typ — Laps ergänzen. Werden beim Tagging automatisch übernommen.</span></div>
+            <div class="kprev-head"><span id="kprevInfo"></span><span class="hint">Editierbar. Figuren: H/F/B automatisch aus Tor-Typ, Laps aus «*» (Zwischenzeit) im PDF. Werden beim Tagging automatisch übernommen.</span></div>
             <div class="tag-list-wrap" style="max-height:300px"><table class="tag-list kprev"><thead>
               <tr><th>Tor</th><th>Typ</th><th>Dist</th><th>Offset</th><th>Pitch</th><th>Winkel</th><th>Figur</th></tr>
             </thead><tbody id="kursPreview"></tbody></table></div>
@@ -3397,7 +3411,7 @@ const tt = $('#tt');
 /* Logo oben links ist bewusst NICHT anklickbar (keine Navigation). */
 /* ---- consistent athlete colours (fixed per athlete; fastest always gold) ---- */
 const GOLD = '#D9A400';
-const WEB_BUILD='202610231420';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
+const WEB_BUILD='202610241204';   // wird beim Build durch einen Zeitstempel ersetzt (für Auto-Update)
 // feste, klar unterscheidbare Farben je Athlet (kein doppeltes Blau/Teal)
 // bewusst KEIN klares Rot/Grün (löst «gut/schlecht»-Gefühl aus) – nur neutrale, klar unterscheidbare Töne
 const ATH_FIXED = {
@@ -3880,7 +3894,7 @@ function trainSectionSeries(date,venue){
   const evs = TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e)&&!isArchived(e));
   const out=[];
   evs.forEach(e=> (e.skiers||[]).forEach(s=>{ if(!canSeeBy(s.by)) return;   // Serien anderer Teams nicht zeigen
-    out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run, by:s.by||null}); }));
+    out.push({name:s.name, nation:s.nation, gates:(s.gates||[]).slice(), run:e.run, by:s.by||null, startGate:s.startGate, startGap:s.startGap}); }));
   // sortiert nach Athlet, dann Lauf; doppelte Serien (gleiche Person + Lauf) nur einmal
   out.sort((a,b)=> a.name.localeCompare(b.name) || (+a.run)-(+b.run));
   const seen=new Set(); return out.filter(x=>{ const k=x.name+'|'+x.run; if(seen.has(k)) return false; seen.add(k); return true; });
@@ -4006,7 +4020,7 @@ function loadTrainEvent(all){
   const _short=mkShortNames(all.map(x=>x.name));   // gleicher Nachname -> Initial (z. B. SUTER J. / SUTER C.)
   S.trShort=_short;
   const skiers = sel.map(s=>{ const sur=_short(s.name);
-    return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run}; });
+    return {name: sur+'·L'+s.run, nation:s.nation, fastest:false, gates:s.gates.slice(), officialGap:null, officialBest:false, _base:s.name, _lauf:s.run, startGate:s.startGate, startGap:s.startGap}; });
   // Figuren der Sektion zusammenführen
   const evsF=TRAIN.filter(e=>e.discipline===S.disc&&e.gender===S.gen&&e.date===date&&e.venue===venue&&!isDeleted(e));
   const fmap=new Map(); evsF.forEach(e=>(e.figures||[]).forEach(f=>{ if(!fmap.has(f.gate)) fmap.set(f.gate,f.label); }));
@@ -4016,7 +4030,13 @@ function loadTrainEvent(all){
   recomputeEvent(ev);
   S.ev=ev; S.run=null; { const _sk=[date,venue,S.disc,S.gen].join('|'), _h=(S._hidSec===_sk&&S.hidden)||new Set(); S._hidSec=_sk; S.hidden=new Set([..._h].filter(n=>skiers.some(s=>s.name===n))); }   // ausgeblendete Serien bleiben ausgeblendet, solange sie gewählt sind
   window._trMaxGates=Math.max(0,...(all||sel).map(s=>(s.gates||[]).length));   // «vollständig» am ganzen Abschnitt messen, nicht an der Auswahl
-  S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null})); S.trSeries.forEach(x=> x.total=trTotal(x));
+  S.trSeries=sel.map(s=>({name:s.name, run:+s.run, gates:s.gates, total:null, startGate:s.startGate, startGap:s.startGap})); S.trSeries.forEach(x=> x.total=recStart(x)?null:trTotal(x));
+  // Teil-Video im Training: Gesamtzeit = Zeit des schnellsten ganzen Laufs bis Tor X + Rückstand dort + eigene Zeit ab Tor X
+  { const full=S.trSeries.filter(x=>x.total!=null); const ref=full.length?full.reduce((a,b)=>b.total<a.total?b:a):null;
+    S.trSeries.forEach(x=>{ const st=recStart(x); if(!st||!ref) return; const g=x.gates||[]; const own=g.slice(st.g-1).filter(v=>typeof v==='number'&&v>0);
+      const nEnd=Math.max(g.length,(ref.gates||[]).length)-(st.g-1); if(!own.length || own.length<nEnd*0.95) return;
+      const pre=(ref.gates||[]).slice(0,st.g-1).reduce((a,v)=>a+((typeof v==='number'&&v>0)?v:0),0);
+      x.total=pre+st.gap+own.reduce((a,v)=>a+v,0); }); }
   S.comp=compute(ev);
   if(S.trainRef==='own'){ try{ S.comp=trainOwnRefComp(ev, S.comp); }catch(e){ try{ console.error('[GtG] own ref',e); }catch(_){} } }
   // Farbe je Athlet: Läufe desselben Athleten teilen eine Farbe, unterschieden durch die
@@ -4094,10 +4114,13 @@ function compute(ev){
   const topOG = (typeof top.officialGap==='number') ? top.officialGap : 0;
   const skiers = ev.skiers.map((s,idx)=>{
     const isTop = s.fastest; const SGi = gOf(s);
+    // Teil-Video: Linie beginnt erst bei Tor st0 mit dem eingetragenen Rückstand (sGap); davor keine Werte
+    const st0 = (!isTop && parseInt(s.startGate,10)>=2) ? Math.min(parseInt(s.startGate,10), n) : 1;
+    const sIdx = st0-1, sGap = (st0>1 && typeof s.startGap==='number' && isFinite(s.startGap)) ? s.startGap : 0;
     // Pass 1: Rohdifferenz + Anomalie
     const rawDiff=[], anom=[];
     for(let i=0;i<n;i++){
-      const t=SGi[i], tp=topG[i];
+      const t=(i<sIdx)?null:SGi[i], tp=topG[i];
       rawDiff[i] = (t!=null && tp!=null) ? t-tp : null;
       anom[i] = (t!=null && med[i]!=null && t > med[i]*1.55 && (t - (tp??med[i])) > 0.6);
     }
@@ -4131,7 +4154,7 @@ function compute(ev){
       if(idxs.length){
         const clean=i=> cleanBase[i];
         const base = idxs.reduce((a,i)=> a + clean(i), 0);
-        const target = og - topOG;
+        const target = og - topOG - sGap;        // Teil-Video: Rückstand bei Tor X ist schon «gesetzt»
         const D = target - base;                 // gesamte zu verteilende Differenz
         const baseW = 0.15;                        // Grundanteil pro Tor
         let wsum=0; const w={};
@@ -4144,8 +4167,9 @@ function compute(ev){
     // Pass 2: kalibrierte Diffs + Kumulative
     // Kumulative aus UNGERUNDETEN Werten summieren (erst beim Speichern runden),
     // damit der Endrückstand exakt der FIS-Kalibrierung entspricht (kein Rundungsdrift).
-    const diff=[], cleanDiff=[], cumRaw=[], cumClean=[]; let cr=0, cc=0;
+    const diff=[], cleanDiff=[], cumRaw=[], cumClean=[]; let cr=sGap, cc=sGap;
     for(let i=0;i<n;i++){
+      if(i<sIdx){ const v=(i===sIdx-1)? Math.round(sGap*1000)/1000 : null; diff[i]=null; cleanDiff[i]=null; cumRaw[i]=v; cumClean[i]=v; continue; }
       const rd=rawDiff[i]; const corr=corrArr[i];
       const dxRaw  = rd==null ? null : (rd+corr);
       const dxClean= rd==null ? null : (cleanBase[i]+corr);
@@ -4157,17 +4181,18 @@ function compute(ev){
     for(let i=lastReal+1;i<n;i++){ cumRaw[i]=null; cumClean[i]=null; }
     const dnf = lastReal>=0 && lastReal < n-4;
     const filled = diff.filter(x=>x!=null).length;
-    const cumRawDisp = normStart(cumRaw), cumCleanDisp = normStart(cumClean);
-    return {name:s.name, nation:s.nation, isTop, sui:s.nation==='SUI', lastReal, dnf,
+    const cumRawDisp = st0>1? cumRaw.slice() : normStart(cumRaw), cumCleanDisp = st0>1? cumClean.slice() : normStart(cumClean);
+    return {name:s.name, nation:s.nation, isTop, sui:s.nation==='SUI', lastReal, dnf, startGate:st0, startIdx:sIdx, startGap:sGap,
       officialGap: og, calibrated,
       gates:SGi, diff, anom, pair, cleanDiff, cumRaw, cumClean, cumRawDisp, cumCleanDisp,
-      finalRaw:cumRaw[lastReal]??cr, finalClean:cumClean[lastReal]??cc, filled, complete: n? filled/n : 0, color:null};
+      finalRaw:cumRaw[lastReal]??cr, finalClean:cumClean[lastReal]??cc, filled, complete: (n-sIdx)>0? filled/(n-sIdx) : 0, color:null};
   });
   // konsistente Farben: jeder Athlet hat IMMER die gleiche Farbe (global stabil), der Schnellste ist immer goldig
   skiers.forEach(s=> s.color = athColor(s.name, s.isTop));
   const sui = skiers.filter(s=>s.sui);
   // figures attach type
-  const figs = (ev.figures||[]).map(f=>({gate:f.gate,label:f.label.trim(),type:figType(f.label)}));
+  // Doppel-Figuren am selben Tor (z. B. «B2+Lap1») einzeln führen – sonst zählt der Lap nicht als Abschnittsgrenze
+  const figs = (ev.figures||[]).flatMap(f=>String(f.label||'').split('+').map(x=>x.trim()).filter(Boolean).map(l=>({gate:f.gate,label:l,type:figType(l)})));
   // sectors via Lap markers
   const laps = figs.filter(f=>f.type==='L').map(f=>f.gate).sort((a,b)=>a-b);
   const cuts = uniq([0,...laps,n]).sort((a,b)=>a-b);
@@ -4540,7 +4565,7 @@ function drawHero(){
   const y0=y(0), hasPitch=Object.keys(pitchByGate).length>0;
   // Plot-Werte: führende 0 (Tor 1 = Start), danach kumuliert – so starten alle Linien bei 0, Endwerte bleiben exakt
   const endLabs=[];   // Lauf-Nr. am Linienende (Training), werden nach den Linien ohne Überlappung gesetzt
-  const pvCache={}; const pv=s=>{ if(pvCache[s.name]) return pvCache[s.name]; const base=S.heroSmooth?smoothCum(s[key]):s[key]; return (pvCache[s.name]=[0].concat(base)); };
+  const pvCache={}; const pv=s=>{ if(pvCache[s.name]) return pvCache[s.name]; const base=S.heroSmooth?smoothCum(s[key]):s[key]; return (pvCache[s.name]=[s.startIdx>0?null:0].concat(base)); };   // Teil-Video: kein Startpunkt bei Tor 1
   series.forEach(s=>{
     const col=s.color; const PVs=pv(s);
     const segs=[]; let seg=[];
@@ -4556,6 +4581,9 @@ function drawHero(){
       svg+=`<path class="hFocusFill" d="${area}" fill="url(#hFocusGrad)" stroke="none"/>`; }); }
     // farbige Linie
     svg+=`<path data-s="${escHtml(s.name)}"${s.isTop?' class="hTop"':''} d="${dpath}" fill="none" stroke="${lineCol}" stroke-width="${w}" ${dash} stroke-linejoin="round" stroke-linecap="round" opacity="${s.isTop?.95:1}"/>`;
+    // Teil-Video: Startpunkt markieren (Video beginnt erst hier, Rückstand eingetragen)
+    if(s.startIdx>0 && PVs[s.startIdx]!=null){ const X=x(s.startIdx+1), Y=y(PVs[s.startIdx]);
+      svg+=`<circle data-s="${escHtml(s.name)}" cx="${X}" cy="${Y}" r="3.8" fill="${T.halo}" stroke="${col}" stroke-width="2"><title>${LANG==='en'?'Video starts at gate ':'Video beginnt bei Tor '}${s.startGate}</title></circle>`; }
     // Trainings-Serien: Lauf-Nr. an das Linienende (wenn derselbe Athlet mehrere Läufe hat)
     if(s._lauf && s._dup && !s.dnf && !s.isTop){ let li=PVs.length-1; while(li>0 && PVs[li]==null) li--;
       if(PVs[li]!=null){ endLabs.push({x:x(li+1), y:y(PVs[li]), col:lineCol, t:'L'+s._lauf, s:s.name}); } }
@@ -4595,7 +4623,7 @@ function drawHero(){
     const pt=localPt(svgN,ev); let t=Math.round(1+(pt.x-ml)/iw*(NP-1)); t=Math.max(1,Math.min(NP,t));
     const px=x(t); hg.setAttribute('x1',px); hg.setAttribute('x2',px); hg.setAttribute('opacity','.55');
     series.forEach((s,i)=>{ const dot=hgm.children[i]; const vp=pv(s)[t-1]; if(vp!=null){ dot.setAttribute('cx',px); dot.setAttribute('cy',y(vp)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); });
-    const valAt=s=> t===1?0:s[key][t-2];
+    const valAt=s=> t===1?(s.startIdx>0?null:0):s[key][t-2];
     const rows=series.filter(s=>valAt(s)!=null).sort((a,b)=>valAt(a)-valAt(b)).map(s=>{
       const col=s.color;
       return `<div class="tt-r"><span class="n"><i style="background:${col}"></i>${escHtml(surOf(s.name))}${s.isTop?(isTrain()?(LANG==='en'?' · fastest run':' · schnellster Lauf'):(LANG==='en'?' · best time':' · Bestzeit')):''}${(t>1&&s.anom[t-2])?' ⚠':''}</span><b>${fmt(valAt(s))}</b></div>`;}).join('');
@@ -4646,7 +4674,7 @@ function secSummary(data, secs, STS, hasSt, worst){
   const esc=t=> String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const rows=data.map(d=>{ const idx=d.vals.map((v,i)=>({v,i})).filter(o=>o.v!=null);
     if(!idx.length) return null;
-    const tot=idx.reduce((a,o)=>a+o.v,0);
+    const tot=idx.reduce((a,o)=>a+o.v,0) + (d.s.startIdx>0? (d.s.startGap||0) : 0);   // Teil-Video: Rückstand bei Tor X mitzählen
     const best=idx.reduce((a,o)=>o.v<a.v?o:a), weak=idx.reduce((a,o)=>o.v>a.v?o:a);
     const pos=idx.reduce((a,o)=>a+(o.v>0?o.v:0),0);
     return {d, nm:nmOf(d.s), col:d.s.color, tot, best, weak, pos, idx, dnf:!!d.s.dnf}; }).filter(Boolean)
@@ -4672,7 +4700,7 @@ function secSummary(data, secs, STS, hasSt, worst){
     let bar='';
     if(sum>0.005){ bar=parts.filter(p=>p.v>0).map(p=>{ const w=p.v/sum*100; return `<span class="ss-seg${top&&p.i===top.i?' ss-top':''}" style="width:${w.toFixed(1)}%;background:${shade(p.i)}" title="${secInfo(p.i)}${top&&p.i===top.i?(EN?' · biggest share':' · grösster Anteil'):''}">${w>=14?secLbl(p.i):''}</span>`; }).join(''); bar=`<div class="ss-stack">${bar}</div>`; }
     else bar=`<div class="ss-stack ss-none">${r.dnf?(EN?'no loss until the DNF':'bis zum Ausfall kein Verlust'):(EN?'no loss to the best time':'kein Verlust auf die Bestzeit')}</div>`;
-    h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b></td>`+
+    h+=`<tr><td><span class="ss-dot" style="background:${r.col}"></span><b style="color:${r.col}">${esc(r.nm)}</b>${r.d.s.startIdx>0?`<small class="ss-part" title="${EN?'Video starts at gate ':'Video beginnt bei Tor '}${r.d.s.startGate}"> ${EN?'from gate':'ab Tor'} ${r.d.s.startGate}</small>`:''}</td>`+
     (r.dnf?`<td class="r ss-tot ss-dnf" title="${EN?'Did not finish':'Ausgefallen'}${dg?(EN?' after gate ':' nach Tor ')+dg:''}">DNF${dg?`<small> · ${EN?'gate':'Tor'} ${dg}</small>`:''}</td>`:`<td class="r ss-tot">${f(r.tot)}</td>`)+
     `<td class="ss-stc">${bar}</td></tr>`; });
   h+='</tbody></table>';
@@ -4709,7 +4737,8 @@ function drawSector(){
   if(!secs || secs.length<2){ if(card) card.style.display='none'; return; }
   if(card) card.style.display='';
   const key=S.excludeAnom?'cleanDiff':'diff';
-  let data = sui.filter(s=>!(c._ownRef&&s.isTop)).map(s=>({s, vals:secs.map(([a,b])=>{ let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
+  let data = sui.filter(s=>!(c._ownRef&&s.isTop)).map(s=>({s, vals:secs.map(([a,b])=>{ if(s.startIdx>0 && a-1<s.startIdx) return null;   // Teil-Video: Abschnitt nicht ganz im Video -> «–»
+    let sum=0,any=false; for(let i=a-1;i<b;i++){ if(s[key][i]!=null){sum+=s[key][i];any=true;} } return any?sum:null; })}));
   // Training mit vielen Serien: pro Athlet:in nur der beste Lauf als Balken, feiner Strich = Spannweite aller Läufe
   const _trAgg = !!(S.ev && S.ev.mode==='train' && !c._ownRef && data.filter(d=>!d.s.isTop).length>=6);
   if(_trAgg){ const g=new Map(); data.forEach(d=>{ const b=d.s._cn||String(d.s.name).split('·L')[0]; if(!g.has(b)) g.set(b,[]); g.get(b).push(d); });
@@ -4823,7 +4852,7 @@ function drawHeatmap(mode){
   h+=`</tr></thead><tbody>`;
   // Start = Tor 1 (Referenz, alle 0.00)
   h+=`<tr class="hm-start"><td class="gate-c"><div class="gate-in"><span class="g-num">1</span><span class="g-start">Ref</span></div></td>`;
-  cols.forEach(s=> h+=`<td class="hm-cell${s.isTop?' hm-top':''}" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${fmt(0)}</td>`);
+  cols.forEach(s=> h+=`<td class="hm-cell${s.isTop?' hm-top':''}" data-ath="${encodeURIComponent(s.name)}" data-g="0" style="background:${_blank}">${s.startIdx>0?'':fmt(0)}</td>`);
   h+=`</tr>`;
   for(let i=0;i<n;i++){ const fg=figByGate[i+1];
     const fgc=fg?(FIG[fg.type]?FIG[fg.type].c:'#888'):'';
@@ -4836,6 +4865,7 @@ function drawHeatmap(mode){
       else { const pr=isPair(s,i);
         const tip = anom?'Ausreisser – zählt nicht in Kurve und Σ' : (pr?(LANG==='en'?`Combined with gate ${s.pair[i]+2} (tagging shifted by one gate) – together ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`:`Mit Tor ${s.pair[i]+2} verrechnet (Tagging um ein Tor versetzt) – zusammen ${fmt(Math.round((s.diff[i]+s.diff[s.pair[i]])*1000)/1000)} s`):'');
         const _dnfHere = d==null && s.dnf && i===s.lastReal+1;
+        if(s.startIdx>0 && i===s.startIdx-1){ h+=`<td class="hm-cell hm-startpt" ${da} style="background:${_blank}" title="${LANG==='en'?'Video starts here – deficit at this gate':'Video beginnt hier – Rückstand bei diesem Tor'}">▸ ${fmt(s.startGap)}</td>`; return; }
         h+=`<td class="hm-cell ${anom?'anom':(pr?'hm-pair':'')}${s.isTop?' hm-top':''}${_dnfHere?' hm-dnf':''}" ${da} style="background:${colorOf(d,anom||pr)}" title="${tip}">${d==null?(_dnfHere?'DNF':''):fmt(d)}</td>`; }
     });
     h+=`</tr>`; }
@@ -4889,14 +4919,14 @@ function heatmapPrint(){
     t+=`</tr></thead><tbody>`;
     // Start = Tor 1 (Referenz, alle 0.00) – gleiche Zählung wie Hauptgrafik und Bildschirm-Matrix
     if(start===0){ t+=`<tr><td class="g">1</td>`;
-      cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`; t+=`<td style="background:#f6f8fa;color:#8b95a3">Ref</td><td class="cum" style="color:#555">0.00</td>`; });
+      cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`; t+= s.startIdx>0 ? `<td></td><td class="cum"></td>` : `<td style="background:#f6f8fa;color:#8b95a3">Ref</td><td class="cum" style="color:#555">0.00</td>`; });
       t+=`</tr>`; }
     for(let i=start;i<end;i++){ const fg=figByGate[i+1];
       { const sp=STPp[i+2]; t+=`<tr><td class="g${sp?' '+sp.k:''}">${fg?`<b style="color:${FIG[fg.type]?FIG[fg.type].c:'#888'}">${fg.label}</b> `:''}${i+2}</td>`; }
       cols.forEach((s,ci)=>{ if(ci>0) t+=`<td class="sp"></td>`;
         const d=s.diff[i], cu=cumCol(s)[i];
         const cc = cu==null?'':(cu<-0.001?'#1a8f5a':'#555');
-        t+=`<td style="background:${isAdj(s,i)?'#f6f8fa':colorOf(d)};${isAdj(s,i)?'color:#8b95a3':''}">${d==null?'':fmt(d)}</td>`;
+        t+=(s.startIdx>0 && i===s.startIdx-1) ? `<td style="color:#8b95a3">▸</td>` : `<td style="background:${isAdj(s,i)?'#f6f8fa':colorOf(d)};${isAdj(s,i)?'color:#8b95a3':''}">${d==null?'':fmt(d)}</td>`;
         t+=`<td class="cum" style="color:${cc}">${cumTxt(cu)}</td>`; });
       t+=`</tr>`; }
     t+=`</tbody></table>`; blocks+=`<div class="hmp-col">${t}</div>`;
@@ -5464,7 +5494,7 @@ function sbsLoad(which,id){ const v=$('#sbsVid'+which), nm=$('#sbsName'+which);
   SBS[which]=null; SBS.offset=0;   // neues Paar: alte Synchronisation verwerfen
   vdbGet(id).then(r=>{ if(!r) return; const sel=$('#sbsSel'+which); if(sel && sel.value!==id) return;   // inzwischen anderes Video gewählt
     const url=URL.createObjectURL(r.video); if(v){ v.src=url; v.playbackRate=parseFloat(($('#sbsSpeed')||{}).value)||1; }
-    SBS[which]={rec:r, tags:(r.tags||[]).map(t=>t.t).sort((a,b)=>a-b), fps:r.fps||30, url};
+    SBS[which]={rec:r, tags:(()=>{ const st=recStart(r); const tt=(r.tags||[]).map(t=>t.t).sort((a,b)=>a-b); return st? Array(st.g-1).fill(null).concat(tt) : tt; })(), fps:r.fps||30, url};
     if(nm) nm.textContent=`${r.name} · ${r.venue} ${runLong(r.mode||'comp', r.disc, r.run)}`;
     if(v) v.onloadedmetadata=()=>{ try{ v.playbackRate=parseFloat(($('#sbsSpeed')||{}).value)||1; }catch(e){} sbsUpdateHint(); sbsRender(); };
   });
@@ -5635,7 +5665,7 @@ function resetVideo(keepEvent=true){
   $('#player').style.display='none'; $('#dropZone').style.display='';
   if($('#vidFile')) $('#vidFile').value=''; if($('#pbName')) $('#pbName').textContent='';
   // nächster Athlet: Athlet + FIS zurücksetzen, Event-Angaben (Datum/Ort/Disziplin/…) behalten
-  $('#mAth').value=''; $('#mBest').checked=false; $('#gapLab').classList.remove('off'); $('#mGap').value='';
+  $('#mAth').value=''; $('#mBest').checked=false; $('#gapLab').classList.remove('off'); $('#mGap').value=''; setFormStart(null);
   updateMetaSummary(); renderTags(); tgResetHistory(); $('#saveMsg').className='save-msg'; $('#saveMsg').textContent=''; updateOverlay();
 }
 function curFps(){ const f=parseFloat($('#inpFps').value); return (f>=5&&f<=240)?f:30; }
@@ -5670,17 +5700,18 @@ function computeOverlaySteps(){
   let topG=null, topOG=0;
   if(ev){ const top=ev.skiers.find(s=>s.fastest); if(top && top.name!==name){ topG=gOfRaw(top); topOG=(typeof top.officialGap==='number')?top.officialGap:0; } }
   const gates=[]; for(let i=1;i<ts.length;i++) gates.push(ts[i].t-ts[i-1].t);
-  let diffs=gates.map((g,i)=> (topG&&topG[i]!=null) ? g-topG[i] : 0);
+  const _st=formStart(), _off=(_st&&_st.g)?_st.g-1:0, _g0=(_st&&_st.g&&_st.gap!=null)?_st.gap:0;   // Teil-Video: ab Tor X mit Rückstand dort
+  let diffs=gates.map((g,i)=> (topG&&topG[i+_off]!=null) ? g-topG[i+_off] : 0);
   const best=$('#mBest').checked; const gapVal=parseFloat($('#mGap').value); const og=best?0:(isFinite(gapVal)?gapVal:null);
-  if(og!=null && diffs.length){ const base=diffs.reduce((a,b)=>a+b,0); const corr=((og-topOG)-base)/diffs.length; diffs=diffs.map(d=>d+corr); }
-  const steps=[]; let c=0; for(let i=0;i<diffs.length;i++){ c+=diffs[i]; steps.push({t:ts[i+1].t, cum:Math.round(c*1000)/1000}); }
+  if(og!=null && diffs.length){ const base=diffs.reduce((a,b)=>a+b,0); const corr=((og-topOG-_g0)-base)/diffs.length; diffs=diffs.map(d=>d+corr); }
+  const steps=[]; let c=_g0; for(let i=0;i<diffs.length;i++){ c+=diffs[i]; steps.push({t:ts[i+1].t, cum:Math.round(c*1000)/1000}); }
   const startT=ts[0].t, finishT=ts[ts.length-1].t;
   // Farbverlauf entlang der Timeline (oben Start -> unten Ziel)
-  const stops=[`${gapColor(0)} 0%`];
+  const stops=[`${gapColor(-_g0)} 0%`];
   steps.forEach(s=>{ const f=finishT>startT?((s.t-startT)/(finishT-startT))*100:100; stops.push(`${gapColor(-s.cum)} ${f.toFixed(1)}%`); });
   const grad=`linear-gradient(to bottom, ${stops.join(', ')})`;
   let cmp=''; if(ev){ const top=ev.skiers.find(s=>s.fastest); if(top && top.name!==name) cmp=top.name; }
-  TG.overlay={steps,startT,finishT,grad,cmp};
+  TG.overlay={steps,startT,finishT,grad,cmp,c0:_g0};
   // feiner Punkt bei jedem Tor / Tagging-Punkt entlang der Timeline
   if($('#gapTicks')){
     const fr=t=> finishT>startT? ((t-startT)/(finishT-startT))*100 : 0;
@@ -5694,7 +5725,7 @@ function updateOverlay(){ const ov=$('#gapOverlay'), cmp=$('#gapCmp'); if(!ov) r
   $('#gapLine').style.background = TG.overlay.grad;
   if(cmp){ if(TG.overlay.cmp){ cmp.style.display=''; cmp.textContent='vs '+TG.overlay.cmp; } else cmp.style.display='none'; }
   const ct=$('#vid').currentTime, {startT,finishT,steps}=TG.overlay;
-  let cum=0; for(const s of steps){ if(s.t<=ct+1e-6) cum=s.cum; else break; }
+  let cum=(TG.overlay.c0||0); for(const s of steps){ if(s.t<=ct+1e-6) cum=s.cum; else break; }
   const v=-cum;  // +Vorsprung / −Rückstand
   let frac = finishT>startT ? (ct-startT)/(finishT-startT) : 0; frac=Math.max(0,Math.min(1,frac));
   $('#gapMarker').style.top=(frac*100)+'%';
@@ -5725,7 +5756,7 @@ function saveTagDraft(){ try{
     if(!TG.tags || TG.tags.length<2){ return; }   // erst ab Start + 1 Tor sinnvoll
     const d={ tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), mode:TG.mode||'comp',
       date:$('#mDate')?.value||'', venue:(typeof getVenue==='function'?getVenue():'')||'', disc:$('#mDisc')?.value||'GS', gen:$('#mGen')?.value||'M',
-      run:(typeof formRun==='function'?formRun():1), name:$('#mAth')?.value||'', best:!!$('#mBest')?.checked, gap:$('#mGap')?.value||'',
+      run:(typeof formRun==='function'?formRun():1), name:$('#mAth')?.value||'', best:!!$('#mBest')?.checked, gap:$('#mGap')?.value||'', part:!!$('#mPart')?.checked, sg:$('#mStartGate')?.value||'', sgap:$('#mStartGap')?.value||'',
       fps:(typeof curFps==='function'?curFps():30), savedAt:Date.now() };
     LS.set('gtg_tagdraft', d);
   }catch(e){} }
@@ -5748,6 +5779,7 @@ function restoreTagDraft(d){ try{
     if(d.name){ if(![...($('#mAth')?.options||[])].some(o=>o.value===d.name) && !ATHLETES.some(a=>a.name===d.name)){ ATHLETES.push({name:d.name}); ATHLETES.sort((a,b)=>a.name.localeCompare(b.name)); fillAthleteSelect(); } if($('#mAth')) $('#mAth').value=d.name; }
     if($('#mBest')) $('#mBest').checked=!!d.best; if($('#gapLab')) $('#gapLab').classList.toggle('off', !!d.best);
     if($('#mGap')) $('#mGap').value=d.best?'':(d.gap||'');
+    if($('#mPart')) $('#mPart').checked=!!d.part; if($('#mStartGate')) $('#mStartGate').value=d.sg||''; if($('#mStartGap')) $('#mStartGap').value=d.sgap||''; updatePartUI();
     if($('#inpFps')) $('#inpFps').value=d.fps||30;
     TG.tags=d.tags.map(t=>({t:t.t, fig:t.fig||null, unsure:!!t.unsure}));
     updateMetaSummary(); renderTags(); tgResetHistory();
@@ -5868,13 +5900,15 @@ function renderTags(){
   // Tag-Index i = «Tor i+1». Wir taggen ab Tor 1 (nicht den Start), die Kurssetzung zählt ab Tor 1:
   // Kurs-Tor N gehört auf «Tor N» (tag[N-1]) — daher tpl[i+1], sonst erscheint die Figur ein Tor zu spät.
   { const have=new Set(); TG.tags.forEach(t=>{ if(t.fig) String(t.fig).split('+').forEach(x=>{ if(x) have.add(x); }); });
-    TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ const parts=String(tpl[i+1]||'').split('+').filter(x=>x && !have.has(x)); tag.fig=parts.join('+'); parts.forEach(x=>have.add(x)); } }); }
+    const _S0=tgStartGate();
+    TG.tags.forEach((tag,i)=>{ if(tag.fig==null){ const parts=String(tpl[i+_S0]||'').split('+').filter(x=>x && !have.has(x)); tag.fig=parts.join('+'); parts.forEach(x=>have.add(x)); } }); }
   // Bereits im Lauf vergebene Figuren (jede Figur darf nur einmal vorkommen)
-  const usedFig=new Set(); TG.tags.forEach((t,idx)=>{ if(idx===0) return; String(t.fig||'').split('+').forEach(v=>{ if(v) usedFig.add(v); }); });
+  const _S=tgStartGate();   // Teil-Video: erster Tag = Tor _S
+  const usedFig=new Set(); TG.tags.forEach((t,idx)=>{ if(idx===0 && _S<2) return; String(t.fig||'').split('+').forEach(v=>{ if(v) usedFig.add(v); }); });
   TG.tags.forEach((tag,i)=>{
     const prev=i>0?TG.tags[i-1].t:null;
     const d = prev!=null ? Math.round((tag.t-prev)*1000)/1000 : null;
-    const label = 'Tor '+(i+1);   // wir taggen den Start nicht: erster Tag = Tor 1 (Referenz)
+    const label = 'Tor '+(i+_S);   // wir taggen den Start nicht: erster Tag = Tor 1 (Referenz) – bei Teil-Video Tor _S
     const fp=String(tag.fig||'').split('+'); const f1=fp[0]||'', f2=fp[1]||'';
     const optsFor=sel=>figOpts(usedFig,[f1,f2]).map(o=>{ const dis=o&&o!==sel&&usedFig.has(o); return `<option value="${o}"${o===sel?' selected':''}${dis?' disabled':''}>${o||'–'}</option>`; }).join('');
     const tr=document.createElement('tr');
@@ -5883,7 +5917,7 @@ function renderTags(){
     const _sel = TG.selT!=null && Math.abs(tag.t-TG.selT)<1e-6; if(_sel) tr.classList.add('active');
     tr.innerHTML=`<td class="gnum">${label}</td><td>${frameOf(tag.t)}</td><td>${tag.t.toFixed(3)}s</td>
       <td>${d==null?'—':d.toFixed(3)}</td>
-      <td>${i===0?'':`<div class="figsel-wrap"><select class="figsel figa" data-i="${i}">${optsFor(f1)}</select><select class="figsel figb" data-i="${i}" title="Optionale 2. Figur">${optsFor(f2)}</select></div>`}</td>
+      <td>${(i===0&&_S<2)?'':`<div class="figsel-wrap"><select class="figsel figa" data-i="${i}">${optsFor(f1)}</select><select class="figsel figb" data-i="${i}" title="Optionale 2. Figur">${optsFor(f2)}</select></div>`}</td>
       <td style="white-space:nowrap">${_sel?`<button class="row-move" data-i="${i}" title="Diesen Tag auf das aktuelle Video-Bild verschieben (Taste M)">⤓ Hierher</button>`:''}<button class="row-flag${tag.unsure?' on':''}" data-i="${i}" title="Als unsicher markieren (später prüfen)">⚑</button><button class="row-del" data-i="${i}" title="löschen">✕</button></td>`;
     tb.appendChild(tr);
   });
@@ -5893,7 +5927,7 @@ function renderTags(){
   tb.querySelectorAll('.figsel-wrap').forEach(wrap=>{ const a=wrap.querySelector('.figa'), b=wrap.querySelector('.figb'); const i=+a.dataset.i;
     const upd=()=>{ let av=a.value, bv=b.value; if(bv&&bv===av) bv='';
       // keine Figur doppelt im selben Lauf
-      const others=new Set(); TG.tags.forEach((t,idx)=>{ if(idx===0||idx===i) return; String(t.fig||'').split('+').forEach(v=>{ if(v) others.add(v); }); });
+      const others=new Set(); TG.tags.forEach((t,idx)=>{ if((idx===0&&tgStartGate()<2)||idx===i) return; String(t.fig||'').split('+').forEach(v=>{ if(v) others.add(v); }); });
       if(av&&others.has(av)){ if(typeof gtgToast==='function') gtgToast('«'+av+'» ist in diesem Lauf schon vergeben.','warn'); av=''; }
       if(bv&&others.has(bv)){ if(typeof gtgToast==='function') gtgToast('«'+bv+'» ist in diesem Lauf schon vergeben.','warn'); bv=''; }
       TG.tags[i].fig=[av,bv].filter(Boolean).join('+'); tgPush(); renderTags(); };
@@ -5915,9 +5949,11 @@ function renderTags(){
 /* gates-array + figures aus Tags */
 function buildRunFromTags(){
   const ts=[...TG.tags].sort((a,b)=>a.t-b.t);
-  const gates=[]; for(let i=1;i<ts.length;i++) gates.push(Math.round((ts[i].t-ts[i-1].t)*1000)/1000);
-  const figures=[]; ts.forEach((tag,i)=>{ if(i>0&&tag.fig) figures.push({gate:i, label:tag.fig}); });
-  const unsure=[]; ts.forEach((tag,i)=>{ if(tag.unsure){ const g=Math.max(0,i-1); if(g<gates.length && !unsure.includes(g)) unsure.push(g); } });   // ⚑ im Tagging
+  const off=tgStartGate()-1;   // Teil-Video: vorne (Tor 1 … Tor X) leer lassen, Index = Tor bleibt
+  const gates=[]; for(let k=0;k<off;k++) gates.push(null);
+  for(let i=1;i<ts.length;i++) gates.push(Math.round((ts[i].t-ts[i-1].t)*1000)/1000);
+  const figures=[]; ts.forEach((tag,i)=>{ if((i>0||off>0)&&tag.fig) figures.push({gate:i+off, label:tag.fig}); });
+  const unsure=[]; ts.forEach((tag,i)=>{ if(tag.unsure){ const g=Math.max(off,i-1+off); if(g<gates.length && !unsure.includes(g)) unsure.push(g); } });   // ⚑ im Tagging
   return {gates, figures, unsure};
 }
 
@@ -5957,6 +5993,7 @@ function applyRun(rec){   // rec: {mode,date,venue,disc,gen,run,name,nation,gate
   ev.skiers = ev.skiers.filter(s=>s.name!==_nm && s.name!==rec.name);
   ev.skiers.push({name:_nm, nation:(natFor(_nm)||rec.nation), fastest:false, gates:rec.gates.slice(),
     officialGap: (typeof rec.officialGap==='number'?rec.officialGap:null), officialBest: !!rec.officialBest, by: rec.by||null});
+  { const _st=recStart(rec); if(_st){ const sk=ev.skiers[ev.skiers.length-1]; sk.startGate=_st.g; sk.startGap=_st.gap; } }
   // figures zusammenführen (nach Tor-Nr.)
   const fmap=new Map(ev.figures.map(f=>[f.gate,f.label])); (rec.figures||[]).forEach(f=>fmap.set(f.gate,f.label));
   ev.figures=[...fmap.entries()].map(([gate,label])=>({gate,label})).sort((a,b)=>a.gate-b.gate);
@@ -5982,9 +6019,10 @@ function propagateFiguresToEvent(rec){
   touched.forEach(r=>{ try{ applyRun(r); }catch(e){} });
   // Video-Taggings der anderen Läufe mitziehen (Figur pro Tag-Index = Tor-Nr.)
   touched.forEach(r=>{ const id=runId(r); vdbGet(id).then(v=>{ if(!v||!Array.isArray(v.tags)) return; let ch=false;
-    figMap.forEach((label,gate)=>{ if(!v.tags[gate]) return;
-      v.tags.forEach((t,idx)=>{ if(idx!==gate && t && t.fig===label){ t.fig=''; ch=true; } });   // gleiche Figur woanders entfernen
-      if(v.tags[gate].fig!==label){ v.tags[gate].fig=label; ch=true; } });
+    const _o=recStart(v)?recStart(v).g-1:0;
+    figMap.forEach((label,gate)=>{ const gi=gate-_o; if(gi<0||!v.tags[gi]) return;
+      v.tags.forEach((t,idx)=>{ if(idx!==gi && t && t.fig===label){ t.fig=''; ch=true; } });   // gleiche Figur woanders entfernen
+      if(v.tags[gi].fig!==label){ v.tags[gi].fig=label; ch=true; } });
     if(ch){ try{ vdbPut(v); }catch(e){} }
   }).catch(()=>{}); });
   if(typeof ghAutoSync==='function') ghAutoSync();
@@ -6002,6 +6040,10 @@ function saveRun(){
   if(!date||!venue){ msg.textContent='Bitte Datum und Ort angeben.'; return; }
   if(!name){ msg.textContent='Bitte eine:n Athlet:in wählen.'; return; }
   if(TG.tags.length<2){ msg.textContent='Mindestens 2 Tags (Start + 1 Tor) nötig.'; return; }
+  const _st=formStart();
+  if(_st){ if(!_st.g){ msg.textContent='Teil-Video: bitte das Tor angeben, bei dem das Video beginnt (ab Tor 2).'; return; }
+    if(_st.gap==null){ msg.textContent='Teil-Video: bitte den Rückstand bei Tor '+_st.g+' eintragen (− = Vorsprung).'; return; }
+    if(mode!=='train' && $('#mBest') && $('#mBest').checked){ msg.textContent='Die Laufbestzeit muss ab Tor 1 getaggt sein (Referenz) – «Video beginnt später» ausschalten.'; return; } }
   const {gates,figures,unsure}=buildRunFromTags();
   { const _id=runId({date,venue,disc,gen,run,name}); const _ex=(mode==='train'?SAVED_TRAIN:SAVED).find(r=>runId(r)===_id);
     if(_ex && !canEditBy(_ex.by)){ msg.textContent='Für diesen Lauf gibt es bereits ein Tagging von '+(gtgUser(_ex.by)?gtgUser(_ex.by).n:'einer anderen Person')+' – es kann nur von dieser Person (oder einem Admin) überschrieben werden. Lauf-Nr. oder Athlet:in prüfen.'; return; }
@@ -6022,6 +6064,7 @@ function saveRun(){
     fisTxt = noFis ? ' · ohne FIS-Zeit · Endrückstand aus Taggings' : (best ? ' · als Laufbestzeit' : (officialGap!=null ? ` · FIS-Rückstand ${officialGap.toFixed(2)} s kalibriert` : ' · ohne FIS-Zeit (keine Kalibrierung)'));
   }
   if(unsure && unsure.length) rec.unsure=unsure; else delete rec.unsure;   // ⚑-Markierungen mitspeichern (Datenbank zeigt sie)
+  if(_st){ rec.startGate=_st.g; rec.startGap=Math.round(_st.gap*1000)/1000; fisTxt+=` · Video ab Tor ${_st.g} (${_st.gap>=0?'+':'−'}${Math.abs(_st.gap).toFixed(2)} s)`; } else { delete rec.startGate; delete rec.startGap; }
   // Ersteller:in ist oben schon gesetzt (bestehende:r Ersteller:in bleibt, auch wenn ein Admin korrigiert)
   applyRun(rec);
   const nProp=propagateFiguresToEvent(rec);   // Figuren auf andere Videos desselben Laufs übernehmen
@@ -6030,7 +6073,7 @@ function saveRun(){
   S.mode=mode; S.disc=disc; S.discAll=false; S.gen=gen; S.evtKey=date+'|'+venue; S.run=run;
   buildFilters(); fillVenueSelect(); const vs2=$('#mVenueSel'); if(vs2){ vs2.value=venue; $('#mVenueNew').style.display='none'; }
   const runTxt = runLong(mode,disc,run);
-  const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.length} Tore)${fisTxt}`;
+  const baseMsg = `✓ Gespeichert: ${name} · ${venue} ${disc} ${gen} ${runTxt} (${gates.filter(g=>g!=null).length} Tore)${fisTxt}`;
   msg.className='save-msg ok'; msg.textContent = baseMsg + (TG.file?' · Video wird gesichert…':'.');
   clearTagDraft();   // erfolgreich gespeichert -> Entwurf verwerfen
   try{ { const _ck=coachKeyOf(date,venue,gen,mode); if(COACH_KNOWN.keys.has(_ck)){ const _st=coachOutdated(date,venue,gen,mode);
@@ -6054,10 +6097,11 @@ function saveRun(){
    Import: erkennt «;» oder «,», Anführungszeichen, Dezimalkomma, Spalten über die Kopfzeile. */
 function csvCell(v){ const t=String(v==null?'':v); return /[";\n\r]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; }
 function csvText(head, rows){ return '﻿'+[head,...rows].map(r=>r.map(csvCell).join(';')).join('\r\n'); }
-function runCsvHead(maxG){ return ['Date','Venue','Discipline','Gender','Run','Skier','Nation','FIS','Is fastest','ID',...Array.from({length:maxG},(_,i)=>'Gate '+(i+1))]; }
+function runCsvHead(maxG){ return ['Date','Venue','Discipline','Gender','Run','Skier','Nation','FIS','Is fastest','ID','Start gap',...Array.from({length:maxG},(_,i)=>'Gate '+(i+1))]; }
 function runCsvRow(r, maxG){ const g=(r.gates||[]).map(x=>x==null?'':x); while(g.length<maxG) g.push('');
   const fis = r.officialBest ? 0 : (typeof r.officialGap==='number' ? r.officialGap : '');
-  return [r.date,r.venue,r.disc,r.gen,r.run,r.name,r.nation||'',fis,r.officialBest?1:'',runId(r),...g]; }
+  const st=recStart(r);   // Teil-Video: Rückstand beim ersten Tor mit Zeit (Gate-Spalten davor leer)
+  return [r.date,r.venue,r.disc,r.gen,r.run,r.name,r.nation||'',fis,r.officialBest?1:'',runId(r),st?st.gap:'',...g]; }
 function csvParse(text){
   text=String(text||'').replace(/^﻿/,'');
   const first=(text.split(/\r?\n/)[0]||''); const delim=(first.split(';').length>first.split(',').length)?';':',';
@@ -6075,7 +6119,7 @@ function csvParse(text){
   const col={ date:find(/^(date|datum)$/,0), venue:find(/^(venue|ort)$/,1), disc:find(/^(disciplin|discipline|disziplin)$/,2),
     gen:find(/^(gender|geschlecht)$/,3), run:find(/^(run|lauf)$/,4), name:find(/^(skier|athlet|athlete|name)$/,5),
     nation:find(/^(nation)$/,6), fis:find(/^(fis|fis gap|fis-rückstand)$/,7), fast:find(/^(is fastest|fastest|bestzeit)$/,8),
-    gate1:find(/^(gate|tor)\s*1$/,10) };
+    gate1:find(/^(gate|tor)\s*1$/,10), sgap:find(/^(start gap|startrückstand|start-rückstand)$/,-1) };
   return {hdr, rows:rows.slice(1), col};
 }
 function csvNum(v){ const t=String(v==null?'':v).trim().replace(',','.'); if(t==='') return null; const n=parseFloat(t); return isFinite(n)?n:null; }
@@ -6094,6 +6138,7 @@ function exportCsv(){
   const {gates}=buildRunFromTags(); const maxG=gates.length;
   const noFis=$('#mNoFis')&&$('#mNoFis').checked, best=!noFis&&$('#mBest')&&$('#mBest').checked, gap=csvNum($('#mGap')&&$('#mGap').value);
   const rec={date,venue,disc,gen,run,name,nation:natOf(name)||'',gates,officialBest:!!best,officialGap:noFis?null:(best?0:gap)};
+  { const _st=formStart(); if(_st&&_st.g&&_st.gap!=null){ rec.startGate=_st.g; rec.startGap=_st.gap; } }
   download(`GtG_${venue}_${disc}_${gen}_Lauf${run}_${name.replace(/\s/g,'')}.csv`, csvText(runCsvHead(maxG),[runCsvRow(rec,maxG)]), 'text/csv;charset=utf-8');
 }
 function exportJson(){ download('GtG_tagging_backup.json', JSON.stringify({athletes:ATHLETES, runs:SAVED, trainRuns:SAVED_TRAIN, courses:Object.values(COURSES)},null,2), 'application/json'); }
@@ -6123,6 +6168,7 @@ function parseImportCsv(text, stat){
     const officialBest=/^(1|true|yes|ja|x|fastest|best)$/i.test(String(c[col.fast]||'').trim());
     let gap=csvNum(c[col.fis]); if(gap!=null && (gap<0 || gap>60)) gap=null;   // ältere Exporte hatten hier den FIS-Code -> ignorieren
     const rec={mode:'comp',date,venue,disc,gen,run,name,nation:nation||((typeof natOf==='function'?natOf(name):'')||''),gates,figures:[],officialBest,officialGap:officialBest?0:gap};
+    { const sg=col.sgap>=0? csvNum(c[col.sgap]) : null; const f=gates.findIndex(x=>x!=null); if(sg!=null && f>=1 && !officialBest){ rec.startGate=f+1; rec.startGap=sg; } }
     const id=runId(rec); const ex=SAVED.find(r=>runId(r)===id);
     if(ex && !canEditBy(ex.by)){ stat.foreign=(stat.foreign||0)+1; return; }   // fremdes Tagging nicht überschreiben
     rec.by = (ex&&ex.by) || (ME&&ME.e) || undefined;
@@ -6142,7 +6188,10 @@ function importTagsFromCsv(file){ const r=new FileReader(); r.onload=()=>{ try{
     for(const c of P.rows){ if(c.length<col.gate1+2) continue;
       const nm=String(c[col.name]||'').trim().toLowerCase(); if(curName && nm===curName){ row=c; break; } if(!row) row=c; }
     if(!row){ gtgToast('Keine gültige Zeile im CSV gefunden.'); return; }
-    const gates=csvGates(row, col.gate1).map(g=>g==null?0:g);
+    let gates=csvGates(row, col.gate1);
+    { const sg=col.sgap>=0? csvNum(row[col.sgap]) : null, f=gates.findIndex(x=>x!=null);   // Teil-Video: leere Gate-Spalten vorne + Start-Rückstand
+      if(sg!=null && f>=1){ gates=gates.slice(f); setFormStart({startGate:f+1, startGap:sg}); } else setFormStart(null); }
+    gates=gates.map(g=>g==null?0:g);
     if(!gates.some(g=>g>0)){ gtgToast('Keine Tor-Zeiten im CSV.'); return; }
     // Lauf-Angaben passend zum CSV setzen
     const dt=csvDate(row[col.date]); if(dt) $('#mDate').value=dt;
@@ -6243,6 +6292,18 @@ function vdbDel(id,store='videos'){
   return idbDel();
 }
 function runId(r){ return `${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}|${r.name}`; }
+/* ---- Teil-Video: Video beginnt erst bei Tor X (z. B. 1. Zwischenzeit) mit bekanntem Rückstand dort ----
+   Gespeichert als rec.startGate (Tor-Nr. des ersten Tags, ≥2) + rec.startGap (Rückstand dort in s, − = Vorsprung).
+   gates[] wird vorne mit null aufgefüllt, damit Index = Tor bleibt. Video-Tags bleiben ungepolstert (Tag 0 = Tor X). */
+function recStart(r){ const g=parseInt(r&&r.startGate,10); if(!(g>=2)) return null; return {g, gap:(typeof r.startGap==='number'&&isFinite(r.startGap))?r.startGap:0}; }
+function padTags(r){ const st=recStart(r); const tags=(r&&r.tags)||[]; if(!st) return tags; return Array.from({length:st.g-1},()=>({t:null,fig:''})).concat(tags); }
+function formStart(){ const on=$('#mPart')&&$('#mPart').checked; if(!on) return null;
+  const g=parseInt($('#mStartGate')&&$('#mStartGate').value,10); const gp=parseFloat(String(($('#mStartGap')&&$('#mStartGap').value)||'').replace(',','.'));
+  return {g:(g>=2?g:null), gap:(isFinite(gp)?gp:null)}; }
+function tgStartGate(){ const s=formStart(); return (s&&s.g)?s.g:1; }
+function updatePartUI(){ const on=!!($('#mPart')&&$('#mPart').checked); const row=$('#partRow'); if(row) row.classList.toggle('on',on); }
+function setFormStart(r){ const st=recStart(r); if($('#mPart')) $('#mPart').checked=!!st;
+  if($('#mStartGate')) $('#mStartGate').value=st?st.g:''; if($('#mStartGap')) $('#mStartGap').value=st?st.gap:''; updatePartUI(); }
 
 function isQuotaErr(err){ if(!err) return false; if(err._full===true) return true; const n=(err.name||'')+' '+(err.message||''); return /quota|exceeded|storage/i.test(n) || err.name==='QuotaExceededError' || err.code===22; }
 function saveVideoToLib(rec){
@@ -6250,6 +6311,7 @@ function saveVideoToLib(rec){
   const v={ id:runId(rec), mode:rec.mode||'comp', date:rec.date,venue:rec.venue,disc:rec.disc,gen:rec.gen,run:rec.run,
     name:rec.name,nation:rec.nation,fis:fisOf(rec.name), officialBest:rec.officialBest, officialGap:rec.officialGap,
     fps:curFps(), tags:TG.tags.map(t=>({t:t.t,fig:t.fig||'',unsure:!!t.unsure})), figures:rec.figures,
+    startGate:rec.startGate, startGap:rec.startGap,
     video:TG.file, vname:TG.file.name||'video', vsize:TG.file.size||0, savedAt:Date.now() };
   const doPut=()=> vdbPut(v).then(()=>({saved:true})).catch(err=>({saved:false, quota:isQuotaErr(err), err}));
   // Warnung: Training und Wettkampf mit gleicher Athlet:in/Tag/Ort/Disziplin/Lauf-Nr. teilen sich dieselbe Video-Kennung
@@ -6351,7 +6413,7 @@ function renderLibrary(){
     const evtMax={}; all.forEach(r=>{ const k=`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`; const n=(r.tags?.length||0); if(n>(evtMax[k]||0)) evtMax[k]=n; });
     grid.innerHTML=list.map(r=>{
       const isT=(r.mode||'comp')==='train';
-      const gaps = isT? '<span class="li-badge tr">Training</span>' : (r.officialBest?'<span class="li-badge gold">Laufbestzeit</span>':(r.officialGap!=null?`<span class="li-badge">FIS +${(+r.officialGap).toFixed(2)}</span>`:''));
+      const gaps = (isT? '<span class="li-badge tr">Training</span>' : (r.officialBest?'<span class="li-badge gold">Laufbestzeit</span>':(r.officialGap!=null?`<span class="li-badge">FIS +${(+r.officialGap).toFixed(2)}</span>`:'')))+(recStart(r)?`<span class="li-badge">ab Tor ${recStart(r).g}</span>`:'');
       const mx=evtMax[`${r.date}|${r.venue}|${r.disc}|${r.gen}|${r.run}`]||0, nt=(r.tags?.length||0);
       const isDnf = mx>=8 && nt>0 && nt < mx-3;   // deutlich weniger Tore als der schnellste/vollständige Lauf
       const dnfBadge = isDnf? `<span class="li-badge dnf" title="Nur ${Math.max(0,nt-1)} von ${Math.max(0,mx-1)} Toren getaggt – vermutlich DNF">DNF</span>` : '';
@@ -6388,6 +6450,7 @@ async function loadFromLib(id){
     $('#mBest').checked=!!r.officialBest; $('#gapLab').classList.toggle('off', !!r.officialBest);
     $('#mGap').value=(!r.officialBest && r.officialGap!=null)? r.officialGap : '';
     if($('#mNoFis')) $('#mNoFis').checked=(!r.officialBest && r.officialGap==null); updateFisMode();
+    { const _sr=(r.mode==='train'?SAVED_TRAIN:SAVED).find(x=>runId(x)===runId(r)); setFormStart(recStart(r)?r:(_sr||null)); }
     updateMetaSummary(); renderTags(); tgResetHistory();
     tgEditHint(r.video?'edit':'novideo');
     const m=$('#saveMsg'); m.className='save-msg ok'; m.textContent=`Geladen: ${r.name} · ${r.venue} ${r.disc} ${r.gen} ${runLong(r.mode||'comp', r.disc, r.run)} (${(r.tags||[]).length} Tags).`;
@@ -6429,7 +6492,7 @@ async function parseCoursePdf(file){
       const rows=[]; body.forEach(it=>{ const r=rows[rows.length-1]; if(r && Math.abs(it.top-r.top)<4) r.items.push(it); else rows.push({top:it.top,items:[it]}); });
       const out=[]; let done=false;
       rows.forEach(r=>{ if(done) return; const rec={}; r.items.forEach(it=>{ const k=colOf(it.x); rec[k]=rec[k]?rec[k]+' '+it.s:it.s; });
-        const isFin=/finish/i.test(rec.type||''); const isGate=/^\d+$/.test(String(rec.no||'').trim()) && rec.type;
+        const isFin=/finish/i.test(rec.type||''); const isGate=/^\d+\s*\*?$/.test(String(rec.no||'').trim()) && rec.type;   // «7*» = markiertes Tor (z. B. Zwischenzeit) – ist ein normales Tor
         if(!isFin && !isGate) return;
         out.push(rec); if(isFin) done=true; });
       // Ziel ohne «Finish»-Text (letzte Zeile ohne Offset und Winkel) als Ziel werten
@@ -6437,6 +6500,8 @@ async function parseCoursePdf(file){
       if(out.length>=3){
         const tn=out.map(r=>{ const ty=String(r.type||'').replace(/\s/g,''); return /finish/i.test(ty)?'Finish': /hairpin/i.test(ty)?'Hairpin': /v\.?comb/i.test(ty)?'V.Comb': /delay/i.test(ty)?'Delayed':'Open'; });
         const ff=deriveCourseFigs(tn);
+        // «7*» = Zwischenzeit -> Lap1, Lap2 … automatisch (zusätzlich zu H/F/B am selben Tor)
+        let nLap=0; out.forEach((r,i)=>{ if(tn[i]!=='Finish' && /\*/.test(String(r.no||''))){ const L='Lap'+(++nLap); ff[i]= ff[i]? ff[i]+'+'+L : L; } });
         return out.map((r,i)=> tn[i]==='Finish'
           ? {no:i+1,type:'Finish',dist:kNum(r.dist),offset:null,pitch:kNum(r.pitch),angle:null,fig:''}
           : {no:i+1,type:tn[i],dist:kNum(r.dist),offset:kNum(r.offset),pitch:kNum(r.pitch),angle:kNum(r.angle),fig:ff[i]||''});
@@ -6916,6 +6981,10 @@ function initTagging(){
   $('#metaModal').addEventListener('click',e=>{ if(e.target.id==='metaModal') closeMetaModal(); });
   window.addEventListener('resize',()=>{ if(S.view==='tagging') syncDataHeight(); });
   $('#mBest').onchange=e=>{ $('#gapLab').classList.toggle('off', e.target.checked); if(e.target.checked) $('#mGap').value=''; };
+  // Teil-Video (Video beginnt später): Tor-Beschriftung, Figuren und Live-Overlay sofort nachführen
+  if($('#mPart')){ const _pu=()=>{ updatePartUI(); try{ renderTags(); saveTagDraft(); }catch(e){} };
+    $('#mPart').addEventListener('change',()=>{ _pu(); if($('#mPart').checked && $('#mStartGate') && !$('#mStartGate').value) $('#mStartGate').focus(); });
+    ['#mStartGate','#mStartGap'].forEach(s=>{ const el=$(s); if(el){ el.addEventListener('change',_pu); el.addEventListener('input',()=>{ try{ computeOverlaySteps(); updateOverlay(); }catch(e){} }); } }); }
   if($('#mNoFis')) $('#mNoFis').onchange=()=>{ updateFisMode(); if(typeof computeOverlaySteps==='function'){ computeOverlaySteps(); updateOverlay(); } };
   // wheel scrub over video
   $('.vid-wrap')?.addEventListener('wheel',e=>{ if(!v.src)return; e.preventDefault(); stepFrame(e.deltaY>0?1:-1); },{passive:false});
@@ -8167,8 +8236,9 @@ function dbtExportSelected(){ const ids=dbtSelIds(); if(!ids.length) return; con
 function editTagging(id){ vdbGet(id).then(v=>{ if(v){ loadFromLib(id); } else { const rec=SAVED.find(r=>runId(r)===id)||SAVED_TRAIN.find(r=>runId(r)===id); if(rec) openTaggingFromRecord(rec); } }); }
 function openTaggingFromRecord(rec){ switchView('tagging'); if(typeof setTagMode==='function') setTagMode(rec.mode||'comp');
   TG.file=null; if($('#pbName')) $('#pbName').textContent='';
-  const ts=[{t:0,fig:null,unsure:false}]; let acc=0; (rec.gates||[]).forEach(g=>{ acc=Math.round((acc+(g||0))*1000)/1000; ts.push({t:acc,fig:null,unsure:false}); });
-  const fmap={}; (rec.figures||[]).forEach(f=>fmap[f.gate]=f.label); ts.forEach((tg,i)=>{ if(fmap[i]) tg.fig=fmap[i]; });
+  const _off=recStart(rec)?recStart(rec).g-1:0;   // Teil-Video: Tags erst ab Tor X
+  const ts=[{t:0,fig:null,unsure:false}]; let acc=0; (rec.gates||[]).slice(_off).forEach(g=>{ acc=Math.round((acc+(g||0))*1000)/1000; ts.push({t:acc,fig:null,unsure:false}); });
+  const fmap={}; (rec.figures||[]).forEach(f=>fmap[f.gate]=f.label); ts.forEach((tg,i)=>{ if(fmap[i+_off]) tg.fig=fmap[i+_off]; });
   TG.tags=ts; tgEditHint('novideo');
   $('#mDate').value=rec.date||''; fillVenueSelect();
   const vsel=$('#mVenueSel'); if(vsel){ if([...vsel.options].some(o=>o.value===rec.venue)) vsel.value=rec.venue; else { $('#mVenueNew').style.display=''; $('#mVenueNew').value=rec.venue; } }
@@ -8178,6 +8248,7 @@ function openTaggingFromRecord(rec){ switchView('tagging'); if(typeof setTagMode
   $('#mBest').checked=!!rec.officialBest; if($('#gapLab')) $('#gapLab').classList.toggle('off', !!rec.officialBest);
   $('#mGap').value=(!rec.officialBest && rec.officialGap!=null)? rec.officialGap : '';
   if($('#mNoFis')) $('#mNoFis').checked=(!rec.officialBest && rec.officialGap==null); if(typeof updateFisMode==='function') updateFisMode();
+  setFormStart(rec);
   updateMetaSummary(); renderTags(); if(typeof tgResetHistory==='function') tgResetHistory();
   const m=$('#saveMsg'); if(m){ m.className='save-msg ok'; m.textContent=`Zum Bearbeiten geladen: ${rec.name} · ${rec.venue} (kein Video – nur Zeiten).`; }
 }
@@ -8197,8 +8268,8 @@ function deleteTagging(id){ const p=id.split('|'); const date=p[0],venue=p[1],di
 function renderDbVideos(){ const body=$('#dbvBody'); if(!body) return;
   const q=($('#dbvSearch')?.value||'').trim().toLowerCase(), fm=$('#dbvMode')?.value||'', fd=$('#dbvDisc')?.value||'', fg=$('#dbvGen')?.value||'', fdnf=$('#dbvDnf')?.value||'', sort=$('#dbvSort')?.value||'date';
   vdbAll().then(list=>{ let vids=(list||[]).filter(v=>v.video||v.vsize);
-    const evtMax={}; vids.forEach(v=>{ const k=`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`; const n=(v.tags||[]).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
-    const isDnfV=v=>{ const mx=evtMax[`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`]||0, nt=(v.tags||[]).length; return mx>=8 && nt>0 && nt<mx-3; };
+    const evtMax={}; vids.forEach(v=>{ const k=`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`; const n=padTags(v).length; if(n>(evtMax[k]||0)) evtMax[k]=n; });
+    const isDnfV=v=>{ const mx=evtMax[`${v.date}|${v.venue}|${v.disc}|${v.gen}|${v.run}`]||0, nt=padTags(v).length; return mx>=8 && nt>0 && nt<mx-3; };
     if(q) vids=vids.filter(v=>((v.venue||'')+' '+(v.name||'')).toLowerCase().includes(q));
     if(fm) vids=vids.filter(v=>(v.mode||'comp')===fm);
     if(fd) vids=vids.filter(v=>v.disc===fd);
@@ -8439,13 +8510,13 @@ function cvVideosForCurrent(){
         // stabile Reihenfolge wie im Panel
         vids.sort((a,b)=> String(a.name).localeCompare(String(b.name)) || ((+a.run)-(+b.run)));
         res(vids.map(r=>{ const sur=(S.trShort?S.trShort(r.name):surOf(r.name));
-          return { id:r.id, name: sur+'·L'+r.run, nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk, _base:r.name, _lauf:r.run }; }));
+          return { id:r.id, name: sur+'·L'+r.run, nation:r.nation, tags:padTags(r), blob:r.video||null, onDisk:!!r.onDisk, _base:r.name, _lauf:r.run }; }));
       }).catch(()=>res([]));
       return;
     }
     vdbAll().then(list=>{
       const vids=(list||[]).filter(r=> r.date===S.ev.date && r.venue===S.ev.venue && r.disc===S.disc && r.gen===S.gen && String(r.run)===String(S.run) && (r.video||r.onDisk) && vidIsTrain(r)===isTrain());
-      res(vids.map(r=>({ id:r.id, name:canonName(r.name), nation:r.nation, tags:(r.tags||[]), blob:r.video||null, onDisk:!!r.onDisk })));
+      res(vids.map(r=>({ id:r.id, name:canonName(r.name), nation:r.nation, tags:padTags(r), blob:r.video||null, onDisk:!!r.onDisk })));
     }).catch(()=>res([]));
   });
 }
@@ -8592,7 +8663,7 @@ function cvSeek(t, scroll){ const vid=$('#cvVideo'); if(!vid||!isFinite(t)) retu
   if(scroll){ cvScrollToVideo(); setTimeout(cvScrollToVideo,140); requestAnimationFrame(cvScrollToVideo); }   // sofort + nach Layout-Settle (Athletenwechsel ändert evtl. Videohöhe)
 }
 // von der Hero-Grafik aufgerufen (Klick auf Tor g)
-function coachSeekGate(g, scroll){ CVGATE=g; if(!VID||!VID.tags||!VID.tags.length) return; const idx=Math.max(0,Math.min(VID.tags.length-1, g)); const t=VID.tags[idx]&&VID.tags[idx].t; if(t!=null) cvSeek(t, scroll); }
+function coachSeekGate(g, scroll){ CVGATE=g; if(!VID||!VID.tags||!VID.tags.length) return; let idx=Math.max(0,Math.min(VID.tags.length-1, g)); if(!(VID.tags[idx]&&VID.tags[idx].t!=null)){ const f=VID.tags.findIndex(x=>x&&x.t!=null); if(f>=0) idx=f; } const t=VID.tags[idx]&&VID.tags[idx].t; if(t!=null) cvSeek(t, scroll); }
 // Klick auf die Linie eines Athleten -> dessen Video laden und zum Tor springen
 function coachSelectAndSeek(name, g, source){
   if((CVVIDS&&CVVIDS.length) && typeof openClip==='function'){ openClip(name, g, source); return; }   // Coach-Link UND Analyse: Video im Pop-up
@@ -8629,7 +8700,7 @@ function clipLoad(v, g){
   const url = cvUrl(v, ()=>{ if(CLIPNAME===v.name) clipLoad(v, g); }); if(!url) return;
   cvBindMedia(vid, vid.closest('.clip-videowrap'));
   if(vid.src!==url){ vid.src=url; vid.load(); }
-  const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
+  const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,g)); const t=(tags[idx]&&tags[idx].t!=null)?tags[idx].t:((tags.find(x=>x&&x.t!=null)||{}).t); if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
   attachDefBar(vid, $('#clipDefbar'), v.name);
   const tt=$('#clipTitle'); if(tt) tt.textContent=`Tor ${g+1} · ${v.name}`;
@@ -8774,7 +8845,7 @@ function clipFillSelB(chosen){ const sel=$('#clipSelB'); if(!sel) return; const 
 function clipLoadB(name){ const vids=CVVIDS||[]; const v=vids.find(x=>x.name===name)||vids.find(x=>x.name!==CLIPNAME)||vids[0]; if(!v) return; CLIPBNAME=v.name;
   const vid=$('#clipVideoB'); if(!vid) return; const url=cvUrl(v, ()=>{ if(CLIPBNAME===v.name) clipLoadB(v.name); }); if(!url) return;
   cvBindMedia(vid, vid.closest('.clip-videowrap')); if(vid.src!==url){ vid.src=url; vid.load(); }
-  const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,CLIPGATE)); const t=tags[idx]&&tags[idx].t; if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
+  const seek=()=>{ const tags=v.tags||[]; const idx=Math.max(0,Math.min(tags.length-1,CLIPGATE)); const t=(tags[idx]&&tags[idx].t!=null)?tags[idx].t:((tags.find(x=>x&&x.t!=null)||{}).t); if(t!=null){ try{vid.pause();}catch(e){} try{ vid.currentTime=Math.max(0,t); }catch(e){} } };
   if(vid.readyState>=1) seek(); else vid.addEventListener('loadedmetadata', seek, {once:true});
   attachDefBar(vid, $('#clipDefbarB'), v.name); clipSelColor();
   if(CLIPSRC==='table') clipTableViz(CLIPNAME, CLIPGATE);   // Kopf/Hervorhebung (links/rechts) aktualisieren
@@ -8789,7 +8860,7 @@ function clipStep(dir){ const v=$('#clipVideo'); if(!v||!v.src) return; try{ v.p
   const b=$('#clipVideoB'); if(b && CLIPSBS){ try{ b.pause(); }catch(e){} }
   const fps=clipFps(); const t=Math.max(0, Math.min((v.duration||1e9)-0.001, (v.currentTime||0) + dir/fps));
   try{ v.currentTime=t; }catch(e){}
-  if(b && CLIPSBS && CLIPSYNC && CLIPSYNC.on){ try{ b.currentTime=Math.max(0, t-CLIPSYNC.delta); }catch(e){} }
+  if(b && b.src && CLIPSBS && CLIPSYNC && CLIPSYNC.on){ try{ b.currentTime=Math.max(0, Math.min((b.duration||1e9)-0.001, (b.currentTime||0) + dir/fps)); }catch(e){} }
   const sp=$('#clipSyncPlay'); if(sp && CLIPSBS) sp.textContent='▶ Beide'; }
 function clipSetRate(r){ CLIPRATE=[1,0.5,0.25].includes(+r)?+r:1; try{ LS.set('gtg_cliprate',CLIPRATE); }catch(e){} clipApplyRate(); }
 (function initClipSpeed(){ try{
@@ -8805,9 +8876,16 @@ function clipCtlUpdate(w){ const v=$(w==='B'?'#clipVideoB':'#clipVideo'); const 
   if(sc && !sc._drag) sc.value = (isFinite(d)&&d>0)? Math.round(v.currentTime/d*1000) : 0;
   if(tm) tm.textContent = clipFmtT(v.currentTime)+' / '+(isFinite(d)&&d>0?clipFmtT(d):'–'); }
 function clipTogglePlay(w){ const av=$('#clipVideo'), bv=$('#clipVideoB');
-  if(CLIPSBS && CLIPSYNC && CLIPSYNC.on && av && bv && bv.src){ clipSyncPlayToggle(); return; }   // gekoppelt: beide zusammen
-  const v= w==='B'? bv : av; if(!v||!v.src) return;
-  if(v.paused||v.ended){ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{ try{ v.muted=true; v.play(); }catch(_){} }); }catch(e){} } else { try{ v.pause(); }catch(e){} } }
+  // Knopf unter dem Video steuert NUR dieses Video (auch wenn gekoppelt) – beide zusammen = «Beide»
+  const v= w==='B'? bv : av, o= w==='B'? av : bv; if(!v||!v.src) return;
+  if(v.paused||v.ended){ if(o && o.src && !o.paused) v.muted=true;   // iPhone: nur ein Video mit Ton gleichzeitig
+    try{ v.playbackRate=CLIPRATE; const p=v.play(); if(p&&p.catch) p.catch(()=>{ try{ v.muted=true; v.play(); }catch(_){} }); }catch(e){} } else { try{ v.pause(); }catch(e){} }
+  clipBothBtnUpdate(); }
+function clipBothBtnUpdate(){ const av=$('#clipVideo'), bv=$('#clipVideoB'), btn=$('#clipSyncPlay'); if(!btn) return;
+  const both = av && bv && bv.src && !av.paused && !bv.paused; btn.textContent = both ? '⏸ Beide' : '▶ Beide';
+  if(!both && bv && bv.playbackRate!==CLIPRATE){ try{ bv.playbackRate=CLIPRATE; }catch(e){} } }
+// Synchronisieren = beide Videos ans gleiche Tor setzen. Danach laufen beide eigenständig
+// (wer schneller fährt, liegt beim nächsten Tor vorne) – kein Nachführen, kein erneutes Synchronisieren.
 (function initClipCtl(){ try{
   ['A','B'].forEach(w=>{ const v=$(w==='B'?'#clipVideoB':'#clipVideo'); const c=document.querySelector('.clip-ctl[data-v="'+w+'"]'); if(!v||!c) return;
     v.removeAttribute('controls');
@@ -8856,17 +8934,17 @@ function clipSyncAtGate(gInt){ const av=$('#clipVideo'), bv=$('#clipVideoB'); if
   const A=ta[ia]&&ta[ia].t, B=tb[ib]&&tb[ib].t; if(A==null||B==null){ gtgToast('Dieses Tor ist nicht in beiden Videos getaggt.'); return; }
   CLIPSYNC.on=true; CLIPSYNC.delta=A-B; try{av.pause();bv.pause();}catch(e){}
   try{ av.currentTime=Math.max(0,A); bv.currentTime=Math.max(0,B); }catch(e){}
-  av.ontimeupdate=()=>{ if(!CLIPSYNC.on) return; const target=av.currentTime-CLIPSYNC.delta; if(isFinite(target)&&Math.abs(bv.currentTime-target)>0.09){ try{ bv.currentTime=Math.max(0,target); }catch(e){} } };
   gtgToast('An Tor '+(gInt+1)+' synchronisiert.','ok'); }
 function clipSyncPlayToggle(){ const av=$('#clipVideo'), bv=$('#clipVideoB'); if(!av||!bv) return; const btn=$('#clipSyncPlay');
   // iPhone/iPad: es darf nur EIN Video mit Ton gleichzeitig laufen – sonst stoppt iOS das erste.
   // Darum läuft das rechte Video stumm; klappt es trotzdem nicht, beide stumm erneut starten.
   if(av.paused || bv.paused){ bv.muted=true;
+    try{ av.playbackRate=CLIPRATE; bv.playbackRate=CLIPRATE; }catch(e){}
     const go=v=>{ try{ const p=v.play(); return (p&&p.catch)? p.catch(()=>null) : Promise.resolve(); }catch(e){ return Promise.resolve(); } };
     Promise.all([go(av),go(bv)]).then(()=>{ if(av.paused||bv.paused){ av.muted=true; bv.muted=true; go(av); go(bv); } });
     if(btn) btn.textContent='⏸ Beide'; }
   else { av.pause(); bv.pause(); if(btn) btn.textContent='▶ Beide'; } }
-function clipSyncOff(){ CLIPSYNC.on=false; const av=$('#clipVideo'); if(av) av.ontimeupdate=null; const btn=$('#clipSyncPlay'); if(btn) btn.textContent='▶ Beide'; }
+function clipSyncOff(){ CLIPSYNC.on=false; const av=$('#clipVideo'); if(av) av.ontimeupdate=null; const _bv=$('#clipVideoB'); if(_bv){ try{ _bv.playbackRate=CLIPRATE; }catch(e){} } const btn=$('#clipSyncPlay'); if(btn) btn.textContent='▶ Beide'; }
 function closeClip(){ const m=$('#clipModal'); if(m) m.style.display='none'; const v=$('#clipVideo'); if(v){ try{v.pause();}catch(e){} } const b=$('#clipVideoB'); if(b){ try{b.pause();}catch(e){} } clipSyncOff(); }
 function initClip(){
   if($('#clipClose')) $('#clipClose').onclick=closeClip;
@@ -8876,7 +8954,8 @@ function initClip(){
   if($('#clipSyncOff')) $('#clipSyncOff').onclick=()=>{ clipSyncOff(); gtgToast('Kopplung gelöst.'); };
   if($('#clipModal')) $('#clipModal').addEventListener('click',e=>{ if(e.target.id==='clipModal') closeClip(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=$('#clipModal'); if(m&&m.style.display!=='none') closeClip(); } });
-  const cv=$('#clipVideo'); if(cv){ ['timeupdate','seeked'].forEach(ev=> cv.addEventListener(ev, clipPlayheadSync)); }
+  const cv=$('#clipVideo'); if(cv){ ['timeupdate','seeked'].forEach(ev=> cv.addEventListener(ev, clipPlayheadSync));}
+  ['#clipVideo','#clipVideoB'].forEach(s=>{ const v=$(s); if(v) ['play','pause','ended'].forEach(ev=>v.addEventListener(ev, clipBothBtnUpdate)); });
   if($('#cvVizChart')) $('#cvVizChart').onclick=()=>{ CV_SRC='chart'; CLIPSRC='chart'; cvVizSwitchUI(); cvVizReload(); };
   if($('#cvVizTable')) $('#cvVizTable').onclick=()=>{ CV_SRC='table'; CLIPSRC='table'; cvVizSwitchUI(); cvVizReload(); };
 }
@@ -8886,7 +8965,8 @@ function updateDefBar(db, name, t){
   if(!db) return; const c=S.comp; const s=c&&c.skiers.find(x=>x.name===name);
   const vObj=(CVVIDS||[]).find(v=>v.name===name); const tags=(vObj&&vObj.tags)||[];
   if(!s||!tags.length){ db.classList.remove('show'); return; } db.classList.add('show');
-  let g=0; for(let i=0;i<tags.length;i++){ if(tags[i].t!=null && tags[i].t<=t+1e-3) g=i; else break; }
+  let g=-1; for(let i=0;i<tags.length;i++){ if(tags[i].t==null){ if(g<0) continue; else break; } if(tags[i].t<=t+1e-3) g=i; else break; }
+  if(g<0){ g=tags.findIndex(x=>x&&x.t!=null); if(g<0) g=0; }   // Teil-Video: vor dem ersten Tag = erstes getaggtes Tor
   const key=S.excludeAnom?'cumClean':'cumRaw'; const raw=s[key]||[];
   const sm=((typeof smoothCum==='function') && S.heroSmooth)? smoothCum(raw) : raw;   // Balken grafisch glätten
   const valNum = g>=1? raw[g-1] : 0;   // angezeigte Zahl = Tabellenwert (roh)
@@ -9165,7 +9245,7 @@ async function coachCreate(){
       const fname=`${evKeySafe}/${safe(v.name)}_L${ev.run}.${ext}`;
       { const pv=PREVV.get(v.id), ks=v.vsize||(v.video&&v.video.size)||0;
         if(pv && pv.size && ks && pv.size===ks && String(pv.url||'').endsWith('coach/videos/'+fname)){
-          vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size, fps: v.fps||pv.fps||undefined });
+          vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:padTags(v).map(t=>({t:t.t,fig:t.fig||''})), url: pv.url, size: pv.size, fps: v.fps||pv.fps||undefined });
           done++; skipped++; cmProg(`Video ${done}/${totalVids} unverändert – übersprungen: ${v.name}`); continue; } }
       // Video-Bytes beschaffen: im Browser aus IndexedDB (v.video), auf dem Desktop von der Festplatte
       let blob=v.video;
@@ -9184,7 +9264,7 @@ async function coachCreate(){
         await ghPutFileRaw(cfg, `coach/videos/${fname}`, b64, `coach video ${v.name}`);
         vurl = cfg.base+`coach/videos/${fname}`;
       }
-      vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:(v.tags||[]).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
+      vout.push({ id:v.id, name:canonName(v.name), nation:v.nation, tags:padTags(v).map(t=>({t:t.t,fig:t.fig||''})), url: vurl, size: blob.size, fps: v.fps||undefined });
       done++;
     }
     // Kurssetzung mitgeben (Höhenprofil, Steilheit, Figuren) – sonst fehlt sie auf den Geräten der Coaches
@@ -9260,7 +9340,7 @@ const I18N_EN={"Coach-Link":"Coach link","Grafik ausblenden":"Hide chart","Grafi
  "Suche Ort oder Athlet …":"Search location or athlete …","Suche Name oder FIS-Code …":"Search name or FIS code …",
  "Disz.":"Disc.","Gesch.":"Gender","Athl.":"Ath.","Rennen":"Races","Saison":"Season","Speicher":"Storage","Rückstand":"Deficit",
  // Tagging
- "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here","Jetzt loslassen":"Drop it now",
+ "Video laden":"Load video","Datei wählen":"Choose file","Dateien wählen":"Choose files","Video hierher ziehen":"Drag video here","Video-Start":"Video start","Video beginnt später":"Video starts later","ab Tor":"from gate","Rückstand dort":"Deficit there","Jetzt loslassen":"Drop it now",
  "oder":"or","Tore taggen":"Tag gates","＋ Tor taggen":"＋ Tag gate","Tor taggen (Enter)":"Tag gate (Enter)",
  "Noch keine Tags.":"No tags yet.","Tor":"Gate","Tore":"Gates","Zeit":"Time","Figur":"Figure","Löschen":"Delete",
  "✓ Speichern":"✓ Save","Speichern":"Save","Lauf-Angaben":"Run details","Lauf-Angaben bearbeiten":"Edit run details",
@@ -9458,7 +9538,7 @@ Object.assign(I18N_EN,{
  "Mehrfach-Upload möglich · Datum/Ort/Lauf werden – wenn möglich – aus dem Dateinamen erkannt.":"Multiple uploads possible · date/location/run are detected – if possible – from the filename.",
  "Browser um dauerhaften, grösseren Speicher bitten – Videos werden dann nicht mehr automatisch gelöscht":"Ask the browser for persistent, larger storage – videos then won't be deleted automatically",
  "farbcodiert (rot = langsamer, grün = schneller). Klick in eine Zelle öffnet das Video am passenden Tor.":"color-coded (red = slower, green = faster). Click a cell to open the video at the matching gate.",
- "Editierbar. Figuren: H/F/B automatisch aus Tor-Typ — Laps ergänzen. Werden beim Tagging automatisch übernommen.":"Editable. Figures: H/F/B automatic from gate type — add laps. Applied automatically during tagging.",
+ "Editierbar. Figuren: H/F/B automatisch aus Tor-Typ — Laps ergänzen. Werden beim Tagging automatisch übernommen.":"Editable. Figures: H/F/B automatic from gate type — add laps. Applied automatically during tagging.","Editierbar. Figuren: H/F/B automatisch aus Tor-Typ, Laps aus «*» (Zwischenzeit) im PDF. Werden beim Tagging automatisch übernommen.":"Editable. Figures: H/F/B automatic from gate type, laps from «*» (split time) in the PDF. Applied automatically during tagging.",
  "Fertig getaggte Läufe aus CSV-Datei(en) importieren (mehrere möglich) — ohne Video, direkt in Datenbank & Analyse.":"Import fully tagged runs from CSV file(s) (multiple possible) — without video, directly into Database & Analysis.",
  "von deinem Team (z. B. per Chat). Du fügst ihn nur einmal ein — danach bleibt die Verbindung dauerhaft auf diesem Gerät.":"from your team (e.g. via chat). You paste it just once — then the connection stays permanent on this device.",
  "Der Lauf wird aus dem Live-Feed mitgeschnitten und lokal als Video gesichert — komplett offline, nichts wird hochgeladen.":"The run is recorded from the live feed and saved locally as a video — fully offline, nothing is uploaded.",
